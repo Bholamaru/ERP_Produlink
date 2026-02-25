@@ -1,0 +1,93 @@
+/* General Styles */
+.GateInward1-header {
+    background-color: #f8f9fa; /* Light background for header */
+    border-bottom: 1px solid #dee2e6; /* Border for header */
+    padding: 10px 15px; /* Padding around header */
+    border-radius: 5px;
+  }
+  
+  .GateInward-header .header-title {
+    font-size: 20px;
+    font-weight: bold;
+    margin: 0;
+  }
+
+
+.GateInward-main1 {
+    background-color: #f8f9fa; /* Light background for header */
+    border-bottom: 1px solid #dee2e6; /* Border for header */
+    padding: 10px 15px; /* Padding around header */
+    border-radius: 5px;
+}
+
+
+
+.StoreGateInward .table-responsive {
+    overflow-x: auto;
+}
+
+.StoreGateInward .table {
+    margin-top: 20px;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.StoreGateInward .table th,
+.StoreGateInward .table td {
+    text-align: center;
+    vertical-align: middle;
+    padding: 12px;
+}
+
+.pobtn {
+    border: none;
+    border-radius: 4px;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    background-color: #007bff;
+    color: white;
+    text-decoration: none;
+    margin: 5px;
+}
+
+.pobtn:hover {
+    background-color: #0056b3;
+}
+
+.header-title {
+    font-size: 1.25rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 767.98px) {
+    .pobtn {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+
+    .StoreGateInward .table th,
+    .StoreGateInward .table td {
+        padding: 8px;
+        font-size: 0.875rem;
+    }
+
+    .header-title {
+        text-align: center;
+    }
+}
+
+@media (max-width: 576px) {
+    .GateInward-main .form-label {
+        font-size: 0.875rem;
+    }
+
+    .GateInward-main .form-control,
+    .GateInward-main .form-select {
+        font-size: 0.875rem;
+    }
+
+    .GateInward-main .btn {
+        font-size: 0.875rem;
+    }
+}

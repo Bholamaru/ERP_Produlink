@@ -1,0 +1,77 @@
+.SalesOrderAmendListMaster {
+    margin-top: 0px;
+  }
+  
+  /* Header Styling */
+  .SalesOrderAmendList-header {
+    background-color: #f8f9fa; /* Light background for header */
+  border-bottom: 1px solid #dee2e6; /* Border for header */
+  padding: 10px 15px; /* Padding around header */
+  border-radius: 5px;
+  }
+  
+  .SalesOrderAmendList-header .header-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin: 0;
+  }
+  
+  /* Flex wrapping for buttons and select dropdowns */
+  .SalesOrderAmendList-header .d-flex {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  
+  .SalesOrderAmendList-Main {
+    padding: 15px;
+    background-color: #ffffff;
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
+  }
+  
+  /* Inputs and buttons for all screen sizes */
+  .SalesOrderAmendList-Main label {
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
+  
+  .SalesOrderAmendList-Main .form-control,
+  .SalesOrderAmendList-Main .form-select {
+    font-size: 0.9rem;
+    padding: 0.5rem;
+  }
+  
+  .SalesOrderAmendList-Main .btn {
+    font-size: 0.9rem;
+    padding: 0.4rem 0.8rem;
+  }
+  
+  /* Responsive Adjustments */
+  @media (max-width: 768px) {
+    .SalesOrderAmendList-header .header-title {
+      font-size: 1.2rem;
+    }
+  
+    .SalesOrderAmendList-header .d-flex {
+      justify-content: center;
+    }
+  
+    .SalesOrderAmendList-Main .col-6,
+    .SalesOrderAmendList-Main .col-md-3,
+    .SalesOrderAmendList-Main .col-md-2 {
+      width: 100%;
+      flex: 0 0 100%;
+      max-width: 100%;
+    }
+  
+    .SalesOrderAmendList-Main .btn {
+      margin-top: 10px;
+    }
+  }
+  
+  @media (max-width: 576px) {
+    .SalesOrderAmendList-header {
+      text-align: center;
+    }
+  }
+  

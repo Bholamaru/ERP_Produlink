@@ -1,0 +1,116 @@
+
+  /* Header Styling */
+  .ProReport-header {
+    background-color: #f8f9fa; /* Light background for header */
+    border-bottom: 1px solid #dee2e6; /* Border for header */
+    padding: 10px 15px; /* Padding around header */
+    border-radius: 5px;
+  }
+  
+  .ProReport-header .header-title {
+    font-size: 20px;
+    font-weight: bold;
+    margin: 0;
+  }
+  
+  /* Form and Inputs */
+  .ProReport-Main label {
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 5px;
+    margin-top: 5px;
+  }
+  
+  .ProReport-Main .form-control {
+    height: 35px;
+    padding: 5px 10px;
+    border-radius: 4px;
+  }
+  
+  .ProReport-Main select {
+    width: 100%;
+    padding: 5px;
+    border-radius: 4px;
+  }
+  
+  .ProReport-Main button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 5px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .ProReport-Main button:hover {
+    background-color: #0056b3;
+  }
+  
+  /* Table Styling */
+  .ProReportMaster .table-responsive {
+    overflow-x: auto;
+    margin-top: 20px;
+  }
+  
+  .ProReportMaster .table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .ProReportMaster .table th, .table td {
+    text-align: center;
+    vertical-align: middle;
+    padding: 8px;
+  }
+  
+  
+  /* Button for Edit and Delete */
+  .ProReportMaster .table .btn-link {
+    font-size: 18px;
+    color: #007bff;
+    padding: 0;
+    border: none;
+    background: none;
+    cursor: pointer;
+  }
+  
+  .ProReportMaster .table .btn-link:hover {
+    color: #0056b3;
+  }
+  
+  .ProReportMaster .table .btn-link.text-danger:hover {
+    color: #d9534f;
+  }
+  
+  /* Responsive Styling */
+  @media (max-width: 991px) {
+    .ProReport-Main .col-md-1,
+    .ProReport-Main .col-md-2 {
+        flex: 0 0 100%;
+        max-width: 100%;
+        margin-bottom: 10px;
+    }
+  
+    .ProReport-header .header-title {
+        text-align: center;
+        font-size: 18px;
+    }
+  
+    .ProReportMaster   .table th, .table td {
+        font-size: 14px;
+    }
+  }
+  
+  @media (max-width: 576px) {
+    .ProReport-header .header-title {
+        font-size: 16px;
+    }
+  
+    .ProReportMaster   .table th, .table td {
+        font-size: 12px;
+    }
+  
+    .ProReportMaster  .table-responsive {
+        overflow-x: scroll;
+    }
+  }

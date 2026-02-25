@@ -1,0 +1,91 @@
+/* Custom spacing between table rows and form elements */
+table th, table td {
+    padding: 12px;
+  }
+  
+  /* Extra space below radio buttons and button */
+  table td button {
+    margin-top: 10px;
+  }
+  
+  /* Ensuring text area is not too large */
+  textarea.form-control {
+    resize: vertical; /* Allow vertical resizing only */
+  }
+  .CustPOAmendMaster {
+    margin-top: 0px;
+  }
+  
+  /* Header Styling */
+  .CustPOAmend-header {
+    background-color: #f8f9fa; /* Light background for header */
+  border-bottom: 1px solid #dee2e6; /* Border for header */
+  padding: 10px 15px; /* Padding around header */
+  border-radius: 5px;
+  }
+  
+  .CustPOAmend-header .header-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin: 0;
+  }
+  
+  /* Flex wrapping for buttons and select dropdowns */
+  .CustPOAmend-header .d-flex {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  
+  .CustPOAmend-Main {
+    padding: 15px;
+    background-color: #ffffff;
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
+  }
+  
+  /* Inputs and buttons for all screen sizes */
+  .CustPOAmend-Main label {
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
+  
+  .CustPOAmend-Main .form-control,
+  .CustPOAmend-Main .form-select {
+    font-size: 0.9rem;
+    padding: 0.5rem;
+  }
+  
+  .CustPOAmend-Main .btn {
+    font-size: 0.9rem;
+    padding: 0.4rem 0.8rem;
+  }
+  
+  /* Responsive Adjustments */
+  @media (max-width: 768px) {
+    .CustPOAmend-header .header-title {
+      font-size: 1.2rem;
+    }
+  
+    .CustPOAmend-header .d-flex {
+      justify-content: center;
+    }
+  
+    .CustPOAmend-Main .col-6,
+    .CustPOAmend-Main .col-md-3,
+    .CustPOAmend-Main .col-md-2 {
+      width: 100%;
+      flex: 0 0 100%;
+      max-width: 100%;
+    }
+  
+    .CustPOAmend-Main .btn {
+      margin-top: 10px;
+    }
+  }
+  
+  @media (max-width: 576px) {
+    .CustPOAmend-header {
+      text-align: center;
+    }
+  }
+    

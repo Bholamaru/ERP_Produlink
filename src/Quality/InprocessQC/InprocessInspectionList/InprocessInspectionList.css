@@ -1,0 +1,74 @@
+
+  /* Header Styling */
+  .InprocessInspectionList-header {
+    background-color: #f8f9fa; /* Light background for header */
+  border-bottom: 1px solid #dee2e6; /* Border for header */
+  padding: 10px 15px; /* Padding around header */
+  border-radius: 5px;
+  }
+  
+  .InprocessInspectionList-header .header-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin: 0;
+  }
+  
+  /* Flex wrapping for buttons and select dropdowns */
+  .InprocessInspectionList-header .d-flex {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  
+  .InprocessInspectionList-Main {
+    padding: 15px;
+    background-color: #ffffff;
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
+  }
+  
+  /* Inputs and buttons for all screen sizes */
+  .InprocessInspectionList-Main label {
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
+  
+  .InprocessInspectionList-Main .form-control,
+  .InprocessInspectionList-Main .form-select {
+    font-size: 0.9rem;
+    padding: 0.5rem;
+  }
+  
+  .InprocessInspectionList-Main .btn {
+    font-size: 0.9rem;
+    padding: 0.4rem 0.8rem;
+  }
+  
+  /* Responsive Adjustments */
+  @media (max-width: 768px) {
+    .InprocessInspectionList-header .header-title {
+      font-size: 1.2rem;
+    }
+  
+    .InprocessInspectionList-header .d-flex {
+      justify-content: center;
+    }
+  
+    .InprocessInspectionList-Main .col-6,
+    .InprocessInspectionList-Main .col-md-3,
+    .InprocessInspectionList-Main .col-md-2 {
+      width: 100%;
+      flex: 0 0 100%;
+      max-width: 100%;
+    }
+  
+    .InprocessInspectionList-Main .btn {
+      margin-top: 10px;
+    }
+  }
+  
+  @media (max-width: 576px) {
+    .InprocessInspectionList-header {
+      text-align: center;
+    }
+  }
+  

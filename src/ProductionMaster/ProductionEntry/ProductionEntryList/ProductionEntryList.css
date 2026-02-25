@@ -1,0 +1,76 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  /* Header Styling */
+  .ProductionEntryList-header {
+    background-color: #f8f9fa; /* Light background for header */
+    border-bottom: 1px solid #dee2e6; /* Border for header */
+    padding: 10px 15px; /* Padding around header */
+    border-radius: 5px;
+  }
+  
+  .ProductionEntryList-header .header-title {
+    font-size: 20px;
+    font-weight: bold;
+    margin: 0;
+  }
+  
+  .ProductionEntryList-Main {
+    background-color: #f8f9fa; /* Light background for header */
+    border-bottom: 1px solid #dee2e6; /* Border for header */
+    padding: 10px 15px; /* Padding around header */
+    border-radius: 5px;
+  }
+  
+  .ProductionEntryList-table {
+    background-color: #f8f9fa; /* Light background for header */
+    border-bottom: 1px solid #dee2e6; /* Border for header */
+    padding: 10px 15px; /* Padding around header */
+    border-radius: 5px;
+    overflow-x: auto;
+  }
+  
+  .ProductionEntryList-table .table-responsive {
+    max-height: 400px; /* Adjust height as needed */
+    overflow-y: auto;
+  }
+  
+  .ProductionEntryList-table .table th,
+  .ProductionEntryList-table .table td {
+    white-space: nowrap;
+  }
+  .ProductionEntryList-btnicon {
+    border: none;
+  }
+  /* Responsive Styles */
+  @media (max-width: 768px) {
+    .ProductionEntryList-btn {
+      margin-top: 10px;
+      width: 100%;
+    }
+  
+    .ProductionEntryList-Mainbtn {
+      margin-top: 10px;
+      width: 100%;
+    }
+  
+    .ProductionEntryList-Main .row {
+      flex-direction: column;
+    }
+  
+    .ProductionEntryList-Main .col-md-3,
+    .ProductionEntryList-Main .col-md-6,
+    .ProductionEntryList-Main .col-md-1,
+    .ProductionEntryList-Main .col-md-2 {
+      width: 100%;
+      margin-bottom: 10px;
+    }
+  
+    .ProductionEntryList-Main .col-md-6 input {
+      width: 100%;
+    }
+  }
+  

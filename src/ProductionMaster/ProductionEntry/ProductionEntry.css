@@ -1,0 +1,163 @@
+.ProductionEntryMaster {
+  margin-top: -10px;
+}
+
+/* Header Styling */
+.ProductionEntry-header {
+  background-color: #f8f9fa; /* Light background for header */
+  border-bottom: 1px solid #dee2e6; /* Border for header */
+  padding: 10px 15px; /* Padding around header */
+  border-radius: 5px;
+}
+
+.ProductionEntry-header .header-title {
+  font-size: 20px;
+  font-weight: bold;
+  margin: 0;
+}
+
+.productionbottom{
+  background-color: #f8f9fa; /* Light background for header */
+  border-bottom: 1px solid #dee2e6; /* Border for header */
+  padding: 10px 15px; /* Padding around header */
+  border-radius: 5px;
+}
+/* Form and Inputs */
+/* Additional spacing for table cells */
+.ProductionEntryMaster .table-bordered td, .table-bordered th {
+  padding: 8px;
+  vertical-align: middle;
+  text-align: center;
+}
+
+/* Adjust icon button sizes for consistent appearance */
+.ProductionEntryMaster .btn-outline-secondary {
+  padding: 4px 8px;
+  font-size: 1rem;
+}
+
+/* Responsive font and padding adjustments */
+.ProductionEntry-main label {
+  font-size: 0.875rem;
+}
+/* General Styling */
+body {
+  font-family: Arial, sans-serif;
+ 
+  margin: 0;
+  padding: 0;
+}
+
+.ProductionEntry-main {
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+.ProductionEntry-bottom{
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+.ProductionEntry-tabs .nav-tabs {
+  border-bottom: 2px solid #dee2e6;
+}
+
+.ProductionEntry-tabs .nav-tabs .nav-link {
+  font-weight: bold;
+  color: #495057;
+  padding: 10px 15px;
+  border: 1px solid transparent;
+  border-radius: 5px 5px 0 0;
+}
+
+.ProductionEntry-tabs .nav-tabs .nav-link.active {
+  color: #ffffff;
+  background-color: #007bff;
+  border-color: #007bff;
+  padding: 5px;
+  border-radius: 5px;
+  border: none;
+}
+
+.ProductionEntry .tab-content {
+  background-color: #f8f9fa;
+  padding: 15px;
+  border: none;
+  
+  border-radius: 0 0 10px 10px;
+
+}
+
+.ProductionEntry-main label {
+  font-weight: bold;
+  margin-bottom: 5px;
+  display: block;
+}
+
+.ProductionEntry-main  input, select {
+  width: 100%;
+  border-radius: 5px;
+}
+
+
+
+.ProductionEntry-main input.form-control,
+.ProductionEntry-main select.form-control {
+  padding: 8px;
+
+}
+
+
+
+/* Table Styling */
+.ProductionEntry-main .table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.ProductionEntry-main   .table th,
+.ProductionEntry-main .table td {
+  text-align: left;
+  padding: 8px;
+  
+}
+
+.ProductionEntry-main .table th {
+
+  font-weight: bold;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .tab-content .row {
+    flex-direction: column;
+  }
+
+  .row .col-md-4 {
+    width: 100%;
+    margin-bottom: 15px;
+  }
+
+  .btn {
+    width: auto;
+    margin: 0 5px;
+  }
+
+  .ProductionEntry-tabs .nav-tabs .nav-link {
+    font-size: 12px;
+    padding: 8px;
+  }
+}
+
+@media (max-width: 576px) {
+  .ProductionEntry-main {
+    padding: 10px;
+  }
+
+  .table th, .table td {
+    font-size: 12px;
+    padding: 5px;
+  }
+}

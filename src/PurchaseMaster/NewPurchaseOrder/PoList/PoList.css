@@ -1,0 +1,144 @@
+.POListMaster {
+    margin-top: 20px;
+  }
+  
+  /* Header Styling */
+  .POList-header {
+    background-color: #f8f9fa; /* Light background for header */
+    border-bottom: 1px solid #dee2e6; /* Border for header */
+    padding: 10px 15px; /* Padding around header */
+    border-radius: 5px;
+  }
+  
+  .POList-header .header-title {
+    font-size: 20px;
+    font-weight: bold;
+    margin: 0;
+  }
+  
+  /* Form and Inputs */
+  .POList-Main label {
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 5px;
+    margin-top: 5px;
+  }
+  
+  .POList-Main .form-control {
+    height: 35px;
+    padding: 5px 10px;
+    border-radius: 4px;
+  }
+  
+  .POList-Main select {
+    width: 100%;
+    padding: 5px;
+    border-radius: 4px;
+  }
+  
+  .POList-Main button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 5px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .POList-Main button:hover {
+    background-color: #0056b3;
+  }
+  
+  /* Table Styling */
+  .POListMaster .table-responsive {
+    overflow-x: auto;
+    margin-top: 20px;
+  }
+  
+  .POListMaster .table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .POListMaster .table th, .table td {
+    text-align: center;
+    vertical-align: middle;
+    padding: 8px;
+  }
+  
+  
+  /* Button for Edit and Delete */
+  .POListMaster .table .btn-link {
+    font-size: 18px;
+    color: #007bff;
+    padding: 0;
+    border: none;
+    background: none;
+    cursor: pointer;
+  }
+  
+  .POListMaster .table .btn-link:hover {
+    color: #0056b3;
+  }
+  
+  .POListMaster .table .btn-link.text-danger:hover {
+    color: #d9534f;
+  }
+  
+  /* Responsive Styling */
+  @media (max-width: 991px) {
+    .POList-Main .col-md-1,
+    .POList-Main .col-md-2 {
+        flex: 0 0 100%;
+        max-width: 100%;
+        margin-bottom: 10px;
+    }
+  
+    .POList-header .header-title {
+        text-align: center;
+        font-size: 18px;
+    }
+  
+    .POListMaster   .table th, .table td {
+        font-size: 14px;
+    }
+  }
+  
+  @media (max-width: 576px) {
+    .POList-header .header-title {
+        font-size: 16px;
+    }
+  
+    .POListMaster   .table th, .table td {
+        font-size: 12px;
+    }
+  
+    .POListMaster  .table-responsive {
+        overflow-x: scroll;
+    }
+  }
+  
+  .POListMaster .pagination {
+    display: flex;
+    justify-content: end;
+    margin-top: 10px;
+  }
+  
+  .POListMaster .pagination button {
+    margin: 0 5px;
+    padding: 5px 10px;
+    border: 1px solid #ccc;
+    cursor: pointer;
+  }
+  
+  .POListMaster .pagination button.active {
+    background-color: #007bff;
+    color: white;
+    border: none;
+  }
+  
+  .POListMaster .pagination button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
