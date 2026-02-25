@@ -7,14 +7,11 @@ import { FaEye } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 
-
-
-
-
 // import { FaPlus } from "react-icons/fa";
 import Cached from "@mui/icons-material/Cached.js";
 import { FaXTwitter } from "react-icons/fa6";
 import "./InprocessInspection.css";
+import axios from "axios";
 
 const InprocessInspection = () => {
   const navigate = useNavigate();
@@ -38,6 +35,24 @@ const InprocessInspection = () => {
       document.body.classList.remove("side-nav-open");
     }
   }, [sideNavOpen]);
+
+  const [data, setData] = useState([]);
+
+  useEffect(() => {
+    const fetchProductionEntries = async () => {
+      try {
+        const response = await axios.get("https://erp-render.onrender.com/Production/api/production-entries/");
+        if (response.data && response.data.value) {
+          setData(response.data.value);
+        } else if (Array.isArray(response.data)) {
+          setData(response.data);
+        }
+      } catch (error) {
+        console.error("Error fetching production-entries:", error);
+      }
+    };
+    fetchProductionEntries();
+  }, []);
 
   return (
     <div className="InprocessInspectionMaster">
@@ -157,40 +172,48 @@ const InprocessInspection = () => {
                           </tr>
                         </thead>
                         <tbody>
-                          {/* Example data row */}
-                          <tr>
-                            <td>1</td>
-                            <td>{selectedRow?.prodNo || "-"}</td>
-                            <td>{selectedRow?.date || "-"}</td>
-                            <td>{selectedRow?.dateTime || "-"}</td>
-                            <td>
-                              <span className="ourf4"> {selectedRow?.type || "-"} </span>
-                            </td>
-                            <td>{selectedRow?.itemNo || "-"}</td>
-                            <td>{selectedRow?.date || "-"}</td>
-                            <td>{selectedRow?.operationCode || "-"}</td>
-                            <td>{selectedRow?.operationName || "-"}</td>
-                            <td>{selectedRow?.operation || "-"}</td>
-                            <td>Total Item : (2) 📝</td>
-
-                            <td> </td>
-                            <td> </td>
-                            <td> </td>
-                            <td> </td>
-                            <td> </td>
-                            <td> </td>
-                            <td> </td>
-                            <td> <span
-                              style={{ color: "#2f75b5", cursor: "pointer", fontWeight: "600" }}
-                              onClick={handleSelect}
-                            >
-                              Select
-                            </span></td>
-                            <td>
-                              {" "}
-                              <FaEye />
-                            </td>
-                          </tr>
+                          {data && data.length > 0 ? (
+                            data.map((item, index) => {
+                              const formattedDate = item.Date
+                                ? new Date(item.Date).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "2-digit" })
+                                : "-";
+                              return (
+                                <tr key={item.id || index}>
+                                  <td>{index + 1}</td>
+                                  <td>{item.Series || "-"}</td>
+                                  <td>{item.Prod_no || "-"}</td>
+                                  <td>{formattedDate}</td>
+                                  <td>{item.item || "-"}</td>
+                                  <td>{item.ItemCode || "-"}</td>
+                                  <td>{item.ItemDescription || "-"}</td>
+                                  <td>-</td>
+                                  <td>{item.operation || "-"}</td>
+                                  <td>{item.operation || "-"}</td>
+                                  <td>{item.shift || "-"}</td>
+                                  <td>{item.unit_machine || "-"}</td>
+                                  <td>{item.lot_no || "-"}</td>
+                                  <td>{item.prod_qty || "0"}</td>
+                                  <td>-</td>
+                                  <td>{item.rework_qty || "0"}</td>
+                                  <td>{item.reject_qty || "0"}</td>
+                                  <td>📝</td>
+                                  <td>
+                                    <span
+                                      style={{ color: "#2f75b5", cursor: "pointer", fontWeight: "600" }}
+                                      onClick={handleSelect}
+                                    >
+                                      Select
+                                    </span>
+                                  </td>
+                                  <td>{" "}<FaEye /></td>
+                                </tr>
+                              );
+                            })
+                          ) : (
+                            <tr>
+                              <td colSpan="20" className="text-center">No records found</td>
+                            </tr>
+                          )}
                         </tbody>
                       </table>
                     </div>
