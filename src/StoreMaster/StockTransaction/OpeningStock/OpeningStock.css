@@ -1,0 +1,120 @@
+/* General Styles */
+.NewStoreOpeningStock {
+    /* background-color: white; */
+    height: auto;
+    font-family: Arial, sans-serif;
+  }
+  
+  .OpeningStock-header {
+    margin-top: 20px;
+     background-color: #f8f9fa;
+    padding: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+ 
+  .OpeningStock-main{
+     background-color: #f8f9fa;
+    padding: 10px;
+    margin-top: 80px;
+    height: auto;
+  }
+  .card {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.card-header {
+    text-align: center;
+    font-weight: bold;
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+.card-body {
+    padding: 15px;
+}
+
+.Openingbtn {
+    display: block;
+    width: 100%;
+    margin-bottom: 5px;
+    padding: 5px;
+    font-size: 0.875rem;
+    text-decoration: none;
+    border: none;
+    transition: background-color 0.3s ease;
+   
+}
+
+.Openingbtn:hover {
+    color: #3e21a6;
+}
+.Openingbtn1 {
+    display: block;
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 10px;
+    font-size: 0.875rem;
+    border-radius: 10px;
+    text-decoration: none;
+    border: none;
+    transition: background-color 0.3s ease;
+    color: #fff;
+    background-color: #582ae4a9;
+}
+
+.Openingbtn1:hover {
+    background-color: #3e21a6;
+}
+
+button.btn-primary {
+    width: 90%;
+    padding: 5px;
+    font-size: 0.875rem;
+}
+
+/* Form Labels and Select */
+.form-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.form-select {
+    width: 100%;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+    .card {
+        margin-bottom: 20px;
+    }
+
+    .Openingbtn {
+        font-size: 0.75rem;
+    }
+
+    .form-label, .form-select {
+        font-size: 0.75rem;
+    }
+
+    button.btn-primary {
+        font-size: 0.75rem;
+        padding: 8px;
+    }
+}
+
+@media (max-width: 576px) {
+    .Openingbtn {
+        padding: 8px;
+        font-size: 0.675rem;
+    }
+
+    button.btn-primary {
+        padding: 6px;
+        font-size: 0.675rem;
+    }
+}

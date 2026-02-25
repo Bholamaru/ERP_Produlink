@@ -1,0 +1,31 @@
+/* Npd */
+.Npd123 {
+  text-align: start;
+  height: auto;
+  background-color: white;
+  padding: 20px 20px;
+}
+
+@media (max-width: 1200px) {
+  .Npd {
+    margin-top: -300px;
+  }
+}
+
+@media (max-width: 992px) {
+  .Npd {
+    margin-top: -800px;
+  }
+}
+
+@media (max-width: 768px) {
+  .Npd {
+    margin-top: -600px;
+  }
+}
+
+@media (max-width: 576px) {
+  .Npd {
+    margin-top: -650px;
+  }
+}

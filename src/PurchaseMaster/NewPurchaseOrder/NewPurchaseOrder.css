@@ -1,0 +1,88 @@
+.NewPurchaseMaster
+ {
+  margin-top: 20px;
+}
+
+/* Header Styling */
+.NewPurchse-header {
+  background-color: #f8f9fa; /* Light background for header */
+  border-bottom: 1px solid #dee2e6; /* Border for header */
+  padding: 10px 15px; /* Padding around header */
+  border-radius: 5px;
+}
+
+.NewPurchse-header .header-title {
+  font-size: 20px;
+  font-weight: bold;
+  margin: 0;
+}
+
+/* .newpirchase-main {
+  background-color: #f8f9fa;
+  padding: 10px;
+  margin-top:20px;
+  height: auto;
+} */
+/* Main container styling */ .NewPurchaseMaster
+.newpirchase-main {
+  padding: 10px;
+}
+
+/* Remove borders from the nav-pills */ .NewPurchaseMaster
+.nav-pills .NewPurchaseMaster .nav-link {
+  border: none;
+  border-radius: 0;
+  font-size: 16px;
+  padding: 10px 20px;
+}
+
+/* Active tab styling */ .NewPurchaseMaster
+.nav-pills .NewPurchaseMaster .nav-link.active {
+  background-color: #007bff;
+  color: white;
+}
+
+/* Responsive tab styling */
+@media (max-width: 576px) {
+  .NewPurchaseMaster .nav-pills .NewPurchaseMaster .nav-link {
+    font-size: 14px;
+    padding: 8px 16px;
+  }
+
+  .NewPurchaseMaster .nav-pills {
+    display: block;
+    text-align: center;
+  }
+
+  .tab-content {
+    margin-top: 20px;
+  }
+}
+
+@media (min-width: 576px) and (max-width: 768px) {
+  .NewPurchaseMaster .nav-pills .NewPurchaseMaster .nav-link {
+    font-size: 15px;
+    padding: 10px 18px;
+  }
+}
+
+@media (min-width: 768px) {
+  .NewPurchaseMaster .nav-pills .NewPurchaseMaster .nav-link {
+    font-size: 16px;
+    padding: 10px 20px;
+  }
+}
+
+.NewPurchaseMaster .tab-content {
+  padding: 10px;
+  border: none;
+  
+}
+
+.NewPurchaseMaster .tab-pane {
+  display: none;
+}
+
+.NewPurchaseMaster .tab-pane.show {
+  display: block;
+}

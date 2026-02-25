@@ -1,0 +1,132 @@
+
+  
+  /* Header Styling */
+  .PaddingQCInward-header {
+    background-color: #f8f9fa; /* Light background for header */
+    border-bottom: 1px solid #dee2e6; /* Border for header */
+    padding: 10px 15px; /* Padding around header */
+    border-radius: 5px;
+  }
+  
+  .PaddingQCInward-header .header-title {
+    font-size: 20px;
+    font-weight: bold;
+    margin: 0;
+  }
+  .PaddingQCInward-Main{
+    background-color: #f8f9fa; /* Light background for header */
+    border-bottom: 1px solid #dee2e6; /* Border for header */
+    padding: 10px 15px; /* Padding around header */
+    border-radius: 5px;
+  }
+  /* Form and Inputs */
+  .PaddingQCInward-Main label {
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 5px;
+    margin-top: 5px;
+  }
+  
+  .PaddingQCInward-Main .form-control {
+    height: 35px;
+    padding: 5px 10px;
+    border-radius: 4px;
+  }
+  
+  .PaddingQCInward-Main select {
+    width: 100%;
+    padding: 5px;
+    border-radius: 4px;
+  }
+  
+  .PaddingQCInward-Main button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 5px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .PaddingQCInward-Main button:hover {
+    background-color: #0056b3;
+  }
+  
+  /* Table Styling */
+  .PaddingQCInwardMaster .table-responsive {
+    overflow-x: auto;
+    margin-top: 20px;
+  }
+  
+  .PaddingQCInwardMaster .table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .PaddingQCInwardMaster .table th, .table td {
+    text-align: center;
+    vertical-align: middle;
+    padding: 8px;
+  }
+  
+  
+  /* Button for Edit and Delete */
+  .PaddingQCInwardMaster .table .btn-link {
+    font-size: 18px;
+    color: #007bff;
+    padding: 0;
+    border: none;
+    background: none;
+    cursor: pointer;
+  }
+  
+  .PaddingQCInwardMaster .table .btn-link:hover {
+    color: #0056b3;
+  }
+  
+  .PaddingQCInwardMaster .table .btn-link.text-danger:hover {
+    color: #d9534f;
+  }
+
+  .purch{
+    color: orange;
+  }
+  .ourf4{
+    border: #007bff;
+    color: white;
+    background-color: #007bff;
+    padding: 5px;
+  } 
+ 
+  /* Responsive Styling */
+  @media (max-width: 991px) {
+    .PaddingQCInward-Main .col-md-1,
+    .PaddingQCInward-Main .col-md-2 {
+        flex: 0 0 100%;
+        max-width: 100%;
+        margin-bottom: 10px;
+    }
+  
+    .PaddingQCInward-header .header-title {
+        text-align: center;
+        font-size: 18px;
+    }
+  
+    .PaddingQCInwardMaster   .table th, .table td {
+        font-size: 14px;
+    }
+  }
+  
+  @media (max-width: 576px) {
+    .PaddingQCInward-header .header-title {
+        font-size: 16px;
+    }
+  
+    .PaddingQCInwardMaster   .table th, .table td {
+        font-size: 12px;
+    }
+  
+    .PaddingQCInwardMaster  .table-responsive {
+        overflow-x: scroll;
+    }
+  }

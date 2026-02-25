@@ -1,0 +1,25 @@
+/* technical */
+.technical {
+  text-align: start;
+  height: auto;
+  background-color: white;
+  padding: 20px 20px;
+}
+.tech-btn {
+  border: none;
+  background-color: #370707;
+  color: black;
+  padding: 5px;
+}
+.btn-tech {
+  border: none;
+  background-color: #ddd;
+  padding: 8px;
+}
+.btn-para {
+  padding: 8px;
+  border: none;
+  text-align: center;
+  margin-top: 10px;
+  background-color: #ddd;
+}

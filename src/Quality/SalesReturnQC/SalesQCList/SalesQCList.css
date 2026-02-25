@@ -1,0 +1,121 @@
+
+  /* Header Styling */
+  .SalesQCList-header {
+    background-color: #f8f9fa; /* Light background for header */
+    border-bottom: 1px solid #dee2e6; /* Border for header */
+    padding: 10px 15px; /* Padding around header */
+    border-radius: 5px;
+  }
+  
+  .SalesQCList-header .header-title {
+    font-size: 20px;
+    font-weight: bold;
+    margin: 0;
+  }
+  .SalesQCList-filter{
+    background-color: #f8f9fa; /* Light background for header */
+    border-bottom: 1px solid #dee2e6; /* Border for header */
+    padding: 10px 15px; /* Padding around header */
+    border-radius: 5px;
+  }
+  /* Form and Inputs */
+  .SalesQCList-Main label {
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 5px;
+    margin-top: 5px;
+  }
+  
+  .SalesQCList-Main .form-control {
+    height: 35px;
+    padding: 5px 10px;
+    border-radius: 4px;
+  }
+  
+  .SalesQCList-Main select {
+    width: 100%;
+    padding: 5px;
+    border-radius: 4px;
+  }
+  
+  .SalesQCList-Main button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 5px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .SalesQCList-Main button:hover {
+    background-color: #0056b3;
+  }
+  
+  /* Table Styling */
+  .SalesQCListMaster .table-responsive {
+    overflow-x: auto;
+    margin-top: 20px;
+  }
+  
+  .SalesQCListMaster .table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .SalesQCListMaster .table th, .table td {
+    text-align: center;
+    vertical-align: middle;
+    padding: 8px;
+  }
+  
+  
+  /* Button for Edit and Delete */
+  .SalesQCListMaster .table .btn-link {
+    font-size: 18px;
+    color: #007bff;
+    padding: 0;
+    border: none;
+    background: none;
+    cursor: pointer;
+  }
+  
+  .SalesQCListMaster .table .btn-link:hover {
+    color: #0056b3;
+  }
+  
+  .SalesQCListMaster .table .btn-link.text-danger:hover {
+    color: #d9534f;
+  }
+  
+  /* Responsive Styling */
+  @media (max-width: 991px) {
+    .SalesQCList-Main .col-md-1,
+    .SalesQCList-Main .col-md-2 {
+        flex: 0 0 100%;
+        max-width: 100%;
+        margin-bottom: 10px;
+    }
+  
+    .SalesQCList-header .header-title {
+        text-align: center;
+        font-size: 18px;
+    }
+  
+    .SalesQCListMaster   .table th, .table td {
+        font-size: 14px;
+    }
+  }
+  
+  @media (max-width: 576px) {
+    .SalesQCList-header .header-title {
+        font-size: 16px;
+    }
+  
+    .SalesQCListMaster   .table th, .table td {
+        font-size: 12px;
+    }
+  
+    .SalesQCListMaster  .table-responsive {
+        overflow-x: scroll;
+    }
+  }

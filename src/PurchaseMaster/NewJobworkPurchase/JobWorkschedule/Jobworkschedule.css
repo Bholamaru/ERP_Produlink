@@ -1,0 +1,45 @@
+.jobworkscheduleline {
+    padding: 15px 15px;
+    background-color: white;
+    margin: 10px 10px;
+  }
+  
+  .jobworkscheduleline .table {
+    width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+  }
+  
+  .jobworkscheduleline .table th, .table td {
+    padding: 10px;
+    text-align: center;
+    vertical-align: middle;
+    border: 1px solid #dee2e6;
+    white-space: nowrap; /* Prevent text wrapping */
+  }
+  
+  .jobworkscheduleline .table .form-control {
+    width: 100%;
+  }
+  
+  .jobworkscheduleline .table-responsive {
+    overflow-x: auto;
+  }
+  
+  .jobworkscheduleline .text-right {
+    text-align: right;
+  }
+  
+  @media (max-width: 768px) {
+    .jobworkscheduleline .table th, .table td {
+      padding: 4px;
+    }
+  }
+  
+  @media (max-width: 576px) {
+    .jobworkscheduleline .table th, .table td {
+      font-size: 12px;
+      padding: 2px;
+    }
+  }
+  

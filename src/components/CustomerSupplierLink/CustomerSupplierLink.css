@@ -1,0 +1,114 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+
+.Supplier {
+  width: 100%;
+  
+  height: 120vh;
+}
+
+.Sipplier1-header {
+  background-color: #f8f9fa; /* Light background for header */
+  border-bottom: 1px solid #dee2e6; /* Border for header */
+  padding: 10px 15px; /* Padding around header */
+  border-radius: 5px;
+}
+
+.Sipplier1-header .header-title {
+  font-size: 20px;
+  font-weight: bold;
+  margin: 0;
+}
+
+
+.supplier-wise {
+  margin-top: 40px;
+  background-color: #f8f9fa;
+  padding: 20px;
+}
+
+.sear-btn {
+  border: none;
+  background-color: rgba(235, 233, 233, 0.685);
+  padding: 7px;
+  border-radius: 10px;
+}
+
+.wise1-btn {
+  border: none;
+  padding: 7px;
+  border-radius: 10px;
+}
+
+.wise-table .table-container {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.wise-table {
+  width: 100%;
+  border-collapse: collapse;
+  overflow-x: auto;
+}
+
+.wise-table th,
+.wise-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+
+.wise-table th {
+  background-color: rgba(0, 0, 255, 0.527);
+}
+
+.wise-table td {
+  white-space: nowrap;
+}
+
+@media (max-width: 600px) {
+  .wise-table thead {
+    display: none;
+  }
+
+  .wise-table,
+  .wise-table tbody,
+  .wise-table tr,
+  .wise-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .wise-table tr {
+    margin-bottom: 15px;
+  }
+
+  .wise-table td {
+    text-align: right;
+    padding-left: 50%;
+    position: relative;
+  }
+
+  .wise-table td::before {
+    content: attr(data-label);
+    position: absolute;
+    left: 0;
+    width: 50%;
+    padding-left: 15px;
+    font-weight: bold;
+    text-align: left;
+  }
+}
+
+
+.customerStateicon1 {
+  border: none;
+}
+.wise-bottom {
+  color: blue;
+  padding: 10px;
+}

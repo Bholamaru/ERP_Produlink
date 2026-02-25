@@ -1,0 +1,619 @@
+* {
+  box-sizing: border-box;
+  margin: 0px;
+  padding: 0px;
+}
+
+.Itemmastergernalpage .btn {
+  background-color: rgba(235, 233, 233, 0.685);
+  border: none;
+  margin: 5px;
+}
+.Itemmastergernalpage .btn:hover {
+  background-color: rgba(202, 201, 201, 0.685);
+  color: black;
+  border: none;
+}
+ .top-but3-header {
+  background-color: #f8f9fa; /* Light background for header */
+  border-bottom: 1px solid #dee2e6; /* Border for header */
+  padding: 10px 15px; /* Padding around header */
+  border-radius: 5px;
+}
+
+.top-but3-header .header-title {
+  font-size: 20px;
+  font-weight: bold;
+  margin: 0;
+}
+.itemmastergernal {
+  background-color: #f8f9fa; /* Light background for header */
+  border-bottom: 1px solid #dee2e6; /* Border for header */
+  padding: 10px 15px; /* Padding around header */
+  border-radius: 5px;
+  
+}
+.top-but3 label {
+  margin-right: 10px;
+}
+
+.top-but3 input {
+  margin-right: 10px;
+}
+
+.btn-uper {
+  margin-right: 10px;
+  background-color: rgba(235, 233, 233, 0.685);
+  padding: 5px 10px;
+  border: none;
+  border-radius: 10px;
+}
+
+#pills-tab {
+  text-align: start;
+  margin-top: 20px;
+  border: none;
+}
+
+/* custom.css */
+.nav-pills .nav-link {
+  border: none;
+  color: grey; /* Default text color for buttons */
+  /* background-color: white; Default background color for buttons */
+}
+.nav-pills .nav-link:hover {
+  color: gray;
+}
+.nav-pills .nav-link.active {
+  border: none;
+  background-color: blueviolet !important; /* Active button background color */
+  color: white !important; /* Active button text color */
+}
+.nav-item {
+  border: none;
+  margin: 5px;
+}
+/* new button click card */
+.nav-item button {
+  border: none;
+  background-color: white;
+  color: grey;
+  padding: 12px;
+  margin: 10px;
+  background-color: blueviolet;
+  color: grey;
+}
+.new-card-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1050;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.new-card {
+  width: 50%;
+  max-height: 80%; /* Restricts the height to enable vertical scrolling */
+  overflow-y: auto; /* Enables vertical scrolling */
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 20px; /* Correct property name */
+}
+
+.card-title {
+  color: blue;
+}
+
+.card-body {
+  color: black;
+}
+
+.card-btn {
+  background-color: blueviolet;
+  color: white;
+  border: none;
+  padding: 8px;
+  border-radius: 10px;
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.card-btn1 {
+  background-color: green;
+  color: white;
+  border: none;
+  padding: 8px;
+  border-radius: 10px;
+  width: 60%;
+  margin-right: 5px;
+}
+
+.card-btn2 {
+  background-color: red;
+  color: white;
+  border: none;
+  padding: 8px;
+  border-radius: 10px;
+}
+
+.btn-primary,
+.btn-danger {
+  cursor: pointer;
+}
+
+/* Responsive styles for the table */
+.table {
+  width: 100%;
+  margin-bottom: 1rem;
+  color: #212529;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  padding: 0.75rem;
+  vertical-align: top;
+  border-top: 1px solid #dee2e6;
+}
+
+.table-responsive {
+  display: block;
+  width: 100%;
+  overflow-x: auto; /* Enables horizontal scrolling for smaller screens */
+  -webkit-overflow-scrolling: touch;
+}
+
+.TdcCard .new-card-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1050;
+  background-color: rgba(0, 0, 0, 0.5),
+}
+.TdcCard .new-card {
+  width: 50%;
+  max-height: 80%; /* Restricts the height to enable vertical scrolling */
+  overflow-y: auto; /* Enables vertical scrolling */
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 20px; /* Correct property name */
+}
+
+.TdcCard .card-title {
+  color: blue; /* Adjusted title color */
+}
+
+.TdcCard .card-body {
+  color: black;
+}
+
+.TdcCard .card-btn {
+  background-color: blueviolet;
+  color: white;
+  border: none;
+  padding: 8px;
+  border-radius: 10px;
+  width: 100%;
+  margin-bottom: 10px; /* Add margin below buttons */
+}
+
+.TdcCard .card-btn1 {
+  background-color: green;
+  color: white;
+  border: none;
+  padding: 8px;
+  border-radius: 10px;
+  width: 60%;
+  margin-right: 5px; /* Add margin between buttons */
+}
+
+.TdcCard .card-btn2 {
+  background-color: red;
+  color: white;
+  border: none;
+  padding: 8px;
+  border-radius: 10px;
+}
+
+.TdcCard .btn-primary,
+.TdcCard .btn-danger {
+  cursor: pointer;
+}
+
+/* Responsive styles for the table */
+.TdcCard .table {
+  width: 100%;
+}
+
+/* Small devices (landscape phones, 576px and up) */
+@media (min-width: 576px) {
+  .TdcCard .table {
+    overflow-x: auto;
+  }
+  .new-card {
+    width: 90%; /* Adjusted width for smaller screens */
+  }
+  .itemmastergernal {
+    height: auto;
+  }
+  .card-btn,
+  .card-btn1,
+  .card-btn2 {
+    width: 100%; /* Full width buttons on smaller screens */
+  }
+}
+
+/* Overlay for item group */
+.itemgroup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1050;
+  background-color: rgba(0, 0, 0, 0.5),
+}
+
+/* Card for item group */
+.itemgroup-card {
+  width: 50%;
+  max-height: 80%; /* Restricts the height to enable vertical scrolling */
+  overflow-y: auto; /* Enables vertical scrolling */
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 20px; /* Correct property name */
+}
+
+.itemgroup p {
+  text-align: start;
+  color: blue;
+}
+
+.itemgroup button {
+  justify-content: start;
+  margin: 5px;
+  padding: 8px 12px;
+  background-color: blueviolet;
+  color: white;
+  border-radius: 5px;
+  border: none;
+  cursor: pointer;
+}
+
+.itemgroup button:hover {
+  opacity: 0.9;
+}
+
+.itemgroup button:focus {
+  outline: none;
+}
+
+.itemgroup .btn-primary {
+  background-color: blueviolet;
+  color: white;
+}
+
+.itemgroup .btn-success {
+  background-color: green;
+  color: white;
+}
+
+.itemgroup .btn-danger {
+  background-color: red;
+  color: white;
+}
+
+.itemgroup .btn-cl {
+  background-color: lightgray;
+  color: black;
+}
+
+.itemgroup select,
+.itemgroup input[type="text"] {
+  width: 100%;
+  padding: 8px;
+  margin: 10px 0;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+/* Responsive table */
+.itemgroup table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.itemgroup table th,
+.itemgroup table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+
+.itemgroup table th {
+  background-color: #f2f2f2;
+  color: black;
+}
+
+.itemgroup table td button {
+  padding: 5px 10px;
+  border-radius: 5px;
+  border: none;
+  cursor: pointer;
+}
+
+.itemgroup table td button:hover {
+  opacity: 0.8;
+}
+
+.Store-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1050;
+  background-color: rgba(0, 0, 0, 0.5),
+}
+
+.Store-card {
+  width: 50%;
+  max-height: 80%; /* Restricts the height to enable vertical scrolling */
+  overflow-y: auto; /* Enables vertical scrolling */
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 20px; /* Correct property name */
+}
+
+.Store-card .card-title {
+  color: blue;
+}
+
+.Store-card .card-body {
+  color: black;
+}
+
+.Store-card .card-btn {
+  background-color: blueviolet;
+  color: white;
+  border: none;
+  padding: 8px;
+  border-radius: 10px;
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.Store-card .card-btn1 {
+  background-color: green;
+  color: white;
+  border: none;
+  padding: 8px;
+  border-radius: 10px;
+  width: 60%;
+  margin-right: 5px;
+}
+
+.Store-card .card-btn2 {
+  background-color: red;
+  color: white;
+  border: none;
+  padding: 8px;
+  border-radius: 10px;
+}
+.Store-card .btn-cl {
+  background-color: transparent;
+  color: gray;
+  border: none;
+  padding: 10px;
+  margin: 5px;
+  cursor: pointer;
+}
+
+.Store-card .btn-primary,
+.Store-card .btn-danger {
+  cursor: pointer;
+}
+
+/* Responsive styles for the table */
+.Store-card .table {
+  width: 100%;
+}
+
+.RouteCard .new-card-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1050;
+  background-color: rgba(0, 0, 0, 0.5),
+}
+.RouteCard .new-card {
+  width: 50%;
+  max-height: 80%; /* Restricts the height to enable vertical scrolling */
+  overflow-y: auto; /* Enables vertical scrolling */
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 20px; /* Correct property name */
+}
+
+.RouteCard .card-title {
+  color: blue; /* Adjusted title color */
+}
+
+.RouteCard .card-body {
+  color: black;
+}
+
+.RouteCard .card-btn {
+  background-color: blueviolet;
+  color: white;
+  border: none;
+  padding: 8px;
+  border-radius: 10px;
+  width: 100%;
+  margin-bottom: 10px; /* Add margin below buttons */
+}
+
+.RouteCard .card-btn1 {
+  background-color: green;
+  color: white;
+  border: none;
+  padding: 8px;
+  border-radius: 10px;
+  width: 60%;
+  margin-right: 5px; /* Add margin between buttons */
+}
+
+.RouteCard .card-btn2 {
+  background-color: red;
+  color: white;
+  border: none;
+  padding: 8px;
+  border-radius: 10px;
+}
+
+.RouteCard .btn-primary,
+.RouteCard .btn-danger {
+  cursor: pointer;
+}
+
+/* Responsive styles for the table */
+.RouteCard .table {
+  width: 100%;
+}
+
+/* Small devices (landscape phones, 576px and up) */
+@media (min-width: 576px) {
+  .RouteCard .table {
+    overflow-x: auto;
+  }
+  .new-card {
+    width: 90%; /* Adjusted width for smaller screens */
+  }
+
+  .card-btn,
+  .card-btn1,
+  .card-btn2 {
+    width: 100%; /* Full width buttons on smaller screens */
+  }
+  .axcv {
+    height: auto;
+  }
+}
+
+/* Media Queries */
+@media (max-width: 768px) {
+  .main-content.shifted {
+    margin-left: 200px;
+  }
+  .top-but3 {
+    margin-left: 0;
+    text-align: center;
+  }
+  .Itemmastergernalpage {
+    height: auto;
+  }
+  .itemmastergernal {
+    height: auto;
+  }
+  .axcv {
+    height: auto;
+  }
+}
+
+@media (max-width: 576px) {
+  .main-content.shifted {
+    margin-left: 60px;
+  }
+  .Itemmastergernalpage {
+    height: auto;
+  }
+  .top-but3 {
+    flex-direction: column;
+    align-items: center;
+  }
+  .form {
+    height: auto;
+    padding: 10px;
+  }
+}
+@media (max-width: 360px) {
+  .main-content.shifted {
+    margin-left: 60px;
+  }
+  .top-but3 {
+    flex-direction: column;
+    align-items: start;
+  }
+  .form {
+    height: auto;
+    padding: 10px;
+  }
+  .itemmastergernal {
+    height: auto;
+  }
+  .axcv {
+    height: auto;
+  }
+}
+/* .btn {
+  background-color: rgba(235, 233, 233, 0.685);
+  margin-left: -20px;
+}
+.btn:hover{
+  background-color: black;
+  color: white;
+} */
+
+/* gernal */
+.gerneral {
+  background-color: white;
+  height: auto;
+  padding: 20px 20px;
+}
+.gerneral1 {
+  background-color: white;
+  height: auto;
+  padding: 20px 20px;
+}
+.data-2 {
+  background-color: white;
+  height: auto;
+  padding: 20px 20px;
+}
+.axcv {
+  /* background-color: white; */
+  height: auto;
+  padding: 20px 20px;
+  margin-bottom: 10px;
+}
+.bjkd {
+  border: none;
+  padding: 10px;
+}

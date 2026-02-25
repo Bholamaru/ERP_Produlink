@@ -1,0 +1,123 @@
+* {
+  box-sizing: border-box;
+  margin: 0px;
+  padding: 0px;
+}
+
+.GstMaster {
+  width: 100%;
+  
+}
+
+.GstMasterupper-header {
+  background-color: #f8f9fa; /* Light background for header */
+  border-bottom: 1px solid #dee2e6; /* Border for header */
+  padding: 10px 15px; /* Padding around header */
+  border-radius: 5px;
+}
+
+.GstMasterupper-header .header-title {
+  font-size: 20px;
+  font-weight: bold;
+  margin: 0;
+}
+
+
+.GstMasterMain {
+  background-color: #f8f9fa; /* Light background for header */
+  border-bottom: 1px solid #dee2e6; /* Border for header */
+  padding: 10px 15px; /* Padding around header */
+  border-radius: 5px;
+}
+
+.GstMasterMain .table {
+  width: 100%;
+  margin-top: 20px;
+  overflow-x: auto;
+}
+
+.GstMasterMain th,
+.GstMasterMain td {
+  text-align: center;
+  vertical-align: middle;
+}
+
+.GstMasterMain input,
+.GstMasterMain textarea,
+.GstMasterMain select {
+  width: 100%;
+}
+
+.GstMasterMain .btn-gst {
+  margin: 5px;
+  border: none;
+  border-radius: 5px;
+  padding: 7px;
+  background-color: rgba(235, 233, 233, 0.685);
+  cursor: pointer;
+}
+
+/* table */
+.GstMastertable .table-responsive {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.GstMastertable .table th {
+  background-color: rgba(0, 0, 255, 0.466);
+  text-align: center;
+  vertical-align: middle;
+}
+
+.GstMastertable .table td {
+  text-align: center;
+  vertical-align: middle;
+}
+
+.GstMastertable th,
+td {
+  white-space: nowrap;
+}
+
+.GstMastertable .sgstbtn {
+  margin: 5px;
+  border: none;
+  border-radius: 5px;
+  padding: 5px;
+  background-color: rgba(235, 233, 233, 0.685);
+  cursor: pointer;
+}
+
+.GstMastertable .btn {
+  width: 100%;
+}
+
+.GstMastertable .input-group {
+  display: flex;
+  align-items: center;
+}
+
+.GstMastertable .input-group .form-control {
+  margin-right: 10px;
+}
+
+.GstMastertable .input-group .form-control:last-child {
+  margin-right: 0;
+}
+
+@media (max-width: 768px) {
+  .gstbtn {
+    padding: 5px;
+    font-size: 14px;
+  }
+
+  .btn-gst {
+    padding: 5px;
+    font-size: 14px;
+  }
+
+  .sgstbtn {
+    padding: 5px;
+    font-size: 14px;
+  }
+}

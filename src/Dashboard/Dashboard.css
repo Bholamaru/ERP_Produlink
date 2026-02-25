@@ -1,0 +1,59 @@
+* {
+  box-sizing: border-box;
+  margin: 0px;
+  padding: 0px;
+}
+.App {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+main {
+  flex: 1;
+  padding: 20px;
+  margin-top: 60px;
+  transition: margin-left 0.3s;
+}
+.main-content.shifted {
+  margin-left: 260px;
+}
+
+body.no-scroll {
+  overflow: hidden;
+}
+.dashboard {
+  display: flex;
+  flex-direction: column;
+  background-color: rgb(241, 242, 244);
+  height: 100vh;
+}
+
+.mainContainer {
+  display: flex;
+  transition: margin-left 0.3s ease;
+}
+
+.shifted {
+  margin-left: 250px; /* Adjust based on the width of your side nav */
+}
+
+.mainContent {
+  flex-grow: 1;
+  padding: 20px;
+  overflow: hidden; /* Hide scrollbars */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Bottom box shadow */
+}
+
+.mainContent::-webkit-scrollbar {
+  display: none; /* Hide scrollbars in WebKit browsers */
+}
+
+.mainContent {
+  -ms-overflow-style: none; /* Hide scrollbars in IE and Edge */
+  scrollbar-width: none; /* Hide scrollbars in Firefox */
+}
+
+.sideNavOpen {
+  overflow: hidden;
+}
