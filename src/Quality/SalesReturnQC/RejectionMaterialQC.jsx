@@ -36,110 +36,107 @@ const TabQcInfo = ({ data }) => {
   return (
     <div className="PaddingSalesQC-filter">
       <div className="row">
-        {/* Left Side Form Elements */}
         <div className="col-lg-9">
           <FormRow label="Rejection Series">
             <Select className="bg-light text-secondary" style={{ width: '200px' }} disabled>
-              <option>Sales Return</option>
+              <option>{data.rejection_series || "Sales Return"}</option>
             </Select>
           </FormRow>
 
           <FormRow label="QC No">
-            <Input value="252600030" className="bg-light" style={{ width: '130px' }} readOnly />
+            <Input value={data.qc_no || ""} className="bg-light" style={{ width: '130px' }} readOnly />
             <span className="ms-2 text-secondary fw-medium">QC Date :</span>
-            <Input type="date" defaultValue="2026-02-11" style={{ width: '145px' }} />
+            <Input type="date" value={data.qc_date || ""} style={{ width: '145px' }} readOnly />
           </FormRow>
 
           <FormRow label="Cust / Vendor Name">
-            <Input value="ENDURANCE TECHNOLOGIES LTD (H)" className="bg-light w-100" style={{ maxWidth: '450px' }} readOnly />
+            <Input value={data.cust_vender_name || ""} className="bg-light w-100" style={{ maxWidth: '450px' }} readOnly />
           </FormRow>
 
           <FormRow label="Select Item">
-            <Input value="FG1157 | 550D705702 | FORK BOLT PRF" className="bg-light w-100" style={{ maxWidth: '450px' }} readOnly />
+            <Input value={data.select_item || ""} className="bg-light w-100" style={{ maxWidth: '450px' }} readOnly />
             <button className="btn btn-light border d-flex align-items-center gap-1 py-1 px-2" style={{ fontSize: '12px' }}>
               <Search size={14} /> Select
             </button>
           </FormRow>
 
           <FormRow label="Part Code">
-            <Select style={{ width: '130px' }}>
-              <option>90 | PLFG11</option>
+            <Select style={{ width: '130px' }} value={data.part_code || ""}>
+              <option>{data.part_code}</option>
             </Select>
             <span className="ms-2 text-secondary fw-medium">Heat No</span>
-            <Select style={{ width: '130px' }}>
-              <option>Select</option>
+            <Select style={{ width: '130px' }} value={data.heat_no || ""}>
+              <option>{data.heat_no}</option>
             </Select>
             <label className="d-flex align-items-center gap-1 ms-3 text-secondary" style={{ cursor: 'pointer' }}>
-              <input type="checkbox" className="mt-1" /> New Heat No :
+              <input type="checkbox" className="mt-1" checked={!!data.New_heat_no} readOnly /> New Heat No :
             </label>
-            <Input style={{ width: '100px' }} />
+            <Input style={{ width: '100px' }} value={data.New_heat_no || ""} readOnly />
           </FormRow>
 
           <div className="d-flex flex-wrap gap-4 mt-3">
             <FormRow label="Return Qty">
-              <Input value="148" className="bg-light" style={{ width: '100px' }} readOnly />
+              <Input value={data.return_qty || ""} className="bg-light" style={{ width: '100px' }} readOnly />
             </FormRow>
             <FormRow label="Ok Qty">
-              <Input style={{ width: '100px' }} />
+              <Input value={data.ok_qty || ""} style={{ width: '100px' }} readOnly />
             </FormRow>
           </div>
 
           <div className="d-flex flex-wrap gap-4">
             <FormRow label="Rework Qty (PD)">
-              <Input value="0" style={{ width: '100px' }} />
+              <Input value={data.rework_qty || ""} style={{ width: '100px' }} readOnly />
             </FormRow>
             <FormRow label="Reject Qty (MD)">
-              <Input value="0" style={{ width: '100px' }} />
+              <Input value={data.reject_qty || ""} style={{ width: '100px' }} readOnly />
             </FormRow>
           </div>
 
           <FormRow label="Rework Reason">
-            <Select style={{ width: '200px' }}>
-              <option>Select</option>
+            <Select style={{ width: '200px' }} value={data.rework_reason || ""}>
+              <option>{data.rework_reason || "Select"}</option>
             </Select>
             <button className="btn btn-light border py-1 px-2"><Plus size={14} /></button>
             <button className="btn btn-light border py-1 px-2"><RefreshCw size={14} /></button>
           </FormRow>
 
           <FormRow label="Reject Reason">
-            <Select style={{ width: '200px' }}>
-              <option>Select</option>
+            <Select style={{ width: '200px' }} value={data.reject_reason || ""}>
+              <option>{data.reject_reason || "Select"}</option>
             </Select>
             <button className="btn btn-light border py-1 px-2"><Plus size={14} /></button>
             <button className="btn btn-light border py-1 px-2"><RefreshCw size={14} /></button>
           </FormRow>
 
           <FormRow label="Action Plan">
-            <Input className="w-100" style={{ maxWidth: '250px' }} />
+            <Input className="w-100" style={{ maxWidth: '250px' }} value={data.action_plan || ""} readOnly />
             <span className="ms-2 text-secondary fw-medium">Action</span>
-            <Select style={{ width: '80px' }}>
-              <option>Yes</option>
-              <option>No</option>
+            <Select style={{ width: '80px' }} value={data.action || ""}>
+              <option>{data.action}</option>
             </Select>
             <span className="ms-2 text-secondary fw-medium">Action Date</span>
-            <Input type="date" defaultValue="2026-02-17" style={{ width: '140px' }} />
+            <Input type="date" value={data.action_date || ""} style={{ width: '140px' }} readOnly />
           </FormRow>
 
           <FormRow label="Remark">
-            <Input className="w-100" style={{ maxWidth: '450px' }} />
+            <Input className="w-100" style={{ maxWidth: '450px' }} value={data.remark || ""} readOnly />
           </FormRow>
 
           <div className="d-flex flex-wrap gap-4 mt-2">
             <FormRow label="Inspected By">
-              <Input style={{ width: '200px' }} />
+              <Input style={{ width: '200px' }} value={data.inspected_by || ""} readOnly />
             </FormRow>
             <FormRow label="Approved By">
-              <Input style={{ width: '200px' }} />
+              <Input style={{ width: '200px' }} value={data.approved_by || ""} readOnly />
             </FormRow>
           </div>
         </div>
 
-        {/* Right Side Info Box */}
         <div className="col-lg-3 mt-4 mt-lg-0">
           <div className="text-danger small fw-bold lh-lg p-3 bg-white border border-danger-subtle rounded">
-            Sales Return NO : 252600153 <br />
-            Date : 11/02/2026<br />
-            Remark
+            Sales Return NO : {data.rejection_series} <br />
+            Date : {data.qc_date}<br />
+            Remark: {data.remark}
           </div>
         </div>
       </div>
@@ -148,9 +145,7 @@ const TabQcInfo = ({ data }) => {
 };
 
 // --- Tab B: Dimensional ---
-const TabDimensional = () => {
-  const [rows, setRows] = useState([{ id: 1 }]);
-
+const TabDimensional = ({ tests = [] }) => {
   return (
     <div className="PaddingSalesQC-Main bg-white border">
       <div className="table-responsive">
@@ -213,27 +208,27 @@ const TabDimensional = () => {
             </tr>
           </thead>
           <tbody>
-            {rows.map((row, index) => (
+            {tests.map((row, index) => (
               <tr key={row.id}>
                 <td>{index + 1}</td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
+                <td>{row.test_no}</td>
+                <td>{row.test_description}</td>
+                <td>{row.dimensions}</td>
+                <td>{row.tol_sub}</td>
+                <td>{row.tol_add}</td>
+                <td>{row.methods_of_check}</td>
+                <td>{row.one}</td>
+                <td>{row.two}</td>
+                <td>{row.three}</td>
+                <td>{row.four}</td>
+                <td>{row.five}</td>
+                <td>{row.remark}</td>
                 <td>
                   <Trash2 size={16} className="text-secondary mx-auto" style={{ cursor: 'pointer' }} />
                 </td>
               </tr>
             ))}
-            {rows.length === 0 && (
+            {tests.length === 0 && (
               <tr>
                 <td colSpan="14" className="text-muted p-4">No records found.</td>
               </tr>
@@ -246,9 +241,7 @@ const TabDimensional = () => {
 };
 
 // --- Tab C: Visual Inspection ---
-const TabVisualInspection = () => {
-  const [rows, setRows] = useState([{ id: 1 }]);
-
+const TabVisualInspection = ({ tests = [] }) => {
   return (
     <div className="PaddingSalesQC-Main bg-white border">
       <div className="table-responsive">
@@ -305,24 +298,29 @@ const TabVisualInspection = () => {
             </tr>
           </thead>
           <tbody>
-            {rows.map((row, index) => (
+            {tests.map((row, index) => (
               <tr key={row.id}>
                 <td>{index + 1}</td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
+                <td>{row.test_no}</td>
+                <td>{row.test_description}</td>
+                <td>{row.check_points}</td>
+                <td>{row.actual_observation}</td>
+                <td>{row.one}</td>
+                <td>{row.two}</td>
+                <td>{row.three}</td>
+                <td>{row.four}</td>
+                <td>{row.five}</td>
+                <td>{row.remark}</td>
                 <td>
                   <Trash2 size={16} className="text-secondary mx-auto" style={{ cursor: 'pointer' }} />
                 </td>
               </tr>
             ))}
+            {tests.length === 0 && (
+              <tr>
+                <td colSpan="14" className="text-muted p-4">No records found.</td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
@@ -335,7 +333,105 @@ const RejectionMaterialQC = () => {
   const [sideNavOpen, setSideNavOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('A');
   const location = useLocation();
-  const data = location?.state || {};
+  const [qcData, setQcData] = useState({});
+
+  useEffect(() => {
+    // Integrating the provided API data
+    const apiData = [
+      {
+        "id": 1,
+        "dimension_tests": [
+          {
+            "id": 1,
+            "test_no": "DT-001",
+            "test_description": "Length Check",
+            "specification": "50 mm",
+            "dimensions": "49.8 mm",
+            "tol_sub": "-0.5",
+            "tol_add": "+0.5",
+            "methods_of_check": "Vernier Caliper",
+            "one": "49.8",
+            "two": "49.9",
+            "three": "50.0",
+            "four": "49.7",
+            "five": "49.8",
+            "remark": "Within tolerance",
+            "qc": 1
+          },
+          {
+            "id": 2,
+            "test_no": "DT-002",
+            "test_description": "Width Check",
+            "specification": "20 mm",
+            "dimensions": "20.1 mm",
+            "tol_sub": "-0.2",
+            "tol_add": "+0.2",
+            "methods_of_check": "Micrometer",
+            "one": "20.1",
+            "two": "20.0",
+            "three": "19.9",
+            "four": "20.1",
+            "five": "20.0",
+            "remark": "OK",
+            "qc": 1
+          }
+        ],
+        "visual_tests": [
+          {
+            "id": 1,
+            "test_no": "VT-001",
+            "test_description": "Surface Inspection",
+            "check_points": "Check scratches",
+            "actual_observation": "Minor scratches",
+            "one": "OK",
+            "two": "OK",
+            "three": "OK",
+            "four": "OK",
+            "five": "OK",
+            "merge": true,
+            "remark": "Acceptable",
+            "qc": 1
+          },
+          {
+            "id": 2,
+            "test_no": "VT-002",
+            "test_description": "Crack Inspection",
+            "check_points": "Check cracks",
+            "actual_observation": "No cracks",
+            "one": "OK",
+            "two": "OK",
+            "three": "OK",
+            "four": "OK",
+            "five": "OK",
+            "merge": true,
+            "remark": "Passed",
+            "qc": 1
+          }
+        ],
+        "rejection_series": "SRQ-2026",
+        "qc_no": "QC-26270001",
+        "qc_date": "2026-02-26",
+        "cust_vender_name": "Ram Industries",
+        "select_item": "Brake Shoe",
+        "part_code": "BS-1001",
+        "heat_no": "H123",
+        "New_heat_no": "NH123",
+        "return_qty": "100",
+        "ok_qty": "80",
+        "rework_qty": "10",
+        "reject_qty": "10",
+        "rework_reason": "Minor scratch",
+        "reject_reason": "Crack found",
+        "action_plan": "Rework and polish",
+        "action": "Rework initiated",
+        "action_date": "2026-02-26",
+        "remark": "Inspection completed",
+        "inspected_by": "Inspector A",
+        "approved_by": "Manager B"
+      }
+    ];
+    setQcData(apiData[0]);
+  }, []);
 
   const toggleSideNav = () => {
     setSideNavOpen((prevState) => !prevState);
@@ -404,9 +500,9 @@ const RejectionMaterialQC = () => {
 
                   {/* Tab Contents wrapper */}
                   <div className="shadow-sm">
-                    {activeTab === 'A' && <TabQcInfo data={data} />}
-                    {activeTab === 'B' && <TabDimensional />}
-                    {activeTab === 'C' && <TabVisualInspection />}
+                    {activeTab === 'A' && <TabQcInfo data={qcData} />}
+                    {activeTab === 'B' && <TabDimensional tests={qcData.dimension_tests} />}
+                    {activeTab === 'C' && <TabVisualInspection tests={qcData.visual_tests} />}
                   </div>
 
                   <div className="d-flex justify-content-start mt-4">

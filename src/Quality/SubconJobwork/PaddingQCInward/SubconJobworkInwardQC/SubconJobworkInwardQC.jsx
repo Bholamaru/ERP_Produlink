@@ -4,6 +4,7 @@ import "bootstrap/dist/js/bootstrap.bundle.min";
 import NavBar from "../../../../NavBar/NavBar.js";
 import SideNav from "../../../../SideNav/SideNav.js";
 import "./SubconJobworkInwardQC.css";
+import { CheckCircle } from "react-feather";
 
 const SubconJobworkInwardQC = () => {
   const [sideNavOpen, setSideNavOpen] = useState(false);
@@ -612,31 +613,13 @@ const SubconJobworkInwardQC = () => {
                         </div>
                       )}
 
-                      {/* ================= FOOTER ================= */}
                       
-                      {activeTab === "dimensional" || activeTab === "visualinspection" ? (
-                        <div className="mt-3 w-100 d-flex flex-column align-items-start text-start">
-                          <div className="form-check" style={{ marginBottom: "150px" }}>
-                            <input className="form-check-input shadow-none" type="checkbox" id="enableFields" style={{ cursor: "pointer" }} />
-                            <label className="form-check-label text-dark fw-medium" htmlFor="enableFields" style={{ cursor: "pointer" }}>
-                              Enable Fields
-                            </label>
-                          </div>
-
-                          <div className="border text-start" style={{ width: "220px", backgroundColor: "#e8ece0", padding: "5px" }}>
-                            <div className="fw-bold mb-1" style={{ fontSize: "12px", color: "#555" }}>Special Symbol</div>
-                            <input 
-                              type="text" 
-                              className="form-control form-control-sm mb-1 bg-white shadow-none" 
-                              value="LAIK" 
-                              readOnly 
-                              style={{ border: "1px solid #ccc", fontSize: "12px" }}
-                            />
-                            <a href="#/" className="text-decoration-none fw-medium" style={{ fontSize: "12px", color: "#007bff" }}>Update</a>
-                          </div>
-                        </div>
-                      ): null}
-
+                {/* ================= SAVE BUTTON ================= */}
+                    <div className="d-flex justify-content-start mt-4">
+                      <button className="btn btn-light border d-flex align-items-center gap-2 fw-bold">
+                        <CheckCircle size={16} /> Save Report
+                      </button>
+                    </div>
                     </div>
                   </div>
 
