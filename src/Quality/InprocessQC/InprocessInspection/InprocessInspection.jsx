@@ -7,25 +7,22 @@ import { FaEye } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 
-
-
-
-
 // import { FaPlus } from "react-icons/fa";
 import Cached from "@mui/icons-material/Cached.js";
 import { FaXTwitter } from "react-icons/fa6";
 import "./InprocessInspection.css";
+import axios from "axios";
 
 const InprocessInspection = () => {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
 
-    const handleSelect = () => {
+  const handleSelect = () => {
     navigate("/InprocessInspectionDetails");
   };
 
-     const [sideNavOpen, setSideNavOpen] = useState(false);
-     const location = useLocation();
-     const selectedRow = location.state?.selectedRow || {};
+  const [sideNavOpen, setSideNavOpen] = useState(false);
+  const location = useLocation();
+  const selectedRow = location.state?.selectedRow || {};
 
   const toggleSideNav = () => {
     setSideNavOpen((prevState) => !prevState);
@@ -39,97 +36,115 @@ const InprocessInspection = () => {
     }
   }, [sideNavOpen]);
 
+  const [data, setData] = useState([]);
+
+  useEffect(() => {
+    const fetchProductionEntries = async () => {
+      try {
+        const response = await axios.get("https://erp-render.onrender.com/Production/api/production-entries/");
+        if (response.data && response.data.value) {
+          setData(response.data.value);
+        } else if (Array.isArray(response.data)) {
+          setData(response.data);
+        }
+      } catch (error) {
+        console.error("Error fetching production-entries:", error);
+      }
+    };
+    fetchProductionEntries();
+  }, []);
+
   return (
     <div className="InprocessInspectionMaster">
-    <div className="container-fluid">
-      <div className="row">
-        <div className="col-md-12">
-          <div className="Main-NavBar">
-            <NavBar toggleSideNav={toggleSideNav} />
-            <SideNav
-              sideNavOpen={sideNavOpen}
-              toggleSideNav={toggleSideNav}
-            />
-            <main className={`main-content ${sideNavOpen ? "shifted" : ""}`}>
-              <div className="InprocessInspection">
-                <div className="InprocessInspection-header mb-2 text-start">
-                  <div className="row align-items-center">
-                    <div className="col-md-4">
-                      <h5 className="header-title">Inprocess Inspection </h5>
+      <div className="container-fluid">
+        <div className="row">
+          <div className="col-md-12">
+            <div className="Main-NavBar">
+              <NavBar toggleSideNav={toggleSideNav} />
+              <SideNav
+                sideNavOpen={sideNavOpen}
+                toggleSideNav={toggleSideNav}
+              />
+              <main className={`main-content ${sideNavOpen ? "shifted" : ""}`}>
+                <div className="InprocessInspection">
+                  <div className="InprocessInspection-header mb-2 text-start">
+                    <div className="row align-items-center">
+                      <div className="col-md-4">
+                        <h5 className="header-title">Inprocess Inspection </h5>
+                      </div>
+                      <div className="col-md-8 text-end">
+                        <button type="button" className="btn" to="#/">
+                          Export Excel
+                        </button>
+                      </div>
                     </div>
-                    <div className="col-md-8 text-end">
-                      <button type="button" className="btn" to="#/">
-                        Export Excel
-                      </button>
-                     </div>
                   </div>
-                </div>
-                <div className="InprocessInspection-filter mb-2">
-                <div className="container-fluid">
-                    <div className="row  g-3 text-start mt-2 mb-3 text-start">
-                      <div className="col-sm-6 col-md-3 col-lg-2">
-                        <label>Plant</label>
-                        <select className="form-select">
-                          <option value="SHARP">SHARP</option>
-                          {/* Add more options as needed */}
-                        </select>
-                      </div>
-                      <div className="col-sm-6 col-md-3 col-lg-2">
-                        <label>From Date</label>
-                        <input type="date" className="form-control" />
-                      </div>
-                      <div className="col-sm-6 col-md-3 col-lg-2">
-                        <label>To Date</label>
-                        <input type="date" className="form-control" />
-                      </div>
-                      <div className="col-sm-6 col-md-3 col-lg-2">
-                        <label>Operation :</label>
-                        <select className="form-select">
-                          <option>All</option>
-                          <option>Our_F4</option>
-                          <option>Vendor_F4</option>
-                          <option>Non Returnable</option>
-                          <option>Vendor_Scrap</option>
-                          <option>Cust_Rework_In</option>
-                        </select>
-                      </div>
-                      <div className="col-sm-6 col-md-3 col-lg-2">
-                       <div className="form-check">
+                  <div className="InprocessInspection-filter mb-2">
+                    <div className="container-fluid">
+                      <div className="row  g-3 text-start mt-2 mb-3 text-start">
+                        <div className="col-sm-6 col-md-3 col-lg-2">
+                          <label>Plant</label>
+                          <select className="form-select">
+                            <option value="SHARP">SHARP</option>
+                            {/* Add more options as needed */}
+                          </select>
+                        </div>
+                        <div className="col-sm-6 col-md-3 col-lg-2">
+                          <label>From Date</label>
+                          <input type="date" className="form-control" />
+                        </div>
+                        <div className="col-sm-6 col-md-3 col-lg-2">
+                          <label>To Date</label>
+                          <input type="date" className="form-control" />
+                        </div>
+                        <div className="col-sm-6 col-md-3 col-lg-2">
+                          <label>Operation :</label>
+                          <select className="form-select">
+                            <option>All</option>
+                            <option>Our_F4</option>
+                            <option>Vendor_F4</option>
+                            <option>Non Returnable</option>
+                            <option>Vendor_Scrap</option>
+                            <option>Cust_Rework_In</option>
+                          </select>
+                        </div>
+                        <div className="col-sm-6 col-md-3 col-lg-2">
+                          <div className="form-check">
                             <input type="checkbox" className="form-check-input" id="machineUtilizeCheckbox" />
                             <label htmlFor="machineUtilizeCheckbox" className="form-check-label"> Item Code: </label>
+                          </div>
+                          <input type="text" placeholder="Item Code" className="form-control" />
                         </div>
-                        <input type="text"  placeholder="Item Code" className="form-control"/>
-                      </div>
-                      <div className="col-sm-6 col-md-3 col-lg-2">
-                      <div className="form-check">
+                        <div className="col-sm-6 col-md-3 col-lg-2">
+                          <div className="form-check">
                             <input type="checkbox" className="form-check-input" id="machineUtilizeCheckbox" />
                             <label htmlFor="machineUtilizeCheckbox" className="form-check-label">HeatCode: </label>
+                          </div>
+                          <input type="text" placeholder="Heat Code" className="form-control" />
                         </div>
-                        <input type="text" placeholder="Heat Code" className="form-control" />
-                      </div>
-                      <div className="col-sm-6 col-md-3 col-lg-2">
-                        <div className="form-check">
+                        <div className="col-sm-6 col-md-3 col-lg-2">
+                          <div className="form-check">
                             <input type="checkbox" className="form-check-input" id="machineUtilizeCheckbox" />
                             <label htmlFor="machineUtilizeCheckbox" className="form-check-label"> Prod No: </label>
+                          </div>
+                          <input type="text" placeholder="" className="form-control" />
                         </div>
-                        <input type="text" placeholder="" className="form-control" />
-                      </div>
-                      <div className="col-6 col-md-2">
-                      <div className="form-check">
+                        <div className="col-6 col-md-2">
+                          <div className="form-check">
                             <input type="checkbox" className="form-check-input" id="machineUtilizeCheckbox" />
                             <label htmlFor="machineUtilizeCheckbox" className="form-check-label"> BarCode: </label>
-                        </div>
+                          </div>
                           <button type="button" className="btn btn-primary">
                             Search
                           </button>
-                      </div>
+                        </div>
 
                       </div>
                     </div>
-                   
+
                   </div>
 
-                   <div className="InprocessInspection-table table-responsive mt-2">
+                  <div className="InprocessInspection-table table-responsive mt-2">
                     <div className="table-striped">
                       <table className="table">
                         <thead>
@@ -157,48 +172,56 @@ const InprocessInspection = () => {
                           </tr>
                         </thead>
                         <tbody>
-                          {/* Example data row */}
-                          <tr>
-                            <td>1</td>
-                            <td>{selectedRow?.prodNo || "-"}</td>
-                            <td>{selectedRow?.date || "-"}</td>
-                            <td>{selectedRow?.dateTime || "-"}</td>
-                            <td>
-                            <span className="ourf4"> {selectedRow?.type || "-"} </span>
-                            </td>
-                            <td>{selectedRow?.itemNo || "-"}</td>
-                            <td>{selectedRow?.date || "-"}</td>
-                            <td>{selectedRow?.operationCode || "-"}</td>
-                            <td>{selectedRow?.operationName || "-"}</td>
-                            <td>{selectedRow?.operation || "-"}</td>
-                            <td>Total Item : (2) 📝</td>
-
-                            <td> </td>
-                            <td> </td>
-                            <td> </td>
-                            <td> </td>
-                            <td> </td>
-                            <td> </td>
-                            <td> </td>
-                            <td> <span
-                           style={{ color: "#2f75b5", cursor: "pointer", fontWeight: "600" }}
-                           onClick={handleSelect}
-                           >
-                           Select
-                           </span></td>
-                            <td>
-                                {" "}
-                               <FaEye />
-                            </td>                           
-                          </tr>
+                          {data && data.length > 0 ? (
+                            data.map((item, index) => {
+                              const formattedDate = item.Date
+                                ? new Date(item.Date).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "2-digit" })
+                                : "-";
+                              return (
+                                <tr key={item.id || index}>
+                                  <td>{index + 1}</td>
+                                  <td>{item.Series || "-"}</td>
+                                  <td>{item.Prod_no || "-"}</td>
+                                  <td>{formattedDate}</td>
+                                  <td>{item.item || "-"}</td>
+                                  <td>{item.ItemCode || "-"}</td>
+                                  <td>{item.ItemDescription || "-"}</td>
+                                  <td>-</td>
+                                  <td>{item.operation || "-"}</td>
+                                  <td>{item.operation || "-"}</td>
+                                  <td>{item.shift || "-"}</td>
+                                  <td>{item.unit_machine || "-"}</td>
+                                  <td>{item.lot_no || "-"}</td>
+                                  <td>{item.prod_qty || "0"}</td>
+                                  <td>-</td>
+                                  <td>{item.rework_qty || "0"}</td>
+                                  <td>{item.reject_qty || "0"}</td>
+                                  <td>📝</td>
+                                  <td>
+                                    <span
+                                      style={{ color: "#2f75b5", cursor: "pointer", fontWeight: "600" }}
+                                      onClick={handleSelect}
+                                    >
+                                      Select
+                                    </span>
+                                  </td>
+                                  <td>{" "}<FaEye /></td>
+                                </tr>
+                              );
+                            })
+                          ) : (
+                            <tr>
+                              <td colSpan="20" className="text-center">No records found</td>
+                            </tr>
+                          )}
                         </tbody>
                       </table>
                     </div>
                   </div>
-            
+
                   <div className="AssemblyEntry-bottom mt-5">
                     <div className="AssemblyEntry-tabs">
-                      <ul className="nav nav-tabs" id="" role="tablist" >                       
+                      <ul className="nav nav-tabs" id="" role="tablist" >
                         <li className="nav-item" role="presentation">
                           <button
                             className="nav-link"
@@ -234,10 +257,10 @@ const InprocessInspection = () => {
                           >
                             Reject Master
                           </button>
-                        </li>                                             
+                        </li>
                       </ul>
 
-                       <div className="tab-content mt-4" id="productionEntryTabsContent" >
+                      <div className="tab-content mt-4" id="productionEntryTabsContent" >
                         {/* <div className="tab-pane fade show active" id="shift" role="tabpanel" >
                           <div className="table table-bordered table-responsive">
                             <table>
@@ -564,17 +587,17 @@ const InprocessInspection = () => {
                         </div> */}
 
                         <div className="tab-pane fade" id="rework" role="tabpanel">
-                         <div className="row">
-                         <div className="col-md-4">
-                            <div className="row">
-                            <div className="col-md-3">
+                          <div className="row">
+                            <div className="col-md-4">
+                              <div className="row">
+                                <div className="col-md-3">
                                   <label>QC No :</label>
-                            </div>
-                            <div className="col-md-4">
+                                </div>
+                                <div className="col-md-4">
                                   <input type="text" placeholder="242523915" className="form-control" />
-                            </div>
-                            </div>
-                              <div className="row">    
+                                </div>
+                              </div>
+                              <div className="row">
                                 <div className="col-md-3">
                                   <label>Rework</label>
                                 </div>
@@ -597,39 +620,39 @@ const InprocessInspection = () => {
                                   </button>
                                 </div>
                               </div>
-                              
-                              <div className="table-responsive">
-                              <table className="table table-bordered table-striped">
-                                    <thead>
-                                      <tr>
-                                        <th>Sr no.</th>
-                                        <th>Description</th>
-                                        <th>Qty</th>
-                                        <th>Delete</th>
-                                      </tr>
-                                    </thead>
-                                    <tbody>
-                                      <tr>
-                                        <td>Sr no.</td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                      </tr>
-                                    </tbody>
-                                  </table>
-                              </div>
-                         </div>
 
-                         <div className="col-md-4">
-                             <div className="row">
-                            <div className="col-md-3">
-                                  <label>QC Date :</label>
+                              <div className="table-responsive">
+                                <table className="table table-bordered table-striped">
+                                  <thead>
+                                    <tr>
+                                      <th>Sr no.</th>
+                                      <th>Description</th>
+                                      <th>Qty</th>
+                                      <th>Delete</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    <tr>
+                                      <td>Sr no.</td>
+                                      <td></td>
+                                      <td></td>
+                                      <td></td>
+                                    </tr>
+                                  </tbody>
+                                </table>
+                              </div>
                             </div>
+
                             <div className="col-md-4">
+                              <div className="row">
+                                <div className="col-md-3">
+                                  <label>QC Date :</label>
+                                </div>
+                                <div className="col-md-4">
                                   <input type="date" className="form-control" />
-                            </div>
-                            </div>
-                              <div className="row">    
+                                </div>
+                              </div>
+                              <div className="row">
                                 <div className="col-md-3">
                                   <label>Rework</label>
                                 </div>
@@ -652,103 +675,103 @@ const InprocessInspection = () => {
                                   </button>
                                 </div>
                               </div>
-                              
-                              <div className="table-responsive">
-                              <table className="table table-bordered table-striped">
-                                    <thead>
-                                      <tr>
-                                        <th>Sr no.</th>
-                                        <th>Description</th>
-                                        <th>Qty</th>
-                                        <th>Delete</th>
-                                      </tr>
-                                    </thead>
-                                    <tbody>
-                                      <tr>
-                                        <td>Sr no.</td>
-                                        <td></td>
-                                        <td></td>
-                                        <td><FaXTwitter/></td>
-                                      </tr>
-                                    </tbody>
-                                  </table>
-                              </div>
-                         </div>
 
-                         <div className="col-md-4">
-                                <div className="row mt-4">
-                                    <div className="col-md-4 mt-3">
-                                          <label>QC Sample Pef. :</label>
-                                    </div>
-                                    <div className="col-md-5">
-                                        <input type="text" className="form-control" />
-                                    </div>
+                              <div className="table-responsive">
+                                <table className="table table-bordered table-striped">
+                                  <thead>
+                                    <tr>
+                                      <th>Sr no.</th>
+                                      <th>Description</th>
+                                      <th>Qty</th>
+                                      <th>Delete</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    <tr>
+                                      <td>Sr no.</td>
+                                      <td></td>
+                                      <td></td>
+                                      <td><FaXTwitter /></td>
+                                    </tr>
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
+
+                            <div className="col-md-4">
+                              <div className="row mt-4">
+                                <div className="col-md-4 mt-3">
+                                  <label>QC Sample Pef. :</label>
                                 </div>
-                                <div className="row">
-                                    <div className="col-md-4 mt-3">
-                                          <label>QC Ssmple Qty. :</label>
-                                    </div>
-                                    <div className="col-md-5">
-                                        <input type="text" className="form-control" />
-                                    </div>
+                                <div className="col-md-5">
+                                  <input type="text" className="form-control" />
                                 </div>
-                                <div className="row mt-4">
-                                    <div className="col-md-4 mt-3">
-                                          <label>QC Ssmple Remark. :</label>
-                                    </div>
-                                    <div className="col-md-5">
-                                       <textarea className="form-control" rows="1" placeholder="Remark..."></textarea>
-                                    </div>
+                              </div>
+                              <div className="row">
+                                <div className="col-md-4 mt-3">
+                                  <label>QC Ssmple Qty. :</label>
                                 </div>
-                         </div>
+                                <div className="col-md-5">
+                                  <input type="text" className="form-control" />
+                                </div>
+                              </div>
+                              <div className="row mt-4">
+                                <div className="col-md-4 mt-3">
+                                  <label>QC Ssmple Remark. :</label>
+                                </div>
+                                <div className="col-md-5">
+                                  <textarea className="form-control" rows="1" placeholder="Remark..."></textarea>
+                                </div>
+                              </div>
+                            </div>
                           </div>
 
                           <div className="row mt-4">
-                             <div className="col-md-3">
-                               <div className="row mt-4">
-                                    <div className="col-md-6 mt-3">
-                                          <label>Drawing Rev No. :</label>
-                                    </div>
-                                    <div className="col-md-6">
-                                    <input type="text" className="form-control" />
-                                    </div>
+                            <div className="col-md-3">
+                              <div className="row mt-4">
+                                <div className="col-md-6 mt-3">
+                                  <label>Drawing Rev No. :</label>
                                 </div>
-                             </div>
+                                <div className="col-md-6">
+                                  <input type="text" className="form-control" />
+                                </div>
+                              </div>
+                            </div>
 
-                             <div className="col-md-3">
-                             <div className="row mt-4">
-                                    <div className="col-md-6 mt-3">
-                                          <label>(IOS) Format No. :</label>
-                                    </div>
-                                    <div className="col-md-6">
-                                        <input type="text" className="form-control" />
-                                    </div>
+                            <div className="col-md-3">
+                              <div className="row mt-4">
+                                <div className="col-md-6 mt-3">
+                                  <label>(IOS) Format No. :</label>
                                 </div>
-                             </div>
-                             <div className="col-md-3">
-                             <div className="row mt-4">
-                                    <div className="col-md-6 mt-3">
-                                          <label>(IOS) Rev No. :</label>
-                                    </div>
-                                    <div className="col-md-6">
-                                        <input type="text" className="form-control" />
-                                    </div>
+                                <div className="col-md-6">
+                                  <input type="text" className="form-control" />
                                 </div>
-                             </div>
-                             <div className="col-md-3">
-                                <div className="row mt-4">
-                                    <div className="col-md-6 mt-3">
-                                          <label>(IOS) Rev Date. :</label>
-                                    </div>
-                                    <div className="col-md-6">
-                                        <input type="date" className="form-control" />
-                                    </div>
+                              </div>
+                            </div>
+                            <div className="col-md-3">
+                              <div className="row mt-4">
+                                <div className="col-md-6 mt-3">
+                                  <label>(IOS) Rev No. :</label>
                                 </div>
-                             </div>
+                                <div className="col-md-6">
+                                  <input type="text" className="form-control" />
+                                </div>
+                              </div>
+                            </div>
+                            <div className="col-md-3">
+                              <div className="row mt-4">
+                                <div className="col-md-6 mt-3">
+                                  <label>(IOS) Rev Date. :</label>
+                                </div>
+                                <div className="col-md-6">
+                                  <input type="date" className="form-control" />
+                                </div>
+                              </div>
+                            </div>
                           </div>
                         </div>
-                    
-                      
+
+
                         {/* <div className="tab-pane fade" id="toolDie" role="tabpanel" >
                           <div className="row">
                             <div className="col-md-1">
@@ -793,19 +816,19 @@ const InprocessInspection = () => {
 
                     <div className="row text-start mt-5">
                       <div className="col-md-2">
-                          <label><b>OK Qty : </b></label> <span className="okqty"> 0</span>
+                        <label><b>OK Qty : </b></label> <span className="okqty"> 0</span>
                       </div>
                       <div className="col-md-2">
-                          <label><b>| Rework : </b></label><span className="okqtyy"> 0</span>
+                        <label><b>| Rework : </b></label><span className="okqtyy"> 0</span>
                       </div>
                       <div className="col-md-2">
-                          <label><b>| Reject : </b></label> <span className="okqtyyt"> 0</span>
+                        <label><b>| Reject : </b></label> <span className="okqtyyt"> 0</span>
                       </div>
                       <div className="col-md-2">
-                          <label><b> Total Qty : </b></label> <span className="okqtyyy"> Label</span>
+                        <label><b> Total Qty : </b></label> <span className="okqtyyy"> Label</span>
                       </div>
 
-                       <div className="col-md-4 d-flex">
+                      <div className="col-md-4 d-flex">
                         <div className="text-end s-4 d-flex">
                           <button type="button" className="btn">
                             Cancel
@@ -819,13 +842,13 @@ const InprocessInspection = () => {
 
                   </div>
 
-              </div>
-            </main>
+                </div>
+              </main>
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
   )
 }
 

@@ -6,12 +6,17 @@ import SideNav from "../../SideNav/SideNav.js";
 import { useNavigate } from 'react-router-dom';
 import "./GSTSalesReturn.css";
 import Cached from "@mui/icons-material/Cached.js";
+<<<<<<< HEAD
 import Search from "@mui/icons-material/Search.js";
+=======
+import axios from "axios";
+>>>>>>> archita
 
 
 
 const GSTSalesReturn = () => {
   const [sideNavOpen, setSideNavOpen] = useState(false);
+<<<<<<< HEAD
   const [plant, setPlant] = useState("");
   const [series, setSeries] = useState("");
   const [type, setType] = useState("");
@@ -317,6 +322,15 @@ const GSTSalesReturn = () => {
     setSaveError(null);
     setSaveSuccess(false);
   };
+=======
+  const navigate = useNavigate();  
+  const [gateEntries, setGateEntries] = useState([]);  
+  const [selectedType, setSelectedType] = useState(""); 
+  const [selectedGateEntry, setSelectedGateEntry] = useState("")
+  const handleButtonClick = () => {
+      navigate('/GSTSalesReturnList'); 
+    };
+>>>>>>> archita
   
 
   const toggleSideNav = () => {
@@ -330,6 +344,24 @@ const GSTSalesReturn = () => {
       document.body.classList.remove("side-nav-open");
     }
   }, [sideNavOpen]);
+<<<<<<< HEAD
+=======
+  useEffect(() => {
+  fetchGateEntries();
+}, []);
+
+const fetchGateEntries = async () => {
+  try {
+    const response = await axios.get(
+      "https://erp-render.onrender.com/Sales/salesreturn/gate-entry"
+    );
+    setGateEntries(response.data);
+  } catch (error) {
+    console.error("Error fetching gate entries:", error);
+  }
+};
+
+>>>>>>> archita
 
   return (
     <div className="GSTSalesReturnMaster">
@@ -367,9 +399,14 @@ const GSTSalesReturn = () => {
                                     <tr>
                                         <th>Plant:</th>
                                         <th>Gate Entry No: </th>
+<<<<<<< HEAD
                                        <th>Series:</th>
                                         <th>Type:</th>
                                        
+=======
+                                        <th>Series:</th>
+                                        <th>Type:</th>
+>>>>>>> archita
                                         <th>Sales Return No: </th>
                                         <th>Sales Return Date:</th>
                                         <th>Cust Name</th>
@@ -378,16 +415,21 @@ const GSTSalesReturn = () => {
                                     <tbody>
                                     <tr>
                                         <td>
+<<<<<<< HEAD
                                            <select 
                                              name="plant"
                                              className="form-control" 
                                              value={plant}
                                              onChange={(e) => setPlant(e.target.value)}
                                            >
+=======
+                                           <select name=""  className="form-control" id="">
+>>>>>>> archita
                                                 <option value="">ProduLink</option>
                                             </select>
                                         </td>
                                         <td>
+<<<<<<< HEAD
                                             <div style={{position: 'relative', display: 'inline-block', width: '100%'}}>
                                               <select 
                                                 name="gateEntry"
@@ -485,19 +527,78 @@ const GSTSalesReturn = () => {
                                                 <Search />
                                               </span>
                                             </div>
+=======
+                                    <select
+                                      className="form-control"
+                                      value={selectedGateEntry}
+                                      onChange={(e) => setSelectedGateEntry(e.target.value)}
+                                    >
+                                      <option value="">Select</option>
+
+                                      {gateEntries.map((item) => (
+                                        <option key={item.id} value={item.id}>
+                                          {item.GE_No}
+                                        </option>
+                                      ))}
+                                    </select>
+
+                                    <button type="button" className="btn" onClick={fetchGateEntries}>
+                                      <Cached />
+                                    </button>
+                                  </td>
+
+                                        <td>
+                                          <select name=""  className="form-control" id="">
+                                                <option value="">Select</option>
+                                                <option value="GSTSalesReturn">GST Sales Return</option>
+                                            </select>
+                                        </td>
+                                        <td>
+                                      <select
+                                        className="form-control"
+                                        value={selectedType}
+                                        onChange={(e) => setSelectedType(e.target.value)}
+                                      >
+                                        <option value="">Select</option>
+                                        <option value="Invoice">Invoice</option>
+                                        <option value="Direct">Direct</option>
+                                      </select>
+
+                                      <button type="button" className="btn">
+                                        <Cached />
+                                      </button>
+                                    </td>
+
+                                        <td>
+                                        <input type="text" className="form-control" />
+                                        </td>
+                                        <td>
+                                            <input type="date" className="form-control" />
+                                        </td>
+                                        <td>
+                                            <input type="text" className="form-control" placeholder="Name..." />
+                                            <button className="btn">Search</button>
+>>>>>>> archita
                                         </td>
                                     </tr>
                                     </tbody>
                                 </table>
                           </div>
                     </div>
+<<<<<<< HEAD
 
+=======
+                  {selectedType === "Invoice" && (
+                 <div style={{ height: "200px" }}></div>
+                  )}
+>>>>>>> archita
 
                   <div className="GSTSalesReturn-main mt-5">
                     <div className="GSTSalesReturn-tabs">
                    
                       <div className="tab-content mt-4" id="" >
 
+<<<<<<< HEAD
                           {type === "Invoice" && (                            <div className="table-responsive mb-4">
                               {/* <h6 className="mb-3">Select Invoice</h6> */}
                               <table className="table table-striped table-hover table-bordered">
@@ -553,6 +654,9 @@ const GSTSalesReturn = () => {
                           )}
 
                           {type === "Direct" && (                          <div className="table-responsive">
+=======
+                          <div className="table-responsive">
+>>>>>>> archita
                                 <table className="table table-bordered">
                                     <thead>
                                     <tr>
@@ -572,6 +676,7 @@ const GSTSalesReturn = () => {
                                     <tbody>
                                     <tr>
                                         <td>
+<<<<<<< HEAD
                                           <select 
                                             className="form-control" 
                                             value={selectedSalesInvNo}
@@ -602,6 +707,14 @@ const GSTSalesReturn = () => {
                                                 <Search />
                                               </span>
                                             </div>
+=======
+                                          <input type="text" placeholder="" className="form-control" />
+                                        </td>
+                                        <td> <input type="date" placeholder="" className="form-control" /></td>
+                                        <td>
+                                            <input type="text" placeholder="Enter Code" className="form-control" />
+                                            <button className="btn w-50">Search</button>
+>>>>>>> archita
                                         </td>
                                         <td><textarea className="form-control"></textarea></td>
                                         <td><textarea className="form-control"></textarea></td>
@@ -628,7 +741,10 @@ const GSTSalesReturn = () => {
                                     </tbody>
                                 </table>
                           </div>
+<<<<<<< HEAD
                           )}
+=======
+>>>>>>> archita
 
                             <div className="table-responsive">
                                         <table className="table table-bordered">
@@ -654,6 +770,7 @@ const GSTSalesReturn = () => {
                                             </tr>
                                         </thead>
                                         <tbody>
+<<<<<<< HEAD
                                           {selectedInvoiceData && invoiceItems.length > 0 ? (
                                             invoiceItems.map((item, index) => (
                                               <tr key={index}>
@@ -683,6 +800,27 @@ const GSTSalesReturn = () => {
                                               </td>
                                             </tr>
                                           )}
+=======
+                                            <tr>
+                                                <td>1</td>
+                                                <td></td>
+                                                <td></td>
+                                                <td></td>
+                                                <td></td>
+                                                <td></td>
+                                                <td></td>
+                                                <td></td>
+                                                <td></td>
+                                                <td></td>
+                                                <td>Edit</td>
+                                                <td> <input type="text" className="form-control" /></td>
+                                                <td> <input type="text" className="form-control" /></td>
+                                                <td> <textarea name=""  id=""></textarea></td>
+                                                <td> <input type="text" className="form-control" /></td>
+                                                <td> <input type="date" className="form-control" /></td>
+                                                <td><button className="btn"> X </button></td>
+                                            </tr>
+>>>>>>> archita
                                         </tbody>
                                         </table>
                             </div>
@@ -712,16 +850,28 @@ const GSTSalesReturn = () => {
                                         <td> <input type="text" className="form-control" placeholder="" /> </td>
                                         <td> <input type="text" className="form-control" /></td>
                                         <td> <input type="text" className="form-control" /></td>
+<<<<<<< HEAD
                                         {/* <td> <input type="text" className="form-control" placeholder="00.00" /> %</td> */}
                                         <td> <input type="text" className="form-control" placeholder="00.00" /> </td>
                                         {/* <td> <input type="text" className="form-control" placeholder="00.00" /> %</td> */}
                                         <td> <input type="text" className="form-control" placeholder="00.00" /> </td>
                                         {/* <td> <input type="text" className="form-control" placeholder="00.00" /> %</td> */}
+=======
+                                        <td> <input type="text" className="form-control" placeholder="00.00" /> %</td>
+                                        <td> <input type="text" className="form-control" placeholder="00.00" /> </td>
+                                        <td> <input type="text" className="form-control" placeholder="00.00" /> %</td>
+                                        <td> <input type="text" className="form-control" placeholder="00.00" /> </td>
+                                        <td> <input type="text" className="form-control" placeholder="00.00" /> %</td>
+>>>>>>> archita
                                         <td> <input type="text" className="form-control" placeholder="00.00" /> </td>
                                         <td> <input type="text" className="form-control" placeholder="00.00" /> </td> 
                                         <td> <input type="text" className="form-control" placeholder="00.00" /> </td>
                                         <td> <input type="text" className="form-control" placeholder="00.00" /> </td>
+<<<<<<< HEAD
                                         {/* <td> <input type="text" className="form-control" placeholder="00.00" /> %</td> */}
+=======
+                                        <td> <input type="text" className="form-control" placeholder="00.00" /> %</td>
+>>>>>>> archita
                                         <td> <input type="text" className="form-control" placeholder="00.00" /> </td>
                                         <td> <input type="text" className="form-control" placeholder="00.00" /> </td>
                                         
@@ -732,6 +882,7 @@ const GSTSalesReturn = () => {
                        </div>
 
 
+<<<<<<< HEAD
                       <div className="row text-start">
                           <div className="col-md-2">
                              <label htmlFor="">Invoice Challan No</label>
@@ -792,11 +943,38 @@ const GSTSalesReturn = () => {
                                value={vehicleNo}
                                onChange={(e) => setVehicleNo(e.target.value)}
                              />
+=======
+                       <div className="row text-start">
+                          <div className="col-md-2">
+                             <label htmlFor="">Invoice Challan No</label>
+                             <input type="text" className="form-control" placeholder="" />
+                          </div>
+                          <div className="col-md-2">
+                             <label htmlFor="">Invoice Challan Date:</label>
+                             <input type="date" className="form-control" placeholder="" />
+                          </div>
+                          <div className="col-md-2">
+                             <label htmlFor="">Transport Mode:</label>
+                             <input type="text" className="form-control" placeholder="" />
+                          </div>
+                          <div className="col-md-2">
+                             <label htmlFor="">Transport Name:</label>
+                             <input type="text" className="form-control" placeholder="" />
+                          </div>
+                          <div className="col-md-2">
+                             <label htmlFor="">LR No:</label>
+                             <input type="text" className="form-control" placeholder="" />
+                          </div>
+                          <div className="col-md-2">
+                             <label htmlFor="">Vehicle No:</label>
+                             <input type="text" className="form-control" placeholder="" />
+>>>>>>> archita
                           </div>
                       </div>
                       <div className="row text-start">
                           <div className="col-md-2">
                              <label htmlFor="">Remark</label>
+<<<<<<< HEAD
                              <textarea 
                                name="" 
                                className="form-control" 
@@ -814,16 +992,27 @@ const GSTSalesReturn = () => {
                                value={eInvoice}
                                onChange={(e) => setEInvoice(e.target.value)}
                              >
+=======
+                             <textarea name=""  className="form-control" id=""></textarea>
+                          </div>
+                          <div className="col-md-2">
+                            <label htmlFor="">For E-Invoice :</label>
+                             <select name="" className="form-control" id="">
+>>>>>>> archita
                                 <option value="">Bussiness To Bussiness</option>
                              </select>
                           </div>
                           <div className="col-md-2" style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start' }}>
+<<<<<<< HEAD
                             <input 
                               type="checkbox" 
                               placeholder="" 
                               checked={isService}
                               onChange={(e) => setIsService(e.target.checked)}
                             />
+=======
+                            <input type="checkbox" placeholder="" />
+>>>>>>> archita
                             <label htmlFor=""> ISService</label>
                             </div>
 
@@ -834,6 +1023,7 @@ const GSTSalesReturn = () => {
                                 </label>
                             </div>
                           <div className="col-md-2 mt-4">
+<<<<<<< HEAD
                             <button 
                               type="button"
                               className="btn btn-success"
@@ -851,6 +1041,10 @@ const GSTSalesReturn = () => {
                             </button>
                             {saveSuccess && <div className="alert alert-success mt-2">Data saved successfully!</div>}
                             {saveError && <div className="alert alert-danger mt-2">Error: {saveError}</div>}
+=======
+                            <button className="btn">Save Dabit Note</button>
+                            <button className="btn">Clear</button>
+>>>>>>> archita
                           </div>
 
                       </div>

@@ -7,14 +7,15 @@ import "./InwardQCList.css";
 import { FaEye, FaEdit } from "react-icons/fa";
 import { HiDocumentArrowDown } from "react-icons/hi2";
 import { MdMarkEmailRead, MdDeleteForever } from "react-icons/md";
+import axios from "axios";
 
 const InwardQCList = () => {
   const [sideNavOpen, setSideNavOpen] = useState(false);
+  const [data, setData] = useState([]);
 
   const toggleSideNav = () => {
     setSideNavOpen((prevState) => !prevState);
   };
-
   useEffect(() => {
     if (sideNavOpen) {
       document.body.classList.add("side-nav-open");
@@ -22,6 +23,22 @@ const InwardQCList = () => {
       document.body.classList.remove("side-nav-open");
     }
   }, [sideNavOpen]);
+
+  useEffect(() => {
+    const fetchInwardQcList = async () => {
+      try {
+        const response = await axios.get("https://erp-render.onrender.com/Quality/inward-qc-list/");
+        if (response.data && response.data.value) {
+          setData(response.data.value);
+        } else {
+          setData(response.data);
+        }
+      } catch (error) {
+        console.error("Error fetching Quality/inward-qc-list:", error);
+      }
+    };
+    fetchInwardQcList();
+  }, []);
 
   return (
     <div className="InwardQCListMaster">
@@ -165,7 +182,7 @@ const InwardQCList = () => {
                           </button>
                         </div>
                       </div>
-                    
+
                       <div className="row mt-2 text-start">
                         <div className="col-sm-6 col-md-3 col-lg-2">
                           <select
@@ -230,59 +247,98 @@ const InwardQCList = () => {
                       </thead>
 
                       <tbody>
-                        {/* Example data row */}
-                        <tr>
-                          <td>1</td>
-                          <td>24-25</td>
-                          <td>
-                            <span className="ourf4"> Our_F4 </span>
-                          </td>
-                          <td>SHARP</td>
-                          <td>242508230</td>
-                          <td>02/12/24</td>
-                          <td>
-                            02/12/24 <br /> 15:04
-                          </td>
-                          <td>
-                            Swami Engineering <br />| 000094
-                          </td>
-                          <td>
-                            {" "}
-                            <span className="nummmr">
-                              242512350
-                            </span> <br /> 1923
-                          </td>
-                          <td>
-                            02/12/24 <br /> 02/12/24
-                          </td>
-                          <td>
-                            FG1022 CNG 1FG 1022 <br /> 550QJOO412
-                          </td>
-                          <td>FORK-BOLT UG-4.5 </td>
-                          <td>4805</td>
-                          <td>4805</td>
-                          <td>0</td>
-                          <td>0</td>
-                          <td>Accept</td>
-                          <td>mobin</td>
-                          <td>
-                            <FaEdit />
-                          </td>
-                          <td>
-                            <HiDocumentArrowDown />
-                          </td>
-                          <td>
-                            {" "}
-                            <FaEye />
-                          </td>
-                          <td>
-                            <MdMarkEmailRead />
-                          </td>
-                          <td>
-                            {" "}
-                            <MdDeleteForever />{" "}
-                          </td>
-                        </tr>
+                        {data && data.length > 0 ? (
+                          data.map((item, index) => {
+                            const inwardChallan = item.InwardChallanTable && item.InwardChallanTable.length > 0 ? item.InwardChallanTable[0] : {};
+
+                            const formattedInwardDate = item.InwardDate
+                              ? new Date(item.InwardDate).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "2-digit" })
+                              : "-";
+
+                            const formattedChallanDate = item.ChallanDate
+                              ? new Date(item.ChallanDate).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "2-digit" })
+                              : "-";
+
+                            const year = item.InwardDate
+                              ? `${new Date(item.InwardDate).getFullYear().toString().slice(-2)}-${(new Date(item.InwardDate).getFullYear() + 1).toString().slice(-2)}`
+                              : "24-25";
+
+                            // Extract item code and desc from ItemDescription pattern: "Part: FGFG1001 - 1 - CAP OIL LOCK DF | ..."
+                            let itemCode = "-";
+                            let itemDesc = inwardChallan.ItemDescription || "-";
+                            if (inwardChallan.ItemDescription && inwardChallan.ItemDescription.includes("Part:")) {
+                              const parts = inwardChallan.ItemDescription.split("|");
+                              const partInfo = parts[0].replace("Part:", "").trim();
+                              const firstDash = partInfo.indexOf("-");
+                              if (firstDash > -1) {
+                                itemCode = partInfo.substring(0, firstDash).trim();
+                                itemDesc = partInfo.substring(firstDash + 1).trim();
+                              } else {
+                                itemCode = partInfo;
+                                itemDesc = partInfo;
+                              }
+                            }
+
+                            return (
+                              <tr key={item.id || index}>
+                                <td>{index + 1}</td>
+                                <td>{year}</td>
+                                <td>
+                                  <span className="ourf4"> Our_F4 </span>
+                                </td>
+                                <td>SHARP</td>
+                                <td>{item.id}</td>
+                                <td>{formattedInwardDate}</td>
+                                <td>
+                                  {formattedInwardDate} <br /> {item.InwardTime || "00:00"}
+                                </td>
+                                <td>
+                                  {item.SupplierName || "-"}
+                                </td>
+                                <td>
+                                  {" "}
+                                  <span className="nummmr">
+                                    {item.InwardF4No || "-"}
+                                  </span> <br /> {item.ChallanNo || "-"}
+                                </td>
+                                <td>
+                                  {formattedInwardDate} <br /> {formattedChallanDate}
+                                </td>
+                                <td>
+                                  {itemCode}
+                                </td>
+                                <td>{itemDesc} </td>
+                                <td>{inwardChallan.InQtyNOS || inwardChallan.OutQty || "0"}</td>
+                                <td>{inwardChallan.InQtyNOS || inwardChallan.OutQty || "0"}</td>
+                                <td>0</td>
+                                <td>0</td>
+                                <td>Accept</td>
+                                <td>{item.PreparedBy || "mobin"}</td>
+                                <td>
+                                  <FaEdit />
+                                </td>
+                                <td>
+                                  <HiDocumentArrowDown />
+                                </td>
+                                <td>
+                                  {" "}
+                                  <FaEye />
+                                </td>
+                                <td>
+                                  <MdMarkEmailRead />
+                                </td>
+                                <td>
+                                  {" "}
+                                  <MdDeleteForever />{" "}
+                                </td>
+                              </tr>
+                            );
+                          })
+                        ) : (
+                          <tr>
+                            <td colSpan="23" className="text-center">No records found</td>
+                          </tr>
+                        )}
                       </tbody>
                     </table>
                   </div>
@@ -290,9 +346,9 @@ const InwardQCList = () => {
               </main>
             </div>
           </div>
-        </div>
-      </div>
-    </div>
+        </div >
+      </div >
+    </div >
   );
 };
 
