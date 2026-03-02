@@ -50,6 +50,7 @@
 .InprocessInspection-Main .d-flex {
   margin-top: 0 !important;
 }
+
 /* Form and Inputs */
 .InprocessInspection-Main label {
   font-size: 14px;
@@ -63,7 +64,7 @@
   padding: 5px 10px;
   border-radius: 4px;
   width: 100%;
-  
+
 }
 
 .InprocessInspection-Main select {
@@ -105,7 +106,7 @@
 .InprocessInspectionMaster .table th {
   white-space: nowrap;
   padding: 10px;
-  
+
 }
 
 .InprocessInspection-header .btn {
@@ -125,11 +126,13 @@
   font-size: 14px;
 
 }
+
 .InprocessInspectionMaster .table-responsive {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   width: 100%;
 }
+
 .InprocessInspectionMaster .table th,
 .InprocessInspectionMaster .table td {
   white-space: nowrap;
@@ -144,6 +147,7 @@
   color: white;
   font-weight: bold;
 }
+
 .InprocessInspection-Main .table th {
   background-color: #e9ecef;
   color: black;
@@ -225,7 +229,8 @@ table {
   font-size: 12px;
 }
 
-.table th, .table td {
+.table th,
+.table td {
   vertical-align: middle;
 }
 

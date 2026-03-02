@@ -16,8 +16,8 @@ import axios from "axios";
 const InprocessInspection = () => {
   const navigate = useNavigate();
 
-  const handleSelect = () => {
-    navigate("/InprocessInspectionDetails");
+  const handleSelect = (item) => {
+    navigate("/InprocessInspectionDetails", { state: { selectedItem: item } });
   };
 
   const [sideNavOpen, setSideNavOpen] = useState(false);
@@ -37,15 +37,17 @@ const InprocessInspection = () => {
   }, [sideNavOpen]);
 
   const [data, setData] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     const fetchProductionEntries = async () => {
       try {
         const response = await axios.get("http://127.0.0.1:8000/Production/api/production-entries/");
         if (response.data && response.data.value) {
-          setData(response.data.value);
+          setData([...response.data.value].reverse());
         } else if (Array.isArray(response.data)) {
-          setData(response.data);
+          setData([...response.data].reverse());
         }
       } catch (error) {
         console.error("Error fetching production-entries:", error);
@@ -53,6 +55,13 @@ const InprocessInspection = () => {
     };
     fetchProductionEntries();
   }, []);
+
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = data.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(data.length / itemsPerPage);
+
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   return (
     <div className="InprocessInspectionMaster">
@@ -172,14 +181,14 @@ const InprocessInspection = () => {
                           </tr>
                         </thead>
                         <tbody>
-                          {data && data.length > 0 ? (
-                            data.map((item, index) => {
+                          {currentItems && currentItems.length > 0 ? (
+                            currentItems.map((item, index) => {
                               const formattedDate = item.Date
                                 ? new Date(item.Date).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "2-digit" })
                                 : "-";
                               return (
                                 <tr key={item.id || index}>
-                                  <td>{index + 1}</td>
+                                  <td>{indexOfFirstItem + index + 1}</td>
                                   <td>{item.Series || "-"}</td>
                                   <td>{item.Prod_no || "-"}</td>
                                   <td>{formattedDate}</td>
@@ -191,7 +200,7 @@ const InprocessInspection = () => {
                                   <td>{item.operation || "-"}</td>
                                   <td>{item.shift || "-"}</td>
                                   <td>{item.unit_machine || "-"}</td>
-                                  <td>{item.lot_no || "-"}</td>
+                                  <td>{item.lot_no ? item.lot_no.split('|')[0] : "-"}</td>
                                   <td>{item.prod_qty || "0"}</td>
                                   <td>-</td>
                                   <td>{item.rework_qty || "0"}</td>
@@ -200,7 +209,7 @@ const InprocessInspection = () => {
                                   <td>
                                     <span
                                       style={{ color: "#2f75b5", cursor: "pointer", fontWeight: "600" }}
-                                      onClick={handleSelect}
+                                      onClick={() => handleSelect(item)}
                                     >
                                       Select
                                     </span>
@@ -217,6 +226,29 @@ const InprocessInspection = () => {
                         </tbody>
                       </table>
                     </div>
+                    {data.length > itemsPerPage && (
+                      <nav aria-label="Page navigation" className="mt-3">
+                        <ul className="pagination justify-content-center">
+                          <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+                            <button className="page-link" onClick={() => paginate(currentPage - 1)} aria-label="Previous">
+                              <span aria-hidden="true">&laquo;</span>
+                            </button>
+                          </li>
+                          {[...Array(totalPages)].map((_, i) => (
+                            <li key={i + 1} className={`page-item ${currentPage === i + 1 ? 'active' : ''}`}>
+                              <button className="page-link" onClick={() => paginate(i + 1)}>
+                                {i + 1}
+                              </button>
+                            </li>
+                          ))}
+                          <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+                            <button className="page-link" onClick={() => paginate(currentPage + 1)} aria-label="Next">
+                              <span aria-hidden="true">&raquo;</span>
+                            </button>
+                          </li>
+                        </ul>
+                      </nav>
+                    )}
                   </div>
 
                   <div className="AssemblyEntry-bottom mt-5">

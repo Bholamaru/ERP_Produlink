@@ -253,7 +253,6 @@ const PendingPo = () => {
                           <td>
                             <button
                               className="pobtn"
-                              onClick={() => setSearchToggle((t) => !t)}
                             >
                               Search
                             </button>

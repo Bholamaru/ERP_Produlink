@@ -178,7 +178,6 @@ const PurchseOrderStatus = () => {
                           <th>
                             <button
                               className="pobtn"
-                              onClick={() => setSearchToggle(v => !v)}
                             >
                               Search
                             </button>

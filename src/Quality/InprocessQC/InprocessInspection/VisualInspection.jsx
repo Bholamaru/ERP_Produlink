@@ -1,9 +1,35 @@
 import React from "react";
 
-const VisualInspection = () => {
+const VisualInspection = ({ visualTests, setVisualTests }) => {
+  const [newVisualTest, setNewVisualTest] = React.useState({
+    test_no: "",
+    test_description: "",
+    specification: "",
+    method_of_check: "",
+    m1: "", m2: "", m3: "", m4: "", m5: "",
+    merge: false,
+    remark: ""
+  });
+
+  const handleAdd = () => {
+    setVisualTests(prev => [...prev, { ...newVisualTest, id: Date.now() }]);
+    setNewVisualTest({
+      test_no: "",
+      test_description: "",
+      specification: "",
+      method_of_check: "",
+      m1: "", m2: "", m3: "", m4: "", m5: "",
+      merge: false,
+      remark: ""
+    });
+  };
+
+  const handleDelete = (id) => {
+    setVisualTests(visualTests.filter(t => t.id !== id));
+  };
+
   return (
     <div className="mt-3">
-
       {/* ================= UPPER ENTRY TABLE ================= */}
       <div className="table-responsive mb-3">
         <table className="table table-bordered text-center">
@@ -23,36 +49,24 @@ const VisualInspection = () => {
               <th>Action</th>
             </tr>
           </thead>
-
           <tbody>
             <tr>
-              <td><input className="form-control" /></td>
-              <td><input className="form-control" placeholder="Enter"/></td>
-              <td><input className="form-control" /></td>
-              <td><input className="form-control" /></td>
-
-              {/* 1 to 5 inputs */}
-              <td><input className="form-control" /></td>
-              <td><input className="form-control" /></td>
-              <td><input className="form-control" /></td>
-              <td><input className="form-control" /></td>
-              <td><input className="form-control" /></td>
-
-              {/* Merge checkbox */}
-              <td><input type="checkbox" /></td>
-
-              <td><input className="form-control" /></td>
-
-              <td>
-                <button className="btn btn-primary btn-sm">
-                  Add
-                </button>
-              </td>
+              <td><input className="form-control" placeholder="Enter" value={newVisualTest.test_no} onChange={(e) => setNewVisualTest({ ...newVisualTest, test_no: e.target.value })} /></td>
+              <td><input className="form-control" placeholder="Enter" value={newVisualTest.test_description} onChange={(e) => setNewVisualTest({ ...newVisualTest, test_description: e.target.value })} /></td>
+              <td><input className="form-control" placeholder="Enter" value={newVisualTest.specification} onChange={(e) => setNewVisualTest({ ...newVisualTest, specification: e.target.value })} /></td>
+              <td><input className="form-control" value={newVisualTest.method_of_check} onChange={(e) => setNewVisualTest({ ...newVisualTest, method_of_check: e.target.value })} /></td>
+              <td><input className="form-control" value={newVisualTest.m1} onChange={(e) => setNewVisualTest({ ...newVisualTest, m1: e.target.value })} /></td>
+              <td><input className="form-control" value={newVisualTest.m2} onChange={(e) => setNewVisualTest({ ...newVisualTest, m2: e.target.value })} /></td>
+              <td><input className="form-control" value={newVisualTest.m3} onChange={(e) => setNewVisualTest({ ...newVisualTest, m3: e.target.value })} /></td>
+              <td><input className="form-control" value={newVisualTest.m4} onChange={(e) => setNewVisualTest({ ...newVisualTest, m4: e.target.value })} /></td>
+              <td><input className="form-control" value={newVisualTest.m5} onChange={(e) => setNewVisualTest({ ...newVisualTest, m5: e.target.value })} /></td>
+              <td><input type="checkbox" checked={newVisualTest.merge} onChange={(e) => setNewVisualTest({ ...newVisualTest, merge: e.target.checked })} /></td>
+              <td><input className="form-control" value={newVisualTest.remark} onChange={(e) => setNewVisualTest({ ...newVisualTest, remark: e.target.value })} /></td>
+              <td><button className="btn btn-primary btn-sm" onClick={handleAdd}>Add</button></td>
             </tr>
           </tbody>
         </table>
       </div>
-
 
       {/* ================= LOWER GRID TABLE ================= */}
       <div className="table-responsive">
@@ -62,7 +76,7 @@ const VisualInspection = () => {
               <th>Sr.</th>
               <th>Test No</th>
               <th>Test Description</th>
-              <th>Check Points</th>
+              <th>Specification</th>
               <th>Method of Check</th>
               <th>M1</th>
               <th>M2</th>
@@ -74,57 +88,27 @@ const VisualInspection = () => {
               <th>Delete</th>
             </tr>
           </thead>
-
           <tbody>
-        <tr>
-          <td>1</td>
-
-          <td><input className="form-control form-control-sm" /></td>
-          <td><input className="form-control form-control-sm" /></td>
-          <td><input className="form-control form-control-sm" /></td>
-          <td><input className="form-control form-control-sm" /></td>
-
-              {/* M1 to M5 → small blank boxes */}
-          <td><input className="form-control form-control-sm" /></td>
-          <td><input className="form-control form-control-sm" /></td>
-          <td><input className="form-control form-control-sm" /></td>
-          <td><input className="form-control form-control-sm" /></td>
-          <td><input className="form-control form-control-sm" /></td>
-
-               {/* ONLY Merge has checkbox */}
-    <td className="text-center">
-      <input type="checkbox" />
-    </td>
-
-    <td><input className="form-control form-control-sm" /></td>
-
-    {/* Delete */}
-    <td>
-      <button className="btn btn-link text-danger">
-        🗑
-      </button>
-    </td>
-  </tr>
-</tbody>
-</table>
-{/* Enable Fields */}
-<div className="enable-field-wrapper text-start ">
-  <div className="form-check m-0">
-    <input
-      className="form-check-input"
-      type="checkbox"
-      id="enableFieldsVisual"
-    />
-    <label
-      className="form-check-label"
-      htmlFor="enableFieldsVisual"
-    >
-      Enable Fields
-    </label>
-  </div>
-</div>
+            {visualTests.map((t, idx) => (
+              <tr key={t.id}>
+                <td>{idx + 1}</td>
+                <td>{t.test_no}</td>
+                <td>{t.test_description}</td>
+                <td>{t.specification}</td>
+                <td>{t.method_of_check}</td>
+                <td>{t.m1}</td>
+                <td>{t.m2}</td>
+                <td>{t.m3}</td>
+                <td>{t.m4}</td>
+                <td>{t.m5}</td>
+                <td className="text-center"><input type="checkbox" checked={t.merge} readOnly /></td>
+                <td>{t.remark}</td>
+                <td><button className="btn btn-link text-danger border-0 bg-transparent" onClick={() => handleDelete(t.id)}>🗑</button></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
-
     </div>
   );
 };

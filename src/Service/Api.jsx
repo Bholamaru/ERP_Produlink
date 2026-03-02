@@ -42,7 +42,7 @@ export async function postRequest(endpoint, data) {
 }
 
 export const saveBusiness = async (data) => {
- 
+
   try {
     const response = await fetch(`${BASE_URL1}/master/Business_Partner/`, {
       method: "POST",
@@ -1368,8 +1368,8 @@ export const saveItemMaster = async (formData, technicalSpecs, npdDetails, data2
 
     // If itemId exists, use PUT to update, otherwise use POST to create
     const method = itemId ? "PUT" : "POST"
-    const url = itemId 
-      ? `${BASE_URL}api/item-table/${itemId}/` 
+    const url = itemId
+      ? `${BASE_URL}api/item-table/${itemId}/`
       : `${BASE_URL}api/item-table/`
 
     const response = await fetch(url, {
@@ -1389,8 +1389,8 @@ export const saveItemMaster = async (formData, technicalSpecs, npdDetails, data2
 
     const result = await response.json()
     // Return success message with operation type
-    return { 
-      status: true, 
+    return {
+      status: true,
       message: `Item ${itemId ? "updated" : "created"} successfully!`,
       data: result
     }
@@ -1400,7 +1400,7 @@ export const saveItemMaster = async (formData, technicalSpecs, npdDetails, data2
   }
 }
 
-export const updateIItemData = async (id, data) => { 
+export const updateIItemData = async (id, data) => {
   try {
     const token = localStorage.getItem("accessToken");
 
@@ -1429,7 +1429,7 @@ export const updateIItemData = async (id, data) => {
   }
 };
 
-export const getItemDataById = async (id) => { 
+export const getItemDataById = async (id) => {
   try {
     const token = localStorage.getItem("accessToken");
 
@@ -3133,6 +3133,100 @@ export const deleteItemMaster = async (id) => {
     return response.json();
   } catch (error) {
     console.error("Delete error:", error);
+    throw error;
+  }
+};
+
+// Subcon Jobwork Inward QC - V3
+export const forceSaveSubconQC = async (data) => {
+  const url = `https://erp-render.onrender.com/Quality/subcon-jobwork-qc/`;
+  console.log("!!! FORCING API CALL TO:", url);
+  try {
+    const token = localStorage.getItem("accessToken");
+    const headers = {
+      "Content-Type": "application/json",
+    };
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: headers,
+      body: JSON.stringify(data),
+    });
+
+    const contentType = response.headers.get("content-type");
+    if (!response.ok) {
+      if (contentType && contentType.includes("application/json")) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || errorData.message || JSON.stringify(errorData));
+      } else {
+        const text = await response.text();
+        console.error("Server HTML Error Response:", text);
+        throw new Error(`Server returned ${response.status} ${response.statusText} at ${url}. Check console for details.`);
+      }
+    }
+
+    if (contentType && contentType.includes("application/json")) {
+      return await response.json();
+    } else {
+      const text = await response.text();
+      return text;
+    }
+  } catch (error) {
+    console.error("Error saving Subcon Jobwork QC (V3):", error);
+    throw error;
+  }
+};
+
+// Inward Test QC Number
+export const fetchInwardTestQcNumber = async () => {
+  const url = `https://erp-render.onrender.com/Quality/inwardtest-qc-number/`;
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`Server returned ${response.status} ${response.statusText}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching Inward Test QC Number:", error);
+    throw error;
+  }
+};
+// Save QC Info
+export const saveQCInfo = async (data) => {
+  const url = `https://erp-render.onrender.com/Quality/api/qcinfo/`;
+  try {
+    const token = localStorage.getItem("accessToken");
+    const headers = {
+      "Content-Type": "application/json",
+    };
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: headers,
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      let errorMsg = "Failed to save QC report";
+      try {
+        const errorData = await response.json();
+        errorMsg = errorData.detail || errorData.message || errorData.error || JSON.stringify(errorData) || errorMsg;
+      } catch (e) {
+        const text = await response.text();
+        errorMsg = text || errorMsg;
+      }
+      throw new Error(errorMsg);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error saving QC Info:", error);
     throw error;
   }
 };
