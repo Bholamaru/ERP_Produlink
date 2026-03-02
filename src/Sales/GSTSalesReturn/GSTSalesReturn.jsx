@@ -6,17 +6,12 @@ import SideNav from "../../SideNav/SideNav.js";
 import { useNavigate } from 'react-router-dom';
 import "./GSTSalesReturn.css";
 import Cached from "@mui/icons-material/Cached.js";
-<<<<<<< HEAD
 import Search from "@mui/icons-material/Search.js";
-=======
-import axios from "axios";
->>>>>>> archita
 
 
 
 const GSTSalesReturn = () => {
   const [sideNavOpen, setSideNavOpen] = useState(false);
-<<<<<<< HEAD
   const [plant, setPlant] = useState("");
   const [series, setSeries] = useState("");
   const [type, setType] = useState("");
@@ -53,6 +48,24 @@ const GSTSalesReturn = () => {
   const [selectedInvoiceData, setSelectedInvoiceData] = useState(null);
   const [invoiceItems, setInvoiceItems] = useState([]);
   const [selectedSalesInvNo, setSelectedSalesInvNo] = useState("");
+  const [returnQuantities, setReturnQuantities] = useState({});
+  const [basicAmount, setBasicAmount] = useState(0);
+  const [discountPercent, setDiscountPercent] = useState(0);
+  const [discountAmt, setDiscountAmt] = useState(0);
+  const [subTotal, setSubTotal] = useState(0);
+  const [totalAmount, setTotalAmount] = useState(0); // kept for API payload but unused
+  const [toc, setToc] = useState(0);
+  const [tsc, setTsc] = useState(0);
+  const [grandTotal, setGrandTotal] = useState(0);
+  // GST percentages and calculated amounts
+  const [cgstPercent, setCgstPercent] = useState(0);
+  const [cgstAmt, setCgstAmt] = useState(0);
+  const [sgstPercent, setSgstPercent] = useState(0);
+  const [sgstAmt, setSgstAmt] = useState(0);
+  const [igstPercent, setIgstPercent] = useState(0);
+  const [igstAmt, setIgstAmt] = useState(0);
+  const [utgstPercent, setUtgstPercent] = useState(0);
+  const [utgstAmt, setUtgstAmt] = useState(0);
   
   const navigate = useNavigate();  
   
@@ -235,6 +248,21 @@ const GSTSalesReturn = () => {
       // Set invoice items from the items array
       if (selected.items && Array.isArray(selected.items)) {
         setInvoiceItems(selected.items);
+        // derive discount percent from first item
+        if (selected.items.length > 0) {
+          const firstPercent = getDiscountPercent(selected.items[0]);
+          const numeric = parseFloat(firstPercent) || 0;
+          setDiscountPercent(numeric);
+          calculateSubtotal(basicAmount);
+        }
+      }
+      // read GST percentages if available
+      if (selected.GSTdetails && selected.GSTdetails.length > 0) {
+        const gst = selected.GSTdetails[0];
+        setCgstPercent(parseFloat(gst.cgst) || 0);
+        setSgstPercent(parseFloat(gst.sgst) || 0);
+        setIgstPercent(parseFloat(gst.igst) || 0);
+        setUtgstPercent(parseFloat(gst.utgst) || 0);
       }
       
       // Set other fields
@@ -251,23 +279,71 @@ const GSTSalesReturn = () => {
       setSaveError(null);
       setSaveSuccess(false);
 
+      // Prepare items with return qty and basic amount
+      // Calculate discount amount from percentage: (basic * discountPercent) / 100
+      const discountPercentVal = parseFloat(discountPercent) || 0;
+      const calculatedDiscountAmount = (basicAmount * discountPercentVal) / 100;
+      
+      const itemsData = invoiceItems.map((item, index) => ({
+        inv_no: selectedInvoiceData?.invoice_no || "",
+        inv_date: selectedInvoiceData?.invoice_Date || "",
+        item_code: item.id || "",
+        hsn_code: item.hsn_code || "",
+        rate: parseFloat(item.rate) || 0,
+        discount: parseFloat(item.discount_percent) || 0,
+        total_amt: parseFloat(item.rate) * parseFloat(item.inv_qty) || 0,
+        inv_qty: parseFloat(item.inv_qty) || 0,
+        return_qty: parseFloat(returnQuantities[index]) || 0,
+        lot: "",
+        reason: "",
+        grir_no: "",
+        grir_date: null,
+        basic: (parseFloat(returnQuantities[index]) || 0) * (parseFloat(item.rate) || 0),
+        disc: ((parseFloat(returnQuantities[index]) || 0) * (parseFloat(item.rate) || 0) * discountPercentVal) / 100,
+        subtotal: parseFloat(subTotal) || 0,
+        total_amount: parseFloat(totalAmount) || 0,
+        cgst: 0,
+        sgst: 0,
+        igst: 0,
+        utgst: 0,
+        cgst_amt: 0,
+        sgst_amt: 0,
+        igst_amt: 0,
+        utgst_amt: 0,
+        toc: 0,
+        tsc: 0,
+        grand_total: parseFloat(totalAmount) || 0
+      }));
+
       const payload = {
         plant: plant || "",
-        gateEntryNo: gateEntryNo || "",
+        gate_entry_no: gateEntryNo || "",
         series: series || "",
         type: type || "",
-        salesReturnNo: salesReturnNo || "",
-        salesReturnDate: salesReturnDate || "",
-        custName: custName || "",
-        invoiceChallanNo: invoiceChallanNo || "",
-        invoiceChallanDate: invoiceChallanDate || "",
-        transportMode: transportMode || "",
-        transportName: transportName || "",
-        lrNo: lrNo || "",
-        vehicleNo: vehicleNo || "",
+        sales_return_no: salesReturnNo || "",
+        sales_return_date: salesReturnDate || "",
+        cust_name: custName || "",
+        invoice_challan_no: invoiceChallanNo || "",
+        invoice_challan_date: invoiceChallanDate || "",
+        transport_name: transportName || "",
+        Lr_no: lrNo || "",
+        vehical_no: vehicleNo || "",
         remark: remark || "",
-        eInvoice: eInvoice || "",
-        isService: isService || false
+        for_e_invoice: eInvoice || "",
+        is_service: isService || false,
+        cgst_percent: cgstPercent,
+        sgst_percent: sgstPercent,
+        igst_percent: igstPercent,
+        utgst_percent: utgstPercent,
+        cgst_amt: cgstAmt,
+        sgst_amt: sgstAmt,
+        igst_amt: igstAmt,
+        utgst_amt: utgstAmt,
+        toc: toc,
+        tsc: tsc,
+        grand_total: grandTotal,
+        total_amount: totalAmount,
+        items: itemsData
       };
 
       console.log("Sending payload:", payload);
@@ -302,6 +378,78 @@ const GSTSalesReturn = () => {
   };
 
   // Handle clear form
+  // Handle return quantity change
+  const handleReturnQtyChange = (index, value) => {
+    const newReturnQties = { ...returnQuantities };
+    newReturnQties[index] = value;
+    setReturnQuantities(newReturnQties);
+    
+    // Calculate basic amount
+    calculateBasicAmount(newReturnQties);
+  };
+
+  // Calculate basic amount and subtotal
+  const calculateBasicAmount = (returnQties) => {
+    let total = 0;
+    invoiceItems.forEach((item, index) => {
+      const returnQty = parseFloat(returnQties[index]) || 0;
+      const rate = parseFloat(item.rate) || 0;
+      total += returnQty * rate;
+    });
+    setBasicAmount(total);
+    // Recalculate subtotal when basic changes
+    calculateSubtotal(total);
+  };
+
+  // calculate tax amounts from subtotal & percents
+  const calculateTaxAmounts = () => {
+    const base = parseFloat(subTotal) || 0;
+    setCgstAmt((base * parseFloat(cgstPercent || 0)) / 100);
+    setSgstAmt((base * parseFloat(sgstPercent || 0)) / 100);
+    setIgstAmt((base * parseFloat(igstPercent || 0)) / 100);
+    setUtgstAmt((base * parseFloat(utgstPercent || 0)) / 100);
+  };
+
+  // Calculate subtotal (basic - discount amount) and set discount amount
+  const calculateSubtotal = (basic) => {
+    const percent = parseFloat(discountPercent) || 0;
+    const discValue = (basic * percent) / 100;
+    setDiscountAmt(discValue);
+    const subtotalValue = basic - discValue;
+    setSubTotal(subtotalValue);
+  };
+
+  // Handle discount percent change (if manual override is allowed)
+  const handleDiscountPercentChange = (value) => {
+    setDiscountPercent(value);
+    calculateSubtotal(basicAmount);
+  };
+
+  // recalc taxes when subtotal or percents change
+  useEffect(() => {
+    calculateTaxAmounts();
+  }, [subTotal, cgstPercent, sgstPercent, igstPercent, utgstPercent]);
+
+  /*
+  // compute total amount removed; staying zero
+  */
+
+  // compute grand total (subtotal + all taxes + toc + tsc)
+  useEffect(() => {
+    const base = parseFloat(subTotal) || 0;
+    const total = base + (cgstAmt || 0) + (sgstAmt || 0) + (igstAmt || 0) + (utgstAmt || 0) + (parseFloat(toc) || 0) + (parseFloat(tsc) || 0);
+    setGrandTotal(total);
+  }, [subTotal, cgstAmt, sgstAmt, igstAmt, utgstAmt, toc, tsc]);
+  // Handle delete invoice item
+  const handleDeleteInvoiceItem = (indexToDelete) => {
+    setInvoiceItems(invoiceItems.filter((_, index) => index !== indexToDelete));
+    // Also remove the return quantity for this item
+    const newReturnQties = { ...returnQuantities };
+    delete newReturnQties[indexToDelete];
+    setReturnQuantities(newReturnQties);
+    calculateBasicAmount(newReturnQties);
+  };
+
   const handleClearForm = () => {
     setPlant("");
     setGateEntryNo("");
@@ -322,15 +470,6 @@ const GSTSalesReturn = () => {
     setSaveError(null);
     setSaveSuccess(false);
   };
-=======
-  const navigate = useNavigate();  
-  const [gateEntries, setGateEntries] = useState([]);  
-  const [selectedType, setSelectedType] = useState(""); 
-  const [selectedGateEntry, setSelectedGateEntry] = useState("")
-  const handleButtonClick = () => {
-      navigate('/GSTSalesReturnList'); 
-    };
->>>>>>> archita
   
 
   const toggleSideNav = () => {
@@ -344,24 +483,52 @@ const GSTSalesReturn = () => {
       document.body.classList.remove("side-nav-open");
     }
   }, [sideNavOpen]);
-<<<<<<< HEAD
-=======
-  useEffect(() => {
-  fetchGateEntries();
-}, []);
 
-const fetchGateEntries = async () => {
-  try {
-    const response = await axios.get(
-      "https://erp-render.onrender.com/Sales/salesreturn/gate-entry"
-    );
-    setGateEntries(response.data);
-  } catch (error) {
-    console.error("Error fetching gate entries:", error);
-  }
-};
+  // Helper to determine discount percent for an invoice item
+  const getDiscountPercent = (item) => {
+    if (!item || typeof item !== 'object') return '0%';
 
->>>>>>> archita
+    const parseNumber = (v) => {
+      if (v === null || v === undefined) return null;
+      if (typeof v === 'number') return v;
+      if (typeof v === 'string') {
+        const cleaned = v.replace(/%/g, '').replace(/[^0-9.-]/g, '');
+        const n = parseFloat(cleaned);
+        return isNaN(n) ? null : n;
+      }
+      return null;
+    };
+
+    // Common field names that may contain discount percent or value
+    const percentKeys = ['disc_percent','discPer','discountPercent','discount_percent','discount_rate','disc%','disc_pct','discountp'];
+    const amountKeys = ['discount_amount','disc_amt','discountAmount','discount_value','disc_value','discount'];
+
+    // Check percent-like fields first
+    for (const k of percentKeys) {
+      const val = parseNumber(item[k]);
+      if (val !== null) return `${val}%`;
+    }
+
+    // Some APIs use short names like 'dis' or 'disc'
+    const shortPercent = parseNumber(item.dis) ?? parseNumber(item.disc);
+    if (shortPercent !== null) return `${shortPercent}%`;
+
+    // If we have a discount amount and item rate/qty, compute percent
+    for (const k of amountKeys) {
+      const amt = parseNumber(item[k]);
+      if (amt !== null) {
+        const qty = parseNumber(item.inv_qty) ?? parseNumber(item.qty) ?? parseNumber(item.po_qty) ?? 1;
+        const rate = parseNumber(item.rate) ?? parseNumber(item.price) ?? 0;
+        const base = (qty && rate) ? qty * rate : 0;
+        if (base > 0) {
+          const pct = (amt / base) * 100;
+          return `${+pct.toFixed(2)}%`;
+        }
+      }
+    }
+
+    return '0%';
+  };
 
   return (
     <div className="GSTSalesReturnMaster">
@@ -399,14 +566,9 @@ const fetchGateEntries = async () => {
                                     <tr>
                                         <th>Plant:</th>
                                         <th>Gate Entry No: </th>
-<<<<<<< HEAD
                                        <th>Series:</th>
                                         <th>Type:</th>
                                        
-=======
-                                        <th>Series:</th>
-                                        <th>Type:</th>
->>>>>>> archita
                                         <th>Sales Return No: </th>
                                         <th>Sales Return Date:</th>
                                         <th>Cust Name</th>
@@ -415,21 +577,16 @@ const fetchGateEntries = async () => {
                                     <tbody>
                                     <tr>
                                         <td>
-<<<<<<< HEAD
                                            <select 
                                              name="plant"
                                              className="form-control" 
                                              value={plant}
                                              onChange={(e) => setPlant(e.target.value)}
                                            >
-=======
-                                           <select name=""  className="form-control" id="">
->>>>>>> archita
                                                 <option value="">ProduLink</option>
                                             </select>
                                         </td>
                                         <td>
-<<<<<<< HEAD
                                             <div style={{position: 'relative', display: 'inline-block', width: '100%'}}>
                                               <select 
                                                 name="gateEntry"
@@ -527,78 +684,19 @@ const fetchGateEntries = async () => {
                                                 <Search />
                                               </span>
                                             </div>
-=======
-                                    <select
-                                      className="form-control"
-                                      value={selectedGateEntry}
-                                      onChange={(e) => setSelectedGateEntry(e.target.value)}
-                                    >
-                                      <option value="">Select</option>
-
-                                      {gateEntries.map((item) => (
-                                        <option key={item.id} value={item.id}>
-                                          {item.GE_No}
-                                        </option>
-                                      ))}
-                                    </select>
-
-                                    <button type="button" className="btn" onClick={fetchGateEntries}>
-                                      <Cached />
-                                    </button>
-                                  </td>
-
-                                        <td>
-                                          <select name=""  className="form-control" id="">
-                                                <option value="">Select</option>
-                                                <option value="GSTSalesReturn">GST Sales Return</option>
-                                            </select>
-                                        </td>
-                                        <td>
-                                      <select
-                                        className="form-control"
-                                        value={selectedType}
-                                        onChange={(e) => setSelectedType(e.target.value)}
-                                      >
-                                        <option value="">Select</option>
-                                        <option value="Invoice">Invoice</option>
-                                        <option value="Direct">Direct</option>
-                                      </select>
-
-                                      <button type="button" className="btn">
-                                        <Cached />
-                                      </button>
-                                    </td>
-
-                                        <td>
-                                        <input type="text" className="form-control" />
-                                        </td>
-                                        <td>
-                                            <input type="date" className="form-control" />
-                                        </td>
-                                        <td>
-                                            <input type="text" className="form-control" placeholder="Name..." />
-                                            <button className="btn">Search</button>
->>>>>>> archita
                                         </td>
                                     </tr>
                                     </tbody>
                                 </table>
                           </div>
                     </div>
-<<<<<<< HEAD
 
-=======
-                  {selectedType === "Invoice" && (
-                 <div style={{ height: "200px" }}></div>
-                  )}
->>>>>>> archita
 
                   <div className="GSTSalesReturn-main mt-5">
                     <div className="GSTSalesReturn-tabs">
                    
                       <div className="tab-content mt-4" id="" >
 
-<<<<<<< HEAD
                           {type === "Invoice" && (                            <div className="table-responsive mb-4">
                               {/* <h6 className="mb-3">Select Invoice</h6> */}
                               <table className="table table-striped table-hover table-bordered">
@@ -654,9 +752,6 @@ const fetchGateEntries = async () => {
                           )}
 
                           {type === "Direct" && (                          <div className="table-responsive">
-=======
-                          <div className="table-responsive">
->>>>>>> archita
                                 <table className="table table-bordered">
                                     <thead>
                                     <tr>
@@ -676,7 +771,6 @@ const fetchGateEntries = async () => {
                                     <tbody>
                                     <tr>
                                         <td>
-<<<<<<< HEAD
                                           <select 
                                             className="form-control" 
                                             value={selectedSalesInvNo}
@@ -707,14 +801,6 @@ const fetchGateEntries = async () => {
                                                 <Search />
                                               </span>
                                             </div>
-=======
-                                          <input type="text" placeholder="" className="form-control" />
-                                        </td>
-                                        <td> <input type="date" placeholder="" className="form-control" /></td>
-                                        <td>
-                                            <input type="text" placeholder="Enter Code" className="form-control" />
-                                            <button className="btn w-50">Search</button>
->>>>>>> archita
                                         </td>
                                         <td><textarea className="form-control"></textarea></td>
                                         <td><textarea className="form-control"></textarea></td>
@@ -741,10 +827,7 @@ const fetchGateEntries = async () => {
                                     </tbody>
                                 </table>
                           </div>
-<<<<<<< HEAD
                           )}
-=======
->>>>>>> archita
 
                             <div className="table-responsive">
                                         <table className="table table-bordered">
@@ -770,7 +853,6 @@ const fetchGateEntries = async () => {
                                             </tr>
                                         </thead>
                                         <tbody>
-<<<<<<< HEAD
                                           {selectedInvoiceData && invoiceItems.length > 0 ? (
                                             invoiceItems.map((item, index) => (
                                               <tr key={index}>
@@ -781,16 +863,24 @@ const fetchGateEntries = async () => {
                                                 <td>{item.description || "N/A"}</td>
                                                 <td>{item.hsn_code || "N/A"}</td>
                                                 <td>{item.rate || "N/A"}</td>
-                                                <td>0%</td>
+                                                <td>{getDiscountPercent(item)}</td>
                                                 <td>{(item.rate * item.inv_qty) || "N/A"}</td>
                                                 <td>{item.inv_qty || item.po_qty || "N/A"}</td>
                                                 <td>Edit</td>
-                                                <td><input type="text" className="form-control" /></td>
+                                                <td>
+                                                  <input 
+                                                    type="text" 
+                                                    className="form-control" 
+                                                    value={returnQuantities[index] || ""}
+                                                    onChange={(e) => handleReturnQtyChange(index, e.target.value)}
+                                                    placeholder="Return Qty"
+                                                  />
+                                                </td>
                                                 <td><input type="text" className="form-control" /></td>
                                                 <td><textarea name="" id=""></textarea></td>
                                                 <td><input type="text" className="form-control" /></td>
                                                 <td><input type="date" className="form-control" /></td>
-                                                <td><button className="btn"> X </button></td>
+                                                <td><button className="btn btn-gray btn-sm" onClick={() => handleDeleteInvoiceItem(index)}> X </button></td>
                                               </tr>
                                             ))
                                           ) : (
@@ -800,27 +890,6 @@ const fetchGateEntries = async () => {
                                               </td>
                                             </tr>
                                           )}
-=======
-                                            <tr>
-                                                <td>1</td>
-                                                <td></td>
-                                                <td></td>
-                                                <td></td>
-                                                <td></td>
-                                                <td></td>
-                                                <td></td>
-                                                <td></td>
-                                                <td></td>
-                                                <td></td>
-                                                <td>Edit</td>
-                                                <td> <input type="text" className="form-control" /></td>
-                                                <td> <input type="text" className="form-control" /></td>
-                                                <td> <textarea name=""  id=""></textarea></td>
-                                                <td> <input type="text" className="form-control" /></td>
-                                                <td> <input type="date" className="form-control" /></td>
-                                                <td><button className="btn"> X </button></td>
-                                            </tr>
->>>>>>> archita
                                         </tbody>
                                         </table>
                             </div>
@@ -840,41 +909,45 @@ const fetchGateEntries = async () => {
                                             <th colSpan="2">SGST</th>
                                             <th colSpan="2">IGST</th>
                                             <th colSpan="2">UTGST</th>
-                                            <th>TOC(Other)</th>
+                                            <th >TOC(Other)</th>
                                             <th colSpan="2">TSC </th>
                                             <th>Grand Total</th>
                                         </thead>
 
                                         <tbody>
-                                        <td> <input type="text" className="form-control" placeholder="" /> </td>
-                                        <td> <input type="text" className="form-control" placeholder="" /> </td>
-                                        <td> <input type="text" className="form-control" /></td>
-                                        <td> <input type="text" className="form-control" /></td>
-<<<<<<< HEAD
-                                        {/* <td> <input type="text" className="form-control" placeholder="00.00" /> %</td> */}
-                                        <td> <input type="text" className="form-control" placeholder="00.00" /> </td>
-                                        {/* <td> <input type="text" className="form-control" placeholder="00.00" /> %</td> */}
-                                        <td> <input type="text" className="form-control" placeholder="00.00" /> </td>
-                                        {/* <td> <input type="text" className="form-control" placeholder="00.00" /> %</td> */}
-=======
-                                        <td> <input type="text" className="form-control" placeholder="00.00" /> %</td>
-                                        <td> <input type="text" className="form-control" placeholder="00.00" /> </td>
-                                        <td> <input type="text" className="form-control" placeholder="00.00" /> %</td>
-                                        <td> <input type="text" className="form-control" placeholder="00.00" /> </td>
-                                        <td> <input type="text" className="form-control" placeholder="00.00" /> %</td>
->>>>>>> archita
-                                        <td> <input type="text" className="form-control" placeholder="00.00" /> </td>
-                                        <td> <input type="text" className="form-control" placeholder="00.00" /> </td> 
-                                        <td> <input type="text" className="form-control" placeholder="00.00" /> </td>
-                                        <td> <input type="text" className="form-control" placeholder="00.00" /> </td>
-<<<<<<< HEAD
-                                        {/* <td> <input type="text" className="form-control" placeholder="00.00" /> %</td> */}
-=======
-                                        <td> <input type="text" className="form-control" placeholder="00.00" /> %</td>
->>>>>>> archita
-                                        <td> <input type="text" className="form-control" placeholder="00.00" /> </td>
-                                        <td> <input type="text" className="form-control" placeholder="00.00" /> </td>
-                                        
+                                        <td> <input type="text" className="form-control" placeholder="" value={basicAmount} readOnly /> </td>
+                                        <td> <input type="text" className="form-control" placeholder="" value={discountAmt} readOnly /> </td>
+                                        <td> <input type="text" className="form-control" value={subTotal} readOnly /></td>
+                                        {/* TotalAmt field hidden as totalAmount is kept zero */}
+                                        <td> <input type="text" className="form-control" value={0} readOnly /></td>
+
+                                        {/* CGST % */}
+                                        <td> <input type="text" className="form-control" value={cgstPercent + "%"} readOnly /></td>
+                                        {/* CGST amt */}
+                                        <td> <input type="text" className="form-control" value={cgstAmt} readOnly /></td>
+
+                                        {/* SGST % */}
+                                        <td> <input type="text" className="form-control" value={sgstPercent + "%"} readOnly /></td>
+                                        {/* SGST amt */}
+                                        <td> <input type="text" className="form-control" value={sgstAmt} readOnly /></td>
+
+                                        {/* IGST % */}
+                                        <td> <input type="text" className="form-control" value={igstPercent + "%"} readOnly /></td>
+                                        {/* IGST amt */}
+                                        <td> <input type="text" className="form-control" value={igstAmt} readOnly /></td>
+
+                                        {/* UTGST % */}
+                                        <td> <input type="text" className="form-control" value={utgstPercent + "%"} readOnly /></td>
+                                        {/* UTGST amt */}
+                                        <td> <input type="text" className="form-control" value={utgstAmt} readOnly /></td>
+
+                                        {/* TOC */}
+                                        <td> <input type="text" className="form-control" value={toc} onChange={(e)=>setToc(e.target.value)} /></td>
+                                        {/* TSC */}
+                                        <td> <input type="text" className="form-control" value={tsc} onChange={(e)=>setTsc(e.target.value)} /></td>
+                                                                                <td> <input type="text" className="form-control" value={tsc} onChange={(e)=>setTsc(e.target.value)} /></td>
+                                        {/* Grand Total */}
+                                        <td> <input type="text" className="form-control" value={grandTotal} readOnly /></td>
                                         </tbody>
                                     </table>
                                 </div>
@@ -882,7 +955,6 @@ const fetchGateEntries = async () => {
                        </div>
 
 
-<<<<<<< HEAD
                       <div className="row text-start">
                           <div className="col-md-2">
                              <label htmlFor="">Invoice Challan No</label>
@@ -943,38 +1015,11 @@ const fetchGateEntries = async () => {
                                value={vehicleNo}
                                onChange={(e) => setVehicleNo(e.target.value)}
                              />
-=======
-                       <div className="row text-start">
-                          <div className="col-md-2">
-                             <label htmlFor="">Invoice Challan No</label>
-                             <input type="text" className="form-control" placeholder="" />
-                          </div>
-                          <div className="col-md-2">
-                             <label htmlFor="">Invoice Challan Date:</label>
-                             <input type="date" className="form-control" placeholder="" />
-                          </div>
-                          <div className="col-md-2">
-                             <label htmlFor="">Transport Mode:</label>
-                             <input type="text" className="form-control" placeholder="" />
-                          </div>
-                          <div className="col-md-2">
-                             <label htmlFor="">Transport Name:</label>
-                             <input type="text" className="form-control" placeholder="" />
-                          </div>
-                          <div className="col-md-2">
-                             <label htmlFor="">LR No:</label>
-                             <input type="text" className="form-control" placeholder="" />
-                          </div>
-                          <div className="col-md-2">
-                             <label htmlFor="">Vehicle No:</label>
-                             <input type="text" className="form-control" placeholder="" />
->>>>>>> archita
                           </div>
                       </div>
                       <div className="row text-start">
                           <div className="col-md-2">
                              <label htmlFor="">Remark</label>
-<<<<<<< HEAD
                              <textarea 
                                name="" 
                                className="form-control" 
@@ -992,27 +1037,16 @@ const fetchGateEntries = async () => {
                                value={eInvoice}
                                onChange={(e) => setEInvoice(e.target.value)}
                              >
-=======
-                             <textarea name=""  className="form-control" id=""></textarea>
-                          </div>
-                          <div className="col-md-2">
-                            <label htmlFor="">For E-Invoice :</label>
-                             <select name="" className="form-control" id="">
->>>>>>> archita
                                 <option value="">Bussiness To Bussiness</option>
                              </select>
                           </div>
                           <div className="col-md-2" style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start' }}>
-<<<<<<< HEAD
                             <input 
                               type="checkbox" 
                               placeholder="" 
                               checked={isService}
                               onChange={(e) => setIsService(e.target.checked)}
                             />
-=======
-                            <input type="checkbox" placeholder="" />
->>>>>>> archita
                             <label htmlFor=""> ISService</label>
                             </div>
 
@@ -1023,7 +1057,6 @@ const fetchGateEntries = async () => {
                                 </label>
                             </div>
                           <div className="col-md-2 mt-4">
-<<<<<<< HEAD
                             <button 
                               type="button"
                               className="btn btn-success"
@@ -1041,10 +1074,6 @@ const fetchGateEntries = async () => {
                             </button>
                             {saveSuccess && <div className="alert alert-success mt-2">Data saved successfully!</div>}
                             {saveError && <div className="alert alert-danger mt-2">Error: {saveError}</div>}
-=======
-                            <button className="btn">Save Dabit Note</button>
-                            <button className="btn">Clear</button>
->>>>>>> archita
                           </div>
 
                       </div>

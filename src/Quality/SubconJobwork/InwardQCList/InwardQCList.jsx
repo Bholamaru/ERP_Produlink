@@ -27,7 +27,7 @@ const InwardQCList = () => {
   useEffect(() => {
     const fetchInwardQcList = async () => {
       try {
-        const response = await axios.get("https://erp-render.onrender.com/Quality/inward-qc-list/");
+        const response = await axios.get("http://127.0.0.1:8000/Quality/inward-qc-list/");
         if (response.data && response.data.value) {
           setData(response.data.value);
         } else {

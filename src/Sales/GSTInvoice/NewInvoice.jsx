@@ -5,10 +5,6 @@ import NavBar from "../../NavBar/NavBar.js";
 import SideNav from "../../SideNav/SideNav.js";
 import { FaPlus } from "react-icons/fa6";
 import { FaRegCircleQuestion } from "react-icons/fa6";
-<<<<<<< HEAD
-=======
-// import Cached from "@mui/icons-material/Cached.js";
->>>>>>> archita
 import { useNavigate } from "react-router-dom";
 import "./NewInvoice.css";
 import { ToastContainer, toast } from "react-toastify";
@@ -18,20 +14,12 @@ const NewInvoice = () => {
   const [sideNavOpen, setSideNavOpen] = useState(false);
   const navigate = useNavigate();
   const [isChecked, setIsChecked] = useState(false);
-<<<<<<< HEAD
   const [items, setItems] = useState([]);
   const [customerItems, setCustomerItems] = useState([]);
   const [selectedItemObj, setSelectedItemObj] = useState(null);
   const [selectedItemCode, setSelectedItemCode] = useState("");
   const [itemSearchTerm, setItemSearchTerm] = useState("");
   const [tableData, setTableData] = useState([]);
-=======
-  const [items, setItems] = useState([]); // All items list
-  const [customerItems, setCustomerItems] = useState([]); // Items filtered by customer
-  const [selectedItemObj, setSelectedItemObj] = useState(null); // Full object store
-  const [selectedItemCode, setSelectedItemCode] = useState(""); // Selected item code
-  const [tableData, setTableData] = useState([]); // Table rows
->>>>>>> archita
   const [itemSearchLoading, setItemSearchLoading] = useState(false);
   const [customers, setCustomers] = useState([]);
   const [customerSearchTerm, setCustomerSearchTerm] = useState("");
@@ -39,7 +27,6 @@ const NewInvoice = () => {
   const [selectedPO, setSelectedPO] = useState("");
   const [poSearchLoading, setPoSearchLoading] = useState(false);
 
-<<<<<<< HEAD
   // --- FIX 1: formData keys renamed to match Django model (case-sensitive) ---
   const [formData, setFormData] = useState({
     invoice_no: "",
@@ -47,15 +34,6 @@ const NewInvoice = () => {
     invoice_Date: "",        // ✅ was: invoice_date
     invoice_time: "",
     payment_Date: "",        // ✅ was: payment_date
-=======
-  // --- NEW: Form State ---
-  const [formData, setFormData] = useState({
-    invoice_no: "",
-    series_type: "",
-    invoice_date: "",
-    invoice_time: "",
-    payment_date: "",
->>>>>>> archita
     note: "",
     date_of_removal: "",
     time: "",
@@ -68,19 +46,13 @@ const NewInvoice = () => {
     addr_code: "",
     l_r_gc_note: "",
     place_of_supply: "",
-<<<<<<< HEAD
     Eway_bill_Date: "",      // ✅ was: eway_bill_date
     Eway_bill_no: "",        // ✅ was: eway_bill_no
-=======
-    eway_bill_date: "",
-    eway_bill_no: "",
->>>>>>> archita
     destenation_code: "",
     note_remark: "",
     pdi_no: "",
     bank: "",
     d_c_no: "",
-<<<<<<< HEAD
     d_c_Date: "",            // ✅ was: d_c_date
     delivery_terms: "",
   });
@@ -88,18 +60,16 @@ const NewInvoice = () => {
   // Tax Data State
   const [taxData, setTaxData] = useState({
     assessable_value: "0",
-    cgst: "0",
-    sgst: "0",
-    igst: "0",
-    utgst: "0"
+    cgst: "6",          // ✅ Default 6% for domestic transactions
+    sgst: "6",          // ✅ Default 6% for domestic transactions
+    igst: "0",          // ✅ 0% by default, use if applicable
+    utgst: "0",
+    cgst_amt: "0.00",
+    sgst_amt: "0.00",
+    igst_amt: "0.00",
+    utgst_amt: "0.00"
   });
 
-=======
-    d_c_date: "",
-    delivery_terms: "",
-  });
-
->>>>>>> archita
   // 1. Fetch Items for Dropdown (on Mount)
   useEffect(() => {
     const fetchItems = async () => {
@@ -107,20 +77,13 @@ const NewInvoice = () => {
         const res = await fetch("http://127.0.0.1:8000/Sales/newsalesorder/");
         const data = await res.json();
 
-<<<<<<< HEAD
         const flatItems = data.flatMap((order) =>
           (order.item || []).map((itm) => ({
-=======
-        // 🔥 FLATTEN sales order -> items
-        const flatItems = data.flatMap(order =>
-          order.item.map(itm => ({
->>>>>>> archita
             ...itm,
             customer: order.customer,
             cust_po: order.cust_po,
             plant: order.plant,
             ship_to: order.ship_to,
-<<<<<<< HEAD
             item_code: itm.item_code || itm.part_no || itm.Item || itm.part_no,
             item_description:
               itm.item_description || itm.Name_Description || itm.ItemDescription || itm.description || "",
@@ -133,8 +96,6 @@ const NewInvoice = () => {
             Unit_Code: itm.Unit_Code || itm.uom || itm.unit || itm.Unit || "pcs",
             plan_date: itm.plan_date || itm.Plan_Date || itm.due_date || itm.Due_Date || null,
             po_qty: itm.po_qty || itm.qty || itm.order_qty || itm.Qty || itm.PO_Qty || 0,
-=======
->>>>>>> archita
           }))
         );
 
@@ -164,7 +125,6 @@ const NewInvoice = () => {
   useEffect(() => {
     const customerName = formData.bill_to || customerSearchTerm;
     filterItemsByCustomer(customerName);
-<<<<<<< HEAD
     setSelectedItemCode("");
   }, [formData.bill_to, customerSearchTerm, items]);
 
@@ -192,6 +152,45 @@ const NewInvoice = () => {
 
     fetchTaxData();
   }, []);
+
+  // Calculate GST amounts (12% total) based on assessable value
+  useEffect(() => {
+    const assessableVal = parseFloat(taxData.assessable_value) || 0;
+    
+    // Calculate 12% GST: Split as CGST 6% + SGST 6% OR IGST 12%
+    const cgstPercent = parseFloat(taxData.cgst) || 6;
+    const sgstPercent = parseFloat(taxData.sgst) || 6;
+    const igstPercent = parseFloat(taxData.igst) || 0;
+    const utgstPercent = parseFloat(taxData.utgst) || 0;
+
+    const cgstAmount = (assessableVal * cgstPercent / 100).toFixed(2);
+    const sgstAmount = (assessableVal * sgstPercent / 100).toFixed(2);
+    const igstAmount = (assessableVal * igstPercent / 100).toFixed(2);
+    const utgstAmount = (assessableVal * utgstPercent / 100).toFixed(2);
+
+    setTaxData(prev => ({
+      ...prev,
+      cgst_amt: cgstAmount,
+      sgst_amt: sgstAmount,
+      igst_amt: igstAmount,
+      utgst_amt: utgstAmount
+    }));
+  }, [taxData.assessable_value, taxData.cgst, taxData.sgst, taxData.igst, taxData.utgst]);
+
+  // Auto-update assessable value from table items
+  useEffect(() => {
+    const totalAssessableValue = tableData.reduce((sum, item) => {
+      const value = parseFloat(item.assessable_value || 0);
+      return sum + value;
+    }, 0);
+    
+    if (totalAssessableValue > 0) {
+      setTaxData(prev => ({
+        ...prev,
+        assessable_value: totalAssessableValue.toFixed(4)
+      }));
+    }
+  }, [tableData]);
 
   // Fetch Tax Details by HSN Code
   useEffect(() => {
@@ -235,28 +234,17 @@ const NewInvoice = () => {
 
     fetchTaxDetailsByHSN();
   }, [selectedItemObj?.HSN_SAC_Code]);
-=======
-    setSelectedItemCode(""); // Reset item selection
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [formData.bill_to, customerSearchTerm, items]);
-
->>>>>>> archita
 
   // 2. Handle Item Selection and Fetch Stock
   const handleItemSelect = async (e) => {
     const itemCode = e.target.value;
     setSelectedItemCode(itemCode);
 
-<<<<<<< HEAD
-=======
-    // Find item from filtered customer items
->>>>>>> archita
     const itemObj = customerItems.find(i => i.item_code === itemCode);
     if (!itemObj) return;
 
     try {
       setItemSearchLoading(true);
-<<<<<<< HEAD
 
       const [stockRes, itemFieldsRes] = await Promise.all([
         fetch(`http://127.0.0.1:8000/Sales/wip/stock/get/?q=${itemCode}`),
@@ -273,6 +261,10 @@ const NewInvoice = () => {
 
       console.log("Stock API Response:", stockData);
       console.log("Item Fields API Response:", itemFieldsData);
+
+      const poQty = itemObj.po_qty || 0;
+      const rate = itemFieldsData?.Rate || itemFieldsData?.rate || itemObj.rate || 0;
+      const assessableValue = parseFloat(poQty) * parseFloat(rate);
 
       setSelectedItemObj({
         ...itemObj,
@@ -291,7 +283,7 @@ const NewInvoice = () => {
         part_code: itemFieldsData?.Part_Code || stockData?.last_operation?.part_code || "",
         part_no: stockData?.last_operation?.part_no || itemCode,
         Name_Description: itemFieldsData?.Name_Description || itemObj.item_description,
-        rate: itemFieldsData?.Rate || itemFieldsData?.rate || itemObj.rate || 0,
+        rate: rate,
         HSN_SAC_Code: itemFieldsData?.HSN_SAC_Code || itemFieldsData?.HSN || itemObj.HSN_SAC_Code || "",
         Finish_Weight: itemFieldsData?.Finish_Weight || itemFieldsData?.FinishWeight || itemObj.Finish_Weight || 0,
         Unit_Code: itemFieldsData?.Unit_Code || itemFieldsData?.unit_code || itemObj.Unit_Code || "pcs",
@@ -299,46 +291,29 @@ const NewInvoice = () => {
         plan_date: itemFieldsData?.plan_date || itemFieldsData?.Plan_Date || itemObj.plan_date || null,
         due_date: itemFieldsData?.due_date || itemFieldsData?.Due_Date || itemObj.due_date || null,
         trans_charges: itemFieldsData?.trans_charges || itemFieldsData?.Trans_Charges || itemObj.trans_charges || "",
-        qty: itemObj.po_qty || 0,
-        po_qty: itemObj.po_qty || 0,
-=======
-      // 🔥 stock API same rahegi
-      const res = await fetch(
-        `http://127.0.0.1:8000/Sales/wip/stock/get/?q=${itemCode}`
-      );
-      const data = await res.json();
-
-      setSelectedItemObj({
-        ...itemObj,
-
-        // stock related (optional – table me chahe to use karo)
-        stock: data?.last_operation?.prod_qty ?? 0,
-        op_no: data?.last_operation?.OPNo ?? "",
-        operation_name: data?.last_operation?.Operation ?? "",
-
-        // safety mapping (agar backend se aaye)
-        part_code: data?.last_operation?.part_code ?? "",
-        part_no: data?.last_operation?.part_no ?? itemCode,
-        Name_Description:
-          data?.last_operation?.Name_Description ??
-          itemObj.item_description,
->>>>>>> archita
+        qty: poQty,
+        po_qty: poQty,
+        assessable_value: assessableValue.toFixed(2),
       });
 
       toast.info(`Selected: ${itemCode}`);
     } catch (error) {
-<<<<<<< HEAD
       console.error("Item fetch error:", error);
+
+      const poQty = itemObj.po_qty || 0;
+      const itemRate = itemObj.rate || 0;
+      const assessableValue = parseFloat(poQty) * parseFloat(itemRate);
 
       setSelectedItemObj({
         ...itemObj,
         stock: 0,
-        rate: itemObj.rate || 0,
+        rate: itemRate,
         HSN_SAC_Code: itemObj.HSN_SAC_Code || "",
         Finish_Weight: itemObj.Finish_Weight || 0,
         Unit_Code: itemObj.Unit_Code || "pcs",
-        qty: itemObj.po_qty || 0,
-        po_qty: itemObj.po_qty || 0,
+        qty: poQty,
+        po_qty: poQty,
+        assessable_value: assessableValue.toFixed(2),
         last_operation: {
           part_code: itemObj.Part_Code || "",
           part_no: itemCode,
@@ -351,54 +326,26 @@ const NewInvoice = () => {
       });
 
       toast.warning("Some item details not available, using defaults");
-=======
-      console.error("Stock fetch error:", error);
-
-      // 🔁 fallback (agar stock API fail ho)
-      setSelectedItemObj({
-        ...itemObj,
-        stock: 0,
-      });
-
-      toast.warning("Stock data not available");
->>>>>>> archita
     } finally {
       setItemSearchLoading(false);
     }
 
-<<<<<<< HEAD
     console.log("Selected Item:", itemObj);
   };
 
-=======
-
-    console.log("Selected Item:", itemObj);
-
-  };
-
-
-
->>>>>>> archita
   // 3. Add to Table
   const handleAddItem = () => {
     if (!selectedItemObj) {
       toast.error("Please select an item first");
       return;
     }
-<<<<<<< HEAD
     console.log("Adding item to table:", selectedItemObj);
-=======
->>>>>>> archita
     setTableData((prev) => [...prev, selectedItemObj]);
     setSelectedItemCode("");
     setSelectedItemObj(null);
     toast.success("Item added to table!");
   };
 
-<<<<<<< HEAD
-=======
-
->>>>>>> archita
   // --- 1. Fetch Invoice Number on Series Selection ---
   const handleSeriesChange = async (e) => {
     const selectedSeries = e.target.value;
@@ -434,7 +381,6 @@ const NewInvoice = () => {
     setFormData((prev) => ({ ...prev, [fieldName]: value }));
   };
 
-<<<<<<< HEAD
   // --- FIX 4: cleanPayload with updated valid item fields ---
   const cleanPayload = (data) => {
     const validItemFields = [
@@ -479,8 +425,6 @@ const NewInvoice = () => {
     return cleaned;
   };
 
-=======
->>>>>>> archita
   // --- 2. Save Invoice (POST) ---
   const handleGenerateInvoice = async () => {
     if (!formData.series_type || !formData.invoice_no) {
@@ -488,7 +432,6 @@ const NewInvoice = () => {
       return;
     }
 
-<<<<<<< HEAD
     if (tableData.length === 0) {
       toast.error("Please add at least one item to the invoice");
       return;
@@ -509,6 +452,7 @@ const NewInvoice = () => {
         rate: String(row.rate || 0),
         dis: row.desc_percent || row.discount_percent || 0,
         po_qty: String(row.po_qty || row.qty || 0),
+        assessable_value: String(row.assessable_value || 0),  // ✅ po_qty * rate
         bal_qty: null,
         inv_qty: null,
         pkg_qty: null,
@@ -516,16 +460,26 @@ const NewInvoice = () => {
         hsn_code: row.HSN_SAC_Code || row.hsn_code || "", // ✅ was null
       }));
 
+      // Calculate total assessable value from all items (po_qty * rate)
+      const totalAssessableValue = tableData.reduce((sum, item) => {
+        const value = parseFloat(item.assessable_value || 0);
+        return sum + value;
+      }, 0);
+
       // --- FIX 3: Use GSTdetails key (match Django related_name) ---
       let invoicePayload = {
         ...formData,
         items: mappedItems,           // ✅ use mapped items
         GSTdetails: [{                // ✅ was: taxes — renamed to match related_name
-          assessble_value: taxData.assessable_value || 0,  // note: "assessble" matches model typo
+          assessble_value: totalAssessableValue.toFixed(2),  // ✅ auto-calculated from items (po_qty * rate)
           cgst: taxData.cgst || 0,
           sgst: taxData.sgst || 0,
           igst: taxData.igst || 0,
           utgst: taxData.utgst || 0,
+          cgst_amt: taxData.cgst_amt || "0.00",         // ✅ GST amount
+          sgst_amt: taxData.sgst_amt || "0.00",         // ✅ GST amount
+          igst_amt: taxData.igst_amt || "0.00",         // ✅ GST amount
+          utgst_amt: taxData.utgst_amt || "0.00",       // ✅ GST amount
         }],
       };
 
@@ -539,13 +493,6 @@ const NewInvoice = () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(invoicePayload),
-=======
-    try {
-      const response = await fetch("http://127.0.0.1:8000/Sales/invoice/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
->>>>>>> archita
       });
 
       if (response.ok) {
@@ -555,17 +502,18 @@ const NewInvoice = () => {
           invoice_no: "",
           series_type: "",
         });
-<<<<<<< HEAD
         setTableData([]);
         setTaxData({
           assessable_value: "0",
-          cgst: "0",
-          sgst: "0",
+          cgst: "6",
+          sgst: "6",
           igst: "0",
-          utgst: "0"
+          utgst: "0",
+          cgst_amt: "0.00",
+          sgst_amt: "0.00",
+          igst_amt: "0.00",
+          utgst_amt: "0.00"
         });
-=======
->>>>>>> archita
 
         const seriesSelect = document.getElementById("seriesSelect");
         if (seriesSelect) seriesSelect.value = "Select";
@@ -589,10 +537,7 @@ const NewInvoice = () => {
   const handleButtonClick = () => {
     navigate("/NewinvoiceGST");
   };
-<<<<<<< HEAD
 
-=======
->>>>>>> archita
   const toggleSideNav = () => {
     setSideNavOpen((prevState) => !prevState);
   };
@@ -646,10 +591,6 @@ const NewInvoice = () => {
       if (response.ok) {
         const data = await response.json();
         console.log("PO List:", data);
-<<<<<<< HEAD
-=======
-        // Handle both array and object responses
->>>>>>> archita
         const poArray = Array.isArray(data) ? data : data.data || data.po || [];
         setPoList(poArray);
         if (poArray.length > 0) {
@@ -693,10 +634,6 @@ const NewInvoice = () => {
     toast.info("PO selection cleared");
   };
 
-<<<<<<< HEAD
-=======
-
->>>>>>> archita
   return (
     <div className="NewInvoice">
       <ToastContainer
@@ -824,16 +761,11 @@ const NewInvoice = () => {
                         >
                           <div className="row text-start">
                             <div className="col-2">
-<<<<<<< HEAD
                               <label htmlFor="customer-select">
-=======
-                              <label htmlFor="customer-search">
->>>>>>> archita
                                 Select Cust:
                               </label>
                             </div>
                             <div className="col-3">
-<<<<<<< HEAD
                               <select
                                 id="customer-select"
                                 className="form-select"
@@ -857,46 +789,16 @@ const NewInvoice = () => {
                                     </option>
                                   ))}
                               </select>
-=======
-                              <input
-                                type="text"
-                                list="customer-options"
-                                className="form-control"
-                                placeholder="Enter Customer Name"
-                                value={customerSearchTerm}
-                                onChange={(e) => setCustomerSearchTerm(e.target.value)}
-                              />
-                              <datalist id="customer-options">
-                                {customers.map((cust) => (
-                                  <option
-                                    key={cust.id}
-                                    value={cust.Name}
-                                  />
-                                ))}
-                              </datalist>
->>>>>>> archita
                             </div>
                             <div className="col-2">
                               <button
                                 className="btn w-50"
                                 onClick={() => {
-<<<<<<< HEAD
                                   alert("Customer Selected: " + formData.bill_to);
-=======
-                                  setFormData((prev) => ({
-                                    ...prev,
-                                    bill_to: customerSearchTerm,
-                                  }));
-                                  alert("Customer Selected: " + customerSearchTerm);
->>>>>>> archita
                                 }}
                               >
                                 Search
                               </button>
-<<<<<<< HEAD
-=======
-
->>>>>>> archita
                             </div>
                           </div>
 
@@ -918,11 +820,7 @@ const NewInvoice = () => {
                                     key={index}
                                     value={po.cust_po || po.po_no || po.id || po}
                                   >
-<<<<<<< HEAD
                                     {po.cust_po || po.po_no || po.id} - {po.cust_date || po.po_date || ""} - SO: {po.so_no || po.sales_order_no || po.order_no || ""}
-=======
-                                    {po.cust_po || po.po_no || po.id} - {po.cust_date || po.po_date || ""}
->>>>>>> archita
                                   </option>
                                 ))}
                               </select>
@@ -1019,7 +917,6 @@ const NewInvoice = () => {
                                         {row.Part_Code}
                                       </td>
                                       <td>
-<<<<<<< HEAD
                                         <small>
                                           <div><strong>Part No:</strong> {row.last_operation?.part_no}</div>
                                           <div><strong>Part Code:</strong> {row.last_operation?.part_code}</div>
@@ -1031,22 +928,6 @@ const NewInvoice = () => {
                                             <div><strong>Lots:</strong> {row.last_operation.lots.join(", ")}</div>
                                           )}
                                         </small>
-=======
-                                        Part No : {row.last_operation?.part_no}
-                                        <br />
-                                        Part Code : {row.last_operation?.part_code}
-                                        <br />
-                                        Name Description : {row.last_operation?.Name_Description}
-                                        <br />
-                                        OP No. : {row.last_operation?.OPNo}
-                                        <br />
-                                        <span style={{ fontSize: "12px", color: "gray" }}>
-                                          Operation : {row.last_operation?.Operation}
-                                        </span>
-                                        <br />
-                                        Prod Qty :<strong>{row.last_operation?.prod_qty ?? 0}</strong>
-                                        <br />
->>>>>>> archita
                                       </td>
                                       <td>
                                         <textarea
@@ -1057,7 +938,6 @@ const NewInvoice = () => {
                                         <span>
                                           HSN Code : {row.HSN_SAC_Code}
                                         </span>
-<<<<<<< HEAD
                                         <br />
                                         <span>
                                           Plan/Due: {row.due_date ? new Date(row.due_date).toLocaleDateString() : (row.plan_date ? new Date(row.plan_date).toLocaleDateString() : "-")}
@@ -1069,32 +949,18 @@ const NewInvoice = () => {
                                         Disc: {row.desc || row.desc_percent || row.discount_percent || row.discount_amount || "-"}% <br />
                                         Pkg Charges: {row.pkg_trans || "-"} <br />
                                         Trans Charges: {row.trans_charges || "-"} <br />
-=======
-                                      </td>
-                                      <td className="text-start">
-                                        Rate :  {row.rate}
-
-                                        <br />
-                                        Disc: <br /> Pkg Charges: <br />
-                                        Trans Charges: <br />
->>>>>>> archita
                                         <span style={{ color: "blue" }}>
                                           Rate Type:
                                         </span>
                                         <br /> Amort Rate :
                                       </td>
-<<<<<<< HEAD
                                       <td>{row.po_qty || row.qty || 0}</td>
-=======
-                                      <td>{/* PO Qty */}</td>
->>>>>>> archita
                                       <td>{/* Bal Qty */}</td>
                                       <td>
                                         <input
                                           type="text"
                                           className="w-100"
                                           placeholder="Qty"
-<<<<<<< HEAD
                                           defaultValue={row.qty || row.po_qty || 0}
                                           onChange={(e) => {
                                             const updatedData = tableData.map((item, i) =>
@@ -1102,8 +968,6 @@ const NewInvoice = () => {
                                             );
                                             setTableData(updatedData);
                                           }}
-=======
->>>>>>> archita
                                         />
                                         <br />
                                         Per Pcs Wt: <br />
@@ -1186,18 +1050,11 @@ const NewInvoice = () => {
                                   <label>Payment Date:</label>
                                 </div>
                                 <div className="col-8">
-<<<<<<< HEAD
                                   {/* FIX 1: name updated to payment_Date */}
                                   <input
                                     type="date"
                                     name="payment_Date"
                                     value={formData.payment_Date}
-=======
-                                  <input
-                                    type="date"
-                                    name="payment_date"
-                                    value={formData.payment_date}
->>>>>>> archita
                                     onChange={handleChange}
                                     className="form-control"
                                   />
@@ -1268,18 +1125,11 @@ const NewInvoice = () => {
                                   <label>Eway Bill Date:</label>
                                 </div>
                                 <div className="col-8">
-<<<<<<< HEAD
                                   {/* FIX 1: name updated to Eway_bill_Date */}
                                   <input
                                     type="date"
                                     name="Eway_bill_Date"
                                     value={formData.Eway_bill_Date}
-=======
-                                  <input
-                                    type="date"
-                                    name="eway_bill_date"
-                                    value={formData.eway_bill_date}
->>>>>>> archita
                                     onChange={handleChange}
                                     className="form-control"
                                   />
@@ -1307,18 +1157,11 @@ const NewInvoice = () => {
                                   <label>Invoice Date:</label>
                                 </div>
                                 <div className="col-8">
-<<<<<<< HEAD
                                   {/* FIX 1: name updated to invoice_Date */}
                                   <input
                                     type="date"
                                     name="invoice_Date"
                                     value={formData.invoice_Date}
-=======
-                                  <input
-                                    type="datetime-local"
-                                    name="invoice_date"
-                                    value={formData.invoice_date}
->>>>>>> archita
                                     onChange={handleChange}
                                     className="form-control"
                                   />
@@ -1383,16 +1226,10 @@ const NewInvoice = () => {
                                   <label>Eway Bill No:</label>
                                 </div>
                                 <div className="col-8">
-<<<<<<< HEAD
                                   {/* FIX 1: name updated to Eway_bill_no */}
                                   <input
                                     name="Eway_bill_no"
                                     value={formData.Eway_bill_no}
-=======
-                                  <input
-                                    name="eway_bill_no"
-                                    value={formData.eway_bill_no}
->>>>>>> archita
                                     onChange={handleChange}
                                     className="form-control"
                                   />
@@ -1416,18 +1253,11 @@ const NewInvoice = () => {
                                   <label>D.C. Date:</label>
                                 </div>
                                 <div className="col-8">
-<<<<<<< HEAD
                                   {/* FIX 1: name updated to d_c_Date */}
                                   <input
                                     type="date"
                                     name="d_c_Date"
                                     value={formData.d_c_Date}
-=======
-                                  <input
-                                    type="date"
-                                    name="d_c_date"
-                                    value={formData.d_c_date}
->>>>>>> archita
                                     onChange={handleChange}
                                     className="form-control"
                                   />
@@ -1555,11 +1385,8 @@ const NewInvoice = () => {
                                 <input
                                   className="form-control form-control-sm w-50"
                                   placeholder="0"
-<<<<<<< HEAD
                                   value={taxData.assessable_value}
                                   onChange={(e) => setTaxData({ ...taxData, assessable_value: e.target.value })}
-=======
->>>>>>> archita
                                 />
                               </div>
 
@@ -1593,15 +1420,12 @@ const NewInvoice = () => {
                               </div>
 
                               <div className="col-md-3 d-flex justify-content-between">
-                                <label>CGST 00%</label>
+                                <label>CGST {taxData.cgst || 0}%</label>
                                 <input
                                   className="form-control form-control-sm w-50"
-                                  placeholder="0"
-<<<<<<< HEAD
-                                  value={taxData.cgst}
-                                  onChange={(e) => setTaxData({ ...taxData, cgst: e.target.value })}
-=======
->>>>>>> archita
+                                  placeholder="0.00"
+                                  value={taxData.cgst_amt}
+                                  readOnly
                                 />
                               </div>
 
@@ -1622,11 +1446,7 @@ const NewInvoice = () => {
                               </div>
 
                               <div className="col-md-3">
-<<<<<<< HEAD
-                                <label>CGST : {taxData.cgst}</label>
-=======
-                                <label>CGST : 0</label>
->>>>>>> archita
+                                <label>CGST Amt: ₹{taxData.cgst_amt || "0.00"}</label>
                               </div>
                             </div>
 
@@ -1641,15 +1461,12 @@ const NewInvoice = () => {
                               </div>
 
                               <div className="col-md-3 d-flex justify-content-between">
-                                <label>SGST 00%</label>
+                                <label>SGST {taxData.sgst || 0}%</label>
                                 <input
                                   className="form-control form-control-sm w-50"
-                                  placeholder="0"
-<<<<<<< HEAD
-                                  value={taxData.sgst}
-                                  onChange={(e) => setTaxData({ ...taxData, sgst: e.target.value })}
-=======
->>>>>>> archita
+                                  placeholder="0.00"
+                                  value={taxData.sgst_amt}
+                                  readOnly
                                 />
                               </div>
 
@@ -1668,11 +1485,7 @@ const NewInvoice = () => {
                               </div>
 
                               <div className="col-md-3">
-<<<<<<< HEAD
-                                <label>SGST : {taxData.sgst}</label>
-=======
-                                <label>SGST : 0</label>
->>>>>>> archita
+                                <label>SGST Amt: ₹{taxData.sgst_amt || "0.00"}</label>
                               </div>
                             </div>
 
@@ -1687,15 +1500,12 @@ const NewInvoice = () => {
                               </div>
 
                               <div className="col-md-3 d-flex justify-content-between">
-                                <label>IGST 00%</label>
+                                <label>IGST {taxData.igst || 0}%</label>
                                 <input
                                   className="form-control form-control-sm w-50"
-                                  placeholder="0"
-<<<<<<< HEAD
-                                  value={taxData.igst}
-                                  onChange={(e) => setTaxData({ ...taxData, igst: e.target.value })}
-=======
->>>>>>> archita
+                                  placeholder="0.00"
+                                  value={taxData.igst_amt}
+                                  readOnly
                                 />
                               </div>
 
@@ -1714,11 +1524,7 @@ const NewInvoice = () => {
                               </div>
 
                               <div className="col-md-3">
-<<<<<<< HEAD
-                                <label>IGST : {taxData.igst}</label>
-=======
-                                <label>IGST : 0</label>
->>>>>>> archita
+                                <label>IGST Amt: ₹{taxData.igst_amt || "0.00"}</label>
                               </div>
                             </div>
 
@@ -1733,15 +1539,12 @@ const NewInvoice = () => {
                               </div>
 
                               <div className="col-md-3 d-flex justify-content-between">
-                                <label>UTGST 00%</label>
+                                <label>UTGST {taxData.utgst || 0}%</label>
                                 <input
                                   className="form-control form-control-sm w-50"
-                                  placeholder="0"
-<<<<<<< HEAD
-                                  value={taxData.utgst}
-                                  onChange={(e) => setTaxData({ ...taxData, utgst: e.target.value })}
-=======
->>>>>>> archita
+                                  placeholder="0.00"
+                                  value={taxData.utgst_amt}
+                                  readOnly
                                 />
                               </div>
 
@@ -1754,7 +1557,7 @@ const NewInvoice = () => {
                               </div>
 
                               <div className="col-md-3">
-                                <label>For E-Inv: Ser.Inv. / Inv.Type</label>
+                                <label>UTGST Amt: ₹{taxData.utgst_amt || "0.00"}</label>
                               </div>
                             </div>
                           </div>

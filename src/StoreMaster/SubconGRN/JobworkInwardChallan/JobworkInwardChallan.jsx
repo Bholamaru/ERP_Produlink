@@ -4,7 +4,6 @@ import "bootstrap/dist/js/bootstrap.bundle.min";
 import NavBar from "../../../NavBar/NavBar.js";
 import SideNav from "../../../SideNav/SideNav.js";
 import "./JobworkInwardChallan.css";
-import { saveJob_WorkChallan } from "../../../Service/StoreApi.jsx";
 
 import { toast, ToastContainer } from "react-toastify";
 import { FaEdit, FaTrash } from "react-icons/fa";
@@ -13,6 +12,36 @@ const JobworkInwardChallan = () => {
   const [sideNavOpen, setSideNavOpen] = useState(false);
   const [gateEntryData, setGateEntryData] = useState([]);
   const [selectedGateEntry, setSelectedGateEntry] = useState();
+  const [challanNumbers, setChallanNumbers] = useState([]);
+  const [PO, setPO] = useState([]);
+
+  // BOM Items state
+  const [bomItems, setBomItems] = useState({}); // raw API response
+  const [itemCodeOptions, setItemCodeOptions] = useState([]); // ["FG001 - CAP OIL LOCK", ...]
+  const [fgPartCodeOptions, setFgPartCodeOptions] = useState([]); // PartCodes for selected item
+
+  // Series & Plant state
+  const [selectedSeries, setSelectedSeries] = useState("Select");
+  const [inputNo, setInputNo] = useState("");
+
+  // Table rows state
+  const [tableRows, setTableRows] = useState([]);
+  const [editingRowIndex, setEditingRowIndex] = useState(null);
+
+  // Current row being filled
+  const [currentRow, setCurrentRow] = useState({
+    ItemCode: "",
+    FGPartCode: "",
+    ChallanQty: "",
+    GRNQty: "",
+    GRNUnit: "",
+    MaterialRateChallan: "",
+    MaterialRateGRN: "",
+    HeatNo: "",
+    CustHeatNo: "",
+    RMSpecification: "",
+    ParticularNatureOfProcess: "",
+  });
 
   const toggleSideNav = () => {
     setSideNavOpen((prevState) => !prevState);
@@ -22,10 +51,21 @@ const JobworkInwardChallan = () => {
     try {
       const res = await fetch("http://127.0.0.1:8000/Store/general-details/");
       const resData = await res.json();
-      console.log(resData);
       setGateEntryData(resData);
     } catch (err) {
       console.log(err);
+    }
+  };
+
+  const fetchBomItems = async () => {
+    try {
+      const res = await fetch("http://127.0.0.1:8000/All_Masters/api/bom-items/");
+      const resData = await res.json();
+      setBomItems(resData);
+      // Keys are like "1 - CAP OIL LOCK DF - FGFG1001"
+      setItemCodeOptions(Object.keys(resData));
+    } catch (err) {
+      console.log("Error fetching BOM items:", err);
     }
   };
 
@@ -39,6 +79,7 @@ const JobworkInwardChallan = () => {
 
   useEffect(() => {
     fetchGateEntryData();
+    fetchBomItems();
   }, []);
 
   const [formData, setFormData] = useState({
@@ -64,76 +105,233 @@ const JobworkInwardChallan = () => {
     DeliveryInTime: "",
     ClearingStatus: "",
     VehicleOutTime: "",
+    GateEntryNo: "",
+    Customer: "",
   });
 
-  const [errors, setErrors] = useState({}); // For validation errors
+  const [errors, setErrors] = useState({});
 
-  // Handle input change
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
+    setFormData({ ...formData, [name]: value });
   };
+
   const handleCheckboxChange = (value) => {
-    setFormData((prevFormData) => ({
-      ...prevFormData,
-      DeliveryInTime: value, // Set either "yes" or "no"
-    }));
+    setFormData((prev) => ({ ...prev, DeliveryInTime: value }));
   };
 
-  // Validate required fields
-  const validate = () => {
-    const newErrors = {};
+  const handleCurrentRowChange = (e) => {
+    const { name, value } = e.target;
+    setCurrentRow((prev) => ({ ...prev, [name]: value }));
+  };
 
-    if (!formData.DeliveryInTime) {
-      newErrors.DeliveryInTime =
-        "Please select Yes or No for Delivery In Time.";
+  // When Item Code is selected, load its FG Part Codes from bom_items
+  const handleItemCodeChange = (e) => {
+    const selectedKey = e.target.value;
+    setCurrentRow((prev) => ({ ...prev, ItemCode: selectedKey, FGPartCode: "" }));
+
+    if (selectedKey && bomItems[selectedKey]) {
+      const parts = bomItems[selectedKey].bom_items || [];
+      // Extract unique PartCodes
+      const partCodes = [...new Set(parts.map((b) => b.PartCode).filter(Boolean))];
+      setFgPartCodeOptions(partCodes);
+    } else {
+      setFgPartCodeOptions([]);
+    }
+  };
+
+  // Add or update row in the table
+  const handleAddRow = () => {
+    if (!currentRow.ItemCode) {
+      toast.error("Item Code is required to add a row.");
+      return;
     }
 
-    // Other validation rules...
+    if (editingRowIndex !== null) {
+      // Update existing row
+      const updatedRows = [...tableRows];
+      updatedRows[editingRowIndex] = { ...currentRow };
+      setTableRows(updatedRows);
+      setEditingRowIndex(null);
+      toast.success("Row updated successfully");
+    } else {
+      setTableRows((prev) => [...prev, { ...currentRow }]);
+      toast.success("Row added successfully");
+    }
 
+    // Reset current row
+    setCurrentRow({
+      ItemCode: "",
+      FGPartCode: "",
+      ChallanQty: "",
+      GRNQty: "",
+      GRNUnit: "",
+      MaterialRateChallan: "",
+      MaterialRateGRN: "",
+      HeatNo: "",
+      CustHeatNo: "",
+      RMSpecification: "",
+      ParticularNatureOfProcess: "",
+    });
+    setFgPartCodeOptions([]);
+  };
+
+  const handleEditRow = (index) => {
+    const row = tableRows[index];
+    setCurrentRow({ ...row });
+    setEditingRowIndex(index);
+    // Restore FG Part Code options for the selected item
+    if (row.ItemCode && bomItems[row.ItemCode]) {
+      const parts = bomItems[row.ItemCode].bom_items || [];
+      const partCodes = [...new Set(parts.map((b) => b.PartCode).filter(Boolean))];
+      setFgPartCodeOptions(partCodes);
+    }
+  };
+
+  const handleDeleteRow = (index) => {
+    setTableRows((prev) => prev.filter((_, i) => i !== index));
+    toast.info("Row deleted");
+  };
+
+  const validate = () => {
+    const newErrors = {};
+    if (!formData.DeliveryInTime) {
+      newErrors.DeliveryInTime = "Please select Yes or No for Delivery In Time.";
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleChangeGateEntry = async (e) => {
-    const selectedGE_No = e.target.value; // this is a string
+    const selectedGE_No = e.target.value;
     const entryObj = gateEntryData.find(
-      (ent) => String(ent.GE_No) === selectedGE_No // match string → string
+      (ent) => String(ent.GE_No) === selectedGE_No
     );
     setSelectedGateEntry(entryObj);
-    // if you also need it in your main formData:
-    setFormData((prev) => ({ ...prev, GateEntryNo: selectedGE_No }));
+    const customerName = entryObj?.Supp_Cust?.replace(/^\d+\s*-\s*/, "") || "";
+    setFormData((prev) => ({
+      ...prev,
+      GateEntryNo: selectedGE_No,
+      Customer: customerName,
+    }));
 
-    const supplier = entryObj?.Supp_Cust?.replace(/^\d+\s*-\s*/, "");
+    try {
+      const res = await fetch(
+        "http://127.0.0.1:8000/Sales/supplierview/?supplier=" + customerName
+      );
+      const resData = await res.json();
+      setChallanNumbers(resData.challans);
 
-    const res = await fetch(
-      "http://127.0.0.1:8000/Sales/supplierview/?supplier=" + supplier
-    );
-    await res.json();
-
-    await fetch(
-      "http://127.0.0.1:8000/Store/newjobworkpodetails/?supplier=" + supplier
-    );
+      const res2 = await fetch(
+        "http://127.0.0.1:8000/Store/newjobworkpodetails/?supplier=" + customerName
+      );
+      const resData2 = await res2.json();
+      setPO(resData2.purchase_orders);
+    } catch (err) {
+      console.log(err);
+    }
   };
 
-  // Handle form submission
+  // Build and POST the payload
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) {
       toast.error("Please fill in the required fields");
-      return; // Stop submission if validation fails
+      return;
     }
 
+    // Map tableRows to the API's JobworkInwardChallanTable format
+    const JobworkInwardChallanTable = tableRows.map((row) => ({
+      ItemCode: row.ItemCode,
+      Operation: row.ParticularNatureOfProcess,
+      ChallanQty: row.ChallanQty,
+      GRNQty: row.GRNQty,
+      MaterialRate: row.MaterialRateChallan,
+      HeatNo: row.HeatNo,
+      CustHeatNo: row.CustHeatNo,
+      ParticularNatureOfProcess: row.ParticularNatureOfProcess,
+    }));
+
+    const payload = {
+      Plant: "Produlink",
+      Series: selectedSeries,
+      NO: inputNo,
+      GateEntryNo: formData.GateEntryNo,
+      Customer: formData.Customer,
+      SelectItem: "",
+      ItemCode: tableRows[0]?.ItemCode || "",
+      FGPartCode: tableRows[0]?.FGPartCode || "",
+      ChallanQty: tableRows[0]?.ChallanQty || "",
+      GRNQty: tableRows[0]?.GRNQty || "",
+      MaterialRate: tableRows[0]?.MaterialRateChallan || "",
+      HeatNo: tableRows[0]?.HeatNo || "",
+      CustHeatNo: tableRows[0]?.CustHeatNo || "",
+      RMSpecification: tableRows[0]?.RMSpecification || "",
+      PaticularNatureOfProcess: tableRows[0]?.ParticularNatureOfProcess || "",
+      InwardF4No: formData.InwardF4No,
+      InwardDate: formData.InwardDate,
+      InwardTime: formData.InwardTime,
+      ChallanNo: formData.ChallanNo,
+      ChallanDate: formData.ChallanDate,
+      SubVendor: formData.SubVendor,
+      DCNo: formData.DcNo,
+      DCDate: formData.DcDate,
+      WayBillQty: formData.EWayBillQty,
+      WayBillNo: formData.EWayBillNo,
+      VehicleNo: formData.VehicleNo,
+      LrNo: formData.LrNo,
+      Transporter: formData.Transporter,
+      PrepartedBy: formData.PreparedBy,
+      CheckedBy: formData.CheckedBy,
+      VehicleInTime: formData.VehicleTime,
+      TCNo: formData.TcNo,
+      TCDate: formData.TcDate,
+      Remark: formData.Remark,
+      DevileryInTime: formData.DeliveryInTime,
+      ClearingStatus: formData.ClearingStatus,
+      VehicleOutTime: formData.VehicleOutTime,
+      JobworkInwardChallanTable,
+    };
+
     try {
-      const response = await saveJob_WorkChallan(formData); // Call the API function
-      console.log("Data submitted successfully", response);
-      toast.success("Data submitted successfully");
+      const response = await fetch(
+        "http://127.0.0.1:8000/Store/JobworkInwardChallan/",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      if (!response.ok) {
+        const errData = await response.json();
+        console.error("API Error:", errData);
+        toast.error("Error submitting data: " + JSON.stringify(errData));
+        return;
+      }
+
+      const data = await response.json();
+      console.log("Submitted successfully:", data);
+      toast.success("Challan saved successfully!");
+
+      // Reset form after success
+      setFormData({
+        InwardF4No: "", InwardDate: "", InwardTime: "", ChallanNo: "",
+        ChallanDate: "", SubVendor: "", DcNo: "", DcDate: "",
+        EWayBillQty: "", EWayBillNo: "", VehicleNo: "", LrNo: "",
+        Transporter: "", PreparedBy: "", CheckedBy: "", VehicleTime: "",
+        TcNo: "", TcDate: "", Remark: "", DeliveryInTime: "",
+        ClearingStatus: "", VehicleOutTime: "", GateEntryNo: "", Customer: "",
+      });
+      setTableRows([]);
+      setSelectedGateEntry(null);
+      setInputNo("");
+      setSelectedSeries("Select");
     } catch (error) {
-      console.error("Error submitting data", error);
-      toast.error("Error submitting data");
+      console.error("Network error:", error);
+      toast.error("Network error while submitting data");
     }
   };
 
@@ -145,210 +343,243 @@ const JobworkInwardChallan = () => {
           <div className="col-md-12">
             <div className="Main-NavBar">
               <NavBar toggleSideNav={toggleSideNav} />
-              <SideNav
-                sideNavOpen={sideNavOpen}
-                toggleSideNav={toggleSideNav}
-              />
+              <SideNav sideNavOpen={sideNavOpen} toggleSideNav={toggleSideNav} />
               <main className={`main-content ${sideNavOpen ? "shifted" : ""}`}>
+                {/* ── Header ── */}
                 <div className="InwardJobwork-header mb-4 text-start mt-5">
                   <div className="row align-items-center">
                     <div className="col-md-2">
-                      <h5 className="header-title text-start">
-                        Jobwork InWard
-                      </h5>
+                      <h5 className="header-title text-start">Jobwork InWard</h5>
                     </div>
                     <div className="col-md-10 mt-4">
                       <div className="row mb-3">
                         <div className="col-md-1">
                           <select id="sharpSelect" className="form-select">
-                            <option selected>Produlink</option>
+                            <option defaultValue>Produlink</option>
                           </select>
                         </div>
                         <div className="col-md-1 mt-2">
-                          <label htmlFor="seriesSelect" className="form-label">
-                            Series:
-                          </label>
+                          <label htmlFor="seriesSelect" className="form-label">Series:</label>
                         </div>
                         <div className="col-md-1">
-                          <select id="seriesSelect" className="form-select">
-                            <option selected>Select</option>
+                          <select
+                            id="seriesSelect"
+                            className="form-select"
+                            value={selectedSeries}
+                            onChange={(e) => setSelectedSeries(e.target.value)}
+                          >
+                            <option value="Select">Select</option>
                             <option value="57F4">Jobwork 57F4 Inward</option>
-                            <option value="57F4 Return">
-                              Non Return Inward
-                            </option>
-                            <option value="Process Loss/Scrap">
-                              Cust Rework
-                            </option>
+                            <option value="57F4 Return">Non Return Inward</option>
+                            <option value="Process Loss/Scrap">Cust Rework</option>
                           </select>
                         </div>
-                        {/* Input Field */}
                         <div className="col-md-1 mt-1">
                           <input
                             type="text"
-                            id="inputField"
                             className="form-control"
                             placeholder="Enter value"
+                            value={inputNo}
+                            onChange={(e) => setInputNo(e.target.value)}
                           />
                         </div>
                         <div className="col-md-2 mt-2">Gate Entry No:</div>
                         <div className="col-md-1">
-                          <select onChange={handleChangeGateEntry} id="routingSelect" className="form-select">
-                            <option selected>Select</option>
-                            {gateEntryData?.map((item) => {
-                              return (
-                                <option value={item?.GE_No}>
-                                  {item?.GE_No}|Supplier/Vendor :{" "}
-                                  {item?.Supp_Cust}
-                                </option>
-                              );
-                            })}
+                          <select
+                            onChange={handleChangeGateEntry}
+                            className="form-select"
+                            value={formData.GateEntryNo}
+                          >
+                            <option value="">Select</option>
+                            {gateEntryData?.map((item) => (
+                              <option key={item.GE_No} value={item?.GE_No}>
+                                {item?.GE_No} | {item?.Supp_Cust}
+                              </option>
+                            ))}
                           </select>
                         </div>
                         <div className="col-md-1 mt-2">Customer:</div>
                         <div className="col-md-2 mt-1">
                           <input
                             type="text"
-                            id="inputField"
                             className="form-control"
-                            placeholder="Enter value"
-                            value={selectedGateEntry?.Supp_Cust?.replace(/^\d+\s*-\s*/, "")}
+                            placeholder="Customer"
+                            value={formData.Customer}
+                            readOnly
                           />
                         </div>
                         <div className="col-md-1 mt-1">
-                          <button type="button" className="btn">
-                            Search
-                          </button>
+                          <button type="button" className="btn">Search</button>
                         </div>
                         <div className="col-md-1 mt-1">
-                          <button type="button" className="btn">
-                            Cancel
-                          </button>
+                          <button type="button" className="btn">Cancel</button>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
+
+                {/* ── Item Entry Table ── */}
                 <div className="InwardJobwork-main mt-5">
                   <div className="container-fluid text-start">
-                    <div className="container-fluid">
-                      <div className="row">
-                        <div className="col-md-12">
-                          <div className="table-responsive">
-                            <table className="table table-bordered">
-                              <thead>
-                                <tr>
-                                  <th>
-                                    Select Item:{" "}
-                                    <div className="d-flex">
-                                      <label className="me-2">
-                                        <input
-                                          type="checkbox"
-                                          name="selectAll"
-                                        />
-                                        All
-                                      </label>
-                                      <label className="me-2">
-                                        <input
-                                          type="checkbox"
-                                          name="selectRM"
-                                        />
-                                        RM
-                                      </label>
-                                      <label>
-                                        <input
-                                          type="checkbox"
-                                          name="selectFG"
-                                        />
-                                        FG
-                                      </label>
-                                    </div>
-                                  </th>
-                                  <th>Inward Qty</th>
-                                  <th>Material Rate</th>
-                                  <th>Heat No</th>
-                                  <th>Cust Heat No</th>
-                                  <th>RM Specification</th>
-                                  <th>Particular/Nature Of Process</th>
-                                  <th>Action</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                <tr>
-                                  <td>
-                                    <div className="d-flex">
-                                      <input
-                                        type="text"
-                                        name="ItemCode"
-                                        className="form-control"
-                                        value={formData.ItemCode}
-                                      />
-                                      <button className="pobtn">Search</button>
-                                    </div>
-                                    <div className="d-flex">
-                                      <label>FG Part Code:</label>
-                                      <select
-                                        name="Type"
-                                        className="form-select"
-                                        value={formData.Type}
-                                      >
-                                        <option>Select</option>
-                                        <option value="Critical">A</option>
-                                        <option value="Regular">B</option>
-                                      </select>
-                                    </div>
-                                  </td>
-                                  <td>
-                                    <div className="d-flex">
-                                      <label>Challan Qty:</label>
-                                      <input className="form-control" />
-                                    </div>
-                                    <div className="d-flex">
-                                      <label>GRN Qty:</label>
-                                      <input className="form-control" />
-                                      <select className="form-select">
-                                        <option></option>
-                                      </select>
-                                    </div>
-                                  </td>
-                                  <td>
-                                    <div className="d-flex">
-                                      <label>Challan Qty:</label>
-                                      <input className="form-control" />
-                                    </div>
-                                    <div className="d-flex">
-                                      <label>GRN Qty:</label>
-                                      <input className="form-control" />
-                                      <span>KG</span>
-                                    </div>
-                                  </td>
-                                  <td>
-                                    <input className="form-control" />
-                                  </td>
-                                  <td>
-                                    <input className="form-control" />
-                                  </td>
-                                  <td>
-                                    <textarea className="form-control"></textarea>
-                                  </td>
-                                  <td>
-                                    <textarea className="form-control"></textarea>
-                                  </td>
-                                  <td>
-                                    <button type="submit" className="pobtn">
-                                      ADD
-                                    </button>
-                                  </td>
-                                </tr>
-                              </tbody>
-                            </table>
-                          </div>
-                        </div>
-                      </div>
+                    <div className="table-responsive">
+                      <table className="table table-bordered">
+                        <thead>
+                          <tr>
+                            <th>
+                              Select Item:
+                              <div className="d-flex">
+                                <label className="me-2"><input type="checkbox" name="selectAll" /> All</label>
+                                <label className="me-2"><input type="checkbox" name="selectRM" /> RM</label>
+                                <label><input type="checkbox" name="selectFG" /> FG</label>
+                              </div>
+                            </th>
+                            <th>Inward Qty</th>
+                            <th>Material Rate</th>
+                            <th>Heat No</th>
+                            <th>Cust Heat No</th>
+                            <th>RM Specification</th>
+                            <th>Particular/Nature Of Process</th>
+                            <th>Action</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td>
+                              <div className="d-flex mb-1">
+                                <select
+                                  name="ItemCode"
+                                  className="form-select"
+                                  value={currentRow.ItemCode}
+                                  onChange={handleItemCodeChange}
+                                >
+                                  <option value="">-- Select Item Code --</option>
+                                  {itemCodeOptions.map((key) => (
+                                    <option key={key} value={key}>
+                                      {key}
+                                    </option>
+                                  ))}
+                                </select>
+                              </div>
+                              <div className="d-flex mt-1">
+                                <label className="me-1 text-nowrap">FG Part Code:</label>
+                                <select
+                                  name="FGPartCode"
+                                  className="form-select"
+                                  value={currentRow.FGPartCode}
+                                  onChange={handleCurrentRowChange}
+                                  disabled={fgPartCodeOptions.length === 0}
+                                >
+                                  <option value="">-- Select FG Part Code --</option>
+                                  {fgPartCodeOptions.map((pc) => (
+                                    <option key={pc} value={pc}>
+                                      {pc}
+                                    </option>
+                                  ))}
+                                </select>
+                              </div>
+                            </td>
+                            <td>
+                              <div className="d-flex mb-1">
+                                <label className="me-1 text-nowrap">Challan Qty:</label>
+                                <input
+                                  name="ChallanQty"
+                                  className="form-control"
+                                  value={currentRow.ChallanQty}
+                                  onChange={handleCurrentRowChange}
+                                />
+                              </div>
+                              <div className="d-flex">
+                                <label className="me-1 text-nowrap">GRN Qty:</label>
+                                <input
+                                  name="GRNQty"
+                                  className="form-control"
+                                  value={currentRow.GRNQty}
+                                  onChange={handleCurrentRowChange}
+                                />
+                                <select
+                                  name="GRNUnit"
+                                  className="form-select"
+                                  value={currentRow.GRNUnit}
+                                  onChange={handleCurrentRowChange}
+                                >
+                                  <option value=""></option>
+                                  <option value="KG">KG</option>
+                                  <option value="NOS">NOS</option>
+                                </select>
+                              </div>
+                            </td>
+                            <td>
+                              <div className="d-flex mb-1">
+                                <label className="me-1 text-nowrap">Challan:</label>
+                                <input
+                                  name="MaterialRateChallan"
+                                  className="form-control"
+                                  value={currentRow.MaterialRateChallan}
+                                  onChange={handleCurrentRowChange}
+                                />
+                              </div>
+                              <div className="d-flex">
+                                <label className="me-1 text-nowrap">GRN:</label>
+                                <input
+                                  name="MaterialRateGRN"
+                                  className="form-control"
+                                  value={currentRow.MaterialRateGRN}
+                                  onChange={handleCurrentRowChange}
+                                />
+                                <span className="ms-1">KG</span>
+                              </div>
+                            </td>
+                            <td>
+                              <input
+                                name="HeatNo"
+                                className="form-control"
+                                value={currentRow.HeatNo}
+                                onChange={handleCurrentRowChange}
+                              />
+                            </td>
+                            <td>
+                              <input
+                                name="CustHeatNo"
+                                className="form-control"
+                                value={currentRow.CustHeatNo}
+                                onChange={handleCurrentRowChange}
+                              />
+                            </td>
+                            <td>
+                              <textarea
+                                name="RMSpecification"
+                                className="form-control"
+                                value={currentRow.RMSpecification}
+                                onChange={handleCurrentRowChange}
+                              ></textarea>
+                            </td>
+                            <td>
+                              <textarea
+                                name="ParticularNatureOfProcess"
+                                className="form-control"
+                                value={currentRow.ParticularNatureOfProcess}
+                                onChange={handleCurrentRowChange}
+                              ></textarea>
+                            </td>
+                            <td>
+                              <button
+                                type="button"
+                                className="pobtn"
+                                onClick={handleAddRow}
+                              >
+                                {editingRowIndex !== null ? "UPDATE" : "ADD"}
+                              </button>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
                     </div>
                   </div>
 
+                  {/* ── Added Rows Table ── */}
                   <div className="InwardJobworkstatus">
-                    <div className="container-fluid  text-start">
+                    <div className="container-fluid text-start">
                       <div className="table-responsive">
                         <table className="table table-bordered">
                           <thead>
@@ -368,91 +599,50 @@ const JobworkInwardChallan = () => {
                             </tr>
                           </thead>
                           <tbody>
-                            <tr>
-                              <td>1</td>
-                              <td>
-                                <input
-                                  type="text"
-                                  className="form-control p-2"
-                                  placeholder="Enter Item Code"
-                                />
-                              </td>
-                              <td>
-                                <input
-                                  type="text"
-                                  className="form-control p-2"
-                                  placeholder="Enter Operation"
-                                />
-                              </td>
-                              <td>
-                                <input
-                                  type="text"
-                                  className="form-control p-2"
-                                  placeholder="Enter Challan Qty"
-                                />
-                              </td>
-                              <td>
-                                <input
-                                  type="text"
-                                  className="form-control p-2"
-                                  placeholder="Enter GRN Qty"
-                                />
-                              </td>
-                              <td>
-                                <input
-                                  type="text"
-                                  className="form-control p-2"
-                                  placeholder="Material Rate"
-                                />
-                              </td>
-                              <td>
-                                <input
-                                  type="text"
-                                  className="form-control p-2"
-                                  placeholder="Heat No"
-                                />
-                              </td>
-                              <td>
-                                <input
-                                  type="text"
-                                  className="form-control p-2"
-                                  placeholder="Cust. Heat No"
-                                />
-                              </td>
-                              <td>
-                                <textarea
-                                  className="form-control p-2"
-                                  rows="2"
-                                  placeholder="Nature Of Process"
-                                ></textarea>
-                              </td>
-                              <td>
-                                <input
-                                  type="text"
-                                  className="form-control p-2"
-                                  placeholder="HC"
-                                />
-                              </td>
-                              <td>
-                                <FaEdit />
-                              </td>
-                              <td>
-                                <FaTrash />
-                              </td>
-                            </tr>
-                            {/* Add more rows dynamically as needed */}
+                            {tableRows.length === 0 ? (
+                              <tr>
+                                <td colSpan="12" className="text-center text-muted">
+                                  No items added yet. Use the form above to add items.
+                                </td>
+                              </tr>
+                            ) : (
+                              tableRows.map((row, index) => (
+                                <tr key={index}>
+                                  <td>{index + 1}</td>
+                                  <td>{row.ItemCode}</td>
+                                  <td>{row.ParticularNatureOfProcess}</td>
+                                  <td>{row.ChallanQty}</td>
+                                  <td>{row.GRNQty}</td>
+                                  <td>{row.MaterialRateChallan}</td>
+                                  <td>{row.HeatNo}</td>
+                                  <td>{row.CustHeatNo}</td>
+                                  <td>{row.ParticularNatureOfProcess}</td>
+                                  <td>{row.RMSpecification}</td>
+                                  <td>
+                                    <FaEdit
+                                      style={{ cursor: "pointer", color: "#0d6efd" }}
+                                      onClick={() => handleEditRow(index)}
+                                    />
+                                  </td>
+                                  <td>
+                                    <FaTrash
+                                      style={{ cursor: "pointer", color: "#dc3545" }}
+                                      onClick={() => handleDeleteRow(index)}
+                                    />
+                                  </td>
+                                </tr>
+                              ))
+                            )}
                           </tbody>
                         </table>
                       </div>
                     </div>
                   </div>
                 </div>
+
+                {/* ── General Detail Form ── */}
                 <div className="StoreInwardJobworkFooter">
-                  <ul
-                    className="nav nav-pills mb-3"
-                    id="pills-tab"
-                    role="tablist"
-                  >
+                  <ul className="nav nav-pills mb-3" id="pills-tab" role="tablist">
                     <li className="nav-item" role="presentation">
                       <button
                         className="nav-link active"
@@ -468,300 +658,92 @@ const JobworkInwardChallan = () => {
                       </button>
                     </li>
                   </ul>
+
                   <div className="tab-content" id="pills-tabContent">
                     <div
                       className="tab-pane fade show active"
                       id="pills-Gernal-Detail"
                       role="tabpanel"
                       aria-labelledby="pills-Gernal-Detail-tab"
-                      tabindex="0"
+                      tabIndex="0"
                     >
                       <div className="StoreInwardJobworks text-start">
                         <div className="container-fluid">
                           <form onSubmit={handleSubmit}>
                             <div className="row">
+                              {/* Column 1 */}
                               <div className="col-md-4 text-start">
                                 <div className="container-fluid">
                                   <div className="table-responsive">
                                     <table className="table table-bordered">
                                       <tbody>
-                                        <tr>
-                                          <th className="col-md-4">
-                                            Inward F4 No:
-                                          </th>
-                                          <td>
-                                            <input
-                                              type="text"
-                                              className="form-control"
-                                              name="InwardF4No"
-                                              value={formData.InwardF4No}
-                                              onChange={handleInputChange}
-                                            />
-                                            {errors.InwardF4No && (
-                                              <span className="text-danger">
-                                                {errors.InwardF4No}
-                                              </span>
-                                            )}
-                                          </td>
-                                        </tr>
-                                        <tr>
-                                          <th>Inward Date:</th>
-                                          <td>
-                                            <input
-                                              type="date"
-                                              className="form-control"
-                                              name="InwardDate"
-                                              value={formData.InwardDate}
-                                              onChange={handleInputChange}
-                                            />
-                                            {errors.InwardDate && (
-                                              <span className="text-danger">
-                                                {errors.InwardDate}
-                                              </span>
-                                            )}
-                                          </td>
-                                        </tr>
-                                        <tr>
-                                          <th>Inward Time:</th>
-                                          <td>
-                                            <input
-                                              type="text"
-                                              className="form-control"
-                                              name="InwardTime"
-                                              value={formData.InwardTime}
-                                              onChange={handleInputChange}
-                                            />
-                                            {errors.InwardTime && (
-                                              <span className="text-danger">
-                                                {errors.InwardTime}
-                                              </span>
-                                            )}
-                                          </td>
-                                        </tr>
-                                        <tr>
-                                          <th>Challan No:</th>
-                                          <td>
-                                            <input
-                                              type="text"
-                                              className="form-control"
-                                              name="ChallanNo"
-                                              value={formData.ChallanNo}
-                                              onChange={handleInputChange}
-                                            />
-                                            {errors.ChallanNo && (
-                                              <span className="text-danger">
-                                                {errors.ChallanNo}
-                                              </span>
-                                            )}
-                                          </td>
-                                        </tr>
-                                        <tr>
-                                          <th>Challan Date:</th>
-                                          <td>
-                                            <input
-                                              type="date"
-                                              className="form-control"
-                                              name="ChallanDate"
-                                              value={formData.ChallanDate}
-                                              onChange={handleInputChange}
-                                            />
-                                            {errors.ChallanDate && (
-                                              <span className="text-danger">
-                                                {errors.ChallanDate}
-                                              </span>
-                                            )}
-                                          </td>
-                                        </tr>
-                                        <tr>
-                                          <th>Sub Vendor:</th>
-                                          <td>
-                                            <input
-                                              type="text"
-                                              className="form-control"
-                                              name="SubVendor"
-                                              value={formData.SubVendor}
-                                              onChange={handleInputChange}
-                                            />
-                                            {errors.SubVendor && (
-                                              <span className="text-danger">
-                                                {errors.SubVendor}
-                                              </span>
-                                            )}
-                                          </td>
-                                        </tr>
-                                        <tr>
-                                          <th>D. C. No:</th>
-                                          <td>
-                                            <input
-                                              type="text"
-                                              className="form-control"
-                                              name="DcNo"
-                                              value={formData.DcNo}
-                                              onChange={handleInputChange}
-                                            />
-                                            {errors.DcNo && (
-                                              <span className="text-danger">
-                                                {errors.DcNo}
-                                              </span>
-                                            )}
-                                          </td>
-                                        </tr>
+                                        {[
+                                          { label: "Inward F4 No:", name: "InwardF4No", type: "text" },
+                                          { label: "Inward Date:", name: "InwardDate", type: "date" },
+                                          { label: "Inward Time:", name: "InwardTime", type: "text" },
+                                          { label: "Challan No:", name: "ChallanNo", type: "text" },
+                                          { label: "Challan Date:", name: "ChallanDate", type: "date" },
+                                          { label: "Sub Vendor:", name: "SubVendor", type: "text" },
+                                          { label: "D. C. No:", name: "DcNo", type: "text" },
+                                        ].map(({ label, name, type }) => (
+                                          <tr key={name}>
+                                            <th className="col-md-4">{label}</th>
+                                            <td>
+                                              <input
+                                                type={type}
+                                                className="form-control"
+                                                name={name}
+                                                value={formData[name]}
+                                                onChange={handleInputChange}
+                                              />
+                                              {errors[name] && <span className="text-danger">{errors[name]}</span>}
+                                            </td>
+                                          </tr>
+                                        ))}
                                       </tbody>
                                     </table>
                                   </div>
                                 </div>
                               </div>
+
+                              {/* Column 2 */}
                               <div className="col-md-4 text-start">
-                                {/* Second Column Group */}
                                 <div className="container mt-4">
                                   <div className="table-responsive text-start">
                                     <table className="table table-bordered">
                                       <tbody>
-                                        <tr>
-                                          <th className="col-md-4">
-                                            D.C. Date:
-                                          </th>
-                                          <td>
-                                            <input
-                                              type="date"
-                                              className="form-control"
-                                              name="DcDate"
-                                              value={formData.DcDate}
-                                              onChange={handleInputChange}
-                                            />
-                                            {errors.DcDate && (
-                                              <span className="text-danger">
-                                                {errors.DcDate}
-                                              </span>
-                                            )}
-                                          </td>
-                                        </tr>
-                                        <tr>
-                                          <th>Way Bill Qty:</th>
-                                          <td>
-                                            <input
-                                              type="text"
-                                              className="form-control"
-                                              name="EWayBillQty"
-                                              value={formData.EWayBillQty}
-                                              onChange={handleInputChange}
-                                            />
-                                            {errors.EWayBillQty && (
-                                              <span className="text-danger">
-                                                {errors.EWayBillQty}
-                                              </span>
-                                            )}
-                                          </td>
-                                        </tr>
-                                        <tr>
-                                          <th>Way Bill No:</th>
-                                          <td>
-                                            <input
-                                              type="text"
-                                              className="form-control"
-                                              name="EWayBillNo"
-                                              value={formData.EWayBillNo}
-                                              onChange={handleInputChange}
-                                            />
-                                            {errors.EWayBillNo && (
-                                              <span className="text-danger">
-                                                {errors.EWayBillNo}
-                                              </span>
-                                            )}
-                                          </td>
-                                        </tr>
-                                        <tr>
-                                          <th>Vehicle No:</th>
-                                          <td>
-                                            <input
-                                              type="text"
-                                              className="form-control"
-                                              name="VehicleNo"
-                                              value={formData.VehicleNo}
-                                              onChange={handleInputChange}
-                                            />
-                                            {errors.VehicleNo && (
-                                              <span className="text-danger">
-                                                {errors.VehicleNo}
-                                              </span>
-                                            )}
-                                          </td>
-                                        </tr>
-                                        <tr>
-                                          <th>Lr No:</th>
-                                          <td>
-                                            <input
-                                              type="text"
-                                              className="form-control"
-                                              name="LrNo"
-                                              value={formData.LrNo}
-                                              onChange={handleInputChange}
-                                            />
-                                            {errors.LrNo && (
-                                              <span className="text-danger">
-                                                {errors.LrNo}
-                                              </span>
-                                            )}
-                                          </td>
-                                        </tr>
-                                        <tr>
-                                          <th>Transporter:</th>
-                                          <td>
-                                            <input
-                                              type="text"
-                                              className="form-control"
-                                              name="Transporter"
-                                              value={formData.Transporter}
-                                              onChange={handleInputChange}
-                                            />
-                                            {errors.Transporter && (
-                                              <span className="text-danger">
-                                                {errors.Transporter}
-                                              </span>
-                                            )}
-                                          </td>
-                                        </tr>
-                                        <tr>
-                                          <th>Prepared By:</th>
-                                          <td>
-                                            <input
-                                              type="text"
-                                              className="form-control"
-                                              name="PreparedBy"
-                                              value={formData.PreparedBy}
-                                              onChange={handleInputChange}
-                                            />
-                                            {errors.PreparedBy && (
-                                              <span className="text-danger">
-                                                {errors.PreparedBy}
-                                              </span>
-                                            )}
-                                          </td>
-                                        </tr>
-                                        <tr>
-                                          <th>Checked By:</th>
-                                          <td>
-                                            <input
-                                              type="text"
-                                              className="form-control"
-                                              name="CheckedBy"
-                                              value={formData.CheckedBy}
-                                              onChange={handleInputChange}
-                                            />
-                                            {errors.CheckedBy && (
-                                              <span className="text-danger">
-                                                {errors.CheckedBy}
-                                              </span>
-                                            )}
-                                          </td>
-                                        </tr>
+                                        {[
+                                          { label: "D.C. Date:", name: "DcDate", type: "date" },
+                                          { label: "Way Bill Qty:", name: "EWayBillQty", type: "text" },
+                                          { label: "Way Bill No:", name: "EWayBillNo", type: "text" },
+                                          { label: "Vehicle No:", name: "VehicleNo", type: "text" },
+                                          { label: "Lr No:", name: "LrNo", type: "text" },
+                                          { label: "Transporter:", name: "Transporter", type: "text" },
+                                          { label: "Prepared By:", name: "PreparedBy", type: "text" },
+                                          { label: "Checked By:", name: "CheckedBy", type: "text" },
+                                        ].map(({ label, name, type }) => (
+                                          <tr key={name}>
+                                            <th className="col-md-4">{label}</th>
+                                            <td>
+                                              <input
+                                                type={type}
+                                                className="form-control"
+                                                name={name}
+                                                value={formData[name]}
+                                                onChange={handleInputChange}
+                                              />
+                                              {errors[name] && <span className="text-danger">{errors[name]}</span>}
+                                            </td>
+                                          </tr>
+                                        ))}
                                       </tbody>
                                     </table>
                                   </div>
                                 </div>
                               </div>
+
+                              {/* Column 3 */}
                               <div className="col-md-4 text-start">
-                                {/* Third Column Group */}
                                 <div className="container mt-4">
                                   <div className="table-responsive">
                                     <table className="table table-bordered">
@@ -769,156 +751,69 @@ const JobworkInwardChallan = () => {
                                         <tr>
                                           <th>Vehicle in Time:</th>
                                           <td>
-                                            <input
-                                              type="text"
-                                              className="form-control"
-                                              name="VehicleTime"
-                                              value={formData.VehicleTime}
-                                              onChange={handleInputChange}
-                                            />
-                                            {errors.VehicleTime && (
-                                              <span className="text-danger">
-                                                {errors.VehicleTime}
-                                              </span>
-                                            )}
+                                            <input type="text" className="form-control" name="VehicleTime" value={formData.VehicleTime} onChange={handleInputChange} />
                                           </td>
                                         </tr>
                                         <tr>
                                           <th>Tc No:</th>
                                           <td>
-                                            <input
-                                              type="text"
-                                              className="form-control"
-                                              name="TcNo"
-                                              value={formData.TcNo}
-                                              onChange={handleInputChange}
-                                            />
-                                            {errors.TcNo && (
-                                              <span className="text-danger">
-                                                {errors.TcNo}
-                                              </span>
-                                            )}
+                                            <input type="text" className="form-control" name="TcNo" value={formData.TcNo} onChange={handleInputChange} />
                                           </td>
                                         </tr>
                                         <tr>
                                           <th>Tc Date:</th>
                                           <td>
-                                            <input
-                                              type="date"
-                                              className="form-control"
-                                              name="TcDate"
-                                              value={formData.TcDate}
-                                              onChange={handleInputChange}
-                                            />
-                                            {errors.TcDate && (
-                                              <span className="text-danger">
-                                                {errors.TcDate}
-                                              </span>
-                                            )}
+                                            <input type="date" className="form-control" name="TcDate" value={formData.TcDate} onChange={handleInputChange} />
                                           </td>
                                         </tr>
                                         <tr>
                                           <th>Remark:</th>
                                           <td>
-                                            <textarea
-                                              type="text"
-                                              className="form-control"
-                                              name="Remark"
-                                              value={formData.Remark}
-                                              onChange={handleInputChange}
-                                              rows="2"
-                                            ></textarea>
-                                            {errors.Remark && (
-                                              <span className="text-danger">
-                                                {errors.Remark}
-                                              </span>
-                                            )}
+                                            <textarea className="form-control" name="Remark" value={formData.Remark} onChange={handleInputChange} rows="2"></textarea>
                                           </td>
                                         </tr>
                                         <tr>
-                                          <th className="col-md-4">
-                                            Delivery in Time:
-                                          </th>
-
+                                          <th>Delivery in Time:</th>
                                           <td>
-                                            <div className="col-md-2">
-                                              <input
-                                                type="checkbox"
-                                                name="DeliveryInTime"
-                                                checked={
-                                                  formData.DeliveryInTime ===
-                                                  "yes"
-                                                }
-                                                onChange={() =>
-                                                  handleCheckboxChange("yes")
-                                                }
-                                              />
-                                              Yes
-                                              <input
-                                                type="checkbox"
-                                                name="DeliveryInTime"
-                                                checked={
-                                                  formData.DeliveryInTime ===
-                                                  "no"
-                                                }
-                                                onChange={() =>
-                                                  handleCheckboxChange("no")
-                                                }
-                                              />
-                                              No
+                                            <div className="d-flex gap-2">
+                                              <label>
+                                                <input
+                                                  type="checkbox"
+                                                  checked={formData.DeliveryInTime === "yes"}
+                                                  onChange={() => handleCheckboxChange("yes")}
+                                                /> Yes
+                                              </label>
+                                              <label>
+                                                <input
+                                                  type="checkbox"
+                                                  checked={formData.DeliveryInTime === "no"}
+                                                  onChange={() => handleCheckboxChange("no")}
+                                                /> No
+                                              </label>
                                             </div>
+                                            {errors.DeliveryInTime && <span className="text-danger">{errors.DeliveryInTime}</span>}
                                           </td>
                                         </tr>
-
                                         <tr>
                                           <th>Clearing Status:</th>
                                           <td>
-                                            <select
-                                              className="form-select"
-                                              type="text"
-                                              name="ClearingStatus"
-                                              value={formData.ClearingStatus}
-                                              onChange={handleInputChange}
-                                            >
-                                              <option value="Main Store">
-                                                select
-                                              </option>
-                                              <option value="yes">yes</option>{" "}
+                                            <select className="form-select" name="ClearingStatus" value={formData.ClearingStatus} onChange={handleInputChange}>
+                                              <option value="">Select</option>
+                                              <option value="Pending">Pending</option>
+                                              <option value="yes">Yes</option>
                                               <option value="No">No</option>
                                             </select>
-                                            {errors.ClearingStatus && (
-                                              <span className="text-danger">
-                                                {errors.ClearingStatus}
-                                              </span>
-                                            )}
                                           </td>
                                         </tr>
                                         <tr>
                                           <th>Vehicle Out Time:</th>
                                           <td>
-                                            <input
-                                              type="text"
-                                              className="form-control"
-                                              name="VehicleOutTime"
-                                              value={formData.VehicleOutTime}
-                                              onChange={handleInputChange}
-                                            />
-                                            {errors.VehicleOutTime && (
-                                              <span className="text-danger">
-                                                {errors.VehicleOutTime}
-                                              </span>
-                                            )}
+                                            <input type="text" className="form-control" name="VehicleOutTime" value={formData.VehicleOutTime} onChange={handleInputChange} />
                                           </td>
                                         </tr>
                                         <tr>
-                                          <td
-                                            colspan="2"
-                                            className="text-center"
-                                          >
-                                            <button
-                                              type="submit"
-                                              className="btn"
-                                            >
+                                          <td colSpan="2" className="text-center">
+                                            <button type="submit" className="btn btn-primary">
                                               Save Challan
                                             </button>
                                           </td>
