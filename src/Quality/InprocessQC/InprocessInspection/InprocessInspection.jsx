@@ -16,8 +16,8 @@ import axios from "axios";
 const InprocessInspection = () => {
   const navigate = useNavigate();
 
-  const handleSelect = () => {
-    navigate("/InprocessInspectionDetails");
+  const handleSelect = (item) => {
+    navigate("/InprocessInspectionDetails", { state: { selectedItem: item } });
   };
 
   const [sideNavOpen, setSideNavOpen] = useState(false);
@@ -209,7 +209,7 @@ const InprocessInspection = () => {
                                   <td>
                                     <span
                                       style={{ color: "#2f75b5", cursor: "pointer", fontWeight: "600" }}
-                                      onClick={handleSelect}
+                                      onClick={() => handleSelect(item)}
                                     >
                                       Select
                                     </span>

@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom";
 import { Search, Plus, RefreshCw, Trash2, List, Save, CheckCircle } from "lucide-react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min";
+import Swal from "sweetalert2";
 import NavBar from "../../NavBar/NavBar.js";
 import SideNav from "../../SideNav/SideNav.js";
 import "./RejectionMaterialQC.css";
@@ -32,102 +33,109 @@ const Select = ({ className = "", children, ...props }) => (
 );
 
 // --- Tab A: QC Info ---
-const TabQcInfo = ({ data }) => {
+// --- Tab A: QC Info ---
+const TabQcInfo = ({ data, handleChange, clearForm, fetchQcNumber }) => {
   return (
     <div className="PaddingSalesQC-filter">
       <div className="row">
         <div className="col-lg-9">
           <FormRow label="Rejection Series">
-            <Select className="bg-light text-secondary" style={{ width: '200px' }} disabled>
-              <option>{data.rejection_series || "Sales Return"}</option>
+            <Select name="rejection_series" value={data.rejection_series || ""} onChange={handleChange} className="bg-light text-secondary" style={{ width: '200px' }}>
+              <option value="">Select</option>
+              <option value="Sales Return">Sales Return</option>
             </Select>
           </FormRow>
 
           <FormRow label="QC No">
-            <Input value={data.qc_no || ""} className="bg-light" style={{ width: '130px' }} readOnly />
+            <div className="d-flex gap-1 w-100" style={{ maxWidth: '130px' }}>
+              <Input name="qc_no" value={data.qc_no || ""} onChange={handleChange} className="bg-light" />
+              <button type="button" className="btn btn-sm btn-light border py-0 px-2" onClick={fetchQcNumber} title="Fetch QC Number">⟳</button>
+            </div>
             <span className="ms-2 text-secondary fw-medium">QC Date :</span>
-            <Input type="date" value={data.qc_date || ""} style={{ width: '145px' }} readOnly />
+            <Input type="date" name="qc_date" value={data.qc_date || ""} onChange={handleChange} style={{ width: '145px' }} />
           </FormRow>
 
           <FormRow label="Cust / Vendor Name">
-            <Input value={data.cust_vender_name || ""} className="bg-light w-100" style={{ maxWidth: '450px' }} readOnly />
+            <Input name="cust_vender_name" value={data.cust_vender_name || ""} onChange={handleChange} className="bg-light w-100" style={{ maxWidth: '450px' }} />
           </FormRow>
 
           <FormRow label="Select Item">
-            <Input value={data.select_item || ""} className="bg-light w-100" style={{ maxWidth: '450px' }} readOnly />
+            <Input name="select_item" value={data.select_item || ""} onChange={handleChange} className="bg-light w-100" style={{ maxWidth: '450px' }} />
             <button className="btn btn-light border d-flex align-items-center gap-1 py-1 px-2" style={{ fontSize: '12px' }}>
               <Search size={14} /> Select
             </button>
           </FormRow>
 
           <FormRow label="Part Code">
-            <Select style={{ width: '130px' }} value={data.part_code || ""}>
-              <option>{data.part_code}</option>
-            </Select>
+            <Input name="part_code" value={data.part_code || ""} onChange={handleChange} style={{ width: '130px' }} />
             <span className="ms-2 text-secondary fw-medium">Heat No</span>
-            <Select style={{ width: '130px' }} value={data.heat_no || ""}>
-              <option>{data.heat_no}</option>
-            </Select>
+            <Input name="heat_no" value={data.heat_no || ""} onChange={handleChange} style={{ width: '130px' }} />
             <label className="d-flex align-items-center gap-1 ms-3 text-secondary" style={{ cursor: 'pointer' }}>
               <input type="checkbox" className="mt-1" checked={!!data.New_heat_no} readOnly /> New Heat No :
             </label>
-            <Input style={{ width: '100px' }} value={data.New_heat_no || ""} readOnly />
+            <Input name="New_heat_no" value={data.New_heat_no || ""} onChange={handleChange} style={{ width: '100px' }} />
           </FormRow>
 
           <div className="d-flex flex-wrap gap-4 mt-3">
             <FormRow label="Return Qty">
-              <Input value={data.return_qty || ""} className="bg-light" style={{ width: '100px' }} readOnly />
+              <Input name="return_qty" value={data.return_qty || ""} onChange={handleChange} className="bg-light" style={{ width: '100px' }} />
             </FormRow>
             <FormRow label="Ok Qty">
-              <Input value={data.ok_qty || ""} style={{ width: '100px' }} readOnly />
+              <Input name="ok_qty" value={data.ok_qty || ""} onChange={handleChange} style={{ width: '100px' }} />
             </FormRow>
           </div>
 
           <div className="d-flex flex-wrap gap-4">
             <FormRow label="Rework Qty (PD)">
-              <Input value={data.rework_qty || ""} style={{ width: '100px' }} readOnly />
+              <Input name="rework_qty" value={data.rework_qty || ""} onChange={handleChange} style={{ width: '100px' }} />
             </FormRow>
             <FormRow label="Reject Qty (MD)">
-              <Input value={data.reject_qty || ""} style={{ width: '100px' }} readOnly />
+              <Input name="reject_qty" value={data.reject_qty || ""} onChange={handleChange} style={{ width: '100px' }} />
             </FormRow>
           </div>
 
           <FormRow label="Rework Reason">
-            <Select style={{ width: '200px' }} value={data.rework_reason || ""}>
-              <option>{data.rework_reason || "Select"}</option>
+            <Select name="rework_reason" value={data.rework_reason || ""} onChange={handleChange} style={{ width: '200px' }}>
+              <option value="">Select</option>
+              <option value="Minor scratch">Minor scratch</option>
+              <option value="Dented">Dented</option>
             </Select>
             <button className="btn btn-light border py-1 px-2"><Plus size={14} /></button>
-            <button className="btn btn-light border py-1 px-2"><RefreshCw size={14} /></button>
+            <button className="btn btn-light border py-1 px-2" onClick={clearForm}><RefreshCw size={14} /></button>
           </FormRow>
 
           <FormRow label="Reject Reason">
-            <Select style={{ width: '200px' }} value={data.reject_reason || ""}>
-              <option>{data.reject_reason || "Select"}</option>
+            <Select name="reject_reason" value={data.reject_reason || ""} onChange={handleChange} style={{ width: '200px' }}>
+              <option value="">Select</option>
+              <option value="Crack found">Crack found</option>
+              <option value="Broken">Broken</option>
             </Select>
             <button className="btn btn-light border py-1 px-2"><Plus size={14} /></button>
-            <button className="btn btn-light border py-1 px-2"><RefreshCw size={14} /></button>
+            <button className="btn btn-light border py-1 px-2" onClick={clearForm}><RefreshCw size={14} /></button>
           </FormRow>
 
           <FormRow label="Action Plan">
-            <Input className="w-100" style={{ maxWidth: '250px' }} value={data.action_plan || ""} readOnly />
+            <Input name="action_plan" className="w-100" style={{ maxWidth: '250px' }} value={data.action_plan || ""} onChange={handleChange} />
             <span className="ms-2 text-secondary fw-medium">Action</span>
-            <Select style={{ width: '80px' }} value={data.action || ""}>
-              <option>{data.action}</option>
+            <Select name="action" style={{ width: '150px' }} value={data.action || ""} onChange={handleChange}>
+              <option value="">Select</option>
+              <option value="Rework initiated">Rework initiated</option>
+              <option value="Scrap">Scrap</option>
             </Select>
             <span className="ms-2 text-secondary fw-medium">Action Date</span>
-            <Input type="date" value={data.action_date || ""} style={{ width: '140px' }} readOnly />
+            <Input type="date" name="action_date" value={data.action_date || ""} onChange={handleChange} style={{ width: '140px' }} />
           </FormRow>
 
           <FormRow label="Remark">
-            <Input className="w-100" style={{ maxWidth: '450px' }} value={data.remark || ""} readOnly />
+            <Input name="remark" className="w-100" style={{ maxWidth: '450px' }} value={data.remark || ""} onChange={handleChange} />
           </FormRow>
 
           <div className="d-flex flex-wrap gap-4 mt-2">
             <FormRow label="Inspected By">
-              <Input style={{ width: '200px' }} value={data.inspected_by || ""} readOnly />
+              <Input name="inspected_by" style={{ width: '200px' }} value={data.inspected_by || ""} onChange={handleChange} />
             </FormRow>
             <FormRow label="Approved By">
-              <Input style={{ width: '200px' }} value={data.approved_by || ""} readOnly />
+              <Input name="approved_by" style={{ width: '200px' }} value={data.approved_by || ""} onChange={handleChange} />
             </FormRow>
           </div>
         </div>
@@ -145,7 +153,21 @@ const TabQcInfo = ({ data }) => {
 };
 
 // --- Tab B: Dimensional ---
-const TabDimensional = ({ tests = [] }) => {
+const TabDimensional = ({ tests = [], setTests }) => {
+  const [newRow, setNewRow] = useState({
+    test_no: "", test_description: "", dimensions: "", tol_sub: "", tol_add: "", methods_of_check: "", one: "", two: "", three: "", four: "", five: "", remark: ""
+  });
+
+  const handleAdd = () => {
+    if (!newRow.test_no) return;
+    setTests([...tests, { ...newRow, id: Date.now() }]);
+    setNewRow({ test_no: "", test_description: "", dimensions: "", tol_sub: "", tol_add: "", methods_of_check: "", one: "", two: "", three: "", four: "", five: "", remark: "" });
+  };
+
+  const handleDelete = (id) => {
+    setTests(tests.filter(row => row.id !== id));
+  };
+
   return (
     <div className="PaddingSalesQC-Main bg-white border">
       <div className="table-responsive">
@@ -171,20 +193,20 @@ const TabDimensional = ({ tests = [] }) => {
           <tbody>
             <tr>
               <td>1</td>
-              <td><Input placeholder="Enter.." /></td>
-              <td><textarea placeholder="Enter . ." className="form-control text-sm px-1 py-1" style={{ height: '30px', resize: 'none' }} /></td>
-              <td><Input placeholder="Enter.." /></td>
-              <td><Input /></td>
-              <td><Input /></td>
-              <td><Input /></td>
-              <td><Input /></td>
-              <td><Input /></td>
-              <td><Input /></td>
-              <td><Input /></td>
-              <td><Input /></td>
-              <td><Input /></td>
+              <td><Input placeholder="Enter.." value={newRow.test_no} onChange={(e) => setNewRow({ ...newRow, test_no: e.target.value })} /></td>
+              <td><textarea placeholder="Enter . ." className="form-control text-sm px-1 py-1" style={{ height: '30px', resize: 'none' }} value={newRow.test_description} onChange={(e) => setNewRow({ ...newRow, test_description: e.target.value })} /></td>
+              <td><Input placeholder="Enter.." value={newRow.dimensions} onChange={(e) => setNewRow({ ...newRow, dimensions: e.target.value })} /></td>
+              <td><Input value={newRow.tol_sub} onChange={(e) => setNewRow({ ...newRow, tol_sub: e.target.value })} /></td>
+              <td><Input value={newRow.tol_add} onChange={(e) => setNewRow({ ...newRow, tol_add: e.target.value })} /></td>
+              <td><Input value={newRow.methods_of_check} onChange={(e) => setNewRow({ ...newRow, methods_of_check: e.target.value })} /></td>
+              <td><Input value={newRow.one} onChange={(e) => setNewRow({ ...newRow, one: e.target.value })} /></td>
+              <td><Input value={newRow.two} onChange={(e) => setNewRow({ ...newRow, two: e.target.value })} /></td>
+              <td><Input value={newRow.three} onChange={(e) => setNewRow({ ...newRow, three: e.target.value })} /></td>
+              <td><Input value={newRow.four} onChange={(e) => setNewRow({ ...newRow, four: e.target.value })} /></td>
+              <td><Input value={newRow.five} onChange={(e) => setNewRow({ ...newRow, five: e.target.value })} /></td>
+              <td><Input value={newRow.remark} onChange={(e) => setNewRow({ ...newRow, remark: e.target.value })} /></td>
               <td>
-                <button className="btn btn-light border fw-bold w-100 py-1" style={{ fontSize: '12px' }}>Add</button>
+                <button className="btn btn-light border fw-bold w-100 py-1" style={{ fontSize: '12px' }} onClick={handleAdd}>Add</button>
               </td>
             </tr>
           </tbody>
@@ -224,7 +246,7 @@ const TabDimensional = ({ tests = [] }) => {
                 <td>{row.five}</td>
                 <td>{row.remark}</td>
                 <td>
-                  <Trash2 size={16} className="text-secondary mx-auto" style={{ cursor: 'pointer' }} />
+                  <Trash2 size={16} className="text-secondary mx-auto" style={{ cursor: 'pointer' }} onClick={() => handleDelete(row.id)} />
                 </td>
               </tr>
             ))}
@@ -241,7 +263,21 @@ const TabDimensional = ({ tests = [] }) => {
 };
 
 // --- Tab C: Visual Inspection ---
-const TabVisualInspection = ({ tests = [] }) => {
+const TabVisualInspection = ({ tests = [], setTests }) => {
+  const [newRow, setNewRow] = useState({
+    test_no: "", test_description: "", check_points: "", actual_observation: "", one: "", two: "", three: "", four: "", five: "", remark: ""
+  });
+
+  const handleAdd = () => {
+    if (!newRow.test_no) return;
+    setTests([...tests, { ...newRow, id: Date.now() }]);
+    setNewRow({ test_no: "", test_description: "", check_points: "", actual_observation: "", one: "", two: "", three: "", four: "", five: "", remark: "" });
+  };
+
+  const handleDelete = (id) => {
+    setTests(tests.filter(row => row.id !== id));
+  };
+
   return (
     <div className="PaddingSalesQC-Main bg-white border">
       <div className="table-responsive">
@@ -265,18 +301,18 @@ const TabVisualInspection = ({ tests = [] }) => {
           <tbody>
             <tr>
               <td>1</td>
-              <td><Input placeholder="Enter.." /></td>
-              <td><textarea placeholder="Enter . ." className="form-control text-sm px-1 py-1" style={{ height: '30px', resize: 'none' }} /></td>
-              <td><Input placeholder="Enter Checkpoint.." /></td>
-              <td><Input /></td>
-              <td><Input /></td>
-              <td><Input /></td>
-              <td><Input /></td>
-              <td><Input /></td>
-              <td><Input /></td>
-              <td><Input /></td>
+              <td><Input placeholder="Enter.." value={newRow.test_no} onChange={(e) => setNewRow({ ...newRow, test_no: e.target.value })} /></td>
+              <td><textarea placeholder="Enter . ." className="form-control text-sm px-1 py-1" style={{ height: '30px', resize: 'none' }} value={newRow.test_description} onChange={(e) => setNewRow({ ...newRow, test_description: e.target.value })} /></td>
+              <td><Input placeholder="Enter Checkpoint.." value={newRow.check_points} onChange={(e) => setNewRow({ ...newRow, check_points: e.target.value })} /></td>
+              <td><Input value={newRow.actual_observation} onChange={(e) => setNewRow({ ...newRow, actual_observation: e.target.value })} /></td>
+              <td><Input value={newRow.one} onChange={(e) => setNewRow({ ...newRow, one: e.target.value })} /></td>
+              <td><Input value={newRow.two} onChange={(e) => setNewRow({ ...newRow, two: e.target.value })} /></td>
+              <td><Input value={newRow.three} onChange={(e) => setNewRow({ ...newRow, three: e.target.value })} /></td>
+              <td><Input value={newRow.four} onChange={(e) => setNewRow({ ...newRow, four: e.target.value })} /></td>
+              <td><Input value={newRow.five} onChange={(e) => setNewRow({ ...newRow, five: e.target.value })} /></td>
+              <td><Input value={newRow.remark} onChange={(e) => setNewRow({ ...newRow, remark: e.target.value })} /></td>
               <td>
-                <button className="btn btn-light border fw-bold w-100 py-1" style={{ fontSize: '12px' }}>Add</button>
+                <button className="btn btn-light border fw-bold w-100 py-1" style={{ fontSize: '12px' }} onClick={handleAdd}>Add</button>
               </td>
             </tr>
           </tbody>
@@ -312,7 +348,7 @@ const TabVisualInspection = ({ tests = [] }) => {
                 <td>{row.five}</td>
                 <td>{row.remark}</td>
                 <td>
-                  <Trash2 size={16} className="text-secondary mx-auto" style={{ cursor: 'pointer' }} />
+                  <Trash2 size={16} className="text-secondary mx-auto" style={{ cursor: 'pointer' }} onClick={() => handleDelete(row.id)} />
                 </td>
               </tr>
             ))}
@@ -328,109 +364,118 @@ const TabVisualInspection = ({ tests = [] }) => {
   );
 };
 
+// --- Helper for Default State ---
+const getEmptyQcInfo = () => ({
+  rejection_series: "",
+  qc_no: "",
+  qc_date: new Date().toISOString().split("T")[0],
+  cust_vender_name: "",
+  select_item: "",
+  part_code: "",
+  heat_no: "",
+  New_heat_no: "",
+  return_qty: "",
+  ok_qty: "",
+  rework_qty: "",
+  reject_qty: "",
+  rework_reason: "",
+  reject_reason: "",
+  action_plan: "",
+  action: "",
+  action_date: "",
+  remark: "",
+  inspected_by: "",
+  approved_by: ""
+});
+
 // --- Main Application Component ---
 const RejectionMaterialQC = () => {
   const [sideNavOpen, setSideNavOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('A');
   const location = useLocation();
-  const [qcData, setQcData] = useState({});
+  const [qcData, setQcData] = useState(getEmptyQcInfo());
+  const [dimensionTests, setDimensionTests] = useState([]);
+  const [visualTests, setVisualTests] = useState([]);
+
+
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setQcData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const clearForm = () => {
+    setQcData(getEmptyQcInfo());
+    setDimensionTests([]);
+    setVisualTests([]);
+  };
+
+  const fetchQcNumber = async (e) => {
+    if (e) e.preventDefault();
+    try {
+      const response = await fetch("https://erp-render.onrender.com/Quality/sales-qc-number/");
+      const data = await response.json();
+      if (data && data.qc_no) {
+        setQcData(prev => ({ ...prev, qc_no: data.qc_no }));
+      }
+    } catch (error) {
+      console.error("Error fetching QC number:", error);
+    }
+  };
 
   useEffect(() => {
-    // Integrating the provided API data
-    const apiData = [
-      {
-        "id": 1,
-        "dimension_tests": [
-          {
-            "id": 1,
-            "test_no": "DT-001",
-            "test_description": "Length Check",
-            "specification": "50 mm",
-            "dimensions": "49.8 mm",
-            "tol_sub": "-0.5",
-            "tol_add": "+0.5",
-            "methods_of_check": "Vernier Caliper",
-            "one": "49.8",
-            "two": "49.9",
-            "three": "50.0",
-            "four": "49.7",
-            "five": "49.8",
-            "remark": "Within tolerance",
-            "qc": 1
-          },
-          {
-            "id": 2,
-            "test_no": "DT-002",
-            "test_description": "Width Check",
-            "specification": "20 mm",
-            "dimensions": "20.1 mm",
-            "tol_sub": "-0.2",
-            "tol_add": "+0.2",
-            "methods_of_check": "Micrometer",
-            "one": "20.1",
-            "two": "20.0",
-            "three": "19.9",
-            "four": "20.1",
-            "five": "20.0",
-            "remark": "OK",
-            "qc": 1
-          }
-        ],
-        "visual_tests": [
-          {
-            "id": 1,
-            "test_no": "VT-001",
-            "test_description": "Surface Inspection",
-            "check_points": "Check scratches",
-            "actual_observation": "Minor scratches",
-            "one": "OK",
-            "two": "OK",
-            "three": "OK",
-            "four": "OK",
-            "five": "OK",
-            "merge": true,
-            "remark": "Acceptable",
-            "qc": 1
-          },
-          {
-            "id": 2,
-            "test_no": "VT-002",
-            "test_description": "Crack Inspection",
-            "check_points": "Check cracks",
-            "actual_observation": "No cracks",
-            "one": "OK",
-            "two": "OK",
-            "three": "OK",
-            "four": "OK",
-            "five": "OK",
-            "merge": true,
-            "remark": "Passed",
-            "qc": 1
-          }
-        ],
-        "rejection_series": "SRQ-2026",
-        "qc_no": "QC-26270001",
-        "qc_date": "2026-02-26",
-        "cust_vender_name": "Ram Industries",
-        "select_item": "Brake Shoe",
-        "part_code": "BS-1001",
-        "heat_no": "H123",
-        "New_heat_no": "NH123",
-        "return_qty": "100",
-        "ok_qty": "80",
-        "rework_qty": "10",
-        "reject_qty": "10",
-        "rework_reason": "Minor scratch",
-        "reject_reason": "Crack found",
-        "action_plan": "Rework and polish",
-        "action": "Rework initiated",
-        "action_date": "2026-02-26",
-        "remark": "Inspection completed",
-        "inspected_by": "Inspector A",
-        "approved_by": "Manager B"
+    clearForm();
+    fetchQcNumber();
+  }, []);
+
+  const handleSaveReport = async () => {
+    try {
+      const payload = {
+        ...qcData,
+        dimension_tests: dimensionTests,
+        visual_tests: visualTests
+      };
+
+      const response = await fetch("https://erp-render.onrender.com/Quality/sales-return-qc/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (response.ok) {
+        Swal.fire({
+          icon: "success",
+          title: "Success!",
+          text: "Report saved successfully!",
+          confirmButtonColor: "#3085d6",
+        });
+        clearForm();
+        fetchQcNumber();
+      } else {
+        const errData = await response.json().catch(() => ({}));
+        console.error("Server error:", errData);
+        Swal.fire({
+          icon: "error",
+          title: "Failed to Save",
+          text: `Server responded with status: ${response.status}`,
+          confirmButtonColor: "#d33",
+        });
       }
-    ];
-    setQcData(apiData[0]);
+    } catch (error) {
+      console.error("Error saving report:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "An error occurred while saving the report. Check console for details.",
+        confirmButtonColor: "#d33",
+      });
+    }
+  };
+
+  useEffect(() => {
+    clearForm();
   }, []);
 
   const toggleSideNav = () => {
@@ -500,17 +545,16 @@ const RejectionMaterialQC = () => {
 
                   {/* Tab Contents wrapper */}
                   <div className="shadow-sm">
-                    {activeTab === 'A' && <TabQcInfo data={qcData} />}
-                    {activeTab === 'B' && <TabDimensional tests={qcData.dimension_tests} />}
-                    {activeTab === 'C' && <TabVisualInspection tests={qcData.visual_tests} />}
+                    {activeTab === 'A' && <TabQcInfo data={qcData} handleChange={handleChange} clearForm={clearForm} fetchQcNumber={fetchQcNumber} />}
+                    {activeTab === 'B' && <TabDimensional tests={dimensionTests} setTests={setDimensionTests} />}
+                    {activeTab === 'C' && <TabVisualInspection tests={visualTests} setTests={setVisualTests} />}
                   </div>
 
                   <div className="d-flex justify-content-start mt-4">
-                    <button className="btn btn-light border d-flex align-items-center gap-2 fw-bold">
+                    <button className="btn btn-light border d-flex align-items-center gap-2" onClick={handleSaveReport}>
                       <CheckCircle size={16} /> Save Report
                     </button>
                   </div>
-
                 </div>
               </main>
             </div>
