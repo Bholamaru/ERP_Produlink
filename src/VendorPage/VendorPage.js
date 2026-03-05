@@ -21,7 +21,7 @@ const VendorPage = () => {
   const [formData, setFormData] = useState({
     company_name: "",
     short_name: "",
-    username:"",
+    username: "",
     password: "",
     password2: "",
     city: "",
@@ -134,14 +134,13 @@ const VendorPage = () => {
   };
 
   return (
-
     <>
+      <NavBar toggleSideNav={toggleSideNav} />
       <div className="Vendor">
         <div className="container-fluid">
           <div className="row">
             <div className="col-md-12">
               <div className="VendorPage">
-                <NavBar toggleSideNav={toggleSideNav} />
                 <SideNav
                   sideNavOpen={sideNavOpen}
                   toggleSideNav={toggleSideNav}

@@ -1,4 +1,4 @@
-  .InwardList-header {
+.InwardList-header {
     background-color: #f8f9fa;
     /* Light background for header */
     border-bottom: 1px solid #dee2e6;
@@ -6,15 +6,15 @@
     padding: 10px 15px;
     /* Padding around header */
     border-radius: 5px;
-  }
+}
 
-  .InwardList-header .header-title {
+.InwardList-header .header-title {
     font-size: 20px;
     font-weight: bold;
     margin: 0;
-  }
+}
 
-  .InwardList-main {
+.InwardList-main {
     background-color: #f8f9fa;
     /* Light background for header */
     border-bottom: 1px solid #dee2e6;
@@ -22,39 +22,39 @@
     padding: 10px 15px;
     /* Padding around header */
     border-radius: 5px;
-  }
+}
 
-  .InwardList-main .table-responsive {
+.InwardList-main .table-responsive {
     margin-top: 20px;
-  }
+}
 
-  @media (max-width: 768px) {
+@media (max-width: 768px) {
     .InwardList-header .row {
-      flex-direction: column;
+        flex-direction: column;
     }
 
     .InwardList-header .col-md-6,
     .InwardList-header .col-md-4 {
-      text-align: left;
-      margin-top: 10px;
+        text-align: left;
+        margin-top: 10px;
     }
 
     .InwardList-header .header-title {
-      text-align: center;
+        text-align: center;
     }
 
     .pobtn {
-      width: 100%;
-      margin-top: 10px;
+        width: 100%;
+        margin-top: 10px;
     }
-  }
+}
 
-  @media (max-width: 576px) {
+@media (max-width: 576px) {
     .InwardList-main .row {
-      flex-direction: column;
+        flex-direction: column;
     }
 
     .InwardList-main .col-12 {
-      margin-bottom: 10px;
+        margin-bottom: 10px;
     }
-  }
+}

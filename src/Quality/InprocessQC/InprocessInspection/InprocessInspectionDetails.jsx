@@ -70,15 +70,31 @@ const InprocessInspectionDetails = () => {
     fetchQcNo();
   }, []);
 
+  useEffect(() => {
+    if (selectedItem && Object.keys(selectedItem).length > 0) {
+      setQcInfo(prev => ({
+        ...prev,
+        prod_no: selectedItem.Prod_no || "",
+        item_desc: selectedItem.ItemDescription || "",
+        heat_no: selectedItem.lot_no ? selectedItem.lot_no.split('|')[0] : ""
+      }));
+    }
+  }, [selectedItem]);
+
   const fetchQcNo = async () => {
     try {
       const data = await fetchInwardTestQcNumber();
-      if (data && data.qc_no) {
-        setQcInfo(prev => ({ ...prev, qc_no: data.qc_no }));
+      // Robust key handling: check multiple possible response formats
+      const newQcNo = data.InwardTestQCNo || data.qc_no || data.next_qc_no || (typeof data === 'string' ? data : "");
+
+      if (newQcNo) {
+        setQcInfo(prev => ({ ...prev, qc_no: newQcNo }));
+        return newQcNo;
       }
     } catch (error) {
       console.error("Error fetching QC number:", error);
     }
+    return "";
   };
 
 
@@ -149,8 +165,14 @@ const InprocessInspectionDetails = () => {
         visual_tests: visualTests.map(({ id, ...rest }) => rest),
         rework_entries: reworkEntries.map(({ id, ...rest }) => rest),
         reject_entries: rejectEntries.map(({ id, ...rest }) => rest),
-        item_id: selectedItem?.id || "",
-        prod_no: cleanedQcInfo.prod_no || selectedItem?.ProductNo || "",
+        item_id: selectedItem?.item || selectedItem?.id || "",
+        prod_no: cleanedQcInfo.prod_no || selectedItem?.Prod_no || "",
+        prod_qty: Number(cleanedQcInfo.prod_qty) || 0,
+        ok_qty: Number(cleanedQcInfo.ok_qty) || 0,
+        qc_qty: Number(cleanedQcInfo.qc_qty) || 0,
+        sample_qty: Number(cleanedQcInfo.sample_qty) || 0,
+        a_u_d_qty: Number(cleanedQcInfo.a_u_d_qty) || 0,
+        MachineIdleTime_Detail_Enter: [],
       };
 
       await saveQCInfo(payload);
@@ -161,14 +183,19 @@ const InprocessInspectionDetails = () => {
         confirmButtonColor: "#3085d6",
       });
 
-      // Reset Form
-      setQcInfo({ ...initialQcInfo });
+      // Fetch next QC No first to ensure it's ready for the reset
+      const nextQcNo = await fetchQcNo();
+
+      // Reset Form with atomic update to QC No
+      setQcInfo({
+        ...initialQcInfo,
+        qc_no: nextQcNo || ""
+      });
       setDimensionalTests([]);
       setVisualTests([]);
       setReworkEntries([]);
       setRejectEntries([]);
       setActiveTab("dimensional");
-      fetchQcNo();
     } catch (error) {
       Swal.fire({
         icon: "error",
@@ -182,80 +209,125 @@ const InprocessInspectionDetails = () => {
   };
 
   return (
-    <div className="InprocessInspectionMaster">
+    <>
       <NavBar toggleSideNav={toggleSideNav} />
-      <SideNav sideNavOpen={sideNavOpen} toggleSideNav={toggleSideNav} />
+      <div className="InprocessInspectionMaster">
+        <SideNav sideNavOpen={sideNavOpen} toggleSideNav={toggleSideNav} />
 
-      <main className={`main-content ${sideNavOpen ? "shifted" : ""}`}>
-        <div className="container-fluid p-3">
+        <main className={`main-content ${sideNavOpen ? "shifted" : ""}`}>
+          <div className="container-fluid p-3">
 
-          <div className="InprocessInspection-card">
+            <div className="InprocessInspection-card">
 
-            {/* TITLE BAR */}
-            <div className="inspection-header p-2 bg-light border-bottom d-flex flex-wrap justify-content-between align-items-center mb-3 rounded-top">
-              <div className="text-start ps-2">
-                <h5 className="m-0 fw-bold" style={{ color: '#007bff', fontSize: '18px' }}>Inprocess Inspection</h5>
+              {/* TITLE BAR */}
+              <div className="inspection-header p-2 bg-light border-bottom d-flex flex-wrap justify-content-between align-items-center mb-3 rounded-top">
+                <div className="text-start ps-2">
+                  <h5 className="m-0 fw-bold" style={{ color: '#007bff', fontSize: '18px' }}>Inprocess Inspection</h5>
+                </div>
+                <div className="d-flex gap-2 pe-2">
+                  <button className="btn btn-primary btn-sm text-nowrap shadow-sm px-3" style={{ fontSize: '12px', fontWeight: '500' }}>Pending List</button>
+                  <button className="btn btn-primary btn-sm text-nowrap shadow-sm px-3" style={{ fontSize: '12px', fontWeight: '500' }}>Insp. List</button>
+                </div>
               </div>
-              <div className="d-flex gap-2 pe-2">
-                <button className="btn btn-primary btn-sm text-nowrap shadow-sm px-3" style={{ fontSize: '12px', fontWeight: '500' }}>Pending List</button>
-                <button className="btn btn-primary btn-sm text-nowrap shadow-sm px-3" style={{ fontSize: '12px', fontWeight: '500' }}>Insp. List</button>
+
+              <div className="tab-buttons mb-3">
+
+                <button
+                  type="button"
+                  className={`btn btn-sm px-3 ${activeTab === "dimensional"
+                    ? "btn-primary"
+                    : "btn-outline-primary"
+                    }`}
+                  onClick={() => setActiveTab("dimensional")}
+                >
+                  A. Dimensional
+                </button>
+
+                <button
+                  type="button"
+                  className={`btn btn-sm px-3 ${activeTab === "visual"
+                    ? "btn-primary"
+                    : "btn-outline-primary"
+                    }`}
+                  onClick={() => setActiveTab("visual")}
+                >
+                  B. Visual Inspection
+                </button>
+
+                <button
+                  type="button"
+                  className={`btn btn-sm px-3 ${activeTab === "rework"
+                    ? "btn-primary"
+                    : "btn-outline-primary"
+                    }`}
+                  onClick={() => setActiveTab("rework")}
+                >
+                  C. Rework & Rej Qty
+                </button>
+
+                <button
+                  type="button"
+                  className={`btn btn-sm px-3 ${activeTab === "qcinfo"
+                    ? "btn-primary"
+                    : "btn-outline-primary"
+                    }`}
+                  onClick={() => setActiveTab("qcinfo")}
+                >
+                  D. QC Info
+                </button>
+
               </div>
-            </div>
-
-            <div className="tab-buttons mb-3">
-
-              <button
-                type="button"
-                className={`btn btn-sm px-3 ${activeTab === "dimensional"
-                  ? "btn-primary"
-                  : "btn-outline-primary"
-                  }`}
-                onClick={() => setActiveTab("dimensional")}
-              >
-                A. Dimensional
-              </button>
-
-              <button
-                type="button"
-                className={`btn btn-sm px-3 ${activeTab === "visual"
-                  ? "btn-primary"
-                  : "btn-outline-primary"
-                  }`}
-                onClick={() => setActiveTab("visual")}
-              >
-                B. Visual Inspection
-              </button>
-
-              <button
-                type="button"
-                className={`btn btn-sm px-3 ${activeTab === "rework"
-                  ? "btn-primary"
-                  : "btn-outline-primary"
-                  }`}
-                onClick={() => setActiveTab("rework")}
-              >
-                C. Rework & Rej Qty
-              </button>
-
-              <button
-                type="button"
-                className={`btn btn-sm px-3 ${activeTab === "qcinfo"
-                  ? "btn-primary"
-                  : "btn-outline-primary"
-                  }`}
-                onClick={() => setActiveTab("qcinfo")}
-              >
-                D. QC Info
-              </button>
-
-            </div>
-            {activeTab === "dimensional" && (
-              <>
-                <div className="InprocessInspection-Main mb-3">
+              {activeTab === "dimensional" && (
+                <>
+                  <div className="InprocessInspection-Main mb-3">
+                    <div className="table-responsive">
+                      <table className="table table-bordered">
+                        <thead>
+                          <tr>
+                            <th>Test No</th>
+                            <th>Test Description</th>
+                            <th>Specification</th>
+                            <th>Dimensions</th>
+                            <th>Tol (-)</th>
+                            <th>Tol (+)</th>
+                            <th>Method of Check</th>
+                            <th>1</th>
+                            <th>2</th>
+                            <th>3</th>
+                            <th>4</th>
+                            <th>5</th>
+                            <th>Remark</th>
+                            <th>Actual Observations</th>
+                            <th>Action</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td><input className="form-control" placeholder="Enter.." value={newDimTest.test_no} onChange={(e) => setNewDimTest({ ...newDimTest, test_no: e.target.value })} /></td>
+                            <td><input className="form-control" placeholder="Enter.." value={newDimTest.test_description} onChange={(e) => setNewDimTest({ ...newDimTest, test_description: e.target.value })} /></td>
+                            <td><input className="form-control" placeholder="Enter.." value={newDimTest.specification} onChange={(e) => setNewDimTest({ ...newDimTest, specification: e.target.value })} /></td>
+                            <td><input className="form-control" placeholder="Enter.." value={newDimTest.dimensions} onChange={(e) => setNewDimTest({ ...newDimTest, dimensions: e.target.value })} /></td>
+                            <td><input className="form-control" value={newDimTest.tol_minus} onChange={(e) => setNewDimTest({ ...newDimTest, tol_minus: e.target.value })} /></td>
+                            <td><input className="form-control" value={newDimTest.tol_plus} onChange={(e) => setNewDimTest({ ...newDimTest, tol_plus: e.target.value })} /></td>
+                            <td><input className="form-control" value={newDimTest.method_of_check} onChange={(e) => setNewDimTest({ ...newDimTest, method_of_check: e.target.value })} /></td>
+                            <td><input className="form-control" value={newDimTest.m1} onChange={(e) => setNewDimTest({ ...newDimTest, m1: e.target.value })} /></td>
+                            <td><input className="form-control" value={newDimTest.m2} onChange={(e) => setNewDimTest({ ...newDimTest, m2: e.target.value })} /></td>
+                            <td><input className="form-control" value={newDimTest.m3} onChange={(e) => setNewDimTest({ ...newDimTest, m3: e.target.value })} /></td>
+                            <td><input className="form-control" value={newDimTest.m4} onChange={(e) => setNewDimTest({ ...newDimTest, m4: e.target.value })} /></td>
+                            <td><input className="form-control" value={newDimTest.m5} onChange={(e) => setNewDimTest({ ...newDimTest, m5: e.target.value })} /></td>
+                            <td><input className="form-control" value={newDimTest.remark} onChange={(e) => setNewDimTest({ ...newDimTest, remark: e.target.value })} /></td>
+                            <td><input className="form-control" value={newDimTest.actual_observations} onChange={(e) => setNewDimTest({ ...newDimTest, actual_observations: e.target.value })} /></td>
+                            <td><button className="btn btn-primary btn-sm" onClick={handleAddDimensional}>Add</button></td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
                   <div className="table-responsive">
                     <table className="table table-bordered">
                       <thead>
                         <tr>
+                          <th>Sr.</th>
                           <th>Test No</th>
                           <th>Test Description</th>
                           <th>Specification</th>
@@ -263,127 +335,84 @@ const InprocessInspectionDetails = () => {
                           <th>Tol (-)</th>
                           <th>Tol (+)</th>
                           <th>Method of Check</th>
-                          <th>1</th>
-                          <th>2</th>
-                          <th>3</th>
-                          <th>4</th>
-                          <th>5</th>
+                          <th>M1</th>
+                          <th>M2</th>
+                          <th>M3</th>
+                          <th>M4</th>
+                          <th>M5</th>
                           <th>Remark</th>
                           <th>Actual Observations</th>
-                          <th>Action</th>
+                          <th>Delete</th>
                         </tr>
                       </thead>
                       <tbody>
-                        <tr>
-                          <td><input className="form-control" placeholder="Enter.." value={newDimTest.test_no} onChange={(e) => setNewDimTest({ ...newDimTest, test_no: e.target.value })} /></td>
-                          <td><input className="form-control" placeholder="Enter.." value={newDimTest.test_description} onChange={(e) => setNewDimTest({ ...newDimTest, test_description: e.target.value })} /></td>
-                          <td><input className="form-control" placeholder="Enter.." value={newDimTest.specification} onChange={(e) => setNewDimTest({ ...newDimTest, specification: e.target.value })} /></td>
-                          <td><input className="form-control" placeholder="Enter.." value={newDimTest.dimensions} onChange={(e) => setNewDimTest({ ...newDimTest, dimensions: e.target.value })} /></td>
-                          <td><input className="form-control" value={newDimTest.tol_minus} onChange={(e) => setNewDimTest({ ...newDimTest, tol_minus: e.target.value })} /></td>
-                          <td><input className="form-control" value={newDimTest.tol_plus} onChange={(e) => setNewDimTest({ ...newDimTest, tol_plus: e.target.value })} /></td>
-                          <td><input className="form-control" value={newDimTest.method_of_check} onChange={(e) => setNewDimTest({ ...newDimTest, method_of_check: e.target.value })} /></td>
-                          <td><input className="form-control" value={newDimTest.m1} onChange={(e) => setNewDimTest({ ...newDimTest, m1: e.target.value })} /></td>
-                          <td><input className="form-control" value={newDimTest.m2} onChange={(e) => setNewDimTest({ ...newDimTest, m2: e.target.value })} /></td>
-                          <td><input className="form-control" value={newDimTest.m3} onChange={(e) => setNewDimTest({ ...newDimTest, m3: e.target.value })} /></td>
-                          <td><input className="form-control" value={newDimTest.m4} onChange={(e) => setNewDimTest({ ...newDimTest, m4: e.target.value })} /></td>
-                          <td><input className="form-control" value={newDimTest.m5} onChange={(e) => setNewDimTest({ ...newDimTest, m5: e.target.value })} /></td>
-                          <td><input className="form-control" value={newDimTest.remark} onChange={(e) => setNewDimTest({ ...newDimTest, remark: e.target.value })} /></td>
-                          <td><input className="form-control" value={newDimTest.actual_observations} onChange={(e) => setNewDimTest({ ...newDimTest, actual_observations: e.target.value })} /></td>
-                          <td><button className="btn btn-primary btn-sm" onClick={handleAddDimensional}>Add</button></td>
-                        </tr>
+                        {dimensionalTests.map((t, idx) => (
+                          <tr key={t.id}>
+                            <td>{idx + 1}</td>
+                            <td>{t.test_no}</td>
+                            <td>{t.test_description}</td>
+                            <td>{t.specification}</td>
+                            <td>{t.dimensions}</td>
+                            <td>{t.tol_minus}</td>
+                            <td>{t.tol_plus}</td>
+                            <td>{t.method_of_check}</td>
+                            <td>{t.m1}</td>
+                            <td>{t.m2}</td>
+                            <td>{t.m3}</td>
+                            <td>{t.m4}</td>
+                            <td>{t.m5}</td>
+                            <td>{t.remark}</td>
+                            <td>{t.actual_observations}</td>
+                            <td>
+                              <button className="btn-link text-danger border-0 bg-transparent fs-5" onClick={() => handleDeleteDimensional(t.id)}>🗑</button>
+                            </td>
+                          </tr>
+                        ))}
                       </tbody>
                     </table>
                   </div>
-                </div>
-                <div className="table-responsive">
-                  <table className="table table-bordered">
-                    <thead>
-                      <tr>
-                        <th>Sr.</th>
-                        <th>Test No</th>
-                        <th>Test Description</th>
-                        <th>Specification</th>
-                        <th>Dimensions</th>
-                        <th>Tol (-)</th>
-                        <th>Tol (+)</th>
-                        <th>Method of Check</th>
-                        <th>M1</th>
-                        <th>M2</th>
-                        <th>M3</th>
-                        <th>M4</th>
-                        <th>M5</th>
-                        <th>Remark</th>
-                        <th>Actual Observations</th>
-                        <th>Delete</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {dimensionalTests.map((t, idx) => (
-                        <tr key={t.id}>
-                          <td>{idx + 1}</td>
-                          <td>{t.test_no}</td>
-                          <td>{t.test_description}</td>
-                          <td>{t.specification}</td>
-                          <td>{t.dimensions}</td>
-                          <td>{t.tol_minus}</td>
-                          <td>{t.tol_plus}</td>
-                          <td>{t.method_of_check}</td>
-                          <td>{t.m1}</td>
-                          <td>{t.m2}</td>
-                          <td>{t.m3}</td>
-                          <td>{t.m4}</td>
-                          <td>{t.m5}</td>
-                          <td>{t.remark}</td>
-                          <td>{t.actual_observations}</td>
-                          <td>
-                            <button className="btn-link text-danger border-0 bg-transparent fs-5" onClick={() => handleDeleteDimensional(t.id)}>🗑</button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-                <div className="enable-field-wrapper text-start">
-                  <div className="form-check m-0">
-                    <input className="form-check-input" type="checkbox" id="enableFields" />
-                    <label className="form-check-label" htmlFor="enableFields">
-                      Enable Fields
-                    </label>
+                  <div className="enable-field-wrapper text-start">
+                    <div className="form-check m-0">
+                      <input className="form-check-input" type="checkbox" id="enableFields" />
+                      <label className="form-check-label" htmlFor="enableFields">
+                        Enable Fields
+                      </label>
+                    </div>
                   </div>
+                </>
+              )}
+              {activeTab === "visual" && <VisualInspection visualTests={visualTests} setVisualTests={setVisualTests} />}
+              {activeTab === "rework" && (
+                <ReworkRejectQty
+                  reworkEntries={reworkEntries}
+                  setReworkEntries={setReworkEntries}
+                  rejectEntries={rejectEntries}
+                  setRejectEntries={setRejectEntries}
+                  qcInfo={qcInfo}
+                />
+              )}
+              {activeTab === "qcinfo" && (
+                <QCInfo
+                  qcInfo={qcInfo}
+                  setQcInfo={setQcInfo}
+                  onSave={handleSaveReport}
+                  isSaving={isSaving}
+                />
+              )}
+
+              <div className="p-3 d-flex justify-content-start border-top">
+
+                <div className="d-flex justify-content-start mt-4">
+                  <button className="btn btn-light border d-flex align-items-center gap-2" onClick={handleSaveReport}>
+                    <CheckCircle size={16} /> Save Report
+                  </button>
                 </div>
-              </>
-            )}
-            {activeTab === "visual" && <VisualInspection visualTests={visualTests} setVisualTests={setVisualTests} />}
-            {activeTab === "rework" && (
-              <ReworkRejectQty
-                reworkEntries={reworkEntries}
-                setReworkEntries={setReworkEntries}
-                rejectEntries={rejectEntries}
-                setRejectEntries={setRejectEntries}
-                qcInfo={qcInfo}
-              />
-            )}
-            {activeTab === "qcinfo" && (
-              <QCInfo
-                qcInfo={qcInfo}
-                setQcInfo={setQcInfo}
-                onSave={handleSaveReport}
-                isSaving={isSaving}
-              />
-            )}
-
-            <div className="p-3 d-flex justify-content-start border-top">
-
-              <div className="d-flex justify-content-start mt-4">
-                <button className="btn btn-light border d-flex align-items-center gap-2" onClick={handleSaveReport}>
-                  <CheckCircle size={16} /> Save Report
-                </button>
               </div>
             </div>
           </div>
-        </div>
-      </main>
-    </div>
+        </main>
+      </div>
+    </>
   );
 };
 

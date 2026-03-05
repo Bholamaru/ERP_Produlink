@@ -3230,3 +3230,40 @@ export const saveQCInfo = async (data) => {
     throw error;
   }
 };
+
+// Save Production QC Info
+export const saveProductionQCInfo = async (data) => {
+  const url = `https://erp-render.onrender.com/Production/api/production-entries/`;
+  try {
+    const token = localStorage.getItem("accessToken");
+    const headers = {
+      "Content-Type": "application/json",
+    };
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: headers,
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      let errorMsg = "Failed to save data to production";
+      try {
+        const errorData = await response.json();
+        errorMsg = errorData.detail || errorData.message || errorData.error || JSON.stringify(errorData) || errorMsg;
+      } catch (e) {
+        const text = await response.text();
+        errorMsg = text || errorMsg;
+      }
+      throw new Error(errorMsg);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error saving to production entries:", error);
+    throw error;
+  }
+};

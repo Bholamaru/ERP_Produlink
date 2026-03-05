@@ -35,11 +35,11 @@ const getInitialItem = () => ({
 // *** UPDATED: Helper function to display all relevant BOM item details ***
 const formatBomItemForDisplay = (bom) => {
   if (!bom) return "";
-  
+
   // Parse OutAndInPart string to extract details
   // Format: "FGFG1009 | 53BPA002025 | Antina | OP:10 | BLACK PLATING | RM | RMRM1007"
   const outAndInParts = bom.OutAndInPart ? bom.OutAndInPart.split('|').map(s => s.trim()) : [];
-  
+
   const partCode = outAndInParts[0] || "N/A";
   const operation = outAndInParts.find(part => part.startsWith('OP:')) || "N/A";
   const bomPartCode = bom.ItemName || "N/A";
@@ -63,7 +63,7 @@ const InwardChallan1 = () => {
   const [currentItems, setCurrentItems] = useState([]);
   const [selectedOutWardChallan, setSelectedOutwardChallan] = useState();
   const [PO, setPO] = useState([]);
-  
+
   const [selectedSeries, setSelectedSeries] = useState("");
 
   // States for BOM functionality
@@ -237,25 +237,25 @@ const InwardChallan1 = () => {
   };
 
 
- const handleSelectItem = (item) => {
-  console.log("Selected Main Item:", item);
-  setSearchItemText(item?.type || "");
-  setSelectedItem({ ...item });
-  setShowItemList(false);
+  const handleSelectItem = (item) => {
+    console.log("Selected Main Item:", item);
+    setSearchItemText(item?.type || "");
+    setSelectedItem({ ...item });
+    setShowItemList(false);
 
-  // Reset BOM selection and fetch new BOMs for the selected item
-  setBomItems([]);
-  setFilteredBomItems([]);
-  setSearchBomText("");
-  setSelectedBomItem(null);
-  
-  // *** CHANGE: Extract only the first word before space or parenthesis ***
-  if (item?.type) {
-    // Extract first word (e.g., "Antina" from "Antina (RMRM1007 - 53BPA002025 - Antina)")
-    const searchTerm = item.type.split(/[\s(]/)[0].trim();
-    fetchBomItems(searchTerm);
-  }
-};
+    // Reset BOM selection and fetch new BOMs for the selected item
+    setBomItems([]);
+    setFilteredBomItems([]);
+    setSearchBomText("");
+    setSelectedBomItem(null);
+
+    // *** CHANGE: Extract only the first word before space or parenthesis ***
+    if (item?.type) {
+      // Extract first word (e.g., "Antina" from "Antina (RMRM1007 - 53BPA002025 - Antina)")
+      const searchTerm = item.type.split(/[\s(]/)[0].trim();
+      fetchBomItems(searchTerm);
+    }
+  };
 
   function handleItemChange(e) {
     setSearchItemText(e.target.value);
@@ -287,24 +287,23 @@ const InwardChallan1 = () => {
     }, 200);
   };
 
-function handleBomSearchChange(e) {
-  const searchTerm = e.target.value;
-  setSearchBomText(searchTerm);
-  if (searchTerm) {
-    const filtered = bomItems.filter((bom) => {
-      const searchableText = `${bom.ItemDescription || ""} ${
-        bom.ItemName || ""
-      } ${bom.OutAndInPart || ""}`;
-      return searchableText.toLowerCase().includes(searchTerm.toLowerCase());
-    });
-    setFilteredBomItems(filtered);
-  } else {
-    setFilteredBomItems(bomItems);
+  function handleBomSearchChange(e) {
+    const searchTerm = e.target.value;
+    setSearchBomText(searchTerm);
+    if (searchTerm) {
+      const filtered = bomItems.filter((bom) => {
+        const searchableText = `${bom.ItemDescription || ""} ${bom.ItemName || ""
+          } ${bom.OutAndInPart || ""}`;
+        return searchableText.toLowerCase().includes(searchTerm.toLowerCase());
+      });
+      setFilteredBomItems(filtered);
+    } else {
+      setFilteredBomItems(bomItems);
+    }
+    if (!showBomList) {
+      setShowBomList(true);
+    }
   }
-  if (!showBomList) {
-    setShowBomList(true);
-  }
-}
 
   const handleSelectBomItem = (bomItem) => {
     console.log("Selected BOM Item:", bomItem);
@@ -313,114 +312,114 @@ function handleBomSearchChange(e) {
     setShowBomList(false);
   };
 
-const handleAddCombinedItem = () => {
-  if (!selectedItem || !selectedItem.item_code) {
-    toast.error("Please select a main 'Item Name' first.");
-    return;
-  }
-  if (!selectedBomItem) {
-    toast.error("Please select a BOM item from the 'Select' field.");
-    return;
-  }
+  const handleAddCombinedItem = () => {
+    if (!selectedItem || !selectedItem.item_code) {
+      toast.error("Please select a main 'Item Name' first.");
+      return;
+    }
+    if (!selectedBomItem) {
+      toast.error("Please select a BOM item from the 'Select' field.");
+      return;
+    }
 
-  const bomItemString = formatBomItemForDisplay(selectedBomItem);
-  const combinedDescription = `${bomItemString} / ${selectedItem.description}`;
+    const bomItemString = formatBomItemForDisplay(selectedBomItem);
+    const combinedDescription = `${bomItemString} / ${selectedItem.description}`;
 
-  const itemToAdd = {
-    ...selectedItem,
-    description: combinedDescription,
-    bom_item_code: selectedBomItem.ItemName || "",
-    bom_qty_kg: selectedBomItem.BOM_QtyKg  || "",
-    bal_Qty: "",
-    in_Qty: "",
-    in_Qty_kg: "",
+    const itemToAdd = {
+      ...selectedItem,
+      description: combinedDescription,
+      bom_item_code: selectedBomItem.ItemName || "",
+      bom_qty_kg: selectedBomItem.BOM_QtyKg || "",
+      bal_Qty: "",
+      in_Qty: "",
+      in_Qty_kg: "",
+    };
+
+    const newCurrentItems = [...currentItems, itemToAdd];
+    setCurrentItems(newCurrentItems);
+
+    setFormData((prev) => ({
+      ...prev,
+      TotalItem: newCurrentItems.length.toString(),
+    }));
+
+    setSearchBomText("");
+    setSelectedBomItem(null);
   };
-  
-  const newCurrentItems = [...currentItems, itemToAdd];
-  setCurrentItems(newCurrentItems);
-
-  setFormData((prev) => ({
-    ...prev,
-    TotalItem: newCurrentItems.length.toString(),
-  }));
-
-  setSearchBomText("");
-  setSelectedBomItem(null);
-};
 
 
   const handleAddItem = () => {
-      if (!selectedItem || !selectedItem.item_code) return;
-      
-      const itemToAdd = {
-        ...selectedItem,
-        bom_qty_kg: 0,
-        bal_Qty: "",
-        in_Qty: "",
-        in_Qty_kg: "",
-      };
+    if (!selectedItem || !selectedItem.item_code) return;
 
-      setCurrentItems((prev) => [...prev, itemToAdd]);
+    const itemToAdd = {
+      ...selectedItem,
+      bom_qty_kg: 0,
+      bal_Qty: "",
+      in_Qty: "",
+      in_Qty_kg: "",
+    };
 
-      setFormData((prev) => ({
-        ...prev,
-        TotalItem: (currentItems.length + 1).toString(),
-      }));
+    setCurrentItems((prev) => [...prev, itemToAdd]);
 
-      setSearchItemText("");
-      setSelectedItem(getInitialItem());
+    setFormData((prev) => ({
+      ...prev,
+      TotalItem: (currentItems.length + 1).toString(),
+    }));
+
+    setSearchItemText("");
+    setSelectedItem(getInitialItem());
   };
 
   const handleItemDetailChange = (index, fieldName, value) => {
-      const updatedItems = [...currentItems];
-      const currentItem = updatedItems[index];
-      let modifiedItem = { ...currentItem };
+    const updatedItems = [...currentItems];
+    const currentItem = updatedItems[index];
+    let modifiedItem = { ...currentItem };
 
-      if (fieldName === "bal_Qty") {
-          let challanQtyValue = value;
-          let challanQtyNum = parseFloat(value) || 0;
-          
-          const bomQtyKg = parseFloat(modifiedItem.bom_qty_kg) || 0;
-          let calculatedInKg = 0;
-          if (bomQtyKg > 0) {
-              calculatedInKg = challanQtyNum * bomQtyKg;
-          }
+    if (fieldName === "bal_Qty") {
+      let challanQtyValue = value;
+      let challanQtyNum = parseFloat(value) || 0;
 
-          const outQtyLimit = parseFloat(modifiedItem.qtyNo) || 0;
-          
-          if (outQtyLimit > 0 && calculatedInKg > outQtyLimit) {
-              toast.error(`Calculated weight (${calculatedInKg.toFixed(3)} Kg) cannot exceed Out Qty limit (${outQtyLimit}). Adjusting Challan Qty.`);
-              
-              const maxAllowedChallanQty = bomQtyKg > 0 ? Math.floor(outQtyLimit / bomQtyKg) : 0;
-              
-              challanQtyValue = maxAllowedChallanQty.toString();
-              
-              calculatedInKg = maxAllowedChallanQty * bomQtyKg;
-          }
-          
-          modifiedItem.bal_Qty = challanQtyValue;
-          modifiedItem.in_Qty = challanQtyValue;
-          modifiedItem.in_Qty_kg = calculatedInKg.toFixed(3);
-          
-      } else {
-          modifiedItem[fieldName] = value;
+      const bomQtyKg = parseFloat(modifiedItem.bom_qty_kg) || 0;
+      let calculatedInKg = 0;
+      if (bomQtyKg > 0) {
+        calculatedInKg = challanQtyNum * bomQtyKg;
       }
 
-      updatedItems[index] = modifiedItem;
-      setCurrentItems(updatedItems);
+      const outQtyLimit = parseFloat(modifiedItem.qtyNo) || 0;
 
-      const newTotalQtyNo = updatedItems.reduce(
-          (sum, item) => sum + (parseFloat(item.bal_Qty) || 0), 0
-      );
-      const newTotalQtyKg = updatedItems.reduce(
-          (sum, item) => sum + (parseFloat(item.in_Qty_kg) || 0), 0
-      );
-      
-      setFormData((prev) => ({
-          ...prev,
-          TotalQtyNo: newTotalQtyNo.toString(),
-          TotalQtyKg: newTotalQtyKg.toString(),
-      }));
+      if (outQtyLimit > 0 && calculatedInKg > outQtyLimit) {
+        toast.error(`Calculated weight (${calculatedInKg.toFixed(3)} Kg) cannot exceed Out Qty limit (${outQtyLimit}). Adjusting Challan Qty.`);
+
+        const maxAllowedChallanQty = bomQtyKg > 0 ? Math.floor(outQtyLimit / bomQtyKg) : 0;
+
+        challanQtyValue = maxAllowedChallanQty.toString();
+
+        calculatedInKg = maxAllowedChallanQty * bomQtyKg;
+      }
+
+      modifiedItem.bal_Qty = challanQtyValue;
+      modifiedItem.in_Qty = challanQtyValue;
+      modifiedItem.in_Qty_kg = calculatedInKg.toFixed(3);
+
+    } else {
+      modifiedItem[fieldName] = value;
+    }
+
+    updatedItems[index] = modifiedItem;
+    setCurrentItems(updatedItems);
+
+    const newTotalQtyNo = updatedItems.reduce(
+      (sum, item) => sum + (parseFloat(item.bal_Qty) || 0), 0
+    );
+    const newTotalQtyKg = updatedItems.reduce(
+      (sum, item) => sum + (parseFloat(item.in_Qty_kg) || 0), 0
+    );
+
+    setFormData((prev) => ({
+      ...prev,
+      TotalQtyNo: newTotalQtyNo.toString(),
+      TotalQtyKg: newTotalQtyKg.toString(),
+    }));
   };
 
   const handleChangeGateEntry = async (e) => {
@@ -472,9 +471,8 @@ const handleAddCombinedItem = () => {
     }
     currentItems.forEach((item, index) => {
       if (!item.bal_Qty || parseFloat(item.bal_Qty) <= 0) {
-        newErrors[`item_${index}_bal_qty`] = `Item ${
-          index + 1
-        }: Challan Qty is required and must be greater than 0.`;
+        newErrors[`item_${index}_bal_qty`] = `Item ${index + 1
+          }: Challan Qty is required and must be greater than 0.`;
       }
     });
     setErrors(newErrors);
@@ -510,7 +508,7 @@ const handleAddCombinedItem = () => {
       toast.error("Please fix the validation errors before submitting.");
       return;
     }
-  
+
     try {
       const submissionData = {
         ...formData,
@@ -560,11 +558,11 @@ const handleAddCombinedItem = () => {
           };
         }),
       };
-  
+
       console.log("Submission Data:", submissionData);
       const result = await saveInwardChallan(submissionData);
       console.log("API Response:", result);
-  
+
       if (result) {
         toast.success("Data saved successfully!");
         // Reset form
@@ -620,20 +618,20 @@ const handleAddCombinedItem = () => {
       toast.error(errorMessage);
     }
   };
-  
+
   const removeItem = (indexToRemove) => {
     const updatedItems = currentItems.filter(
       (_, index) => index !== indexToRemove
     );
     setCurrentItems(updatedItems);
-  
+
     const newTotalQtyNo = updatedItems.reduce(
       (sum, item) => sum + (parseFloat(item.bal_Qty) || 0), 0
     );
     const newTotalQtyKg = updatedItems.reduce(
       (sum, item) => sum + (parseFloat(item.in_Qty_kg) || 0), 0
     );
-  
+
     setFormData((prev) => ({
       ...prev,
       TotalItem: updatedItems.length.toString(),
@@ -1168,7 +1166,7 @@ const handleAddCombinedItem = () => {
                                             Inward F4 No:
                                           </th>
                                           <td>
-                                          {/* *** MODIFIED ***: Input field is now readOnly */}
+                                            {/* *** MODIFIED ***: Input field is now readOnly */}
                                             <input
                                               type="text"
                                               name="InwardF4No"
@@ -1938,7 +1936,7 @@ const handleAddCombinedItem = () => {
 
                   </div>
                 </div>
-                
+
               </main>
             </div>
           </div>
