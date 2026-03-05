@@ -1,8 +1,28 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
 body {
   margin: 0;
+  padding: 0;
+  width: 100%;
+  overflow-x: hidden;
   font-family: Arial, Helvetica, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+body.has-navbar {
+  padding-top: 70px !important;
+}
+
+main,
+.main-content {
+  padding: 20px;
+  min-height: calc(100vh - 70px);
 }
 
 code {

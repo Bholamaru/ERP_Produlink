@@ -212,6 +212,7 @@ import ShopFloorStock from "./StoreMaster/StockTransaction/ShopFloorStock/ShopFl
 import ReportStore from "./StoreMaster/Report/Report.jsx";
 import StockReport from "./StoreMaster/StockReport/StorckReport.jsx";
 import InwardChallanList from "./StoreMaster/SubconGRN/InwardChallanList/InwardChallanList.jsx";
+import JobworkInwardChallanList from "./StoreMaster/SubconGRN/JobworkInwardChallanList/JobworkInwardChallanList.jsx";
 
 import GEIQuery from "./StoreMaster/GateInwardEntry/Query/GEIQuery.jsx";
 import QueryGate from "./StoreMaster/GateInwardEntry/Query/QueryGate.jsx";
@@ -670,6 +671,7 @@ function App() {
         <Route path="Stock-Report" element={<StockReport />} />
         {/* Inward Challan List */}
         <Route path="Inward-challan-list" element={<InwardChallanList />} />
+        <Route path="Jobwork-Inward-Challan-List" element={<JobworkInwardChallanList />} />
 
         <Route path="GEIQuery" element={<GEIQuery />} />
         <Route path="QueryGate" element={<QueryGate />} />

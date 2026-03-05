@@ -32,8 +32,8 @@ const InwardChallanList = () => {
     if (!inwardChallanTable || inwardChallanTable.length === 0) {
       return 'No items';
     }
-    
-    return inwardChallanTable.map(item => 
+
+    return inwardChallanTable.map(item =>
       `${item.InQtyNOS || 0} | ${item.ItemDescription || 'N/A'}`
     ).join(', ');
   };
@@ -82,7 +82,7 @@ const InwardChallanList = () => {
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="InwardList-main">
                   <div className="container-fluid text-start">
                     <div className="row mt-4">

@@ -40,78 +40,83 @@ const NavBar = ({ toggleSideNav }) => {
     import("bootstrap/dist/js/bootstrap.bundle.min.js");
   }, []);
 
+  useEffect(() => {
+    document.body.classList.add("has-navbar");
+    return () => {
+      document.body.classList.remove("has-navbar");
+    };
+  }, []);
+
   return (
-    <div>
-      <nav className="navbar">
-        <div className="navbar-brand">
-          <button className="navbar-toggle" onClick={toggleSideNav}>
-            ☰
+    <nav className="navbar">
+      <div className="navbar-brand">
+        <button className="navbar-toggle" onClick={toggleSideNav}>
+          ☰
+        </button>
+        <h6 className="navbar-logo">Produlink</h6>
+      </div>
+
+      <div className="navbar-menu">
+        {/* Create New Dropdown */}
+
+        {/* Mega Menu Dropdown */}
+      </div>
+
+      <div className="navbar-actions">
+        {/* <input
+          className="navbar-search"
+          type="search"
+          placeholder="Search"
+          aria-label="Search"
+        /> */}
+
+        <img className="navbar-user" src={user} alt="user" />
+
+        {/* Display the username and year */}
+
+        <label>{year}</label>
+
+        {/* Admin Dropdown */}
+        <div className="navbar-dropdown">
+          <button
+            className="navbar-button dropdown-toggle"
+            type="button"
+            onClick={() => toggleDropdown(setAdminDropdownOpen)}
+          >
+            <label>{username}</label>
           </button>
-          <h6 className="navbar-logo">Produlink</h6>
+          {adminDropdownOpen && (
+            <ul className="navbar-dropdown-menu">
+              <li>
+                <Link className="navbar-dropdown-item" to="#">
+                  Action
+                </Link>
+              </li>
+              <li>
+                <Link className="navbar-dropdown-item" to="#">
+                  Another action
+                </Link>
+              </li>
+              <li>
+                <button
+                  className="navbar-dropdown-item"
+                  onClick={handleLogout}
+                >
+                  Logout
+                </button>
+              </li>
+            </ul>
+          )}
         </div>
-
-        <div className="navbar-menu">
-          {/* Create New Dropdown */}
-
-          {/* Mega Menu Dropdown */}
-        </div>
-
-        <div className="navbar-actions">
-          {/* <input
-            className="navbar-search"
-            type="search"
-            placeholder="Search"
-            aria-label="Search"
-          /> */}
-
-          <img className="navbar-user" src={user} alt="user" />
-
-          {/* Display the username and year */}
-
-          <label>{year}</label>
-
-          {/* Admin Dropdown */}
-          <div className="navbar-dropdown">
-            <button
-              className="navbar-button dropdown-toggle"
-              type="button"
-              onClick={() => toggleDropdown(setAdminDropdownOpen)}
-            >
-              <label>{username}</label>
-            </button>
-            {adminDropdownOpen && (
-              <ul className="navbar-dropdown-menu">
-                <li>
-                  <Link className="navbar-dropdown-item" to="#">
-                    Action
-                  </Link>
-                </li>
-                <li>
-                  <Link className="navbar-dropdown-item" to="#">
-                    Another action
-                  </Link>
-                </li>
-                <li>
-                  <button
-                    className="navbar-dropdown-item"
-                    onClick={handleLogout}
-                  >
-                    Logout
-                  </button>
-                </li>
-              </ul>
-            )}
-          </div>
-          <div onClick={()=>{
-            navigate('/dashboard')
-          }}>
+        <div onClick={() => {
+          navigate('/dashboard')
+        }}>
           <Home className="navbar-icon"></Home>
-          </div>
-
-          <SettingsIcon className="navbar-icon" />
         </div>
-      </nav>
-    </div>
+
+        <SettingsIcon className="navbar-icon" />
+      </div>
+    </nav>
   );
 };
 

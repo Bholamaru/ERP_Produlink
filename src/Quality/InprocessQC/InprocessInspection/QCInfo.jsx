@@ -1,4 +1,5 @@
 import React from "react";
+import { RotateCw } from "lucide-react";
 
 
 const QCInfo = ({ qcInfo, setQcInfo, onSave, isSaving }) => {
@@ -14,7 +15,7 @@ const QCInfo = ({ qcInfo, setQcInfo, onSave, isSaving }) => {
           <div className="row g-4">
             <div className="col-12 col-lg-6">
               {[
-                { label: "QC No", name: "qc_no" },
+                { label: "QC No", name: "qc_no", readOnly: true },
                 { label: "Product No", name: "prod_no" },
                 { label: "Item Description", name: "item_desc" },
                 { label: "Heat No", name: "heat_no" },
@@ -29,13 +30,16 @@ const QCInfo = ({ qcInfo, setQcInfo, onSave, isSaving }) => {
                     <label className="fw-medium text-secondary" style={{ fontSize: "14px" }}>{field.label} :</label>
                   </div>
                   <div className="col-12 col-sm-8">
-                    <input
-                      className="form-control form-control-sm shadow-none"
-                      name={field.name}
-                      value={qcInfo[field.name]}
-                      onChange={handleChange}
-                      readOnly={field.readOnly}
-                    />
+                    <div className="input-group input-group-sm">
+                      <input
+                        className="form-control shadow-none"
+                        name={field.name}
+                        value={qcInfo[field.name]}
+                        onChange={handleChange}
+                        readOnly={field.readOnly}
+                        style={field.readOnly ? { backgroundColor: "#e9ecef" } : {}}
+                      />
+                    </div>
                   </div>
                 </div>
               ))}

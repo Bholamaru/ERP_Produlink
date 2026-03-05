@@ -48,7 +48,13 @@ const TabQcInfo = ({ data, handleChange, clearForm, fetchQcNumber }) => {
 
           <FormRow label="QC No">
             <div className="d-flex gap-1 w-100" style={{ maxWidth: '130px' }}>
-              <Input name="qc_no" value={data.qc_no || ""} onChange={handleChange} className="bg-light" />
+              <Input
+                name="qc_no"
+                value={data.qc_no || ""}
+                onChange={handleChange}
+                readOnly
+                style={{ backgroundColor: '#e9ecef' }}
+              />
               <button type="button" className="btn btn-sm btn-light border py-0 px-2" onClick={fetchQcNumber} title="Fetch QC Number">⟳</button>
             </div>
             <span className="ms-2 text-secondary fw-medium">QC Date :</span>
@@ -415,12 +421,18 @@ const RejectionMaterialQC = () => {
     try {
       const response = await fetch("https://erp-render.onrender.com/Quality/sales-qc-number/");
       const data = await response.json();
-      if (data && data.qc_no) {
-        setQcData(prev => ({ ...prev, qc_no: data.qc_no }));
+
+      // Robust key handling for different API response formats
+      const newQcNo = data.qc_no || data.InwardTestQCNo || data.next_qc_no || (typeof data === 'string' ? data : "");
+
+      if (newQcNo) {
+        setQcData(prev => ({ ...prev, qc_no: newQcNo }));
+        return newQcNo;
       }
     } catch (error) {
       console.error("Error fetching QC number:", error);
     }
+    return "";
   };
 
   useEffect(() => {
@@ -451,8 +463,11 @@ const RejectionMaterialQC = () => {
           text: "Report saved successfully!",
           confirmButtonColor: "#3085d6",
         });
+
+        // Fetch next QC No first and then clear/reset atomically
+        const nextQc = await fetchQcNumber();
         clearForm();
-        fetchQcNumber();
+        setQcData(prev => ({ ...prev, qc_no: nextQc || "" }));
       } else {
         const errData = await response.json().catch(() => ({}));
         console.error("Server error:", errData);
@@ -474,9 +489,7 @@ const RejectionMaterialQC = () => {
     }
   };
 
-  useEffect(() => {
-    clearForm();
-  }, []);
+
 
   const toggleSideNav = () => {
     setSideNavOpen((prevState) => !prevState);
