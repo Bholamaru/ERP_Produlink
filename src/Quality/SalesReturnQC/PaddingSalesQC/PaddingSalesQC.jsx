@@ -5,11 +5,21 @@ import NavBar from "../../../NavBar/NavBar.js";
 import SideNav from "../../../SideNav/SideNav.js";
 import "./PaddingSalesQC.css";
 import { useNavigate } from "react-router-dom";
+import { fetchSalesReturns } from "../../../Service/Api.jsx";
 
 const PaddingSalesQC = () => {
   const [sideNavOpen, setSideNavOpen] = useState(false);
   const [qcList, setQcList] = useState([]);
   const navigate = useNavigate();
+  const [filters, setFilters] = useState({
+    plant: "SHARP",
+    fromDate: "2025-01-01",
+    toDate: "2026-03-03",
+    custName: "Ram kumawat",
+    itemCode: "",
+    returnNo: ""
+  });
+  const [loading, setLoading] = useState(false);
 
   const toggleSideNav = () => {
     setSideNavOpen((prevState) => !prevState);
@@ -22,23 +32,54 @@ const PaddingSalesQC = () => {
       document.body.classList.remove("side-nav-open");
     }
   }, [sideNavOpen]);
+
+  const fetchReturns = async () => {
+    setLoading(true);
+    try {
+      const data = await fetchSalesReturns(filters.fromDate, filters.toDate, filters.custName);
+      const flattenedData = data.flatMap(mainItem => {
+        if (!mainItem.items || mainItem.items.length === 0) {
+          return [{
+            year: "-",
+            plant: mainItem.plant || "SHARP",
+            returnNo: mainItem.sales_return_no,
+            returnDate: mainItem.sales_return_date,
+            customerName: mainItem.cust_name,
+            itemCode: "-",
+            itemDesc: "-",
+            returnQty: "-",
+            user: "Admin",
+            rawItem: mainItem
+          }];
+        }
+        return mainItem.items.map(subItem => ({
+          year: "-", // If needed, can be derived
+          plant: mainItem.plant || "SHARP",
+          returnNo: mainItem.sales_return_no,
+          returnDate: mainItem.sales_return_date,
+          customerName: mainItem.cust_name,
+          itemCode: subItem.item_code,
+          itemDesc: subItem.item_desc || "-",
+          returnQty: subItem.return_qty,
+          user: "Admin",
+          rawItem: { ...mainItem, ...subItem }
+        }));
+      });
+      setQcList(flattenedData);
+    } catch (error) {
+      console.error("Failed to fetch sales returns", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    setQcList(dummyData);
+    fetchReturns();
   }, []);
 
-  const dummyData = [
-    {
-      year: "25-26",
-      plant: "SHARP",
-      returnNo: "25060001",
-      returnDate: "07/01/2026",
-      customerName: "ENDURANCE TECHNOLOGIES LTD",
-      itemCode: "FG1183",
-      itemDesc: "CAP NUT M10",
-      returnQty: 80,
-      user: "Togre"
-    }
-  ];
+  const handleSearch = () => {
+    fetchReturns();
+  };
   const handleQCClick = (item) => {
     navigate("/RejectionMaterialQC", { state: item });
   };
@@ -75,19 +116,19 @@ const PaddingSalesQC = () => {
 
                       <div className="col-sm-6 col-md-2 col-lg-1">
                         <label>Plant :</label>
-                        <select className="form-select" style={{ marginTop: "-1px" }}>
+                        <select className="form-select" style={{ marginTop: "-1px" }} value={filters.plant} onChange={(e) => setFilters({ ...filters, plant: e.target.value })}>
                           <option>SHARP</option>
                         </select>
                       </div>
 
                       <div className="col-sm-6 col-md-2 col-lg-1" >
                         <label>From:</label>
-                        <input type="date" className="form-control" />
+                        <input type="date" className="form-control" value={filters.fromDate} onChange={(e) => setFilters({ ...filters, fromDate: e.target.value })} />
                       </div>
 
                       <div className="col-sm-6 col-md-2 col-lg-1">
                         <label>To Date:</label>
-                        <input type="date" className="form-control" />
+                        <input type="date" className="form-control" value={filters.toDate} onChange={(e) => setFilters({ ...filters, toDate: e.target.value })} />
                       </div>
 
                       <div className="col-sm-6 col-md-2 col-lg-2">
@@ -95,7 +136,7 @@ const PaddingSalesQC = () => {
                           <input type="checkbox" className="form-check-input" id="Checkbox" />
                           <label htmlFor="Checkbox" className="form-check-label"> Cust Name: </label>
                         </div>
-                        <input type="text" placeholder="Cust Name" className="form-control" />
+                        <input type="text" placeholder="Cust Name" className="form-control" value={filters.custName} onChange={(e) => setFilters({ ...filters, custName: e.target.value })} />
                       </div>
 
                       <div className="col-sm-6 col-md-2 col-lg-2">
@@ -103,7 +144,7 @@ const PaddingSalesQC = () => {
                           <input type="checkbox" className="form-check-input" id="Checkbox" />
                           <label htmlFor="Checkbox" className="form-check-label">Item Code: </label>
                         </div>
-                        <input type="text" placeholder="Item Code " className="form-control" />
+                        <input type="text" placeholder="Item Code " className="form-control" value={filters.itemCode} onChange={(e) => setFilters({ ...filters, itemCode: e.target.value })} />
                       </div>
 
                       <div className="col-sm-6 col-md-2 col-lg-2">
@@ -111,14 +152,14 @@ const PaddingSalesQC = () => {
                           <input type="checkbox" className="form-check-input" id="Checkbox" />
                           <label htmlFor="Checkbox" className="form-check-label"> Sales-Return-No: </label>
                         </div>
-                        <input type="text" placeholder="" className="form-control" />
+                        <input type="text" placeholder="" className="form-control" value={filters.returnNo} onChange={(e) => setFilters({ ...filters, returnNo: e.target.value })} />
                       </div>
 
 
                       <div className="col-6 col-md-1 mt-4">
 
-                        <button type="button" className="btn btn-primary">
-                          Search
+                        <button type="button" className="btn btn-primary" onClick={handleSearch} disabled={loading}>
+                          {loading ? "Searching..." : "Search"}
                         </button>
                       </div>
 

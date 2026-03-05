@@ -3267,3 +3267,18 @@ export const saveProductionQCInfo = async (data) => {
     throw error;
   }
 };
+
+// Fetch Sales Returns
+export const fetchSalesReturns = async (startDate, endDate, custName) => {
+  const url = `https://erp-render.onrender.com/Sales/get/sales-return/?start_date=${startDate}&end_date=${endDate}&cust_name=${encodeURIComponent(custName)}`;
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`Server returned ${response.status} ${response.statusText}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching Sales Returns:", error);
+    throw error;
+  }
+};
