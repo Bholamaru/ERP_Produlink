@@ -41,7 +41,7 @@ const BomRouting = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch("http://127.0.0.1:8000/All_Masters/api/bom-items/");
+      const response = await fetch("https://erp-render.onrender.com/All_Masters/api/bom-items/");
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -65,7 +65,7 @@ const BomRouting = () => {
     if (confirmDelete) {
       try {
         // 2. API Call
-        const response = await fetch(`http://127.0.0.1:8000/All_Masters/item/delete/${id}/`, {
+        const response = await fetch(`https://erp-render.onrender.com/All_Masters/item/delete/${id}/`, {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
@@ -176,7 +176,7 @@ const BomRouting = () => {
         <td>
           <button
             className="btn btn-sm btn-outline-primary"
-            onClick={() => window.open(`http://127.0.0.1:8000/All_Masters/api/bom_pdf/${item.item}`, "_blank")}
+            onClick={() => window.open(`https://erp-render.onrender.com/All_Masters/api/bom_pdf/${item.item}`, "_blank")}
           >
             <i className="fas fa-eye"></i>
           </button>
@@ -297,23 +297,23 @@ const BomRouting = () => {
               Total: {bomItems.reduce((sum, item) => sum + (parseFloat(item.QtyKg) || 0), 0).toFixed(2)}
             </small>
           </td>
-        <td width="200px" style={{ whiteSpace: "nowrap" }}>
-  <button
-    style={{ width: "auto" }}
-    onClick={() => window.open(`http://127.0.0.1:8000/All_Masters/api/bom_pdf/${data.item_id}`, "_blank")}
-    className="btn btn-sm btn-primary me-1 d-inline-block"
-  >
-    <i className="fas fa-file-pdf"></i>
-  </button>
+          <td width="200px" style={{ whiteSpace: "nowrap" }}>
+            <button
+              style={{ width: "auto" }}
+              onClick={() => window.open(`https://erp-render.onrender.com/All_Masters/api/bom_pdf/${data.item_id}`, "_blank")}
+              className="btn btn-sm btn-primary me-1 d-inline-block"
+            >
+              <i className="fas fa-file-pdf"></i>
+            </button>
 
-  <button
-    style={{ width: "auto" }}
-    onClick={() => toggleRowExpansion(partNumber)}
-    className="btn btn-sm btn-outline-secondary d-inline-block"
-  >
-    <i className="fas fa-list"></i>
-  </button>
-</td>
+            <button
+              style={{ width: "auto" }}
+              onClick={() => toggleRowExpansion(partNumber)}
+              className="btn btn-sm btn-outline-secondary d-inline-block"
+            >
+              <i className="fas fa-list"></i>
+            </button>
+          </td>
 
 
           {/* Main Row Delete Button */}
@@ -332,6 +332,124 @@ const BomRouting = () => {
       // Detail rows (expanded)
       if (isExpanded) {
         rows.push(...renderDetailRows(bomItems, partNumber));
+      }
+    });
+
+    return rows;
+  };
+
+  const renderNewDetailRows = (bomItems, partNumber) => {
+    return bomItems.map((item, index) => (
+      <tr key={`new-detail-${partNumber}-${item.id}`} className="detail-row bg-light">
+        <td className="ps-4">└─ {index + 1}</td>
+        <td>{item.BomPartCode || "-"}</td>
+        <td>{item.item || "-"}</td>
+        <td>{item.BomPartDesc || "-"}</td>
+        <td>{item.QC || "-"}</td>
+        <td>{item.BOMPartType || "-"}</td>
+        <td>{item.PartCode || "-"}</td>
+        <td>
+          <button
+            className="btn btn-sm btn-outline-primary"
+            onClick={() => window.open(`https://erp-render.onrender.com/All_Masters/api/bom_pdf/${item.item || item.id}`, "_blank")}
+          >
+            <i className="fas fa-eye"></i>
+          </button>
+        </td>
+        <td>-</td>
+        <td>
+          <button
+            className="btn btn-sm btn-outline-danger"
+            onClick={() => handleDelete(item.id)}
+          >
+            <i className="fas fa-trash-alt"></i>
+          </button>
+        </td>
+      </tr>
+    ));
+  };
+
+  const renderNewTableRows = () => {
+    if (loading) {
+      return (
+        <tr>
+          <td colSpan="10" className="text-center py-4">
+            <div className="spinner-border text-primary" role="status">
+              <span className="visually-hidden">Loading...</span>
+            </div>
+          </td>
+        </tr>
+      );
+    }
+
+    if (error) {
+      return (
+        <tr>
+          <td colSpan="10" className="text-center text-danger py-4">
+            <i className="fas fa-exclamation-triangle me-2"></i>
+            {error}
+          </td>
+        </tr>
+      );
+    }
+
+    const filteredData = getFilteredData();
+
+    if (Object.keys(filteredData).length === 0) {
+      return (
+        <tr>
+          <td colSpan="10" className="text-center py-4">
+            <i className="fas fa-search me-2"></i>
+            No data available
+          </td>
+        </tr>
+      );
+    }
+
+    let serialNumber = 1;
+    const rows = [];
+
+    Object.entries(filteredData).forEach(([partNumber, data]) => {
+      const isExpanded = expandedRows.has(partNumber);
+
+      rows.push(
+        <tr key={`new-${partNumber}`} className="main-row">
+          <td>{serialNumber++}</td>
+          <td>{data.part_no || partNumber}</td>
+          <td>{data.Part_Code || "-"}</td>
+          <td>{data.Name_Description || "-"}</td>
+          <td>{data.NPD || "-"}</td>
+          <td>{data.Auth === true ? "Auth" : "Un-Auth"}</td>
+          <td>{data.User || "-"}</td>
+          <td>
+            <button
+              className="btn btn-sm btn-outline-primary"
+              onClick={() => window.open(`https://erp-render.onrender.com/All_Masters/api/bom_pdf/${data.item_id || data.Part_Code}`, "_blank")}
+            >
+              <i className="fas fa-eye"></i>
+            </button>
+          </td>
+          <td>
+            <button
+              className="btn btn-sm btn-outline-secondary"
+              onClick={() => toggleRowExpansion(partNumber)}
+            >
+              <i className={`fas fa-${isExpanded ? 'chevron-down' : 'list'}`}></i>
+            </button>
+          </td>
+          <td>
+            <button
+              className="btn btn-sm btn-outline-danger"
+              onClick={() => handleDelete(data.Part_Code)}
+            >
+              <i className="fas fa-trash-alt"></i>
+            </button>
+          </td>
+        </tr>
+      );
+
+      if (isExpanded && data.bom_items) {
+        rows.push(...renderNewDetailRows(data.bom_items, partNumber));
       }
     });
 
@@ -510,7 +628,7 @@ const BomRouting = () => {
                   </div>
 
                   {/* Table */}
-                  <div className="BomRoutingTable mt-2">
+                  {/* <div className="BomRoutingTable mt-2">
                     <div className="">
                       <div className="card-body p-0">
                         <div className="table-responsive">
@@ -532,6 +650,35 @@ const BomRouting = () => {
                             </thead>
                             <tbody>
                               {renderTableRows()}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+                  </div> */}
+
+                  {/* New Table with requested fields */}
+                  <div className="BomRoutingTable mt-4">
+                    <div className="">
+                      <div className="card-body p-0">
+                        <div className="table-responsive">
+                          <table className="table table-hover mb-0">
+                            <thead className="table-dark">
+                              <tr>
+                                <th width="80">sr</th>
+                                <th width="150">item no</th>
+                                <th width="150">item code</th>
+                                <th>item description</th>
+                                <th width="100">NPD</th>
+                                <th width="100">Auth</th>
+                                <th width="100">User</th>
+                                <th width="80">View</th>
+                                <th width="80">Action</th>
+                                <th width="80">Delete</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {renderNewTableRows()}
                             </tbody>
                           </table>
                         </div>

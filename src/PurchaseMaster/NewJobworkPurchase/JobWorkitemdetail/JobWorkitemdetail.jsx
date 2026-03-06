@@ -49,7 +49,7 @@ const JobWorkitemdetail = ({
   const [showRmDropdown, setShowRmDropdown] = useState(false);
   const [rmLoading, setRmLoading] = useState(false);
   const [bomItems, setBomItems] = useState([]);
-  
+
   // ======================= FIX START: State to hold Parent FG Name for RM selections =======================
   const [parentFgName, setParentFgName] = useState("");
   // ======================= FIX END =======================
@@ -69,21 +69,21 @@ const JobWorkitemdetail = ({
     if (type === "checkbox") {
       setFormData({ ...formData, [name]: checked ? value : "" });
     } else {
-        // Find the selected item from bomItems to store its full details
-        if (name === "Rm" && formData.SelectItem === "RM") {
-            const selectedRmItem = bomItems.find((item) => item.PartCode === value);
-            if (selectedRmItem) {
-                setFormData({
-                    ...formData,
-                    Rm: value,
-                    rmDetails: { ...selectedRmItem },
-                });
-            } else {
-                setFormData({ ...formData, Rm: value, rmDetails: {} });
-            }
+      // Find the selected item from bomItems to store its full details
+      if (name === "Rm" && formData.SelectItem === "RM") {
+        const selectedRmItem = bomItems.find((item) => item.PartCode === value);
+        if (selectedRmItem) {
+          setFormData({
+            ...formData,
+            Rm: value,
+            rmDetails: { ...selectedRmItem },
+          });
         } else {
-            setFormData({ ...formData, [name]: value });
+          setFormData({ ...formData, Rm: value, rmDetails: {} });
         }
+      } else {
+        setFormData({ ...formData, [name]: value });
+      }
     }
   };
 
@@ -117,9 +117,8 @@ const JobWorkitemdetail = ({
 
     setFormData({
       ...formData,
-      SelectedItemName: `${item.part_no || ""} - ${item.Part_Code || ""} - ${
-        item.Name_Description || ""
-      }`,
+      SelectedItemName: `${item.part_no || ""} - ${item.Part_Code || ""} - ${item.Name_Description || ""
+        }`,
       ItemDescription: item.Name_Description || "",
       Unit: item.Unit_Code || "",
       SAC: item.SAC || "",
@@ -164,8 +163,8 @@ const JobWorkitemdetail = ({
   const handleSelectRmItem = async (item) => {
     const parentPartNo = item.part_no;
     if (!parentPartNo) {
-        toast.error("Selected RM item does not have a parent FG reference.");
-        return;
+      toast.error("Selected RM item does not have a parent FG reference.");
+      return;
     }
 
     setShowRmDropdown(false);
@@ -173,38 +172,38 @@ const JobWorkitemdetail = ({
     setLoading(true);
 
     try {
-        const parentFgResults = await fetchItemFields(parentPartNo);
-        
-        if (!parentFgResults || parentFgResults.length === 0) {
-            toast.error(`Could not find parent FG details for Part No: ${parentPartNo}`);
-            return;
-        }
+      const parentFgResults = await fetchItemFields(parentPartNo);
 
-        const parentFgData = parentFgResults[0]; 
-        const bomItemsList = parentFgData.bom_items || [];
-        setBomItems(bomItemsList); 
+      if (!parentFgResults || parentFgResults.length === 0) {
+        toast.error(`Could not find parent FG details for Part No: ${parentPartNo}`);
+        return;
+      }
 
-        // Store the full name of the parent FG for the "Part Details" column
-        const fullParentFgName = `${parentFgData.part_no || ""} - ${parentFgData.Part_Code || ""} - ${parentFgData.Name_Description || ""}`;
-        setParentFgName(fullParentFgName);
+      const parentFgData = parentFgResults[0];
+      const bomItemsList = parentFgData.bom_items || [];
+      setBomItems(bomItemsList);
 
-        // Populate the form fields with the selected RM's details
-        setFormData({
-            ...formData,
-            SelectedItemName: `${item.BomPartCode || ""} - ${item.BomPartDesc || ""}`,
-            ItemDescription: item.BomPartDesc || "",
-            // We can still take Unit and SAC from the parent as a default
-            Unit: parentFgData.Unit_Code || "",
-            SAC: parentFgData.SAC || "",
-            Rm: "",       
-            rmDetails: {}
-        });
+      // Store the full name of the parent FG for the "Part Details" column
+      const fullParentFgName = `${parentFgData.part_no || ""} - ${parentFgData.Part_Code || ""} - ${parentFgData.Name_Description || ""}`;
+      setParentFgName(fullParentFgName);
+
+      // Populate the form fields with the selected RM's details
+      setFormData({
+        ...formData,
+        SelectedItemName: `${item.BomPartCode || ""} - ${item.BomPartDesc || ""}`,
+        ItemDescription: item.BomPartDesc || "",
+        // We can still take Unit and SAC from the parent as a default
+        Unit: parentFgData.Unit_Code || "",
+        SAC: parentFgData.SAC || "",
+        Rm: "",
+        rmDetails: {}
+      });
 
     } catch (error) {
-        console.error("Error fetching parent FG for RM:", error);
-        toast.error("Failed to fetch details for the parent Finished Good.");
+      console.error("Error fetching parent FG for RM:", error);
+      toast.error("Failed to fetch details for the parent Finished Good.");
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
   };
   // ======================= FIX END: UPDATED RM SELECTION LOGIC =======================
@@ -256,12 +255,12 @@ const JobWorkitemdetail = ({
 
         // ======================= FIX START: Construct Part Details using parentFgName =======================
         const outAndInPart = formData.SelectItem === "FG"
-            ? `${formData.Out}-${formData.In}`
-            : formData.SelectItem === "RM" && formData.rmDetails.PartCode
+          ? `${formData.Out}-${formData.In}`
+          : formData.SelectItem === "RM" && formData.rmDetails.PartCode
             ? `${parentFgName} | OP:${formData.rmDetails.OPNo} | ${formData.rmDetails.Operation} | ${formData.rmDetails.PartCode}`
             : formData.Rm;
         // ======================= FIX END =======================
-            
+
         const transactionData = {
           item_type: formData.SelectItem,
           item_name: formData.SelectedItemName,
@@ -287,22 +286,22 @@ const JobWorkitemdetail = ({
         }
 
         const newItem = {
-            ...formData, 
-            id: newId,
-            transactionId: newId,
-            ItemName: formData.SelectedItemName,
-            item_type: formData.SelectItem, 
-            ItemDescription: formData.ItemDescription,
-            Qty: formData.PoQty, 
-            Rate: formData.Rate,
-            Disc: formData.Disc,
-            Unit: formData.Unit,
-            Particular: formData.Particular_Process, 
-            OutAndInPart: outAndInPart, 
-            Version: "v1.0",
-            ItemStatus: "Active",
-            CSCode: "",
-            Note: ""
+          ...formData,
+          id: newId,
+          transactionId: newId,
+          ItemName: formData.SelectedItemName,
+          item_type: formData.SelectItem,
+          ItemDescription: formData.ItemDescription,
+          Qty: formData.PoQty,
+          Rate: formData.Rate,
+          Disc: formData.Disc,
+          Unit: formData.Unit,
+          Particular: formData.Particular_Process,
+          OutAndInPart: outAndInPart,
+          Version: "v1.0",
+          ItemStatus: "Active",
+          CSCode: "",
+          Note: ""
         };
 
         const updatedItems = [...items, newItem]
@@ -324,11 +323,11 @@ const JobWorkitemdetail = ({
                 const finalUpdatedItems = updatedItemsWithApiId.map((item) =>
                   item.id === addResponse.id
                     ? {
-                        ...item,
-                        ...transactionDataFromDb,
-                        SelectedItemName: transactionDataFromDb.item_name || item.SelectedItemName,
-                        ItemDescription: transactionDataFromDb.item_description || item.ItemDescription,
-                      }
+                      ...item,
+                      ...transactionDataFromDb,
+                      SelectedItemName: transactionDataFromDb.item_name || item.SelectedItemName,
+                      ItemDescription: transactionDataFromDb.item_description || item.ItemDescription,
+                    }
                     : item
                 )
                 setItems(finalUpdatedItems)
@@ -368,23 +367,23 @@ const JobWorkitemdetail = ({
     if (validate()) {
       try {
         const outAndInPart = formData.SelectItem === "FG"
-            ? `${formData.Out}-${formData.In}`
-            : (formData.SelectItem === "RM" && formData.rmDetails.PartCode
-                ? `${parentFgName || formData.SelectedItemName} | OP:${formData.rmDetails.OPNo} | ${formData.rmDetails.Operation} | ${formData.rmDetails.PartCode}`
-                : formData.Rm);
+          ? `${formData.Out}-${formData.In}`
+          : (formData.SelectItem === "RM" && formData.rmDetails.PartCode
+            ? `${parentFgName || formData.SelectedItemName} | OP:${formData.rmDetails.OPNo} | ${formData.rmDetails.Operation} | ${formData.rmDetails.PartCode}`
+            : formData.Rm);
 
-        const updatedItem = { 
-            ...formData, 
-            id: editingItem,
-            ItemName: formData.SelectedItemName,
-            item_type: formData.SelectItem, 
-            ItemDescription: formData.ItemDescription,
-            Qty: formData.PoQty, 
-            Rate: formData.Rate,
-            Disc: formData.Disc,
-            Unit: formData.Unit,
-            Particular: formData.Particular_Process, 
-            OutAndInPart: outAndInPart,
+        const updatedItem = {
+          ...formData,
+          id: editingItem,
+          ItemName: formData.SelectedItemName,
+          item_type: formData.SelectItem,
+          ItemDescription: formData.ItemDescription,
+          Qty: formData.PoQty,
+          Rate: formData.Rate,
+          Disc: formData.Disc,
+          Unit: formData.Unit,
+          Particular: formData.Particular_Process,
+          OutAndInPart: outAndInPart,
         };
 
         const updatedItems = items.map((item) =>
@@ -440,20 +439,20 @@ const JobWorkitemdetail = ({
 
   useEffect(() => {
     if (formData.SelectItem) {
-        setSearchQuery("");
-        setRmSearchQuery("");
-        setBomItems([]);
-        setParentFgName("");
-        setFormData(prev => ({
-            ...prev,
-            SelectedItemName: "",
-            ItemDescription: "",
-            Out: "",
-            In: "",
-            Rm: "",
-            SAC: "",
-            Unit: ""
-        }));
+      setSearchQuery("");
+      setRmSearchQuery("");
+      setBomItems([]);
+      setParentFgName("");
+      setFormData(prev => ({
+        ...prev,
+        SelectedItemName: "",
+        ItemDescription: "",
+        Out: "",
+        In: "",
+        Rm: "",
+        SAC: "",
+        Unit: ""
+      }));
     }
   }, [formData.SelectItem]);
 
@@ -467,32 +466,32 @@ const JobWorkitemdetail = ({
               <table className="table table-responsive">
                 <thead>
                   <tr>
-                   <th className="align-middle text-center">
-                    <div className="d-flex justify-content-center align-items-center gap-3">
-                      <span>Select Item: {" "} </span>
-                      <div className="d-flex align-items-center gap-1">
-                        <input
-                          type="radio"
-                          name="SelectItem"
-                          value="FG"
-                          checked={formData.SelectItem === "FG"}
-                          onChange={handleChange}
-                        /> {" "}
+                    <th className="align-middle text-center">
+                      <div className="d-flex justify-content-center align-items-center gap-3">
+                        <span>Select Item: {" "} </span>
+                        <div className="d-flex align-items-center gap-1">
+                          <input
+                            type="radio"
+                            name="SelectItem"
+                            value="FG"
+                            checked={formData.SelectItem === "FG"}
+                            onChange={handleChange}
+                          /> {" "}
 
-                        <label htmlFor="fg">FG</label>
+                          <label htmlFor="fg">FG</label>
+                        </div>
+                        <div className="d-flex align-items-center gap-1">
+                          <input
+                            type="radio"
+                            name="SelectItem"
+                            value="RM"
+                            checked={formData.SelectItem === "RM"}
+                            onChange={handleChange}
+                          /> {" "}
+                          <label htmlFor="rm">RM</label>
+                        </div>
                       </div>
-                      <div className="d-flex align-items-center gap-1">
-                        <input
-                          type="radio"
-                          name="SelectItem"
-                          value="RM"
-                          checked={formData.SelectItem === "RM"}
-                          onChange={handleChange}
-                        /> {" "}
-                        <label htmlFor="rm">RM</label>
-                      </div>
-                    </div>
-                  </th>
+                    </th>
                     <th>Item/Description:</th>
                     <th>Part Code:</th>
                     <th>SAC</th>
@@ -514,7 +513,7 @@ const JobWorkitemdetail = ({
                           <input type="text" name="searchQuery" className="form-control" placeholder="Search FG items..." value={searchQuery} onChange={handleSearch} disabled={loading} />
                           {loading && <div style={{ padding: "5px" }}>Loading...</div>}
                           {showDropdown && searchResults.length > 0 && (
-                            <ul className="dropdown-menu show" style={{width: "300px", maxHeight: "200px", overflowY: "auto", border: "1px solid #ccc", zIndex: 1000, position: "absolute", backgroundColor: "white"}}>
+                            <ul className="dropdown-menu show" style={{ width: "300px", maxHeight: "200px", overflowY: "auto", border: "1px solid #ccc", zIndex: 1000, position: "absolute", backgroundColor: "white" }}>
                               {searchResults.map((item) => (
                                 <li key={item.part_no} className="dropdown-item" onClick={() => handleSelectItem(item)} style={{ padding: "5px", cursor: "pointer" }}>
                                   {item.part_no} - {item.Part_Code} - {item.Name_Description}
@@ -525,14 +524,14 @@ const JobWorkitemdetail = ({
                         </>
                       )}
                       {formData.SelectItem === 'RM' && (
-                          <>
+                        <>
                           <input type="text" name="rmSearchQuery" className="form-control" placeholder="Search by BomPartCode..." value={rmSearchQuery} onChange={handleRmSearch} disabled={rmLoading || loading} autoComplete="off" />
                           {(rmLoading || loading) && <div style={{ padding: "5px" }}>Loading...</div>}
                           {showRmDropdown && rmSearchResults.length > 0 && (
-                            <ul className="dropdown-menu show" style={{width: "350px", maxHeight: "200px", overflowY: "auto", border: "1px solid #ccc", zIndex: 1000, position: "absolute", backgroundColor: "white"}}>
+                            <ul className="dropdown-menu show" style={{ width: "350px", maxHeight: "200px", overflowY: "auto", border: "1px solid #ccc", zIndex: 1000, position: "absolute", backgroundColor: "white" }}>
                               {/* FIX: Removed duplicate removal to show all results from API */}
                               {rmSearchResults.map((item, index) => (
-                                <li key={`${item.BomPartCode}-${index}`} className="dropdown-item" onClick={() => handleSelectRmItem(item)} style={{padding: "8px", cursor: "pointer", borderBottom: "1px solid #eee"}}>
+                                <li key={`${item.BomPartCode}-${index}`} className="dropdown-item" onClick={() => handleSelectRmItem(item)} style={{ padding: "8px", cursor: "pointer", borderBottom: "1px solid #eee" }}>
                                   <div style={{ fontWeight: "bold" }}>{item.BomPartCode} - {item.BomPartDesc}</div>
                                   <div style={{ fontSize: "12px", color: "#666" }}>Parent FG: {item.part_no}</div>
                                 </li>
@@ -544,16 +543,15 @@ const JobWorkitemdetail = ({
 
                     </td>
 
-                    <td>                        
-                      <textarea 
-                        className="form-control mt-2" 
-                        name="ItemDescription" 
-                        value={formData.ItemDescription} 
-                        onChange={handleChange} 
-                        rows="2" 
-                        placeholder="Item description..." 
-                        readOnly>
-                      </textarea>                        
+                    <td>
+                      <textarea
+                        className="form-control mt-2"
+                        name="ItemDescription"
+                        value={formData.ItemDescription}
+                        onChange={handleChange}
+                        rows="2"
+                        placeholder="Item description...">
+                      </textarea>
                     </td>
 
                     <td>
@@ -574,7 +572,7 @@ const JobWorkitemdetail = ({
                           <option value="">{bomItems.length === 0 ? "Search item first" : "Select Part Code"}</option>
                           {bomItems.map((item, index) => (
                             <option key={`${item.PartCode}-${index}`} value={item.PartCode}>
-                                {item.PartCode} | {item.OPNo} | {item.Operation}
+                              {item.PartCode} | {item.OPNo} | {item.Operation}
                             </option>
                           ))}
                         </select>
@@ -582,33 +580,33 @@ const JobWorkitemdetail = ({
                     </td>
 
                     <td>
-                        <input type="text" className="form-control" name="SAC" value={formData.SAC} onChange={handleChange} placeholder="SAC"/>
+                      <input type="text" className="form-control" name="SAC" value={formData.SAC} onChange={handleChange} placeholder="SAC" />
                     </td>
-                  
+
                     <td>
-                        <input type="number" className="form-control" name="Rate" value={formData.Rate} onChange={handleChange} placeholder="Rate" required/>
+                      <input type="number" className="form-control" name="Rate" value={formData.Rate} onChange={handleChange} placeholder="Rate" required />
                     </td>
-                  
+
                     <td>
-                        <input type="text" className="form-control" name="RType" value={formData.RType} onChange={handleChange} />
+                      <input type="text" className="form-control" name="RType" value={formData.RType} onChange={handleChange} />
                     </td>
-                  
+
                     <td>
-                        <input type="number" className="form-control" name="Disc" value={formData.Disc} onChange={handleChange} placeholder="Disc %"/>
+                      <input type="number" className="form-control" name="Disc" value={formData.Disc} onChange={handleChange} placeholder="Disc %" />
                     </td>
-                  
+
                     <td>
-                        <input type="number" className="form-control" name="PoQty" value={formData.PoQty} onChange={handleChange} placeholder="Qty" required/>
+                      <input type="number" className="form-control" name="PoQty" value={formData.PoQty} onChange={handleChange} placeholder="Qty" required />
                     </td>
-                  
+
                     <td>
-                        <input type="text" className="form-control" name="Unit" value={formData.Unit} onChange={handleChange} placeholder="Unit"/>
+                      <input type="text" className="form-control" name="Unit" value={formData.Unit} onChange={handleChange} placeholder="Unit" />
                     </td>
-                  
+
                     <td>
-                        <textarea className="form-control" name="Particular_Process" value={formData.Particular_Process} onChange={handleChange} rows="2" placeholder="Particulars..."></textarea>
+                      <textarea className="form-control" name="Particular_Process" value={formData.Particular_Process} onChange={handleChange} rows="2" placeholder="Particulars..."></textarea>
                     </td>
-                   
+
                     <td>
                       {editingItem ? (<button className="btnpurchase" onClick={handleUpdate}>Update</button>) : (<button className="btnpurchase" onClick={handleAdd}>Add</button>)}
                     </td>
@@ -649,7 +647,7 @@ const JobWorkitemdetail = ({
                         <td>{item.item_type || "-"}</td>
                         <td>{item.ItemName || "-"}</td>
                         <td>{item.ItemDescription || "-"}</td>
-                        <td><pre style={{ margin: 0, width:"200px", whiteSpace: 'pre-wrap', fontFamily: 'inherit', fontSize: '12px' }}>{item.OutAndInPart || '-'}</pre></td>
+                        <td><pre style={{ margin: 0, width: "200px", whiteSpace: 'pre-wrap', fontFamily: 'inherit', fontSize: '12px' }}>{item.OutAndInPart || '-'}</pre></td>
                         <td>{item.SAC || "-"}</td>
                         <td>{item.Rate || "-"}</td>
                         <td>{item.RType || "-"}</td>
@@ -668,14 +666,14 @@ const JobWorkitemdetail = ({
                     ))
                   ) : (
                     <tr>
-                        <td colSpan="16" style={{ textAlign: "center", padding: "20px" }}>No items added yet</td>
+                      <td colSpan="16" style={{ textAlign: "center", padding: "20px" }}>No items added yet</td>
                     </tr>
                   )}
                 </tbody>
               </table>
             </div>
           </div>
-          
+
         </div>
       </div>
     </div>
