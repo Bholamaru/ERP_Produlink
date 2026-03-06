@@ -17,12 +17,24 @@ const JobworkInwardChallanList = () => {
     const fetchInwardChallanList = async () => {
         try {
             setLoading(true);
-            const response = await fetch('http://127.0.0.1:8000/Store/InwardChallan/');
+            const response = await fetch('https://erp-render.onrender.com/Store/JobworkInwardChallan/');
             const data = await response.json();
-            console.log('Fetched data:', data);
-            setInwardChallanList(data);
+            console.log('Fetched Jobwork data:', data);
+
+            // Handle potentially nested data (DRF often uses 'results')
+            if (Array.isArray(data)) {
+                setInwardChallanList(data);
+            } else if (data && Array.isArray(data.results)) {
+                setInwardChallanList(data.results);
+            } else if (data && Array.isArray(data.data)) {
+                setInwardChallanList(data.data);
+            } else {
+                console.error('Unexpected API response format:', data);
+                setInwardChallanList([]);
+            }
         } catch (error) {
             console.error('Error fetching inward challan list:', error);
+            setInwardChallanList([]);
         } finally {
             setLoading(false);
         }
@@ -34,13 +46,13 @@ const JobworkInwardChallanList = () => {
         }
 
         return inwardChallanTable.map(item =>
-            `${item.InQtyNOS || 0} | ${item.ItemDescription || 'N/A'}`
+            `${item.ChallanQty || 0} | ${item.ItemCode || 'N/A'}`
         ).join(', ');
     };
 
     const handleViewPdf = (challanId) => {
-        // Open PDF in new tab - adjust the URL to match your Django URL pattern
-        window.open(`http://127.0.0.1:8000/Store/InwardChallan/pdf/${challanId}/`, '_blank');
+        // Open PDF in new tab
+        window.open(`https://erp-render.onrender.com/Store/jobwork-inward-challan-pdf/${challanId}/`, '_blank');
     };
 
     useEffect(() => {
@@ -213,15 +225,15 @@ const JobworkInwardChallanList = () => {
                                                                     <td>{challan.InwardTime || 'N/A'}</td>
                                                                     <td>{challan.ChallanNo || 'N/A'}</td>
                                                                     <td>{challan.ChallanDate || 'N/A'}</td>
-                                                                    <td>{challan.InvoiceNo || 'N/A'}</td>
-                                                                    <td>{challan.InvoiceDate || 'N/A'}</td>
-                                                                    <td>{challan.SupplierName || 'N/A'}</td>
+                                                                    <td>{challan.DCNo || 'N/A'}</td>
+                                                                    <td>{challan.DCDate || 'N/A'}</td>
+                                                                    <td>{challan.Customer || 'N/A'}</td>
                                                                     <td>{challan.VehicleNo || 'N/A'}</td>
                                                                     <td>{challan.Transporter || 'N/A'}</td>
                                                                     <td style={{ maxWidth: '1200px', wordWrap: 'break-word' }}>
-                                                                        {formatItemsDisplay(challan.InwardChallanTable)}
+                                                                        {formatItemsDisplay(challan.JobworkInwardChallanTable)}
                                                                     </td>
-                                                                    <td>{challan.PreparedBy || 'N/A'}</td>
+                                                                    <td>{challan.PrepartedBy || 'N/A'}</td>
                                                                     <td>{challan.CheckedBy || 'N/A'}</td>
                                                                     <td>{challan.TotalItem || 'N/A'}</td>
                                                                     <td>{challan.Remark || 'N/A'}</td>
