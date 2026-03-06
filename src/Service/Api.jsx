@@ -3270,7 +3270,7 @@ export const saveProductionQCInfo = async (data) => {
 
 // Fetch Sales Returns
 export const fetchSalesReturns = async (startDate, endDate, custName) => {
-  const url = `https://erp-render.onrender.com/Sales/get/sales-return/?start_date=${startDate}&end_date=${endDate}&cust_name=${encodeURIComponent(custName)}`;
+  const url = `http://127.0.0.1:8000/Sales/get/sales-return/?start_date=${startDate}&end_date=${endDate}&cust_name=${encodeURIComponent(custName)}`;
   try {
     const response = await fetch(url);
     if (!response.ok) {

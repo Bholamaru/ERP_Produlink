@@ -243,7 +243,7 @@ const OutwardChallan = () => {
       if (selectedItemType === "FG" && Array.isArray(resData)) {
         finalData = resData.map((item) => ({
           ...item,
-          ItemName: item.OutAndInPart,
+          ItemName: item.ItemName,
           ItemDescription: item.OutAndInPart,
           type: "FG",
           item_type: "FG",

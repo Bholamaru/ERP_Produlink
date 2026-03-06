@@ -17,7 +17,7 @@ const JobworkInwardChallanList = () => {
     const fetchInwardChallanList = async () => {
         try {
             setLoading(true);
-            const response = await fetch('https://erp-render.onrender.com/Store/JobworkInwardChallan/');
+            const response = await fetch('http://127.0.0.1:8000/Store/JobworkInwardChallan/');
             const data = await response.json();
             console.log('Fetched Jobwork data:', data);
 
@@ -52,7 +52,7 @@ const JobworkInwardChallanList = () => {
 
     const handleViewPdf = (challanId) => {
         // Open PDF in new tab
-        window.open(`https://erp-render.onrender.com/Store/jobwork-inward-challan-pdf/${challanId}/`, '_blank');
+        window.open(`http://127.0.0.1:8000/Store/jobwork-inward-challan-pdf/${challanId}/`, '_blank');
     };
 
     useEffect(() => {
