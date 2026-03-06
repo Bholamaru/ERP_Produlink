@@ -1,134 +1,136 @@
 .NewJobwork {
-   
-    margin-top: 20px;
-  }
-  
-  .NewJobwork-header {
-    background-color: #f8f9fa; /* Light background for header */
-    border-bottom: 1px solid #dee2e6; /* Border for header */
-    padding: 10px 15px; /* Padding around header */
-    border-radius: 5px;
-  }
-  
-   .header-title {
-    color: blue;
-    font-size: 18px; /* Default font size */
-  }
-  
-  .newpurchase-btn {
-    background-color: rgba(235, 233, 233, 0.685);
-    border: none;
-    padding: 10px 20px;
-    border-radius: 5px;
-  }
-  
-  .fas {
-    font-size: 20px;
-  }
 
-  #dra .zindex-dropdown {
+  margin-top: 20px;
+}
+
+.NewJobwork-header {
+  background-color: #f8f9fa;
+  /* Light background for header */
+  border-bottom: 1px solid #dee2e6;
+  /* Border for header */
+  padding: 10px 15px;
+  /* Padding around header */
+  border-radius: 5px;
+}
+
+.header-title {
+  color: blue;
+  font-size: 18px;
+  /* Default font size */
+}
+
+.newpurchase-btn {
+  background-color: rgba(235, 233, 233, 0.685);
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+}
+
+.fas {
+  font-size: 20px;
+}
+
+#dra .zindex-dropdown {
   z-index: 1000;
 }
 
-  
-  /* Responsive Styles */
-  @media (max-width: 768px) {
-    .newjobwork-header {
-      padding: 10px; /* Adjust padding for smaller screens */
-    }
-  
-    .row {
-      flex-wrap: nowrap;
-      overflow-x: auto; /* Enable horizontal scrolling for narrow screens */
-      margin-right: -15px; /* Remove extra space on the right side due to scrolling */
-    }
-  
-    .col-md-2,
-    .col-md-1 {
-      flex: 0 0 auto;
-      width: auto;
-    }
-  
-    .col-md-2 {
-      flex-basis: 20%; /* Adjust basis for better alignment */
-    }
-  
-    .col-md-1 {
-      flex-basis: 10%; /* Adjust basis for better alignment */
-    }
-  
-    .header-title {
-      font-size: 16px; /* Adjust font size for smaller screens */
-    }
-  
-    .newpurchase-btn {
-      padding: 8px 16px; /* Adjust padding for smaller buttons */
-    }
-  
-    .fas {
-      font-size: 16px; /* Adjust icon size for smaller screens */
-    }
-  }
-  
-  @media (max-width: 576px) {
-    .header-title {
-      font-size: 14px; /* Further reduce font size for very small screens */
-    }
-  
-    .newpurchase-btn {
-      padding: 6px 12px; /* Further reduce button padding */
-    }
-  
-    .fas {
-      font-size: 14px; /* Further reduce icon size */
-    }
-  }
-  /* .newjobwork-main {
-    background-color: #f8f9fa;
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  .NewJobwork-header {
     padding: 10px;
-    margin-top: 20px;
-    height: auto;
-  } */
-  .NewJobwork
-.nav-pills .NewJobwork .nav-link {
+  }
+
+  .row {
+    flex-wrap: wrap;
+    /* Changed from nowrap to wrap */
+    overflow-x: visible;
+    /* Changed from auto to visible */
+  }
+
+  .col-md-2,
+  .col-md-1 {
+    flex: 0 0 100%;
+    width: 100%;
+    margin-bottom: 10px;
+  }
+
+  .header-title {
+    font-size: 16px;
+  }
+
+  .newpurchase-btn {
+    padding: 8px 16px;
+    width: 100%;
+    text-align: center;
+  }
+
+  .fas {
+    font-size: 16px;
+  }
+
+  /* Scrollable tabs for mobile */
+  .nav-pills {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 5px;
+  }
+
+  .nav-item {
+    flex: 0 0 auto;
+  }
+}
+
+@media (max-width: 576px) {
+  .header-title {
+    font-size: 14px;
+  }
+
+  .newpurchase-btn {
+    padding: 6px 12px;
+  }
+
+  .fas {
+    font-size: 14px;
+  }
+}
+
+.nav-pills .nav-link {
   border: none;
   border-radius: 0;
   font-size: 16px;
   padding: 10px 20px;
 }
 
-/* Active tab styling */ .NewJobwork
-.nav-pills .NewJobwork .nav-link.active {
+/* Active tab styling */
+.nav-pills .nav-link.active {
   background-color: #007bff;
   color: white;
 }
 
 /* Responsive tab styling */
 @media (max-width: 576px) {
-  .NewJobwork .nav-pills .NewJobwork .nav-link {
+  .NewJobwork .nav-pills .nav-link {
     font-size: 14px;
-    padding: 8px 16px;
-  }
-
-  .NewJobwork .nav-pills {
-    display: block;
-    text-align: center;
+    padding: 8px 12px;
   }
 
   .tab-content {
-    margin-top: 20px;
+    margin-top: 10px;
   }
 }
 
 @media (min-width: 576px) and (max-width: 768px) {
-  .NewJobwork .nav-pills .NewJobwork .nav-link {
+  .NewJobwork .nav-pills .nav-link {
     font-size: 15px;
-    padding: 10px 18px;
+    padding: 10px 15px;
   }
 }
 
 @media (min-width: 768px) {
-  .NewJobwork .nav-pills .NewJobwork .nav-link {
+  .NewJobwork .nav-pills .nav-link {
     font-size: 16px;
     padding: 10px 20px;
   }
@@ -137,7 +139,63 @@
 .NewJobwork .tab-content {
   padding: 10px;
   border: none;
-  
+}
+
+.action-buttons-container {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.nav-btn {
+  background-color: #ebebeb;
+  border: 1px solid #d1d1d1;
+  color: #333;
+  padding: 4px 12px;
+  font-size: 13px;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-btn:hover:not(:disabled) {
+  background-color: #dfdfdf;
+  border-color: #bcbcbc;
+}
+
+.nav-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-success-custom {
+  background-color: #28a745 !important;
+  color: white !important;
+  border-color: #218838 !important;
+}
+
+.btn-success-custom:hover {
+  background-color: #218838 !important;
+}
+
+@media (max-width: 576px) {
+  .action-buttons-container {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+  }
+
+  .nav-btn {
+    flex: 1;
+    min-width: 80px;
+  }
 }
 
 .NewJobwork .tab-pane {

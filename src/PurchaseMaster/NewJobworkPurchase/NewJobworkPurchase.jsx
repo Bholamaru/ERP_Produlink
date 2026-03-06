@@ -293,29 +293,29 @@ const NewJobworkPurchase = () => {
         TOC_AssableValue:
           allTabsData.gstDetails && allTabsData.gstDetails.length > 0
             ? allTabsData.gstDetails
-                .reduce(
-                  (sum, item) => sum + (Number.parseFloat(item.AssValue) || 0),
-                  0
-                )
-                .toString()
+              .reduce(
+                (sum, item) => sum + (Number.parseFloat(item.AssValue) || 0),
+                0
+              )
+              .toString()
             : "0",
         PackCharges:
           allTabsData.gstDetails && allTabsData.gstDetails.length > 0
             ? allTabsData.gstDetails
-                .reduce(
-                  (sum, item) => sum + (Number.parseFloat(item.Packing) || 0),
-                  0
-                )
-                .toString()
+              .reduce(
+                (sum, item) => sum + (Number.parseFloat(item.Packing) || 0),
+                0
+              )
+              .toString()
             : "0",
         TransportCharges:
           allTabsData.gstDetails && allTabsData.gstDetails.length > 0
             ? allTabsData.gstDetails
-                .reduce(
-                  (sum, item) => sum + (Number.parseFloat(item.Transport) || 0),
-                  0
-                )
-                .toString()
+              .reduce(
+                (sum, item) => sum + (Number.parseFloat(item.Transport) || 0),
+                0
+              )
+              .toString()
             : "0",
         Insurance: allTabsData.gstDetails?.[0]?.Insurance || "0",
         InstallationCharges:
@@ -324,116 +324,116 @@ const NewJobworkPurchase = () => {
         CGST:
           allTabsData.gstDetails && allTabsData.gstDetails.length > 0
             ? allTabsData.gstDetails
-                .reduce(
-                  (sum, item) => sum + (Number.parseFloat(item.CGSTAmt) || 0),
-                  0
-                )
-                .toString()
+              .reduce(
+                (sum, item) => sum + (Number.parseFloat(item.CGSTAmt) || 0),
+                0
+              )
+              .toString()
             : "0",
         SGST:
           allTabsData.gstDetails && allTabsData.gstDetails.length > 0
             ? allTabsData.gstDetails
-                .reduce(
-                  (sum, item) => sum + (Number.parseFloat(item.SGSTAmt) || 0),
-                  0
-                )
-                .toString()
+              .reduce(
+                (sum, item) => sum + (Number.parseFloat(item.SGSTAmt) || 0),
+                0
+              )
+              .toString()
             : "0",
         IGST:
           allTabsData.gstDetails && allTabsData.gstDetails.length > 0
             ? allTabsData.gstDetails
-                .reduce(
-                  (sum, item) => sum + (Number.parseFloat(item.IGSTAmt) || 0),
-                  0
-                )
-                .toString()
+              .reduce(
+                (sum, item) => sum + (Number.parseFloat(item.IGSTAmt) || 0),
+                0
+              )
+              .toString()
             : "0",
         TCS: "0",
         GR_Total:
           allTabsData.gstDetails && allTabsData.gstDetails.length > 0
             ? allTabsData.gstDetails
-                .reduce(
-                  (sum, item) => sum + (Number.parseFloat(item.Total) || 0),
-                  0
-                )
-                .toString()
+              .reduce(
+                (sum, item) => sum + (Number.parseFloat(item.Total) || 0),
+                0
+              )
+              .toString()
             : "0",
 
         Item_Detail_Enter:
           allTabsData.itemDetails && allTabsData.itemDetails.length > 0
             ? allTabsData.itemDetails.map((item) => ({
-                ItemName: item.ItemName || item.SelectedItemName || "",
-                item_type: item.ItemType || item.SelectItem || "",
-                OutAndInPart: item.OutAndInPart || "-",
-                ItemDescription: item.ItemDescription || "",
-                Rate: item.Rate || "0",
-                Disc: item.Disc || "0",
-                Qty: item.Qty || item.PoQty || "0",
-                Unit: item.Unit || "",
-                Particular: item.Particular || item.Particular_Process || "",
-                Version: item.Version || "v1.0",
-                ItemStatus: item.ItemStatus || "Active",
-                CSCode: item.CSCode || "",
-                Note: item.Note || "",
-                SAC: item.SAC || "",
-              }))
+              ItemName: item.ItemName || item.SelectedItemName || "",
+              item_type: item.ItemType || item.SelectItem || "",
+              OutAndInPart: item.OutAndInPart || "-",
+              ItemDescription: item.ItemDescription || "",
+              Rate: item.Rate || "0",
+              Disc: item.Disc || "0",
+              Qty: item.Qty || item.PoQty || "0",
+              Unit: item.Unit || "",
+              Particular: item.Particular || item.Particular_Process || "",
+              Version: item.Version || "v1.0",
+              ItemStatus: item.ItemStatus || "Active",
+              CSCode: item.CSCode || "",
+              Note: item.Note || "",
+              SAC: item.SAC || "",
+            }))
             : [],
 
         Gst_Details:
           allTabsData.gstDetails && allTabsData.gstDetails.length > 0
             ? allTabsData.gstDetails.map((item) => ({
-                ItemCode: item.ItemCode || "",
-                SacCode: item.SAC || "",
-                Rate: item.Rate || "0",
-                Qty: item.Qty || "0",
-                SubTotal: item.SubTotal || "0",
-                Discount: item.Discount || "0",
-                DiscountAmt: item.DiscountAmt || "0",
-                Packing: item.Packing || "0",
-                Transport: item.Transport || "0",
-                AssValue: item.AssValue || "0",
-                CGST: item.CGST || "0",
-                CGSTAmt: item.CGSTAmt || "0",
-                SGST: item.SGST || "0",
-                SGSTAmt: item.SGSTAmt || "0",
-                IGST: item.IGST || "0",
-                IGSTAmt: item.IGSTAmt || "0",
-                UTGST: item.UTGST || "0",
-                UTGSTAmt: item.UTGSTAmt || "0",
-                Total: item.Total || "0",
-              }))
+              ItemCode: item.ItemCode || "",
+              SacCode: item.SAC || "",
+              Rate: item.Rate || "0",
+              Qty: item.Qty || "0",
+              SubTotal: item.SubTotal || "0",
+              Discount: item.Discount || "0",
+              DiscountAmt: item.DiscountAmt || "0",
+              Packing: item.Packing || "0",
+              Transport: item.Transport || "0",
+              AssValue: item.AssValue || "0",
+              CGST: item.CGST || "0",
+              CGSTAmt: item.CGSTAmt || "0",
+              SGST: item.SGST || "0",
+              SGSTAmt: item.SGSTAmt || "0",
+              IGST: item.IGST || "0",
+              IGSTAmt: item.IGSTAmt || "0",
+              UTGST: item.UTGST || "0",
+              UTGSTAmt: item.UTGSTAmt || "0",
+              Total: item.Total || "0",
+            }))
             : [],
 
         Schedule_Line:
           allTabsData.scheduleLines && allTabsData.scheduleLines.length > 0
             ? allTabsData.scheduleLines.map((item) => ({
-                ItemCode: item.ItemCode || "",
-                Description: item.Description || "",
-                TotalQty: item.TotalQty || "0",
-                Date1: item.Date1 || "",
-                Qty1: item.Qty1 || "0",
-                Date2: item.Date2 || "",
-                Qty2: item.Qty2 || "0",
-                Date3: item.Date3 || "",
-                Qty3: item.Qty3 || "0",
-                Date4: item.Date4 || "",
-                Qty4: item.Qty4 || "0",
-                Date5: item.Date5 || "",
-                Qty5: item.Qty5 || "0",
-                Date6: item.Date6 || "",
-                Qty6: item.Qty6 || "0",
-              }))
+              ItemCode: item.ItemCode || "",
+              Description: item.Description || "",
+              TotalQty: item.TotalQty || "0",
+              Date1: item.Date1 || "",
+              Qty1: item.Qty1 || "0",
+              Date2: item.Date2 || "",
+              Qty2: item.Qty2 || "0",
+              Date3: item.Date3 || "",
+              Qty3: item.Qty3 || "0",
+              Date4: item.Date4 || "",
+              Qty4: item.Qty4 || "0",
+              Date5: item.Date5 || "",
+              Qty5: item.Qty5 || "0",
+              Date6: item.Date6 || "",
+              Qty6: item.Qty6 || "0",
+            }))
             : [],
 
         Ship_To_Add:
           allTabsData.shipToAdd && allTabsData.shipToAdd.length > 0
             ? allTabsData.shipToAdd.map((item) => ({
-                ShipToAdd: item.ShiptoAdd || "",
-                ShipToContactDetails: item.ContactDetail || "",
-                ProjectName: item.ProjectName || "",
-                CRName: item.CRName || "",
-                SoNo: item.SoNo || "",
-              }))
+              ShipToAdd: item.ShiptoAdd || "",
+              ShipToContactDetails: item.ContactDetail || "",
+              ProjectName: item.ProjectName || "",
+              CRName: item.CRName || "",
+              SoNo: item.SoNo || "",
+            }))
             : [],
       };
 
@@ -472,9 +472,8 @@ const NewJobworkPurchase = () => {
       );
 
       if (mountedRef.current) {
-        let errorMessage = `An error occurred while ${
-          isEditMode ? "updating" : "saving"
-        }.`;
+        let errorMessage = `An error occurred while ${isEditMode ? "updating" : "saving"
+          }.`;
         if (error.message.includes("500")) {
           errorMessage +=
             " Server error - please check the data format and try again.";
@@ -527,16 +526,16 @@ const NewJobworkPurchase = () => {
                 <div className="NewJobwork">
                   <div className="container-fluid">
                     <div className="NewJobwork-header mb-4 text-start">
-                      <div className="row align-items-center">
-                        <div className="col-md-2">
-                          <h5 className="header-title">
+                      <div className="row g-3 align-items-end">
+                        <div className="col-12 col-md-2">
+                          <h5 className="header-title mb-0">
                             {isEditMode ? "Edit JW-PO" : "New JW-PO"}
                           </h5>
                         </div>
-                        <div className="col-md-1">
-                          <label>PO Type:</label>
+                        <div className="col-6 col-sm-4 col-md-1">
+                          <label className="form-label small mb-1">PO Type:</label>
                           <select
-                            className="form-control"
+                            className="form-select form-select-sm"
                             value={poType}
                             onChange={(e) => setPoType(e.target.value)}
                           >
@@ -545,10 +544,10 @@ const NewJobworkPurchase = () => {
                           </select>
                         </div>
 
-                        <div className="col-md-1">
-                          <label>Series:</label>
+                        <div className="col-6 col-sm-4 col-md-1">
+                          <label className="form-label small mb-1">Series:</label>
                           <select
-                            className="form-control"
+                            className="form-select form-select-sm"
                             value={selectedSeries}
                             onChange={handleSeriesChange}
                           >
@@ -556,19 +555,20 @@ const NewJobworkPurchase = () => {
                             <option value="JOBWORK">JOBWORK</option>
                           </select>
                         </div>
-                        <div className="col-md-1" style={{ marginTop: "20px" }}>
+                        <div className="col-6 col-sm-4 col-md-1">
+                          <label className="form-label small mb-1">PO No:</label>
                           <input
                             type="text"
-                            className="form-control"
+                            className="form-control form-control-sm"
                             value={indentNo}
                             readOnly
                           />
                         </div>
-                        <div className="col-md-1 position-relative">
-                          <label>Supplier:</label>
+                        <div className="col-12 col-sm-6 col-md-2 position-relative">
+                          <label className="form-label small mb-1">Supplier:</label>
                           <input
                             type="text"
-                            className="form-control"
+                            className="form-control form-control-sm"
                             value={supplierName}
                             onChange={(e) => setSupplierName(e.target.value)}
                             onFocus={() => setShowDropdown(true)}
@@ -576,7 +576,7 @@ const NewJobworkPurchase = () => {
                           />
                           {showDropdown && dropdownData.length > 0 && (
                             <ul
-                              className="list-group position-absolute w-100"
+                              className="list-group position-absolute w-100 shadow"
                               style={{
                                 zIndex: 1000,
                                 maxHeight: "150px",
@@ -586,7 +586,7 @@ const NewJobworkPurchase = () => {
                               {dropdownData.map((item) => (
                                 <li
                                   key={item.id}
-                                  className="list-group-item list-group-item-action"
+                                  className="list-group-item list-group-item-action py-1 px-2 small"
                                   onClick={() => handleSelectSupplier(item)}
                                   style={{ cursor: "pointer" }}
                                 >
@@ -597,28 +597,28 @@ const NewJobworkPurchase = () => {
                           )}
                         </div>
 
-                        <div className="col-md-1">
-                          <label>Code:</label>
+                        <div className="col-6 col-sm-3 col-md-1">
+                          <label className="form-label small mb-1">Code:</label>
                           <input
                             type="text"
-                            className="form-control"
+                            className="form-control form-control-sm"
                             value={supplierCode}
                             disabled
                           />
                         </div>
 
-                        <div className="col-md-1 mt-4">
+                        <div className="col-6 col-sm-3 col-md-1">
                           <button
-                            className="vndrbtn btn-primary"
+                            className="vndrbtn btn-primary btn-sm w-100"
                             onClick={handleClear}
                           >
                             Clear
                           </button>
                         </div>
-                        <div className="col-md-2 mt-4 text-end">
+                        <div className="col-12 col-sm-12 col-md-3 text-md-end mt-2 mt-md-0">
                           <Link
                             to="/JobworkList"
-                            className="vndrbtn newpurchase-btn"
+                            className="vndrbtn newpurchase-btn btn-sm d-inline-block"
                           >
                             PO List
                           </Link>
@@ -639,9 +639,8 @@ const NewJobworkPurchase = () => {
                         ].map((tabName, index) => (
                           <li className="nav-item" role="presentation" key={index}>
                             <button
-                              className={`nav-link ${
-                                activeTab === index ? "active" : ""
-                              }`}
+                              className={`nav-link ${activeTab === index ? "active" : ""
+                                }`}
                               type="button"
                               onClick={() => setActiveTab(index)}
                             >
@@ -719,13 +718,12 @@ const NewJobworkPurchase = () => {
                     </div>
                   </div>
 
-                  <div className="d-flex justify-content-end mt-4">
+                  <div className="action-buttons-container">
                     {activeTab > 0 && (
                       <button
                         type="button"
-                        className="vndrbtn btn-secondary me-2"
+                        className="nav-btn"
                         onClick={handlePrevious}
-                        style={{ flexGrow: 0, width: "auto" }}
                       >
                         Previous
                       </button>
@@ -733,32 +731,29 @@ const NewJobworkPurchase = () => {
                     {activeTab < 4 ? (
                       <button
                         type="button"
-                        className="vndrbtn btn-primary ms-2"
+                        className="nav-btn"
                         onClick={handleNext}
-                        style={{ flexGrow: 0, width: "auto" }}
                       >
                         Next
                       </button>
                     ) : (
                       <button
                         type="button"
-                        className="vndrbtn btn-success"
+                        className="nav-btn btn-success-custom"
                         onClick={handleSaveAll}
                         disabled={saving}
-                        style={{ flexGrow: 0, width: "auto" }}
                       >
                         {saving
                           ? "Saving..."
                           : isEditMode
-                          ? "Update Job Work PO"
-                          : "Save Job Work PO"}
+                            ? "Update Job Work PO"
+                            : "Save Job Work PO"}
                       </button>
                     )}
                     <button
                       type="button"
-                      className="vndrbtn btn-secondary ms-2"
+                      className="nav-btn"
                       onClick={resetAllForms}
-                      style={{ flexGrow: 0, width: "auto" }}
                     >
                       Clear
                     </button>
@@ -768,7 +763,7 @@ const NewJobworkPurchase = () => {
             </div>
           </div>
         </div>
-      </div> 
+      </div>
     </div>
   );
 };

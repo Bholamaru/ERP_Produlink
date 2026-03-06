@@ -5,9 +5,9 @@
 }
 
 .BomRoutingheading {
-   background-color: #f8f9fa;
-  border-bottom: 1px solid #dee2e6; 
-  padding: 10px 15px; 
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+  padding: 10px 15px;
 }
 
 .BomRoutingheading .header-title {
@@ -36,9 +36,12 @@ Link {
 }
 
 .BomRoutingMain {
-  background-color: #f8f9fa; /* Light background for header */
-  border-bottom: 1px solid #dee2e6; /* Border for header */
-  padding: 10px 15px; /* Padding around header */
+  background-color: #f8f9fa;
+  /* Light background for header */
+  border-bottom: 1px solid #dee2e6;
+  /* Border for header */
+  padding: 10px 15px;
+  /* Padding around header */
   border-radius: 5px;
 }
 
@@ -51,9 +54,12 @@ Link {
 }
 
 .BomRoutingTable {
-  background-color: #f8f9fa; /* Light background for header */
-  border-bottom: 1px solid #dee2e6; /* Border for header */
-  padding: 10px 15px; /* Padding around header */
+  background-color: #f8f9fa;
+  /* Light background for header */
+  border-bottom: 1px solid #dee2e6;
+  /* Border for header */
+  padding: 10px 15px;
+  /* Padding around header */
   /* border-radius: 5px; */
 }
 
@@ -87,7 +93,7 @@ Link {
   border-bottom: 2px solid #dee2e6;
 }
 
-.table tbody + tbody {
+.table tbody+tbody {
   border-top: 2px solid #dee2e6;
 }
 
@@ -101,6 +107,7 @@ Link {
 }
 
 @media (max-width: 768px) {
+
   .BomRoutingheading,
   .BomRoutingMain,
   .BomRoutingTable {

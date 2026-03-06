@@ -45,9 +45,9 @@ const JobWorkShiptoadd = ({ data, updateData }) => {
       <div className="container-fluid">
         <div className="row text-start">
           <div className="col-md-12">
-            <div className="row mb-3">
-              <div className="col-md-1">
-                <div className="form-check">
+            <div className="row mb-2 gx-4 gy-2 align-items-center">
+              <div className="col-auto">
+                <div className="form-check me-2">
                   <input
                     className="form-check-input"
                     type="checkbox"
@@ -56,100 +56,91 @@ const JobWorkShiptoadd = ({ data, updateData }) => {
                     checked={formData.ShiptoAdd !== ""}
                     onChange={(e) => handleChange(e)}
                   />
-                  <label className="form-check-label" htmlFor="shipToAdd">
+                  <label className="form-check-label small" htmlFor="shipToAdd">
                     Ship to Add
                   </label>
                 </div>
               </div>
               <div className="col-md-2">
-                <div className="form-group">
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder="Input Field"
-                    name="ShiptoAdd"
-                    value={formData.ShiptoAdd}
-                    onChange={handleChange}
-                  />
-                </div>
+                <input
+                  type="text"
+                  className="form-control form-control-sm"
+                  placeholder="Input Field"
+                  name="ShiptoAdd"
+                  value={formData.ShiptoAdd}
+                  onChange={handleChange}
+                />
               </div>
-              <div className="col-md-2">
-                <div className="form-group">
-                  <label htmlFor="shipToContact">Ship to Contact Details:</label>
-                </div>
+
+              <div className="col-auto">
+                <label className="small mb-0 me-2" htmlFor="shipToContact">Ship to Contact Details:</label>
               </div>
               <div className="col-md-1">
-                <div className="form-group">
-                  <textarea
-                    id="shipToContact"
-                    className="form-control"
-                    rows="3"
-                    name="ContactDetail"
-                    value={formData.ContactDetail}
-                    onChange={handleChange}
-                  ></textarea>
-                </div>
+                <textarea
+                  id="shipToContact"
+                  className="form-control form-control-sm no-resize"
+                  rows="1"
+                  name="ContactDetail"
+                  value={formData.ContactDetail}
+                  onChange={handleChange}
+                ></textarea>
+              </div>
+
+              <div className="col-auto">
+                <label className="small mb-0 me-2" htmlFor="reference">Project Name:</label>
               </div>
               <div className="col-md-1">
-                <div className="form-group">
-                  <label htmlFor="reference">Project Name:</label>
-                </div>
+                <textarea
+                  id="reference"
+                  className="form-control form-control-sm no-resize"
+                  rows="1"
+                  name="ProjectName"
+                  value={formData.ProjectName}
+                  onChange={handleChange}
+                ></textarea>
+              </div>
+
+              <div className="col-auto">
+                <label className="small mb-0 me-2" htmlFor="CRName">CRName:</label>
               </div>
               <div className="col-md-1">
-                <div className="form-group">
-                  <textarea
-                    id="reference"
-                    className="form-control"
-                    rows="3"
-                    name="ProjectName"
-                    value={formData.ProjectName}
-                    onChange={handleChange}
-                  ></textarea>
-                </div>
+                <textarea
+                  id="CRName"
+                  className="form-control form-control-sm no-resize"
+                  rows="1"
+                  name="CRName"
+                  value={formData.CRName}
+                  onChange={handleChange}
+                ></textarea>
+              </div>
+
+              <div className="col-auto">
+                <label className="small mb-0 me-2" htmlFor="SoNo">SoNo:</label>
               </div>
               <div className="col-md-1">
-                <div className="form-group">
-                  <label htmlFor="reference">CRName:</label>
-                </div>
-              </div>
-              <div className="col-md-1">
-                <div className="form-group">
-                  <textarea
-                    id="reference"
-                    className="form-control"
-                    rows="3"
-                    name="CRName"
-                    value={formData.CRName}
-                    onChange={handleChange}
-                  ></textarea>
-                </div>
-              </div>
-              <div className="col-md-1">
-                <div className="form-group">
-                  <label htmlFor="SoNo">SoNo:</label>
-                </div>
-              </div>
-              <div className="col-md-1">
-                <div className="form-group">
-                  <textarea
-                    id="SoNo"
-                    className="form-control"
-                    rows="3"
-                    name="SoNo"
-                    value={formData.SoNo}
-                    onChange={handleChange}
-                  ></textarea>
-                </div>
+                <textarea
+                  id="SoNo"
+                  className="form-control form-control-sm no-resize"
+                  rows="1"
+                  name="SoNo"
+                  value={formData.SoNo}
+                  onChange={handleChange}
+                ></textarea>
               </div>
             </div>
-            <div className="row text-end">
-              <div className="col-md-11"></div>
-              <div className="col-md-1">
-                <button className="btn " onClick={handleClear}>
+
+            <div className="row mt-2">
+              <div className="col-12 text-end">
+                <button
+                  className="btn btn-sm btn-light border"
+                  onClick={handleClear}
+                  style={{ fontSize: '12px', padding: '2px 10px' }}
+                >
                   Clear
                 </button>
               </div>
             </div>
+            {/* Removed internal Clear button to maintain consistency with main navigation */}
           </div>
         </div>
       </div>
