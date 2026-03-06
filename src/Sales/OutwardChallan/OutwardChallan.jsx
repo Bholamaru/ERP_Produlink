@@ -243,8 +243,9 @@ const OutwardChallan = () => {
       if (selectedItemType === "FG" && Array.isArray(resData)) {
         finalData = resData.map((item) => ({
           ...item,
-          ItemName: item.ItemName,
           ItemDescription: item.OutAndInPart,
+          ItemName: item.ItemName,
+          
           type: "FG",
           item_type: "FG",
           Qty: item.Qty,
@@ -554,8 +555,10 @@ const OutwardChallan = () => {
         // State Update
         setCurrentItem((prev) => ({
           ...prev,
-          type: `${item.ItemDescription} (${item.ItemName})`,
-          description: item.ItemDescription,
+         
+          
+           type: ` (${item.ItemName}${item.ItemDescription})`,
+           description: item.ItemDescription,
           item_code: cleanCode,
           qtyNo: item.Qty || "",
           wRate: item.Rate || "",
@@ -1004,13 +1007,12 @@ const OutwardChallan = () => {
                                             }}
                                           >
                                             <strong>
-                                              {item.ItemDescription ||
-                                                item.description}
+                                               {item.ItemName || item.item_code}
                                             </strong>
                                             <br />
                                             <small>
                                               Code:{" "}
-                                              {item.ItemName || item.item_code}
+                                               {item.ItemDescription || item.description}
                                             </small>
                                             <br />
                                             <small>

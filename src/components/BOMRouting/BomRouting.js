@@ -41,7 +41,7 @@ const BomRouting = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch("https://erp-render.onrender.com/All_Masters/api/bom-items/");
+      const response = await fetch("http://127.0.0.1:8000/All_Masters/api/bom-items/");
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -65,7 +65,7 @@ const BomRouting = () => {
     if (confirmDelete) {
       try {
         // 2. API Call
-        const response = await fetch(`https://erp-render.onrender.com/All_Masters/item/delete/${id}/`, {
+        const response = await fetch(`http://127.0.0.1:8000/All_Masters/item/delete/${id}/`, {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
@@ -176,7 +176,7 @@ const BomRouting = () => {
         <td>
           <button
             className="btn btn-sm btn-outline-primary"
-            onClick={() => window.open(`https://erp-render.onrender.com/All_Masters/api/bom_pdf/${item.item}`, "_blank")}
+            onClick={() => window.open(`http://127.0.0.1:8000/All_Masters/api/bom_pdf/${item.item}`, "_blank")}
           >
             <i className="fas fa-eye"></i>
           </button>
@@ -300,7 +300,7 @@ const BomRouting = () => {
           <td width="200px" style={{ whiteSpace: "nowrap" }}>
             <button
               style={{ width: "auto" }}
-              onClick={() => window.open(`https://erp-render.onrender.com/All_Masters/api/bom_pdf/${data.item_id}`, "_blank")}
+              onClick={() => window.open(`http://127.0.0.1:8000/All_Masters/api/bom_pdf/${data.item_id}`, "_blank")}
               className="btn btn-sm btn-primary me-1 d-inline-block"
             >
               <i className="fas fa-file-pdf"></i>
@@ -351,7 +351,7 @@ const BomRouting = () => {
         <td>
           <button
             className="btn btn-sm btn-outline-primary"
-            onClick={() => window.open(`https://erp-render.onrender.com/All_Masters/api/bom_pdf/${item.item || item.id}`, "_blank")}
+            onClick={() => window.open(`http://127.0.0.1:8000/All_Masters/api/bom_pdf/${item.item || item.id}`, "_blank")}
           >
             <i className="fas fa-eye"></i>
           </button>
@@ -424,7 +424,7 @@ const BomRouting = () => {
           <td>
             <button
               className="btn btn-sm btn-outline-primary"
-              onClick={() => window.open(`https://erp-render.onrender.com/All_Masters/api/bom_pdf/${data.item_id || data.Part_Code}`, "_blank")}
+              onClick={() => window.open(`http://127.0.0.1:8000/All_Masters/api/bom_pdf/${data.item_id || data.Part_Code}`, "_blank")}
             >
               <i className="fas fa-eye"></i>
             </button>
