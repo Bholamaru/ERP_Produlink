@@ -33,7 +33,7 @@ const InwardTestCertificate = () => {
   useEffect(() => {
     const fetchPurchasePoSearch = async () => {
       try {
-        const response = await axios.get("https://erp-render.onrender.com/Quality/purchase-po-search/");
+        const response = await axios.get("http://127.0.0.1:8000/Quality/purchase-po-search/");
         if (response.data && response.data.results) {
           setData(response.data.results);
         } else {

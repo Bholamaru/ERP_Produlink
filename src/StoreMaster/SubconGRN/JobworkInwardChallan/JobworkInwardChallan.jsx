@@ -73,7 +73,7 @@ const JobworkInwardChallan = () => {
 
   const fetchChallanNo = async (series) => {
     try {
-      const res = await fetch(`https://erp-render.onrender.com/Store/jobwork-challan-no/?series=${series}`);
+      const res = await fetch(`http://127.0.0.1:8000/Store/jobwork-challan-no/?series=${series}`);
       const resData = await res.json();
       // Key from API is "InwardF4No"
       const challanNo = resData.InwardF4No || "";

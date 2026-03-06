@@ -43,7 +43,7 @@ const InprocessInspection = () => {
   useEffect(() => {
     const fetchProductionEntries = async () => {
       try {
-        const response = await axios.get("https://erp-render.onrender.com/Production/api/production-entries/");
+        const response = await axios.get("http://127.0.0.1:8000/Production/api/production-entries/");
         if (response.data && response.data.value) {
           setData([...response.data.value].reverse());
         } else if (Array.isArray(response.data)) {

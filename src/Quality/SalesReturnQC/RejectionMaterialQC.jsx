@@ -419,7 +419,7 @@ const RejectionMaterialQC = () => {
   const fetchQcNumber = async (e) => {
     if (e) e.preventDefault();
     try {
-      const response = await fetch("https://erp-render.onrender.com/Quality/sales-qc-number/");
+      const response = await fetch("http://127.0.0.1:8000/Quality/sales-qc-number/");
       const data = await response.json();
 
       // Robust key handling for different API response formats
@@ -448,7 +448,7 @@ const RejectionMaterialQC = () => {
         visual_tests: visualTests
       };
 
-      const response = await fetch("https://erp-render.onrender.com/Quality/sales-return-qc/", {
+      const response = await fetch("http://127.0.0.1:8000/Quality/sales-return-qc/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"

@@ -229,7 +229,7 @@ const SubconJobworkInwardQC = () => {
   const fetchQcNumber = async (e) => {
     if (e) e.preventDefault();
     try {
-      const response = await fetch("https://erp-render.onrender.com/Quality/subcon-qc-number/");
+      const response = await fetch("http://127.0.0.1:8000/Quality/subcon-qc-number/");
       const data = await response.json();
       if (data && data.qc) {
         setQcInfo(prev => ({ ...prev, qc: data.qc }));

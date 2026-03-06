@@ -5,7 +5,6 @@ import NavBar from "../../NavBar/NavBar.js";
 import SideNav from "../../SideNav/SideNav.js";
 import { FaPlus } from "react-icons/fa6";
 import { FaRegCircleQuestion } from "react-icons/fa6";
-// import Cached from "@mui/icons-material/Cached.js";
 import { useNavigate } from "react-router-dom";
 import "./NewInvoice.css";
 import { ToastContainer, toast } from "react-toastify";
@@ -15,11 +14,12 @@ const NewInvoice = () => {
   const [sideNavOpen, setSideNavOpen] = useState(false);
   const navigate = useNavigate();
   const [isChecked, setIsChecked] = useState(false);
-  const [items, setItems] = useState([]); // All items list
-  const [customerItems, setCustomerItems] = useState([]); // Items filtered by customer
-  const [selectedItemObj, setSelectedItemObj] = useState(null); // Full object store
-  const [selectedItemCode, setSelectedItemCode] = useState(""); // Selected item code
-  const [tableData, setTableData] = useState([]); // Table rows
+  const [items, setItems] = useState([]);
+  const [customerItems, setCustomerItems] = useState([]);
+  const [selectedItemObj, setSelectedItemObj] = useState(null);
+  const [selectedItemCode, setSelectedItemCode] = useState("");
+  const [itemSearchTerm, setItemSearchTerm] = useState("");
+  const [tableData, setTableData] = useState([]);
   const [itemSearchLoading, setItemSearchLoading] = useState(false);
   const [customers, setCustomers] = useState([]);
   const [customerSearchTerm, setCustomerSearchTerm] = useState("");
@@ -27,13 +27,13 @@ const NewInvoice = () => {
   const [selectedPO, setSelectedPO] = useState("");
   const [poSearchLoading, setPoSearchLoading] = useState(false);
 
-  // --- NEW: Form State ---
+  // --- FIX 1: formData keys renamed to match Django model (case-sensitive) ---
   const [formData, setFormData] = useState({
     invoice_no: "",
     series_type: "",
-    invoice_date: "",
+    invoice_Date: "",        // ✅ was: invoice_date
     invoice_time: "",
-    payment_date: "",
+    payment_Date: "",        // ✅ was: payment_date
     note: "",
     date_of_removal: "",
     time: "",
@@ -46,15 +46,28 @@ const NewInvoice = () => {
     addr_code: "",
     l_r_gc_note: "",
     place_of_supply: "",
-    eway_bill_date: "",
-    eway_bill_no: "",
+    Eway_bill_Date: "",      // ✅ was: eway_bill_date
+    Eway_bill_no: "",        // ✅ was: eway_bill_no
     destenation_code: "",
     note_remark: "",
     pdi_no: "",
     bank: "",
     d_c_no: "",
-    d_c_date: "",
+    d_c_Date: "",            // ✅ was: d_c_date
     delivery_terms: "",
+  });
+
+  // Tax Data State
+  const [taxData, setTaxData] = useState({
+    assessable_value: "0",
+    cgst: "6",          // ✅ Default 6% for domestic transactions
+    sgst: "6",          // ✅ Default 6% for domestic transactions
+    igst: "0",          // ✅ 0% by default, use if applicable
+    utgst: "0",
+    cgst_amt: "0.00",
+    sgst_amt: "0.00",
+    igst_amt: "0.00",
+    utgst_amt: "0.00"
   });
 
   // 1. Fetch Items for Dropdown (on Mount)
@@ -64,14 +77,25 @@ const NewInvoice = () => {
         const res = await fetch("http://127.0.0.1:8000/Sales/newsalesorder/");
         const data = await res.json();
 
-        // 🔥 FLATTEN sales order -> items
-        const flatItems = data.flatMap(order =>
-          order.item.map(itm => ({
+        const flatItems = data.flatMap((order) =>
+          (order.item || []).map((itm) => ({
             ...itm,
             customer: order.customer,
             cust_po: order.cust_po,
             plant: order.plant,
             ship_to: order.ship_to,
+            item_code: itm.item_code || itm.part_no || itm.Item || itm.part_no,
+            item_description:
+              itm.item_description || itm.Name_Description || itm.ItemDescription || itm.description || "",
+            rate: itm.rate || itm.Rate || itm.Rate_per || itm.price || itm.rate_value || 0,
+            desc_percent: itm.desc_percent || itm.desc || itm.discount_percent || itm.default_discount || 0,
+            HSN_SAC_Code: itm.HSN_SAC_Code || itm.hsn_code || itm.HSN || itm.hsn || "",
+            pkg_trans: itm.pkg_trans || itm.pkg_charges || itm.Pkg_Charges || itm.pkg || "",
+            trans_charges: itm.trans_charges || itm.Trans_Charges || itm.transport_charges || "",
+            Finish_Weight: itm.Finish_Weight || itm.item_wt || itm.Gross_Weight || itm.weight || 0,
+            Unit_Code: itm.Unit_Code || itm.uom || itm.unit || itm.Unit || "pcs",
+            plan_date: itm.plan_date || itm.Plan_Date || itm.due_date || itm.Due_Date || null,
+            po_qty: itm.po_qty || itm.qty || itm.order_qty || itm.Qty || itm.PO_Qty || 0,
           }))
         );
 
@@ -101,65 +125,213 @@ const NewInvoice = () => {
   useEffect(() => {
     const customerName = formData.bill_to || customerSearchTerm;
     filterItemsByCustomer(customerName);
-    setSelectedItemCode(""); // Reset item selection
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    setSelectedItemCode("");
   }, [formData.bill_to, customerSearchTerm, items]);
 
+  // Fetch Tax Data from API
+  useEffect(() => {
+    const fetchTaxData = async () => {
+      try {
+        const res = await fetch("http://127.0.0.1:8000/Sales/newsalesorder/");
+        const data = await res.json();
+
+        if (data.length > 0 && data[0].item && data[0].item.length > 0) {
+          const firstItem = data[0].item[0];
+          setTaxData({
+            assessable_value: firstItem.assessable_value || "0",
+            cgst: firstItem.cgst || "0",
+            sgst: firstItem.sgst || "0",
+            igst: firstItem.igst || "0",
+            utgst: firstItem.utgst || "0"
+          });
+        }
+      } catch (err) {
+        console.error("Tax data load failed:", err);
+      }
+    };
+
+    fetchTaxData();
+  }, []);
+
+  // Calculate GST amounts (12% total) based on assessable value
+  useEffect(() => {
+    const assessableVal = parseFloat(taxData.assessable_value) || 0;
+    
+    // Calculate 12% GST: Split as CGST 6% + SGST 6% OR IGST 12%
+    const cgstPercent = parseFloat(taxData.cgst) || 6;
+    const sgstPercent = parseFloat(taxData.sgst) || 6;
+    const igstPercent = parseFloat(taxData.igst) || 0;
+    const utgstPercent = parseFloat(taxData.utgst) || 0;
+
+    const cgstAmount = (assessableVal * cgstPercent / 100).toFixed(2);
+    const sgstAmount = (assessableVal * sgstPercent / 100).toFixed(2);
+    const igstAmount = (assessableVal * igstPercent / 100).toFixed(2);
+    const utgstAmount = (assessableVal * utgstPercent / 100).toFixed(2);
+
+    setTaxData(prev => ({
+      ...prev,
+      cgst_amt: cgstAmount,
+      sgst_amt: sgstAmount,
+      igst_amt: igstAmount,
+      utgst_amt: utgstAmount
+    }));
+  }, [taxData.assessable_value, taxData.cgst, taxData.sgst, taxData.igst, taxData.utgst]);
+
+  // Auto-update assessable value from table items
+  useEffect(() => {
+    const totalAssessableValue = tableData.reduce((sum, item) => {
+      const value = parseFloat(item.assessable_value || 0);
+      return sum + value;
+    }, 0);
+    
+    if (totalAssessableValue > 0) {
+      setTaxData(prev => ({
+        ...prev,
+        assessable_value: totalAssessableValue.toFixed(4)
+      }));
+    }
+  }, [tableData]);
+
+  // Fetch Tax Details by HSN Code
+  useEffect(() => {
+    const fetchTaxDetailsByHSN = async () => {
+      if (!selectedItemObj || !selectedItemObj.HSN_SAC_Code) {
+        return;
+      }
+
+      try {
+        const hsnCode = selectedItemObj.HSN_SAC_Code;
+
+        const res = await fetch("http://127.0.0.1:8000/Sales/newsalesorder/");
+        const data = await res.json();
+
+        let foundItem = null;
+        for (let order of data) {
+          if (order.item && Array.isArray(order.item)) {
+            foundItem = order.item.find(itm =>
+              (itm.hsn_code === hsnCode || itm.HSN === hsnCode || itm.hsn === hsnCode || itm.HSN_SAC_Code === hsnCode)
+            );
+            if (foundItem) break;
+          }
+        }
+
+        if (foundItem) {
+          setTaxData({
+            assessable_value: foundItem.assessable_value || "0",
+            cgst: foundItem.cgst || "0",
+            sgst: foundItem.sgst || "0",
+            igst: foundItem.igst || "0",
+            utgst: foundItem.utgst || "0"
+          });
+          console.log("Tax details fetched for HSN:", hsnCode, foundItem);
+        } else {
+          console.log("No matching item found for HSN:", hsnCode);
+        }
+      } catch (err) {
+        console.error("Error fetching tax details by HSN:", err);
+      }
+    };
+
+    fetchTaxDetailsByHSN();
+  }, [selectedItemObj?.HSN_SAC_Code]);
 
   // 2. Handle Item Selection and Fetch Stock
   const handleItemSelect = async (e) => {
     const itemCode = e.target.value;
     setSelectedItemCode(itemCode);
 
-    // Find item from filtered customer items
     const itemObj = customerItems.find(i => i.item_code === itemCode);
     if (!itemObj) return;
 
     try {
       setItemSearchLoading(true);
-      // 🔥 stock API same rahegi
-      const res = await fetch(
-        `http://127.0.0.1:8000/Sales/wip/stock/get/?q=${itemCode}`
-      );
-      const data = await res.json();
+
+      const [stockRes, itemFieldsRes] = await Promise.all([
+        fetch(`http://127.0.0.1:8000/Sales/wip/stock/get/?q=${itemCode}`),
+        fetch(`http://127.0.0.1:8000/All_Masters/Fetch_Item_fields/?q=${encodeURIComponent(itemCode)}`)
+      ]);
+
+      const stockData = await stockRes.json();
+      let itemFieldsData = null;
+
+      if (itemFieldsRes.ok) {
+        const fieldsList = await itemFieldsRes.json();
+        itemFieldsData = Array.isArray(fieldsList) ? fieldsList[0] : fieldsList;
+      }
+
+      console.log("Stock API Response:", stockData);
+      console.log("Item Fields API Response:", itemFieldsData);
+
+      const poQty = itemObj.po_qty || 0;
+      const rate = itemFieldsData?.Rate || itemFieldsData?.rate || itemObj.rate || 0;
+      const assessableValue = parseFloat(poQty) * parseFloat(rate);
 
       setSelectedItemObj({
         ...itemObj,
-
-        // stock related (optional – table me chahe to use karo)
-        stock: data?.last_operation?.prod_qty ?? 0,
-        op_no: data?.last_operation?.OPNo ?? "",
-        operation_name: data?.last_operation?.Operation ?? "",
-
-        // safety mapping (agar backend se aaye)
-        part_code: data?.last_operation?.part_code ?? "",
-        part_no: data?.last_operation?.part_no ?? itemCode,
-        Name_Description:
-          data?.last_operation?.Name_Description ??
-          itemObj.item_description,
+        last_operation: stockData?.last_operation || {
+          part_code: itemFieldsData?.Part_Code || "",
+          part_no: itemCode,
+          Name_Description: itemFieldsData?.Name_Description || itemObj.item_description,
+          OPNo: stockData?.last_operation?.OPNo || "",
+          Operation: stockData?.last_operation?.Operation || "",
+          prod_qty: stockData?.last_operation?.prod_qty || 0,
+          lots: stockData?.last_operation?.lots || [],
+        },
+        stock: stockData?.last_operation?.prod_qty ?? 0,
+        op_no: stockData?.last_operation?.OPNo ?? "",
+        operation_name: stockData?.last_operation?.Operation ?? "",
+        part_code: itemFieldsData?.Part_Code || stockData?.last_operation?.part_code || "",
+        part_no: stockData?.last_operation?.part_no || itemCode,
+        Name_Description: itemFieldsData?.Name_Description || itemObj.item_description,
+        rate: rate,
+        HSN_SAC_Code: itemFieldsData?.HSN_SAC_Code || itemFieldsData?.HSN || itemObj.HSN_SAC_Code || "",
+        Finish_Weight: itemFieldsData?.Finish_Weight || itemFieldsData?.FinishWeight || itemObj.Finish_Weight || 0,
+        Unit_Code: itemFieldsData?.Unit_Code || itemFieldsData?.unit_code || itemObj.Unit_Code || "pcs",
+        pkg_trans: itemFieldsData?.pkg_trans || itemFieldsData?.Pkg_Charges || itemFieldsData?.Pkg_Charges_Amount || itemObj.pkg_trans || itemObj.pkg_charges || "",
+        plan_date: itemFieldsData?.plan_date || itemFieldsData?.Plan_Date || itemObj.plan_date || null,
+        due_date: itemFieldsData?.due_date || itemFieldsData?.Due_Date || itemObj.due_date || null,
+        trans_charges: itemFieldsData?.trans_charges || itemFieldsData?.Trans_Charges || itemObj.trans_charges || "",
+        qty: poQty,
+        po_qty: poQty,
+        assessable_value: assessableValue.toFixed(2),
       });
 
       toast.info(`Selected: ${itemCode}`);
     } catch (error) {
-      console.error("Stock fetch error:", error);
+      console.error("Item fetch error:", error);
 
-      // 🔁 fallback (agar stock API fail ho)
+      const poQty = itemObj.po_qty || 0;
+      const itemRate = itemObj.rate || 0;
+      const assessableValue = parseFloat(poQty) * parseFloat(itemRate);
+
       setSelectedItemObj({
         ...itemObj,
         stock: 0,
+        rate: itemRate,
+        HSN_SAC_Code: itemObj.HSN_SAC_Code || "",
+        Finish_Weight: itemObj.Finish_Weight || 0,
+        Unit_Code: itemObj.Unit_Code || "pcs",
+        qty: poQty,
+        po_qty: poQty,
+        assessable_value: assessableValue.toFixed(2),
+        last_operation: {
+          part_code: itemObj.Part_Code || "",
+          part_no: itemCode,
+          Name_Description: itemObj.item_description,
+          OPNo: "",
+          Operation: "",
+          prod_qty: 0,
+          lots: [],
+        },
       });
 
-      toast.warning("Stock data not available");
+      toast.warning("Some item details not available, using defaults");
     } finally {
       setItemSearchLoading(false);
     }
 
-
     console.log("Selected Item:", itemObj);
-
   };
-
-
 
   // 3. Add to Table
   const handleAddItem = () => {
@@ -167,12 +339,12 @@ const NewInvoice = () => {
       toast.error("Please select an item first");
       return;
     }
+    console.log("Adding item to table:", selectedItemObj);
     setTableData((prev) => [...prev, selectedItemObj]);
     setSelectedItemCode("");
     setSelectedItemObj(null);
     toast.success("Item added to table!");
   };
-
 
   // --- 1. Fetch Invoice Number on Series Selection ---
   const handleSeriesChange = async (e) => {
@@ -209,6 +381,50 @@ const NewInvoice = () => {
     setFormData((prev) => ({ ...prev, [fieldName]: value }));
   };
 
+  // --- FIX 4: cleanPayload with updated valid item fields ---
+  const cleanPayload = (data) => {
+    const validItemFields = [
+      "plant", "series", "invoice_type", "invoice_no",
+      "customer", "po_no", "date", "stock", "description",
+      "rate", "dis", "po_qty", "bal_qty", "inv_qty",
+      "pkg_qty", "type_of_packing", "hsn_code", "invoice"
+    ];
+
+    const cleaned = {};
+    for (const [key, value] of Object.entries(data)) {
+      if (value !== null && value !== undefined && value !== "") {
+        if (key === "items" && Array.isArray(value)) {
+          cleaned[key] = value.map((item) => {
+            const cleanedItem = {};
+            for (const [itemKey, itemValue] of Object.entries(item)) {
+              if (validItemFields.includes(itemKey) &&
+                itemValue !== null &&
+                itemValue !== undefined &&
+                itemValue !== "") {
+                cleanedItem[itemKey] = itemValue;
+              }
+            }
+            return cleanedItem;
+          });
+        } else if (key === "GSTdetails" && Array.isArray(value)) {
+          // Clean GSTdetails array
+          cleaned[key] = value.map((tax) => {
+            const cleanedTax = {};
+            for (const [taxKey, taxValue] of Object.entries(tax)) {
+              if (taxValue !== null && taxValue !== undefined && taxValue !== "" && taxValue !== "0") {
+                cleanedTax[taxKey] = taxValue;
+              }
+            }
+            return cleanedTax;
+          });
+        } else {
+          cleaned[key] = value;
+        }
+      }
+    }
+    return cleaned;
+  };
+
   // --- 2. Save Invoice (POST) ---
   const handleGenerateInvoice = async () => {
     if (!formData.series_type || !formData.invoice_no) {
@@ -216,11 +432,67 @@ const NewInvoice = () => {
       return;
     }
 
+    if (tableData.length === 0) {
+      toast.error("Please add at least one item to the invoice");
+      return;
+    }
+
     try {
+      // --- FIX 2: Map frontend fields to backend fields ---
+      const mappedItems = tableData.map((row) => ({
+        plant: row.plant || "ProduLink",
+        series: formData.series_type || "",           // ✅ from formData
+        invoice_type: "",
+        invoice_no: formData.invoice_no || "",         // ✅ from formData
+        customer: row.customer || formData.bill_to || "",
+        po_no: row.cust_po || selectedPO || "",        // ✅ was missing
+        date: row.plan_date || row.due_date || null,
+        stock: String(row.stock ?? 0),
+        description: row.item_description || row.Name_Description || "", // ✅ was null
+        rate: String(row.rate || 0),
+        dis: row.desc_percent || row.discount_percent || 0,
+        po_qty: String(row.po_qty || row.qty || 0),
+        assessable_value: String(row.assessable_value || 0),  // ✅ po_qty * rate
+        bal_qty: null,
+        inv_qty: null,
+        pkg_qty: null,
+        type_of_packing: "",
+        hsn_code: row.HSN_SAC_Code || row.hsn_code || "", // ✅ was null
+      }));
+
+      // Calculate total assessable value from all items (po_qty * rate)
+      const totalAssessableValue = tableData.reduce((sum, item) => {
+        const value = parseFloat(item.assessable_value || 0);
+        return sum + value;
+      }, 0);
+
+      // --- FIX 3: Use GSTdetails key (match Django related_name) ---
+      let invoicePayload = {
+        ...formData,
+        items: mappedItems,           // ✅ use mapped items
+        GSTdetails: [{                // ✅ was: taxes — renamed to match related_name
+          assessble_value: totalAssessableValue.toFixed(2),  // ✅ auto-calculated from items (po_qty * rate)
+          cgst: taxData.cgst || 0,
+          sgst: taxData.sgst || 0,
+          igst: taxData.igst || 0,
+          utgst: taxData.utgst || 0,
+          cgst_amt: taxData.cgst_amt || "0.00",         // ✅ GST amount
+          sgst_amt: taxData.sgst_amt || "0.00",         // ✅ GST amount
+          igst_amt: taxData.igst_amt || "0.00",         // ✅ GST amount
+          utgst_amt: taxData.utgst_amt || "0.00",       // ✅ GST amount
+        }],
+      };
+
+      // Clean the payload to remove null/empty values
+      invoicePayload = cleanPayload(invoicePayload);
+
+      console.log("🔍 CLEANED PAYLOAD BEFORE SEND:");
+      console.log(JSON.stringify(invoicePayload, null, 2));
+
       const response = await fetch("http://127.0.0.1:8000/Sales/invoice/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(invoicePayload),
       });
 
       if (response.ok) {
@@ -229,6 +501,18 @@ const NewInvoice = () => {
           ...formData,
           invoice_no: "",
           series_type: "",
+        });
+        setTableData([]);
+        setTaxData({
+          assessable_value: "0",
+          cgst: "6",
+          sgst: "6",
+          igst: "0",
+          utgst: "0",
+          cgst_amt: "0.00",
+          sgst_amt: "0.00",
+          igst_amt: "0.00",
+          utgst_amt: "0.00"
         });
 
         const seriesSelect = document.getElementById("seriesSelect");
@@ -253,6 +537,7 @@ const NewInvoice = () => {
   const handleButtonClick = () => {
     navigate("/NewinvoiceGST");
   };
+
   const toggleSideNav = () => {
     setSideNavOpen((prevState) => !prevState);
   };
@@ -306,7 +591,6 @@ const NewInvoice = () => {
       if (response.ok) {
         const data = await response.json();
         console.log("PO List:", data);
-        // Handle both array and object responses
         const poArray = Array.isArray(data) ? data : data.data || data.po || [];
         setPoList(poArray);
         if (poArray.length > 0) {
@@ -349,7 +633,6 @@ const NewInvoice = () => {
     setPoList([]);
     toast.info("PO selection cleared");
   };
-
 
   return (
     <div className="NewInvoice">
@@ -478,42 +761,44 @@ const NewInvoice = () => {
                         >
                           <div className="row text-start">
                             <div className="col-2">
-                              <label htmlFor="customer-search">
+                              <label htmlFor="customer-select">
                                 Select Cust:
                               </label>
                             </div>
                             <div className="col-3">
-                              <input
-                                type="text"
-                                list="customer-options"
-                                className="form-control"
-                                placeholder="Enter Customer Name"
-                                value={customerSearchTerm}
-                                onChange={(e) => setCustomerSearchTerm(e.target.value)}
-                              />
-                              <datalist id="customer-options">
-                                {customers.map((cust) => (
-                                  <option
-                                    key={cust.id}
-                                    value={cust.Name}
-                                  />
-                                ))}
-                              </datalist>
+                              <select
+                                id="customer-select"
+                                className="form-select"
+                                value={formData.bill_to}
+                                onChange={(e) => {
+                                  setFormData((prev) => ({
+                                    ...prev,
+                                    bill_to: e.target.value,
+                                  }));
+                                  setCustomerSearchTerm(e.target.value);
+                                }}
+                              >
+                                <option value="">Select Customer</option>
+                                {items
+                                  .map((item) => item.customer)
+                                  .filter((value, index, self) => value && self.indexOf(value) === index)
+                                  .sort()
+                                  .map((customer) => (
+                                    <option key={customer} value={customer}>
+                                      {customer}
+                                    </option>
+                                  ))}
+                              </select>
                             </div>
                             <div className="col-2">
                               <button
                                 className="btn w-50"
                                 onClick={() => {
-                                  setFormData((prev) => ({
-                                    ...prev,
-                                    bill_to: customerSearchTerm,
-                                  }));
-                                  alert("Customer Selected: " + customerSearchTerm);
+                                  alert("Customer Selected: " + formData.bill_to);
                                 }}
                               >
                                 Search
                               </button>
-
                             </div>
                           </div>
 
@@ -535,7 +820,7 @@ const NewInvoice = () => {
                                     key={index}
                                     value={po.cust_po || po.po_no || po.id || po}
                                   >
-                                    {po.cust_po || po.po_no || po.id} - {po.cust_date || po.po_date || ""}
+                                    {po.cust_po || po.po_no || po.id} - {po.cust_date || po.po_date || ""} - SO: {po.so_no || po.sales_order_no || po.order_no || ""}
                                   </option>
                                 ))}
                               </select>
@@ -632,20 +917,17 @@ const NewInvoice = () => {
                                         {row.Part_Code}
                                       </td>
                                       <td>
-                                        Part No : {row.last_operation?.part_no}
-                                        <br />
-                                        Part Code : {row.last_operation?.part_code}
-                                        <br />
-                                        Name Description : {row.last_operation?.Name_Description}
-                                        <br />
-                                        OP No. : {row.last_operation?.OPNo}
-                                        <br />
-                                        <span style={{ fontSize: "12px", color: "gray" }}>
-                                          Operation : {row.last_operation?.Operation}
-                                        </span>
-                                        <br />
-                                        Prod Qty :<strong>{row.last_operation?.prod_qty ?? 0}</strong>
-                                        <br />
+                                        <small>
+                                          <div><strong>Part No:</strong> {row.last_operation?.part_no}</div>
+                                          <div><strong>Part Code:</strong> {row.last_operation?.part_code}</div>
+                                          <div><strong>Name:</strong> {row.last_operation?.Name_Description}</div>
+                                          <div><strong>OP No:</strong> {row.last_operation?.OPNo}</div>
+                                          <div style={{ fontSize: "11px", color: "gray" }}><strong>Operation:</strong> {row.last_operation?.Operation}</div>
+                                          <div><strong>Prod Qty:</strong> <span style={{ backgroundColor: "#ffeb3b", padding: "2px 5px", borderRadius: "3px" }}>{row.last_operation?.prod_qty ?? 0}</span></div>
+                                          {row.last_operation?.lots && row.last_operation.lots.length > 0 && (
+                                            <div><strong>Lots:</strong> {row.last_operation.lots.join(", ")}</div>
+                                          )}
+                                        </small>
                                       </td>
                                       <td>
                                         <textarea
@@ -656,25 +938,36 @@ const NewInvoice = () => {
                                         <span>
                                           HSN Code : {row.HSN_SAC_Code}
                                         </span>
+                                        <br />
+                                        <span>
+                                          Plan/Due: {row.due_date ? new Date(row.due_date).toLocaleDateString() : (row.plan_date ? new Date(row.plan_date).toLocaleDateString() : "-")}
+                                        </span>
                                       </td>
                                       <td className="text-start">
-                                        Rate :  {row.rate}
-
+                                        Rate : {row.rate}
                                         <br />
-                                        Disc: <br /> Pkg Charges: <br />
-                                        Trans Charges: <br />
+                                        Disc: {row.desc || row.desc_percent || row.discount_percent || row.discount_amount || "-"}% <br />
+                                        Pkg Charges: {row.pkg_trans || "-"} <br />
+                                        Trans Charges: {row.trans_charges || "-"} <br />
                                         <span style={{ color: "blue" }}>
                                           Rate Type:
                                         </span>
                                         <br /> Amort Rate :
                                       </td>
-                                      <td>{/* PO Qty */}</td>
+                                      <td>{row.po_qty || row.qty || 0}</td>
                                       <td>{/* Bal Qty */}</td>
                                       <td>
                                         <input
                                           type="text"
                                           className="w-100"
                                           placeholder="Qty"
+                                          defaultValue={row.qty || row.po_qty || 0}
+                                          onChange={(e) => {
+                                            const updatedData = tableData.map((item, i) =>
+                                              i === index ? { ...item, qty: e.target.value } : item
+                                            );
+                                            setTableData(updatedData);
+                                          }}
                                         />
                                         <br />
                                         Per Pcs Wt: <br />
@@ -757,10 +1050,11 @@ const NewInvoice = () => {
                                   <label>Payment Date:</label>
                                 </div>
                                 <div className="col-8">
+                                  {/* FIX 1: name updated to payment_Date */}
                                   <input
                                     type="date"
-                                    name="payment_date"
-                                    value={formData.payment_date}
+                                    name="payment_Date"
+                                    value={formData.payment_Date}
                                     onChange={handleChange}
                                     className="form-control"
                                   />
@@ -831,10 +1125,11 @@ const NewInvoice = () => {
                                   <label>Eway Bill Date:</label>
                                 </div>
                                 <div className="col-8">
+                                  {/* FIX 1: name updated to Eway_bill_Date */}
                                   <input
                                     type="date"
-                                    name="eway_bill_date"
-                                    value={formData.eway_bill_date}
+                                    name="Eway_bill_Date"
+                                    value={formData.Eway_bill_Date}
                                     onChange={handleChange}
                                     className="form-control"
                                   />
@@ -862,10 +1157,11 @@ const NewInvoice = () => {
                                   <label>Invoice Date:</label>
                                 </div>
                                 <div className="col-8">
+                                  {/* FIX 1: name updated to invoice_Date */}
                                   <input
-                                    type="datetime-local"
-                                    name="invoice_date"
-                                    value={formData.invoice_date}
+                                    type="date"
+                                    name="invoice_Date"
+                                    value={formData.invoice_Date}
                                     onChange={handleChange}
                                     className="form-control"
                                   />
@@ -930,9 +1226,10 @@ const NewInvoice = () => {
                                   <label>Eway Bill No:</label>
                                 </div>
                                 <div className="col-8">
+                                  {/* FIX 1: name updated to Eway_bill_no */}
                                   <input
-                                    name="eway_bill_no"
-                                    value={formData.eway_bill_no}
+                                    name="Eway_bill_no"
+                                    value={formData.Eway_bill_no}
                                     onChange={handleChange}
                                     className="form-control"
                                   />
@@ -956,10 +1253,11 @@ const NewInvoice = () => {
                                   <label>D.C. Date:</label>
                                 </div>
                                 <div className="col-8">
+                                  {/* FIX 1: name updated to d_c_Date */}
                                   <input
                                     type="date"
-                                    name="d_c_date"
-                                    value={formData.d_c_date}
+                                    name="d_c_Date"
+                                    value={formData.d_c_Date}
                                     onChange={handleChange}
                                     className="form-control"
                                   />
@@ -1087,6 +1385,8 @@ const NewInvoice = () => {
                                 <input
                                   className="form-control form-control-sm w-50"
                                   placeholder="0"
+                                  value={taxData.assessable_value}
+                                  onChange={(e) => setTaxData({ ...taxData, assessable_value: e.target.value })}
                                 />
                               </div>
 
@@ -1120,10 +1420,12 @@ const NewInvoice = () => {
                               </div>
 
                               <div className="col-md-3 d-flex justify-content-between">
-                                <label>CGST 00%</label>
+                                <label>CGST {taxData.cgst || 0}%</label>
                                 <input
                                   className="form-control form-control-sm w-50"
-                                  placeholder="0"
+                                  placeholder="0.00"
+                                  value={taxData.cgst_amt}
+                                  readOnly
                                 />
                               </div>
 
@@ -1144,7 +1446,7 @@ const NewInvoice = () => {
                               </div>
 
                               <div className="col-md-3">
-                                <label>CGST : 0</label>
+                                <label>CGST Amt: ₹{taxData.cgst_amt || "0.00"}</label>
                               </div>
                             </div>
 
@@ -1159,10 +1461,12 @@ const NewInvoice = () => {
                               </div>
 
                               <div className="col-md-3 d-flex justify-content-between">
-                                <label>SGST 00%</label>
+                                <label>SGST {taxData.sgst || 0}%</label>
                                 <input
                                   className="form-control form-control-sm w-50"
-                                  placeholder="0"
+                                  placeholder="0.00"
+                                  value={taxData.sgst_amt}
+                                  readOnly
                                 />
                               </div>
 
@@ -1181,7 +1485,7 @@ const NewInvoice = () => {
                               </div>
 
                               <div className="col-md-3">
-                                <label>SGST : 0</label>
+                                <label>SGST Amt: ₹{taxData.sgst_amt || "0.00"}</label>
                               </div>
                             </div>
 
@@ -1196,10 +1500,12 @@ const NewInvoice = () => {
                               </div>
 
                               <div className="col-md-3 d-flex justify-content-between">
-                                <label>IGST 00%</label>
+                                <label>IGST {taxData.igst || 0}%</label>
                                 <input
                                   className="form-control form-control-sm w-50"
-                                  placeholder="0"
+                                  placeholder="0.00"
+                                  value={taxData.igst_amt}
+                                  readOnly
                                 />
                               </div>
 
@@ -1218,7 +1524,7 @@ const NewInvoice = () => {
                               </div>
 
                               <div className="col-md-3">
-                                <label>IGST : 0</label>
+                                <label>IGST Amt: ₹{taxData.igst_amt || "0.00"}</label>
                               </div>
                             </div>
 
@@ -1233,10 +1539,12 @@ const NewInvoice = () => {
                               </div>
 
                               <div className="col-md-3 d-flex justify-content-between">
-                                <label>UTGST 00%</label>
+                                <label>UTGST {taxData.utgst || 0}%</label>
                                 <input
                                   className="form-control form-control-sm w-50"
-                                  placeholder="0"
+                                  placeholder="0.00"
+                                  value={taxData.utgst_amt}
+                                  readOnly
                                 />
                               </div>
 
@@ -1249,7 +1557,7 @@ const NewInvoice = () => {
                               </div>
 
                               <div className="col-md-3">
-                                <label>For E-Inv: Ser.Inv. / Inv.Type</label>
+                                <label>UTGST Amt: ₹{taxData.utgst_amt || "0.00"}</label>
                               </div>
                             </div>
                           </div>
