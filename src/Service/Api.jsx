@@ -3139,7 +3139,7 @@ export const deleteItemMaster = async (id) => {
 
 // Subcon Jobwork Inward QC - V3
 export const forceSaveSubconQC = async (data) => {
-  const url = `https://erp-render.onrender.com/Quality/subcon-jobwork-qc/`;
+  const url = `http://127.0.0.1:8000/Quality/subcon-jobwork-qc/`;
   console.log("!!! FORCING API CALL TO:", url);
   try {
     const token = localStorage.getItem("accessToken");
@@ -3182,7 +3182,7 @@ export const forceSaveSubconQC = async (data) => {
 
 // Inward Test QC Number
 export const fetchInwardTestQcNumber = async () => {
-  const url = `https://erp-render.onrender.com/Quality/inwardtest-qc-number/`;
+  const url = `http://127.0.0.1:8000/Quality/inwardtest-qc-number/`;
   try {
     const response = await fetch(url);
     if (!response.ok) {
@@ -3196,7 +3196,7 @@ export const fetchInwardTestQcNumber = async () => {
 };
 // Save QC Info
 export const saveQCInfo = async (data) => {
-  const url = `https://erp-render.onrender.com/Quality/api/qcinfo/`;
+  const url = `http://127.0.0.1:8000/Quality/api/qcinfo/`;
   try {
     const token = localStorage.getItem("accessToken");
     const headers = {
@@ -3233,7 +3233,7 @@ export const saveQCInfo = async (data) => {
 
 // Save Production QC Info
 export const saveProductionQCInfo = async (data) => {
-  const url = `https://erp-render.onrender.com/Production/api/production-entries/`;
+  const url = `http://127.0.0.1:8000/Production/api/production-entries/`;
   try {
     const token = localStorage.getItem("accessToken");
     const headers = {

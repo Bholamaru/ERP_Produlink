@@ -68,7 +68,7 @@ const JobworkInwardChallanList = () => {
                                     <div className="row align-items-center">
                                         <div className="col-md-4">
                                             <h5 className="header-title text-start">
-                                                Job Work Inward Challan List
+                                                Jobwork List
                                             </h5>
                                         </div>
                                         <div className="col-md-4 text-end">

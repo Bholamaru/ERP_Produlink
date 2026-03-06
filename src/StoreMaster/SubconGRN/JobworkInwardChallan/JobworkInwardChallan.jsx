@@ -78,6 +78,7 @@ const JobworkInwardChallan = () => {
       // Key from API is "InwardF4No"
       const challanNo = resData.InwardF4No || "";
       setFormData((prev) => ({ ...prev, InwardF4No: challanNo }));
+      setInputNo(challanNo);
     } catch (err) {
       console.log("Error fetching challan no:", err);
     }
@@ -353,8 +354,11 @@ const JobworkInwardChallan = () => {
       });
       setTableRows([]);
       setSelectedGateEntry(null);
-      setInputNo("");
-      setSelectedSeries("Select");
+
+      // Fetch new challan no for the currently selected series
+      if (selectedSeries !== "Select") {
+        await fetchChallanNo(selectedSeries);
+      }
     } catch (error) {
       console.error("Network error:", error);
       toast.error("Network error while submitting data");
@@ -373,63 +377,81 @@ const JobworkInwardChallan = () => {
               <main className={`main-content ${sideNavOpen ? "shifted" : ""}`}>
                 {/* ── Header ── */}
                 <div className="InwardJobwork-header mb-4 text-start mt-5">
-                  <div className="d-flex align-items-center gap-2" style={{ flexWrap: "nowrap", overflowX: "auto", whiteSpace: "nowrap" }}>
-                    <h5 className="header-title mb-0 me-1" style={{ fontSize: "0.95rem", whiteSpace: "nowrap" }}>Jobwork InWard</h5>
+                  <div className="d-flex align-items-center gap-5 justify-content-between w-100" style={{ flexWrap: "nowrap", overflowX: "auto", whiteSpace: "nowrap" }}>
 
-                    <select id="sharpSelect" className="form-select" style={{ width: "auto", minWidth: "90px", fontSize: "0.8rem", padding: "2px 25px 2px 6px" }}>
+                    <h5 className="header-title mb-0" style={{ fontSize: "1.1rem", whiteSpace: "nowrap" }}>Jobwork InWard</h5>
+
+                    <select id="sharpSelect" className="form-select w-auto" style={{ minWidth: "90px", fontSize: "0.8rem", padding: "4px 25px 4px 8px" }}>
                       <option defaultValue>Produlink</option>
                     </select>
 
-                    <label htmlFor="seriesSelect" className="mb-0" style={{ whiteSpace: "nowrap", fontSize: "0.8rem" }}>Series:</label>
-                    <select
-                      id="seriesSelect"
-                      className="form-select"
-                      style={{ width: "auto", fontSize: "0.8rem", padding: "2px 25px 2px 6px" }}
-                      value={selectedSeries}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        setSelectedSeries(val);
-                        if (val !== "Select") {
-                          fetchChallanNo(val);
-                        }
-                      }}
-                    >
-                      <option value="Select">Select</option>
-                      <option value="57F4">Jobwork 57F4 Inward</option>
-                      <option value="57F4 Return">Non Return Inward</option>
-                      <option value="Process Loss/Scrap">Cust Rework</option>
-                    </select>
+                    <div className="d-flex align-items-center gap-2">
+                      <label htmlFor="seriesSelect" className="mb-0" style={{ whiteSpace: "nowrap", fontSize: "0.85rem" }}>Series:</label>
+                      <select
+                        id="seriesSelect"
+                        className="form-select w-auto"
+                        style={{ fontSize: "0.8rem", padding: "4px 25px 4px 8px" }}
+                        value={selectedSeries}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setSelectedSeries(val);
+                          if (val !== "Select") {
+                            fetchChallanNo(val);
+                          }
+                        }}
+                      >
+                        <option value="Select">Select</option>
+                        <option value="57F4">Jobwork 57F4 Inward</option>
+                        <option value="57F4 Return">Non Return Inward</option>
+                        <option value="Process Loss/Scrap">Cust Rework</option>
+                      </select>
+                      <input
+                        type="text"
+                        className="form-control ms-5"
+                        style={{ width: "80px", fontSize: "0.8rem", padding: "4px 8px" }}
+                        placeholder="Enter value"
+                        value={inputNo}
+                        onChange={(e) => setInputNo(e.target.value)}
+                      />
+                    </div>
 
-                    <span style={{ whiteSpace: "nowrap", fontSize: "0.8rem" }}>Gate Entry No:</span>
-                    <select
-                      onChange={handleChangeGateEntry}
-                      className="form-select"
-                      style={{ width: "auto", minWidth: "80px", fontSize: "0.8rem", padding: "2px 20px 2px 4px" }}
-                      value={formData.GateEntryNo}
-                    >
-                      <option value="">Select</option>
-                      {gateEntryData?.map((item) => (
-                        <option key={item.GE_No} value={item?.GE_No}>
-                          {item?.GE_No} | {item?.Supp_Cust}
-                        </option>
-                      ))}
-                    </select>
+                    <div className="d-flex align-items-center gap-2">
+                      <span className="mb-0" style={{ whiteSpace: "nowrap", fontSize: "0.85rem" }}>Gate Entry No:</span>
+                      <select
+                        onChange={handleChangeGateEntry}
+                        className="form-select w-auto"
+                        style={{ maxWidth: "150px", fontSize: "0.8rem", padding: "4px 20px 4px 8px" }}
+                        value={formData.GateEntryNo}
+                      >
+                        <option value="">Select</option>
+                        {gateEntryData?.map((item) => (
+                          <option key={item.GE_No} value={item?.GE_No}>
+                            {item?.GE_No} | {item?.Supp_Cust}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
 
-                    <span style={{ whiteSpace: "nowrap", fontSize: "0.8rem" }}>Customer:</span>
-                    <input
-                      type="text"
-                      className="form-control"
-                      style={{ width: "120px", fontSize: "0.8rem", padding: "2px 6px" }}
-                      placeholder="Customer"
-                      value={formData.Customer}
-                      readOnly
-                    />
+                    <div className="d-flex align-items-center gap-2">
+                      <span className="mb-0" style={{ whiteSpace: "nowrap", fontSize: "0.85rem" }}>Customer:</span>
+                      <input
+                        type="text"
+                        className="form-control w-auto"
+                        style={{ maxWidth: "200px", fontSize: "0.8rem", padding: "4px 8px" }}
+                        placeholder="Customer"
+                        value={formData.Customer}
+                        readOnly
+                      />
+                    </div>
 
-                    <button type="button" className="btn" style={{ fontSize: "0.8rem", padding: "2px 8px", whiteSpace: "nowrap" }}>Search</button>
-                    <button type="button" className="btn" style={{ fontSize: "0.8rem", padding: "2px 8px", whiteSpace: "nowrap" }}>Cancel</button>
-                    <button type="button" className="btn jobwork-list-btn" style={{ fontSize: "0.8rem", padding: "2px 8px", whiteSpace: "nowrap" }} onClick={() => navigate("/Jobwork-Inward-Challan-List")}>
-                      Jobwork Inward Challan List
-                    </button>
+                    <div className="d-flex align-items-center gap-2">
+                      <button type="button" className="btn btn-light border" style={{ fontSize: "0.8rem", padding: "4px 12px", whiteSpace: "nowrap" }}>Search</button>
+                      <button type="button" className="btn btn-light border" style={{ fontSize: "0.8rem", padding: "4px 12px", whiteSpace: "nowrap" }}>Cancel</button>
+                      <button type="button" className="btn jobwork-list-btn" style={{ fontSize: "0.8rem", padding: "4px 12px", whiteSpace: "nowrap" }} onClick={() => navigate("/Jobwork-Inward-Challan-List")}>
+                        Jobwork List
+                      </button>
+                    </div>
+
                   </div>
                 </div>
 
@@ -790,6 +812,7 @@ const JobworkInwardChallan = () => {
                                             <textarea className="form-control" name="Remark" value={formData.Remark} onChange={handleInputChange} rows="2"></textarea>
                                           </td>
                                         </tr>
+
                                         <tr>
                                           <th>Delivery in Time:</th>
                                           <td>
