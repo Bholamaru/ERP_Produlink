@@ -43,7 +43,7 @@ const PendingIndent = () => {
   const handleTakeAction = async (id, action) => {
     try {
       await fetch(
-        "http://127.0.0.1:8000/Purchase/indents/update-auth/",
+        "http://127.0.0.1:8000/Purchase/indent-auth-update/",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

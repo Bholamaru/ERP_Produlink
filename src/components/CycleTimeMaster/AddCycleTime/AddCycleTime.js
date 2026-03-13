@@ -150,6 +150,8 @@ const AddCycleTime = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
 
+  const [selectedItem, setSelectedItem] = useState(null);
+
 
   let searchTimeout = null;
 
@@ -175,7 +177,7 @@ const AddCycleTime = () => {
         }
 
         const data = await response.json();
-
+       
         if (data && Array.isArray(data.operations)) {
           setSearchResults(data.operations);
           setShowDropdown(true);
