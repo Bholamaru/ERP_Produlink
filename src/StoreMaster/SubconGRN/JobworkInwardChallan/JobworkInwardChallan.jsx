@@ -24,6 +24,7 @@ const JobworkInwardChallan = () => {
   const [itemCodeOptions, setItemCodeOptions] = useState([]); // ["FG001 - CAP OIL LOCK", ...]
   const [fgPartCodeOptions, setFgPartCodeOptions] = useState([]); // PartCodes for selected item
   const itemDropdownRef = React.useRef(null);
+  const searchTimerRef = React.useRef(null);
 
   // Series & Plant state
   const [selectedSeries, setSelectedSeries] = useState("Select");
@@ -167,15 +168,22 @@ const JobworkInwardChallan = () => {
   };
 
   const handleFGPartCodeChange = (e) => {
-    const selectedPartCode = e.target.value;
-    // Find the full object
-    const selectedDetail = fgPartCodeOptions.find(p => p.PartCode === selectedPartCode);
+    const selectedFull = e.target.value;
+    if (!selectedFull) {
+      setCurrentRow(prev => ({ ...prev, FGPartCode: "", ParticularNatureOfProcess: "" }));
+      return;
+    }
+
+    // The value is "OPNo | PartCode | Operation"
+    const parts = selectedFull.split(" | ");
+    const partCode = parts[1] || "";
+    const operation = parts[2] || "";
 
     setCurrentRow(prev => ({
       ...prev,
-      FGPartCode: selectedPartCode,
-      // Auto-fill Operation into ParticularNatureOfProcess
-      ParticularNatureOfProcess: selectedDetail ? selectedDetail.Operation : prev.ParticularNatureOfProcess
+      FGPartCode: selectedFull, // Store the full string for display
+      FGPartCodeShort: partCode, // Keep a short version for internal logic if needed
+      ParticularNatureOfProcess: operation // Auto-fill Operation
     }));
   };
 
@@ -390,16 +398,16 @@ const JobworkInwardChallan = () => {
               <main className={`main-content ${sideNavOpen ? "shifted" : ""}`}>
                 {/* ── Header ── */}
                 <div className="InwardJobwork-header mb-4 text-start mt-5">
-                  <div className="d-flex align-items-center gap-5 justify-content-between w-100" style={{ flexWrap: "nowrap", overflowX: "auto", whiteSpace: "nowrap" }}>
+                  <div className="d-flex align-items-center gap-2 justify-content-between w-100" style={{ flexWrap: "wrap", overflowX: "hidden", rowGap: "10px" }}>
 
-                    <h5 className="header-title mb-0" style={{ fontSize: "1.1rem", whiteSpace: "nowrap" }}>Jobwork InWard</h5>
+                    <h5 className="header-title mb-0" style={{ fontSize: "1rem", whiteSpace: "nowrap" }}>Jobwork InWard</h5>
 
                     <select id="sharpSelect" className="form-select w-auto" style={{ minWidth: "90px", fontSize: "0.8rem", padding: "4px 25px 4px 8px" }}>
                       <option defaultValue>Produlink</option>
                     </select>
 
                     <div className="d-flex align-items-center gap-2">
-                      <label htmlFor="seriesSelect" className="mb-0" style={{ whiteSpace: "nowrap", fontSize: "0.85rem" }}>Series:</label>
+                      <label htmlFor="seriesSelect" className="mb-0" style={{ whiteSpace: "nowrap", fontSize: "0.8rem" }}>Series:</label>
                       <select
                         id="seriesSelect"
                         className="form-select w-auto"
@@ -420,7 +428,7 @@ const JobworkInwardChallan = () => {
                       </select>
                       <input
                         type="text"
-                        className="form-control ms-5"
+                        className="form-control ms-1"
                         style={{ width: "80px", fontSize: "0.8rem", padding: "4px 8px" }}
                         placeholder="Enter value"
                         value={inputNo}
@@ -471,7 +479,7 @@ const JobworkInwardChallan = () => {
                 {/* ── Item Entry Table ── */}
                 <div className="InwardJobwork-main mt-5">
                   <div className="container-fluid text-start">
-                    <div className="table-responsive">
+                    <div className="table-responsive" style={(showItemDropdown && itemSearchTerm) ? { overflow: "visible" } : {}}>
                       <table className="table table-bordered">
                         <thead>
                           <tr>
@@ -519,7 +527,7 @@ const JobworkInwardChallan = () => {
                                   </button>
                                 </div>
 
-                                {showItemDropdown && (
+                                {showItemDropdown && itemSearchTerm && (
                                   <ul className="list-group position-absolute w-100 z-3" style={{ top: "100%", left: 0, maxHeight: "200px", overflowY: "auto", fontSize: "0.85rem", border: "1px solid #ddd" }}>
                                     {itemCodeOptions
                                       .filter(opt => opt.toLowerCase().includes(itemSearchTerm.toLowerCase()))
@@ -543,18 +551,21 @@ const JobworkInwardChallan = () => {
                                 <label className="me-1 text-nowrap">FG Part Code:</label>
                                 <select
                                   name="FGPartCode"
-                                  className="form-select"
+                                  className="form-select flex-grow-1"
                                   value={currentRow.FGPartCode}
                                   onChange={handleFGPartCodeChange}
                                   disabled={fgPartCodeOptions.length === 0}
-                                  style={{ paddingRight: "25px" }}
+                                  style={{ paddingRight: "25px", minWidth: "250px", fontSize: "0.85rem" }}
                                 >
                                   <option value="">-- Select FG Part Code --</option>
-                                  {fgPartCodeOptions.map((pc, idx) => (
-                                    <option key={idx} value={pc.PartCode}>
-                                      {pc.OPNo} | {pc.PartCode} | {pc.Operation}
-                                    </option>
-                                  ))}
+                                  {fgPartCodeOptions.map((pc, idx) => {
+                                    const fullVal = `${pc.OPNo} | ${pc.PartCode} | ${pc.Operation}`;
+                                    return (
+                                      <option key={idx} value={fullVal}>
+                                        {fullVal}
+                                      </option>
+                                    );
+                                  })}
                                 </select>
                               </div>
                             </td>

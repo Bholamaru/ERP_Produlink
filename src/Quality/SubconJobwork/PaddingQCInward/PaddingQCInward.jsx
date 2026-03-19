@@ -9,6 +9,8 @@ import { Link } from "react-router-dom";
 
 const PaddingQCInward = () => {
   const [sideNavOpen, setSideNavOpen] = useState(false);
+  const [pendingQcData, setPendingQcData] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const toggleSideNav = () => {
     setSideNavOpen((prevState) => !prevState);
@@ -21,6 +23,23 @@ const PaddingQCInward = () => {
       document.body.classList.remove("side-nav-open");
     }
   }, [sideNavOpen]);
+
+  useEffect(() => {
+    fetchPendingQcData();
+  }, []);
+
+  const fetchPendingQcData = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch("https://erp-render.onrender.com/Quality/inward-pending-qc/");
+      const data = await response.json();
+      setPendingQcData(data);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="PaddingQCInwardMaster">
@@ -162,30 +181,45 @@ const PaddingQCInward = () => {
                           </tr>
                         </thead>
                         <tbody>
-                          {/* Example data row */}
-                          <tr>
-                            <td>1</td>
-                            <td>242512362</td>
-                            <td>02/12/24</td>
-                            <td>02/12/24 15:04</td>
-                            <td>
-                              <span className="ourf4"> Our_F4 </span>
-                            </td>
-                            <td>740</td>
-                            <td>02/12/24</td>
-                            <td>JVOO51</td>
-                            <td>Mamtal Engineering</td>
-                            <td>""</td>
-                            <td>Total Item : (2) 📝</td>
-                            <td>Togre</td>
-                            <td>
-                              {" "}
-                              <FaEye />
-                            </td>
-                            <td>
-                             <Link to={"/SubconJobworkInwardQC"}  className="vndrbtn" >  ! </Link> 
-                            </td>
-                          </tr>
+                          {loading ? (
+                            <tr>
+                              <td colSpan="14" className="text-center">
+                                Loading...
+                              </td>
+                            </tr>
+                          ) : pendingQcData.length > 0 ? (
+                            pendingQcData.map((item, index) => (
+                              <tr key={item.id || index}>
+                                <td>{index + 1}</td>
+                                <td>{item.InwardF4No}</td>
+                                <td>{item.InwardDate}</td>
+                                <td>{item.InwardDate} {item.InwardTime}</td>
+                                <td>
+                                  <span className="ourf4"> Our_F4 </span>
+                                </td>
+                                <td>{item.ChallanNo}</td>
+                                <td>{item.ChallanDate}</td>
+                                <td>{item.InwardChallanGSTDetails && item.InwardChallanGSTDetails.length > 0 ? item.InwardChallanGSTDetails[0].ItemCode?.split(' - ')[0] : ''}</td>
+                                <td>{item.SupplierName}</td>
+                                <td>{item.InwardChallanTable && item.InwardChallanTable.length > 0 ? item.InwardChallanTable[0].OutNo : ''}</td>
+                                <td>Total Item : ({item.TotalItem || 0}) 📝</td>
+                                <td>{item.PreparedBy}</td>
+                                <td>
+                                  {" "}
+                                  <FaEye />
+                                </td>
+                                <td>
+                                  <Link to={"/SubconJobworkInwardQC"} className="vndrbtn" >  ! </Link>
+                                </td>
+                              </tr>
+                            ))
+                          ) : (
+                            <tr>
+                              <td colSpan="14" className="text-center">
+                                No Data Found
+                              </td>
+                            </tr>
+                          )}
                         </tbody>
                       </table>
                     </div>

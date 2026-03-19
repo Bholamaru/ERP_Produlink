@@ -278,7 +278,9 @@ const AddCycleTime = () => {
                 Part_Code: item.Part_Code,
                 bom_items: (item.bom_items || []).map(bom => ({
                   ...bom,
-                  part_code: bom.BomPartCode // User request: bom code should be in part code
+                  op_no: bom.OPNo,
+                  part_code: bom.PartCode,
+                  operation: bom.Operation
                 }))
               };
             });
@@ -375,9 +377,9 @@ const AddCycleTime = () => {
                                         bomItem.bom_items.map((bom) => ({
                                           part_no: bomItem.part_no,
                                           part_desc: bomItem.Name_Description,
-                                          op_no: bom.OPNo,
-                                          part_code: bom.BomPartCode, // User request field
-                                          operation: bom.Operation,
+                                          op_no: bom.OPNo || bom.op_no,
+                                          part_code: bom.PartCode || bom.part_code,
+                                          operation: bom.Operation || bom.operation,
                                         }))
                                       );
                                       setShowDropdown(false);
