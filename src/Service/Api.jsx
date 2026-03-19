@@ -4,7 +4,7 @@ import axios from "axios";
 
 
 // Define base URLs
-const BASE_URL = "http://127.0.0.1:8000/All_Masters/";
+const BASE_URL = "https://erp-render.onrender.com/All_Masters/";
 // const BASE_URL = "api/All_Masters/";
 const TAX_CODE_URL = `${BASE_URL}Tax_Code/`;
 const GST_MASTER_URL = `${BASE_URL}GST_Master/`;
@@ -15,7 +15,7 @@ const UPLOAD_URL = `${BASE_URL}upload/`;
 // Home
 
 
-const BASE_URL1 = "http://127.0.0.1:8000/";
+const BASE_URL1 = "https://erp-render.onrender.com/";
 // const BASE_URL1 = "api";
 
 
@@ -825,26 +825,11 @@ export const saveItemRate = async (data) => {
   }
 };
 
-// Cycle time master add new button
-
 export const saveCycleTimeData = async (data) => {
-  try {
-    const response = await axios.post(`${BASE_URL}Cycle_Time_Master/`, data);
-    console.log("Cycle time master saved successfully");
-    return response.data;
-  } catch (error) {
-    console.error(
-      "Error:",
-      error.response ? error.response.data : error.message
-    );
-    if (error.response && error.response.data) {
-      console.log(error.response.data.message || "Failed to save data");
-    } else {
-      console.log("An unexpected error occurred");
-    }
-    throw error; // Rethrow error to handle it in the component if needed
-  }
+  const response = await axios.post(`${BASE_URL}Cycle_Time_Master/`, data);
+  return response.data;
 };
+
 
 export const fetchCycleTimeList = async () => {
   const response = await axios.get(`${BASE_URL}Cycle_Time_Master/`);
@@ -859,6 +844,16 @@ export const updateCycleTimeData = async (id, data) => {
 
 export const deleteCycleTimeData = async (id) => {
   const response = await axios.delete(`${BASE_URL}Cycle_Time_Master/${id}/`);
+  return response.data;
+};
+
+export const fetchWorkCenterData = async () => {
+  const response = await axios.get(`${BASE_URL}Work_Center/`);
+  return response.data;
+};
+
+export const fetchBomItems = async () => {
+  const response = await axios.get(`${BASE_URL}api/bom-items/`);
   return response.data;
 };
 
@@ -3233,7 +3228,7 @@ export const saveQCInfo = async (data) => {
 
 // Save Production QC Info
 export const saveProductionQCInfo = async (data) => {
-  const url = `http://127.0.0.1:8000/Production/api/production-entries/`;
+  const url = `${BASE_URL1}Production/api/production-entries/`;
   try {
     const token = localStorage.getItem("accessToken");
     const headers = {
@@ -3270,7 +3265,7 @@ export const saveProductionQCInfo = async (data) => {
 
 // Fetch Sales Returns
 export const fetchSalesReturns = async (startDate, endDate, custName) => {
-  const url = `http://127.0.0.1:8000/Sales/get/sales-return/?start_date=${startDate}&end_date=${endDate}&cust_name=${encodeURIComponent(custName)}`;
+  const url = `${BASE_URL1}Sales/get/sales-return/?start_date=${startDate}&end_date=${endDate}&cust_name=${encodeURIComponent(custName)}`;
   try {
     const response = await fetch(url);
     if (!response.ok) {

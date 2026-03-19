@@ -6,14 +6,14 @@ import NavBar from "../../NavBar/NavBar";
 import SideNav from "../../SideNav/SideNav";
 import "./CycleTime.css";
 import { useNavigate } from "react-router-dom";
+import { fetchCycleTimeList, deleteCycleTimeData } from "../../Service/Api.jsx";
 
 const CycleTime = () => {
   const [sideNavOpen, setSideNavOpen] = useState(false);
   const [records, setRecords] = useState([]);
+  const [filteredRecords, setFilteredRecords] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(false);
-
-  const [currentPage, setCurrentPage] = useState(1);
-  const recordsPerPage = 10;
 
   const navigate = useNavigate();
 
@@ -21,19 +21,13 @@ const CycleTime = () => {
     setSideNavOpen(!sideNavOpen);
   };
 
-  // 🔹 API CALL
-  useEffect(() => {
-    fetchCycleTimeList();
-  }, []);
-
-  const fetchCycleTimeList = async () => {
+  const fetchCycleTimeListItems = async () => {
     setLoading(true);
     try {
-      const response = await fetch(
-        "http://127.0.0.1:8000/All_Masters/cycle/time/list"
-      );
-      const data = await response.json();
-      setRecords(data);
+      const data = await fetchCycleTimeList();
+      const recordsData = Array.isArray(data) ? data.reverse() : [];
+      setRecords(recordsData);
+      setFilteredRecords(recordsData);
     } catch (error) {
       console.error("Error fetching cycle time list:", error);
     } finally {
@@ -41,14 +35,38 @@ const CycleTime = () => {
     }
   };
 
-  const indexOfLastRecord = currentPage * recordsPerPage;
-  const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
-  const currentRecords = records.slice(
-    indexOfFirstRecord,
-    indexOfLastRecord
-  );
+  useEffect(() => {
+    fetchCycleTimeListItems();
+  }, []);
 
-  const totalPages = Math.ceil(records.length / recordsPerPage);
+  const handleSearch = () => {
+    const filtered = records.filter(record =>
+      (record.part_no && record.part_no.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (record.part_desc && record.part_desc.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (record.PartCode && record.PartCode.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
+    setFilteredRecords(filtered);
+  };
+
+  const handleViewAll = () => {
+    setSearchTerm("");
+    setFilteredRecords(records);
+  };
+
+  const handleDelete = async (id) => {
+    if (window.confirm("Are you sure you want to delete this record?")) {
+      try {
+        await deleteCycleTimeData(id);
+        fetchCycleTimeListItems();
+      } catch (error) {
+        console.log("Failed to delete record");
+      }
+    }
+  };
+
+  const handleEdit = (record) => {
+    navigate("/add-cycle-time", { state: { editRecord: record } });
+  };
 
   const handleAddNewCycleTime = () => {
     navigate("/add-cycle-time");
@@ -71,7 +89,7 @@ const CycleTime = () => {
                     <div className="Cycletime-header mb-2 text-start">
                       <div className="row align-items-center">
                         <div className="col-md-6">
-                          <h5 className="header-title">Cycle Time Master</h5>
+                          <h5 className="header-title" style={{ color: "blue", fontWeight: "bold" }}>Cycle Time Master</h5>
                         </div>
                         <div className="col-md-6 text-md-end text-start mt-2 mt-md-0">
                           <button
@@ -88,29 +106,25 @@ const CycleTime = () => {
                   </div>
 
                   <div className="CycletimeMain mt-2">
-                    <div className="container-fluid">
-                      <div className="row text-start centerselect">
-                        <div className="col-md-1 col-sm-3 mb-3 mb-sm-0">
-                          <label
-                            htmlFor="selectPlant"
-                            className="col-form-label"
-                          >
-                            Item Search
-                          </label>
+                    <div className="container-fluid border py-3 bg-light rounded">
+                      <div className="row text-start align-items-center">
+                        <div className="col-md-2 col-sm-3">
+                          <label className="col-form-label fw-bold">Item Search</label>
                         </div>
-                        <div className="col-md-3 col-sm-9 mb-3 mb-sm-0">
+                        <div className="col-md-4 col-sm-9">
                           <input
                             type="text"
                             className="form-control"
-                            id="exampleFormControlInput1"
-                            placeholder=""
+                            placeholder="Search Part No or Desc"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
                           />
                         </div>
-                        <div className="col-md-1 mt-1 text-md-start">
-                          <button className="vndrbtn">Search</button>
+                        <div className="col-md-1 mt-1">
+                          <button className="vndrbtn btn-sm w-100" onClick={handleSearch}>Search</button>
                         </div>
-                        <div className="col-md-1 mt-1  text-md-end">
-                          <button className="vndrbtn">View All</button>
+                        <div className="col-md-1 mt-1">
+                          <button className="vndrbtn btn-sm w-100" onClick={handleViewAll}>View All</button>
                         </div>
                       </div>
                     </div>
@@ -120,120 +134,65 @@ const CycleTime = () => {
                     <div className="container-fluid">
                       <div className="row">
                         <div className="table-responsive">
-                          <table className="table table-striped mt-2">
-                            <thead>
+                          <table className="table table-bordered mt-2 text-center">
+                            <thead style={{ backgroundColor: "#00BFFF", color: "white" }}>
                               <tr>
                                 <th scope="col">Sr</th>
-                                <th scope="col">Item No.</th>
-                                <th scope="col">Item Desc</th>
-                                <th scope="col">Op No</th>
-                                <th scope="col">PartCode</th>
+                                <th scope="col">Part No</th>
+                                <th scope="col">Part Description</th>
+                                <th scope="col">Part Code</th>
                                 <th scope="col">Machine Type</th>
+                                <th scope="col">Machine</th>
+                                <th scope="col">Total Time</th>
                                 <th scope="col">Delete</th>
                                 <th scope="col">Edit</th>
-                                <th scope="col">View</th>
                               </tr>
                             </thead>
                             <tbody>
                               {loading ? (
                                 <tr>
-                                  <td colSpan="9" className="text-center">
-                                    Loading...
-                                  </td>
+                                  <td colSpan="9" className="text-center">Loading...</td>
                                 </tr>
-                              ) : records.length > 0 ? (
-                                currentRecords.map((record, index) => (
+                              ) : filteredRecords.length > 0 ? (
+                                filteredRecords.map((record, index) => (
                                   <tr key={index}>
-                                    <td>{indexOfFirstRecord + index + 1}</td>
-                                    <td>{record.item_no}</td>
-                                    <td>{record.item_desc}</td>
-                                    <td>{record.op_no}</td>
-                                    <td>{record.part_code}</td>
-                                    <td>{record.machine_type}</td>
+                                    <td>{index + 1}</td>
+                                    <td>{record.part_no}</td>
+                                    <td>{record.part_desc}</td>
                                     <td>
-                                      <button className="btn">
-                                        <i className="fas fa-trash"></i>
+                                      {record.PartCode && record.PartCode.includes(" | ")
+                                        ? record.PartCode
+                                        : `${record.op_no || record.OPNo || ""} | ${record.PartCode || record.part_code || ""} | ${record.operation || ""}`}
+                                    </td>
+                                    <td>{record.MachineType}</td>
+                                    <td>{record.Machine}</td>
+                                    <td>{record.Total_Time}</td>
+                                    <td>
+                                      <button className="Cycletimetableww" onClick={() => handleDelete(record.id)}>
+                                        <i className="fas fa-trash-alt text-danger"></i>
                                       </button>
                                     </td>
                                     <td>
-                                      <button className="btn">
-                                        <i className="fas fa-edit"></i>
-                                      </button>
-                                    </td>
-                                    <td>
-                                      <button className="btn">
-                                        <i className="fas fa-eye"></i>
+                                      <button className="Cycletimetableww" onClick={() => handleEdit(record)}>
+                                        <i className="fas fa-edit text-primary"></i>
                                       </button>
                                     </td>
                                   </tr>
                                 ))
                               ) : (
                                 <tr>
-                                  <td colSpan="9" className="text-center">
-                                    No Records Found
-                                  </td>
+                                  <td colSpan="9" className="text-center fw-bold text-muted">No Records Found</td>
                                 </tr>
                               )}
                             </tbody>
                           </table>
                         </div>
-
-                        {records.length > 10 && (
-                          <nav className="mt-3">
-                            <ul className="pagination justify-content-end">
-
-                              {/* Previous */}
-                              <li className={`vndrbtn page-item ${currentPage === 1 ? "disabled" : ""}`}>
-                                <button
-                                  className="vndrbtn page-link"
-                                  onClick={() => setCurrentPage(currentPage - 1)}
-                                >
-                                  Previous
-                                </button>
-                              </li>
-
-                              {/* Page Numbers */}
-                              {[...Array(totalPages)].map((_, index) => (
-                                <li
-                                  key={index}
-                                  className={`vndrbtn page-item ${currentPage === index + 1 ? "active" : ""
-                                    }`}
-                                >
-                                  <button
-                                    className="vndrbtn page-link"
-                                    onClick={() => setCurrentPage(index + 1)}
-                                  >
-                                    {index + 1}
-                                  </button>
-                                </li>
-                              ))}
-
-                              {/* Next */}
-                              <li
-                                className={`vndrbtn page-item ${currentPage === totalPages ? "disabled" : ""
-                                  }`}
-                              >
-                                <button
-                                  className="vndrbtn page-link"
-                                  onClick={() => setCurrentPage(currentPage + 1)}
-                                >
-                                  Next
-                                </button>
-                              </li>
-
-                            </ul>
-                          </nav>
-                        )}
-
                       </div>
                     </div>
                   </div>
-                  
-                  <div
-                    className="record-count text-start"
-                    style={{ color: "blue", padding: "10px" }}
-                  >
-                    Total Records: {records.length}
+
+                  <div className="record-count text-start mt-2" style={{ color: "blue", fontWeight: "bold" }}>
+                    Total Records: {filteredRecords.length}
                   </div>
                 </div>
               </main>

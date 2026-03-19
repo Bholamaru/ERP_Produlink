@@ -7,10 +7,10 @@ import "@fortawesome/fontawesome-free/css/all.min.css"
 import NavBar from "../../../NavBar/NavBar"
 import SideNav from "../../../SideNav/SideNav"
 import "./AddCycleTime.css"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useLocation } from "react-router-dom"
 import { toast, ToastContainer } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
-import { saveCycleTimeData, updateCycleTimeData, deleteCycleTimeData, fetchCycleTimeList } from "../../../Service/Api.jsx"
+import { saveCycleTimeData, updateCycleTimeData, deleteCycleTimeData, fetchCycleTimeList, fetchWorkCenterData, fetchBomItems } from "../../../Service/Api.jsx"
 
 const AddCycleTime = () => {
 
@@ -21,11 +21,24 @@ const AddCycleTime = () => {
     setSideNavOpen(!sideNavOpen)
   }
   const navigate = useNavigate()
+  const location = useLocation()
+
+  useEffect(() => {
+    if (location.state && location.state.editRecord) {
+      handleEdit(location.state.editRecord);
+    }
+  }, [location.state]);
+
   const handleAddNewCycleTime = () => {
     navigate("/cycle-time-master")
   }
 
   const [formData, setFormData] = useState({
+    part_no: "",
+    part_desc: "",
+    part_code: "",
+    op_no: "",
+    operation: "",
     Plant: "",
     PartCode: "",
     MachineType: "",
@@ -41,10 +54,28 @@ const AddCycleTime = () => {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target
-    setFormData((prevData) => ({
-      ...prevData,
-      [name]: type === "checkbox" ? checked : value,
-    }))
+
+    if (name === "MachineType") {
+      const selectedWC = workCenters.find(wc => wc.WorkCenterName === value);
+      setFormData((prevData) => ({
+        ...prevData,
+        MachineType: value,
+        Machine: selectedWC ? selectedWC.WorkCenterType : prevData.Machine,
+      }))
+    } else if (name === "PartCode") {
+      // Store the full string directly in PartCode so it's saved whole in the DB
+      setFormData((prevData) => ({
+        ...prevData,
+        PartCode: value,
+        part_code: value,
+        PartCodeDisplay: value
+      }))
+    } else {
+      setFormData((prevData) => ({
+        ...prevData,
+        [name]: type === "checkbox" ? checked : value,
+      }))
+    }
   }
 
   const validateForm = () => {
@@ -97,8 +128,14 @@ const AddCycleTime = () => {
 
   const handleClear = () => {
     setFormData({
+      part_no: "",
+      part_desc: "",
+      part_code: "",
+      op_no: "",
+      operation: "",
       Plant: "",
       PartCode: "",
+      PartCodeDisplay: "",
       MachineType: "",
       Machine: "",
       OPTime: "",
@@ -107,18 +144,37 @@ const AddCycleTime = () => {
       Total_Time: "",
       Time_in_Minutes: "",
     })
+    setSearchTerm("")
+    setSearchResults([])
     setErrors({})
     setEditId(null); // Exit edit mode
   }
 
   const [cycleTimeList, setCycleTimeList] = useState([]);
   const [editId, setEditId] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const [workCenters, setWorkCenters] = useState([]);
 
   useEffect(() => {
     loadCycleTime();
+    fetchWorkCenterDataItems();
   }, []);
+
+  const fetchWorkCenterDataItems = async () => {
+    try {
+      const data = await fetchWorkCenterData();
+      console.log("Fetched Work Centers:", data); // Debugging
+      if (Array.isArray(data)) {
+        setWorkCenters(data);
+      } else {
+        console.error("API did not return an array for Work Centers:", data);
+        setWorkCenters([]);
+      }
+    } catch (err) {
+      console.error("Failed to fetch work centers", err);
+      toast.error("Failed to load machine data");
+      setWorkCenters([]);
+    }
+  };
 
   const loadCycleTime = async () => {
     try {
@@ -130,6 +186,15 @@ const AddCycleTime = () => {
   };
   const handleEdit = (item) => {
     setFormData(item);
+    setSearchTerm(item.part_no ? `${item.part_no} - ${item.part_desc || ""}` : "");
+    // Ensure both PartCode variants are present and setup display value
+    const fullPartCodeDisplay = `${item.op_no || item.OPNo || ""} | ${item.PartCode || item.part_code || ""} | ${item.operation || ""}`;
+    setFormData(prev => ({
+      ...prev,
+      PartCode: item.PartCode || item.part_code || "",
+      part_code: item.part_code || item.PartCode || "",
+      PartCodeDisplay: fullPartCodeDisplay !== " |  | " ? fullPartCodeDisplay : ""
+    }));
     setEditId(item.id);
   };
 
@@ -140,56 +205,89 @@ const AddCycleTime = () => {
     loadCycleTime();
 
   };
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = cycleTimeList.slice(indexOfFirstItem, indexOfLastItem);
-
-  const totalPages = Math.ceil(cycleTimeList.length / itemsPerPage);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [bomItemsList, setBomItemsList] = useState([]);
 
   const [selectedItem, setSelectedItem] = useState(null);
 
 
   let searchTimeout = null;
 
+  const fetchBomItemsList = async (query) => {
+    try {
+      const data = await fetchBomItems();
+      const results = [];
+
+      // Handle object-based response (DRF often returns objects if not simple lists)
+      // The API seems to return an object where keys are names and values have bom_items
+      Object.keys(data).forEach(key => {
+        const item = data[key];
+        if (item.part_no?.toLowerCase().includes(query.toLowerCase()) ||
+          item.Name_Description?.toLowerCase().includes(query.toLowerCase())) {
+
+          item.bom_items?.forEach(bom => {
+            results.push({
+              part_no: item.part_no,
+              part_desc: item.Name_Description,
+              op_no: bom.OPNo,
+              part_code: bom.BomPartCode, // User request: bom code should be in part code
+              operation: bom.Operation
+            });
+          });
+        }
+      });
+
+      setSearchResults(results.slice(0, 50));
+    } catch (error) {
+      console.error("Error fetching BOM items:", error);
+    }
+  };
+
   const fetchItemByPartNo = (value) => {
     clearTimeout(searchTimeout);
 
-    if (!value || value.length < 3) {
-      setSearchResults([]);
+    if (!value || value.length < 2) {
+      setBomItemsList([]);
       setShowDropdown(false);
       return;
     }
 
     searchTimeout = setTimeout(async () => {
       try {
-        const response = await fetch(
-          `http://127.0.0.1:8000/All_Masters/cycle/master/item/?part_no=${value}`
-        );
+        const data = await fetchBomItems();
 
-        if (!response.ok) {
-          setSearchResults([]);
-          setShowDropdown(true);
-          return;
+        if (data && typeof data === "object") {
+          const searchLower = value.toLowerCase();
+          const matchedItems = Object.keys(data)
+            .filter((key) => {
+              const item = data[key];
+              return (
+                (item.part_no && item.part_no.toLowerCase().includes(searchLower)) ||
+                (item.Name_Description && item.Name_Description.toLowerCase().includes(searchLower)) ||
+                (item.Part_Code && item.Part_Code.toLowerCase().includes(searchLower))
+              );
+            })
+            .map((key) => {
+              const item = data[key];
+              return {
+                part_no: item.part_no,
+                Name_Description: item.Name_Description,
+                Part_Code: item.Part_Code,
+                bom_items: (item.bom_items || []).map(bom => ({
+                  ...bom,
+                  part_code: bom.BomPartCode // User request: bom code should be in part code
+                }))
+              };
+            });
+
+          setBomItemsList(matchedItems);
+          setShowDropdown(matchedItems.length > 0);
         }
-
-        const data = await response.json();
-       
-        if (data && Array.isArray(data.operations)) {
-          setSearchResults(data.operations);
-          setShowDropdown(true);
-        } else {
-          setSearchResults([]);
-          setShowDropdown(true);
-        }
-
-      } catch (error) {
-        console.error("Search API error", error);
-        setSearchResults([]);
-        setShowDropdown(false);
+      } catch (err) {
+        console.error("Error fetching BOM:", err);
       }
     }, 300);
   };
@@ -236,7 +334,7 @@ const AddCycleTime = () => {
                             Item Search
                           </label>
                         </div>
-                        <div className="col-md-3 col-sm-9 mb-3 mb-sm-0">
+                        <div className="col-md-3 col-sm-9 mb-3 mb-sm-0" style={{ position: "relative" }}>
                           <input
                             type="text"
                             className="form-control"
@@ -244,37 +342,60 @@ const AddCycleTime = () => {
                             onChange={(e) => {
                               const value = e.target.value;
                               setSearchTerm(value);
+                              // Sync with formData
+                              setFormData(prev => ({
+                                ...prev,
+                                part_no: value,
+                                part_desc: prev.part_no === value ? prev.part_desc : "",
+                                part_code: prev.part_no === value ? prev.part_code : ""
+                              }));
                               fetchItemByPartNo(value);
                             }}
                             placeholder="Search Item No"
                           />
 
                           {showDropdown && (
-                            <ul className="list-group position-absolute z-3">
-                              {searchResults.length > 0 ? (
-                                searchResults.map((op, index) => (
+                            <ul className="list-group position-absolute z-3" style={{ maxHeight: "250px", overflowY: "auto", width: "100%", left: "0", top: "100%" }}>
+                              {bomItemsList.length > 0
+                                ? bomItemsList.map((bomItem, index) => (
                                   <li
                                     key={index}
-                                    className="list-group-item list-group-item-action"
+                                    className="list-group-item list-group-item-action py-1 px-2"
                                     onClick={() => {
+                                      setSearchTerm(`${bomItem.part_no} - ${bomItem.Name_Description}`);
                                       setFormData((prev) => ({
                                         ...prev,
-                                        PartCode: op.part_code,
-                                        MachineType: op.operation,
+                                        part_no: bomItem.part_no,
+                                        part_desc: bomItem.Name_Description,
+                                        part_code: bomItem.Part_Code, // User request field
+                                        PartCode: bomItem.Part_Code, // Sync with select
                                       }));
+                                      // Update searchResults with mapped BomPartCode
+                                      setSearchResults(
+                                        bomItem.bom_items.map((bom) => ({
+                                          part_no: bomItem.part_no,
+                                          part_desc: bomItem.Name_Description,
+                                          op_no: bom.OPNo,
+                                          part_code: bom.BomPartCode, // User request field
+                                          operation: bom.Operation,
+                                        }))
+                                      );
                                       setShowDropdown(false);
                                     }}
-                                    style={{ cursor: "pointer" }}
+                                    style={{ cursor: "pointer", fontSize: "13px" }}
                                   >
-                                    <strong>OP {op.op_no}</strong> | {op.part_code} <br />
-                                    <small className="text-muted">{op.operation}</small>
+                                    <div className="d-flex align-items-center">
+                                      <span className="fw-bold">{bomItem.part_no}</span>
+                                      <span className="mx-1">-</span>
+                                      <span className="text-muted text-truncate" style={{ maxWidth: "200px" }}>
+                                        {bomItem.Name_Description}
+                                      </span>
+                                    </div>
                                   </li>
                                 ))
-                              ) : (
-                                <li className="list-group-item text-muted">
-                                  No operations found
-                                </li>
-                              )}
+                                : (
+                                  <li className="list-group-item text-muted">No items found</li>
+                                )}
                             </ul>
                           )}
 
@@ -290,221 +411,86 @@ const AddCycleTime = () => {
                   <div className="AddCycletime-Main mt-2">
                     <div className="container-fluid">
                       <form onSubmit={handleSubmit}>
-                        <div className="row text-start">
+                        <div className="row text-start mb-3">
                           <div className="col-md-2 col-sm-6 mb-3 mb-sm-0">
-                            <div className="mb-3">
-                              <label htmlFor="Plant" className="form-label">
-                                Plant
-                              </label>
-                              <select
-                                className="form-select"
-                                style={{ marginTop: "-1px" }}
-                                id="Plant"
-                                name="Plant"
-                                value={formData.Plant}
-                                onChange={handleChange}
-                              >
-                                <option value="">Select Plant</option>
-                                <option value="Produlink">Produlink</option>
+                            <label htmlFor="Plant" className="form-label">Plant</label>
+                            <select className="form-select" id="Plant" name="Plant" value={formData.Plant} onChange={handleChange}>
+                              <option value="">Select Plant</option>
+                              {[...new Set(workCenters.map(wc => wc.Plant))].filter(Boolean).sort().map((plant, index) => (
+                                <option key={index} value={plant}>{plant}</option>
+                              ))}
+                            </select>
+                          </div>
+                          <div className="col-md-2 col-sm-6 mb-3 mb-sm-0">
+                            <label htmlFor="PartCode" className="form-label">Part Code</label>
+                            <select className="form-select" id="PartCode" name="PartCode" value={formData.PartCodeDisplay || formData.PartCode || formData.part_code || ""} onChange={handleChange}>
+                              <option value="">Select Part Code</option>
+                              {/* Always include current selected value if it exists but is not in searchResults */}
+                              {(formData.PartCodeDisplay || formData.PartCode || formData.part_code) &&
+                                !searchResults.some(item => `${item.op_no || ""} | ${item.part_code || ""} | ${item.operation || ""}` === (formData.PartCodeDisplay || formData.PartCode || formData.part_code)) && (
+                                  <option value={formData.PartCodeDisplay || formData.PartCode || formData.part_code}>
+                                    {formData.PartCodeDisplay || formData.PartCode || formData.part_code}
+                                  </option>
+                                )
+                              }
+                              {Array.isArray(searchResults) && searchResults.map((item, index) => {
+                                const fullVal = `${item.op_no || ""} | ${item.part_code || ""} | ${item.operation || ""}`;
+                                return (
+                                  <option key={index} value={fullVal}>{fullVal}</option>
+                                );
+                              })}
+                            </select>
+                          </div>
+                          <div className="col-md-2 col-sm-6 mb-3 mb-sm-0">
+                            <label htmlFor="MachineType" className="form-label">Machine Type</label>
+                            <select className="form-select" id="MachineType" name="MachineType" value={formData.MachineType} onChange={handleChange}>
+                              <option value="">Select Machine Type</option>
+                              {Array.isArray(workCenters) && [...new Set(workCenters.map(wc => wc.WorkCenterName))].filter(Boolean).sort().map((name, index) => (
+                                <option key={index} value={name}>{name}</option>
+                              ))}
+                            </select>
+                          </div>
+                          <div className="col-md-2 col-sm-6 mb-3 mb-sm-0">
+                            <label htmlFor="Machine" className="form-label">Machine</label>
+                            <select className="form-select" id="Machine" name="Machine" value={formData.Machine} onChange={handleChange}>
+                              <option value="">Select Machine</option>
+                              {workCenters.filter(wc => wc.WorkCenterName === formData.MachineType).map((wc, index) => (
+                                <option key={index} value={wc.WorkCenterType}>{wc.WorkCenterType}</option>
+                              ))}
+                            </select>
+                          </div>
+                          <div className="col-md-2 col-sm-6 mb-3 mb-sm-0">
+                            <label htmlFor="OPTime" className="form-label">Op Time<span className="text-danger">*</span></label>
+                            <input type="text" className="form-control" id="OPTime" name="OPTime" value={formData.OPTime} onChange={handleChange} />
+                          </div>
+                          <div className="col-md-2 col-sm-6 mb-3 mb-sm-0">
+                            <label htmlFor="Load_Unload_Time" className="form-label">Load/Unload Time<span className="text-danger">*</span></label>
+                            <input type="text" className="form-control" id="Load_Unload_Time" name="Load_Unload_Time" value={formData.Load_Unload_Time} onChange={handleChange} />
+                          </div>
+                        </div>
 
-                              </select>
-                              {/* {errors.Plant && (
-                                <div className="text-danger">
-                                  {errors.Plant}
-                                </div>
-                              )} */}
-                            </div>
-                          </div>
-
+                        <div className="row text-start align-items-end">
                           <div className="col-md-2 col-sm-6 mb-3 mb-sm-0">
-                            <div className="mb-3">
-                              <label htmlFor="PartCode" className="form-label">
-                                Part Code
-                              </label>
-                              <select
-                                className="form-select"
-                                style={{ marginTop: "-1px" }}
-                                id="PartCode"
-                                name="PartCode"
-                                value={formData.PartCode}
-                                onChange={handleChange}
-                              >
-                                <option value="">Select Part Code</option>
-                                {Array.isArray(searchResults) &&
-                                  searchResults.map((item, index) => (
-                                    <option key={index} value={item.part_code}>
-                                      OP {item.op_no} - {item.part_code}
-                                    </option>
-                                  ))}
-
-
-                              </select>
-                              {/* {errors.PartCode && (
-                                <div className="text-danger">
-                                  {errors.PartCode}
-                                </div>
-                              )} */}
-                            </div>
-                          </div>
-
-                          <div className="col-md-2 col-sm-6 mb-3 mb-sm-0">
-                            <div className="mb-3">
-                              <label htmlFor="MachineType" className="form-label">
-                                Machine Type
-                              </label>
-                              <select
-                                className="form-select"
-                                style={{ marginTop: "-1px" }}
-                                id="MachineType"
-                                name="MachineType"
-                                value={formData.MachineType}
-                                onChange={handleChange}
-                              >
-                                <option value="">Select Machine Type</option>
-                                {Array.isArray(searchResults) &&
-                                  searchResults.map((item, index) => (
-                                    <option key={index} value={item.operation}>
-                                      {item.operation}
-                                    </option>
-                                  ))}
-
-                              </select>
-                              {/* {errors.MachineType && (
-                                <div className="text-danger">
-                                  {errors.MachineType}
-                                </div>
-                              )} */}
-                            </div>
-                          </div>
-
-                          <div className="col-md-2 col-sm-6 mb-3 mb-sm-0">
-                            <div className="mb-3">
-                              <label htmlFor="Machine" className="form-label">
-                                Machine
-                              </label>
-                              <select
-                                className="form-select"
-                                style={{ marginTop: "-1px" }}
-                                id="Machine"
-                                name="Machine"
-                                value={formData.Machine}
-                                onChange={handleChange}
-                              >
-                                <option value="">Select Machine</option>
-                                <option value="Machine1">Machine 1</option>
-                                <option value="Machine2">Machine 2</option>
-                              </select>
-                              {errors.Machine && <div className="text-danger">{errors.Machine}</div>}
-                            </div>
+                            <label htmlFor="MO_Time" className="form-label">Mo Time<span className="text-danger">*</span></label>
+                            <input type="text" className="form-control" id="MO_Time" name="MO_Time" value={formData.MO_Time} onChange={handleChange} />
                           </div>
                           <div className="col-md-2 col-sm-6 mb-3 mb-sm-0">
-                            <div className="mb-3">
-                              <label htmlFor="OPTime" className="form-label">
-                                Op Time<span className="text-danger">*</span>
-                              </label>
-                              <input
-                                type="text"
-                                className="form-control"
-                                id="OPTime"
-                                name="OPTime"
-                                value={formData.OPTime}
-                                onChange={handleChange}
-                              />
-                              {errors.OPTime && <div className="text-danger">{errors.OPTime}</div>}
+                            <label htmlFor="Total_Time" className="form-label">Total Time<span className="text-danger">*</span></label>
+                            <input type="text" className="form-control" id="Total_Time" name="Total_Time" value={formData.Total_Time} onChange={handleChange} />
+                          </div>
+                          <div className="col-md-4 col-sm-12 mb-3 mb-sm-0 d-flex align-items-center">
+                            <div className="form-check me-3 mt-4">
+                              <input type="checkbox" className="form-check-input" id="Time_in_Minutes_Check" name="Time_in_Minutes_Check" />
+                              <label className="form-check-label" htmlFor="Time_in_Minutes_Check">Time in Minutes</label>
+                            </div>
+                            <div className="flex-grow-1 mt-4">
+                              <input type="text" className="form-control" id="Time_in_Minutes" name="Time_in_Minutes" value={formData.Time_in_Minutes} onChange={handleChange} />
                             </div>
                           </div>
-                          <div className="col-md-2 col-sm-6 mb-3 mb-sm-0">
-                            <div className="mb-3">
-                              <label htmlFor="Load_Unload_Time" className="form-label">
-                                Load/Unload Time<span className="text-danger">*</span>
-                              </label>
-                              <input
-                                type="text"
-                                className="form-control"
-                                id="Load_Unload_Time"
-                                name="Load_Unload_Time"
-                                value={formData.Load_Unload_Time}
-                                onChange={handleChange}
-                              />
-                              {errors.Load_Unload_Time && <div className="text-danger">{errors.Load_Unload_Time}</div>}
-                            </div>
-                          </div>
-                          <div className="col-md-2 col-sm-6 mb-3 mb-sm-0">
-                            <div className="mb-3">
-                              <label htmlFor="MO_Time" className="form-label">
-                                Mo Time<span className="text-danger">*</span>
-                              </label>
-                              <input
-                                type="text"
-                                className="form-control"
-                                id="MO_Time"
-                                name="MO_Time"
-                                value={formData.MO_Time}
-                                onChange={handleChange}
-                              />
-                              {errors.MO_Time && <div className="text-danger">{errors.MO_Time}</div>}
-                            </div>
-                          </div>
-                          <div className="col-md-2 col-sm-6 mb-3 mb-sm-0">
-                            <div className="mb-3">
-                              <label htmlFor="Total_Time" className="form-label">
-                                Total Time<span className="text-danger">*</span>
-                              </label>
-                              <input
-                                type="text"
-                                className="form-control"
-                                id="Total_Time"
-                                name="Total_Time"
-                                value={formData.Total_Time}
-                                onChange={handleChange}
-                              />
-                              {errors.Total_Time && <div className="text-danger">{errors.Total_Time}</div>}
-                            </div>
-                          </div>
-                          <div className="col-md-2 col-sm-6 mb-3 mb-sm-0">
-                            <div className="mb-3 form-check">
-                              <input
-                                type="checkbox"
-                                className="form-check-input"
-                                id="Time_in_Minutes"
-                                name="Time_in_Minutes"
-                              />
-                              <input
-                                type="checkbox"
-                                className="form-check-input"
-                                id="Time_in_Minutes"
-                                name="Time_in_Minutes"
-                              // checked={formData.Time_in_Minutes}
-                              // onChange={handleChange}
-                              />
-                              <label className="form-label" htmlFor="Time_in_Minutes">
-                                Time in Minutes
-                              </label>
-                              <input
-                                type="text"
-                                className="form-control"
-                                id="Time_in_Minutes"
-                                name="Time_in_Minutes"
-                                value={formData.Time_in_Minutes}
-                                onChange={handleChange}
-                              />
-                              {/* {errors.Time_in_Minutes && (
-                                <div className="text-danger">
-                                  {errors.Time_in_Minutes}
-                                </div>
-                              )} */}
-                            </div>
-                          </div>
-
                           <div className="col-md-2 col-sm-6 mt-4">
-                            <button type="submit" className="vndrbtn me-2" disabled={isSubmitting}>
-                              {isSubmitting ? "Saving..." : "Add"}
-                            </button>
-                            <button type="button" className="vndrbtn" onClick={handleClear}>
-                              Clear
-                            </button>
+                            <button type="submit" className="vndrbtn me-2" disabled={isSubmitting}>{isSubmitting ? "Saving..." : "Add"}</button>
+                            <button type="button" className="vndrbtn" onClick={handleClear}>Clear</button>
                           </div>
-
                         </div>
                       </form>
                     </div>
@@ -514,82 +500,59 @@ const AddCycleTime = () => {
                     <div className="container-fluid">
                       <div className="row text-start">
                         <div className="col-md-12">
-                          <table className="table table-bordered">
-                            <thead>
-                              <tr>
-                                <th>#</th>
-                                <th>Plant</th>
-                                <th>Part Code</th>
-                                <th>Machine Type</th>
-                                <th>Machine</th>
-                                <th>Op Time</th>
-                                <th>Load/Unload</th>
-                                <th>MO Time</th>
-                                <th>Total</th>
-                                <th>Time in Min</th>
-                                <th>Edit</th>
-                                <th>Delete</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {currentItems.length > 0 ? currentItems.map((item, index) => (
-                                <tr key={item.id}>
-                                  <td>{indexOfFirstItem + index + 1}</td>
-                                  <td>{item.Plant}</td>
-                                  <td>{item.PartCode}</td>
-                                  <td>{item.MachineType}</td>
-                                  <td>{item.Machine}</td>
-                                  <td>{item.OPTime}</td>
-                                  <td>{item.Load_Unload_Time}</td>
-                                  <td>{item.MO_Time}</td>
-                                  <td>{item.Total_Time}</td>
-                                  <td>{item.Time_in_Minutes}</td>
-                                  <td><button type="btn" style={{ "border": "none" }} onClick={() => handleEdit(item)}><i className="fas fa-edit"></i></button></td>
-                                  <td><button type="btn" style={{ "border": "none" }} onClick={() => handleDelete(item.id)}><i className="fas fa-trash"></i></button></td>
-                                </tr>
-                              )) : (
+                          <div className="table-responsive">
+                            <table className="table table-bordered">
+                              <thead style={{ backgroundColor: "#00BFFF", color: "white" }}>
                                 <tr>
-                                  <td colSpan="12" className="text-center">No Data Found!</td>
+                                  <th>#</th>
+                                  <th>Part No</th>
+                                  <th>Part Description</th>
+                                  <th>Plant</th>
+                                  <th style={{ whiteSpace: "nowrap" }}>Part Code</th>
+                                  <th>Machine Type</th>
+                                  <th>Machine</th>
+                                  <th>Op Time</th>
+                                  <th>Load/Unload</th>
+                                  <th>MO Time</th>
+                                  <th>Edit</th>
+                                  <th>Delete</th>
                                 </tr>
-                              )}
-                            </tbody>
-                          </table>
+                              </thead>
+                              <tbody>
+                                {cycleTimeList.length > 0 ? cycleTimeList.map((item, index) => (
+                                  <tr key={item.id}>
+                                    <td>{index + 1}</td>
+                                    <td>{item.part_no}</td>
+                                    <td>{item.part_desc}</td>
+                                    <td>{item.Plant}</td>
+                                    <td style={{ whiteSpace: "nowrap" }}>
+                                      {item.PartCode && item.PartCode.includes(" | ")
+                                        ? item.PartCode
+                                        : `${item.op_no || item.OPNo || ""} | ${item.PartCode || item.part_code || ""} | ${item.operation || ""}`}
+                                    </td>
+                                    <td>{item.MachineType}</td>
+                                    <td>{item.Machine}</td>
+                                    <td>{item.OPTime}</td>
+                                    <td>{item.Load_Unload_Time}</td>
+                                    <td>{item.MO_Time}</td>
+                                    <td><button type="btn" style={{ "border": "none" }} onClick={() => handleEdit(item)}><i className="fas fa-edit"></i></button></td>
+                                    <td><button type="btn" style={{ "border": "none" }} onClick={() => handleDelete(item.id)}><i className="fas fa-trash"></i></button></td>
+                                  </tr>
+                                )) : (
+                                  <tr>
+                                    <td colSpan="12" className="text-center">No Data Found!</td>
+                                    {/* Original colSpan was 14 when adding 2 more, now it is 12: 10 + 2 = 12 */}
+                                  </tr>
+                                )}
+                              </tbody>
+                            </table>
 
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-
-                  <div className="pagination mt-5 text-end">
-
-                    <button
-                      className="vndrbtn btn-light me-2"
-                      onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                      disabled={currentPage === 1}
-                    >
-                      Previous
-                    </button>
-
-                    {Array.from({ length: totalPages }, (_, i) => (
-                      <button
-                        key={i}
-                        className={`vndrbtn me-1 ${currentPage === i + 1 ? "btn-dark" : "btn-light"}`}
-                        onClick={() => setCurrentPage(i + 1)}
-                      >
-                        {i + 1}
-                      </button>
-                    ))}
-
-                    <button
-                      className="vndrbtn btn-light ms-2"
-                      onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                      disabled={currentPage === totalPages}
-                    >
-                      Next
-                    </button>
 
                   </div>
-
                 </div>
               </main>
             </div>
@@ -601,4 +564,3 @@ const AddCycleTime = () => {
 }
 
 export default AddCycleTime
-

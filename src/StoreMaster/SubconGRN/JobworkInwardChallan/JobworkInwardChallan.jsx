@@ -7,7 +7,7 @@ import SideNav from "../../../SideNav/SideNav.js";
 import "./JobworkInwardChallan.css";
 
 import { toast, ToastContainer } from "react-toastify";
-import { FaEdit, FaTrash } from "react-icons/fa";
+import { FaEdit, FaTrash, FaSearch } from "react-icons/fa";
 
 const JobworkInwardChallan = () => {
   const navigate = useNavigate();
@@ -16,11 +16,14 @@ const JobworkInwardChallan = () => {
   const [selectedGateEntry, setSelectedGateEntry] = useState();
   const [challanNumbers, setChallanNumbers] = useState([]);
   const [PO, setPO] = useState([]);
+  const [itemSearchTerm, setItemSearchTerm] = useState("");
+  const [showItemDropdown, setShowItemDropdown] = useState(false);
 
   // BOM Items state
   const [bomItems, setBomItems] = useState({}); // raw API response
   const [itemCodeOptions, setItemCodeOptions] = useState([]); // ["FG001 - CAP OIL LOCK", ...]
   const [fgPartCodeOptions, setFgPartCodeOptions] = useState([]); // PartCodes for selected item
+  const itemDropdownRef = React.useRef(null);
 
   // Series & Plant state
   const [selectedSeries, setSelectedSeries] = useState("Select");
@@ -95,6 +98,14 @@ const JobworkInwardChallan = () => {
   useEffect(() => {
     fetchGateEntryData();
     fetchBomItems();
+
+    const handleClickOutside = (event) => {
+      if (itemDropdownRef.current && !itemDropdownRef.current.contains(event.target)) {
+        setShowItemDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const [formData, setFormData] = useState({
@@ -140,10 +151,11 @@ const JobworkInwardChallan = () => {
     setCurrentRow((prev) => ({ ...prev, [name]: value }));
   };
 
-  // When Item Code is selected, load its FG Part Codes from bom_items
-  const handleItemCodeChange = (e) => {
-    const selectedKey = e.target.value;
+  // When Item Code is selected (via suggestion click), load its FG Part Codes from bom_items
+  const selectItemCode = (selectedKey) => {
     setCurrentRow((prev) => ({ ...prev, ItemCode: selectedKey, FGPartCode: "" }));
+    setItemSearchTerm(selectedKey);
+    setShowItemDropdown(false);
 
     if (selectedKey && bomItems[selectedKey]) {
       const parts = bomItems[selectedKey].bom_items || [];
@@ -200,6 +212,7 @@ const JobworkInwardChallan = () => {
       RMSpecification: "",
       ParticularNatureOfProcess: "",
     });
+    setItemSearchTerm("");
     setFgPartCodeOptions([]);
   };
 
@@ -207,11 +220,11 @@ const JobworkInwardChallan = () => {
     const row = tableRows[index];
     setCurrentRow({ ...row });
     setEditingRowIndex(index);
+    setItemSearchTerm(row.ItemCode);
     // Restore FG Part Code options for the selected item
     if (row.ItemCode && bomItems[row.ItemCode]) {
       const parts = bomItems[row.ItemCode].bom_items || [];
-      const partCodes = [...new Set(parts.map((b) => b.PartCode).filter(Boolean))];
-      setFgPartCodeOptions(partCodes);
+      setFgPartCodeOptions(parts);
     }
   };
 
@@ -482,21 +495,49 @@ const JobworkInwardChallan = () => {
                         <tbody>
                           <tr>
                             <td>
-                              <div className="d-flex mb-1">
-                                <select
-                                  name="ItemCode"
-                                  className="form-select"
-                                  value={currentRow.ItemCode}
-                                  onChange={handleItemCodeChange}
-                                  style={{ paddingRight: "25px" }}
-                                >
-                                  <option value="">-- Select Item Code --</option>
-                                  {itemCodeOptions.map((key) => (
-                                    <option key={key} value={key}>
-                                      {key}
-                                    </option>
-                                  ))}
-                                </select>
+                              <div className="d-flex mb-1 position-relative align-items-center" ref={itemDropdownRef}>
+                                <div className="input-group flex-nowrap" style={{ maxWidth: "200px" }}>
+                                  <input
+                                    type="text"
+                                    className="form-control"
+                                    placeholder="Item Search..."
+                                    value={itemSearchTerm}
+                                    onChange={(e) => {
+                                      const val = e.target.value;
+                                      setItemSearchTerm(val);
+                                      setShowItemDropdown(true);
+                                      if (!val) {
+                                        setCurrentRow(prev => ({ ...prev, ItemCode: "" }));
+                                        setFgPartCodeOptions([]);
+                                      }
+                                    }}
+                                    onFocus={() => setShowItemDropdown(true)}
+                                    style={{ fontSize: "0.9rem" }}
+                                  />
+                                  <button className="btn btn-outline-secondary d-flex align-items-center" type="button" onClick={() => setShowItemDropdown(!showItemDropdown)}>
+                                    <FaSearch style={{ transform: "translateY(-1px)" }} />
+                                  </button>
+                                </div>
+
+                                {showItemDropdown && (
+                                  <ul className="list-group position-absolute w-100 z-3" style={{ top: "100%", left: 0, maxHeight: "200px", overflowY: "auto", fontSize: "0.85rem", border: "1px solid #ddd" }}>
+                                    {itemCodeOptions
+                                      .filter(opt => opt.toLowerCase().includes(itemSearchTerm.toLowerCase()))
+                                      .map((opt, idx) => (
+                                        <li
+                                          key={idx}
+                                          className="list-group-item list-group-item-action py-1 px-2"
+                                          style={{ cursor: "pointer" }}
+                                          onClick={() => selectItemCode(opt)}
+                                        >
+                                          {opt}
+                                        </li>
+                                      ))}
+                                    {itemCodeOptions.filter(opt => opt.toLowerCase().includes(itemSearchTerm.toLowerCase())).length === 0 && (
+                                      <li className="list-group-item disabled py-1 px-2">No items found</li>
+                                    )}
+                                  </ul>
+                                )}
                               </div>
                               <div className="d-flex mt-1">
                                 <label className="me-1 text-nowrap">FG Part Code:</label>
