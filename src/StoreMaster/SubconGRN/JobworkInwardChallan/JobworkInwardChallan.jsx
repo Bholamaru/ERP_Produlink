@@ -24,7 +24,6 @@ const JobworkInwardChallan = () => {
   const [itemCodeOptions, setItemCodeOptions] = useState([]); // ["FG001 - CAP OIL LOCK", ...]
   const [fgPartCodeOptions, setFgPartCodeOptions] = useState([]); // PartCodes for selected item
   const itemDropdownRef = React.useRef(null);
-  const searchTimerRef = React.useRef(null);
 
   // Series & Plant state
   const [selectedSeries, setSelectedSeries] = useState("Select");
@@ -55,7 +54,7 @@ const JobworkInwardChallan = () => {
 
   const fetchGateEntryData = async () => {
     try {
-      const res = await fetch("http://127.0.0.1:8000/Store/general-details/");
+      const res = await fetch("https://erp-render.onrender.com/Store/general-details/");
       const resData = await res.json();
       setGateEntryData(resData);
     } catch (err) {
@@ -65,11 +64,25 @@ const JobworkInwardChallan = () => {
 
   const fetchBomItems = async () => {
     try {
-      const res = await fetch("http://127.0.0.1:8000/All_Masters/api/bom-items/");
+      const res = await fetch("https://erp-render.onrender.com/All_Masters/api/bom-items/");
       const resData = await res.json();
-      setBomItems(resData);
-      // Keys are like "1 - CAP OIL LOCK DF - FGFG1001"
-      setItemCodeOptions(Object.keys(resData));
+      
+      // Transform keys to "FGCode - Name - ID" instead of "ID - Name - FGCode"
+      const transformedData = {};
+      Object.keys(resData).forEach(key => {
+        const parts = key.split(" - ");
+        if (parts.length === 3) {
+          // parts are [ID, Name, FGCode] -> swap to [FGCode, Name, ID]
+          const [id, name, fgCode] = parts;
+          const newKey = `${fgCode} - ${name} - ${id}`;
+          transformedData[newKey] = resData[key];
+        } else {
+          transformedData[key] = resData[key];
+        }
+      });
+
+      setBomItems(transformedData);
+      setItemCodeOptions(Object.keys(transformedData));
     } catch (err) {
       console.log("Error fetching BOM items:", err);
     }
@@ -77,7 +90,7 @@ const JobworkInwardChallan = () => {
 
   const fetchChallanNo = async (series) => {
     try {
-      const res = await fetch(`http://127.0.0.1:8000/Store/jobwork-challan-no/?series=${series}`);
+      const res = await fetch(`https://erp-render.onrender.com/Store/jobwork-challan-no/?series=${series}`);
       const resData = await res.json();
       // Key from API is "InwardF4No"
       const challanNo = resData.InwardF4No || "";
@@ -265,13 +278,13 @@ const JobworkInwardChallan = () => {
 
     try {
       const res = await fetch(
-        "http://127.0.0.1:8000/Sales/supplierview/?supplier=" + customerName
+        "https://erp-render.onrender.com/Sales/supplierview/?supplier=" + customerName
       );
       const resData = await res.json();
       setChallanNumbers(resData.challans);
 
       const res2 = await fetch(
-        "http://127.0.0.1:8000/Store/newjobworkpodetails/?supplier=" + customerName
+        "https://erp-render.onrender.com/Store/newjobworkpodetails/?supplier=" + customerName
       );
       const resData2 = await res2.json();
       setPO(resData2.purchase_orders);
@@ -343,7 +356,7 @@ const JobworkInwardChallan = () => {
 
     try {
       const response = await fetch(
-        "http://127.0.0.1:8000/Store/JobworkInwardChallan/",
+        "https://erp-render.onrender.com/Store/JobworkInwardChallan/",
         {
           method: "POST",
           headers: {
@@ -398,16 +411,16 @@ const JobworkInwardChallan = () => {
               <main className={`main-content ${sideNavOpen ? "shifted" : ""}`}>
                 {/* ── Header ── */}
                 <div className="InwardJobwork-header mb-4 text-start mt-5">
-                  <div className="d-flex align-items-center gap-2 justify-content-between w-100" style={{ flexWrap: "wrap", overflowX: "hidden", rowGap: "10px" }}>
+                  <div className="d-flex align-items-center gap-5 justify-content-between w-100" style={{ flexWrap: "nowrap", overflowX: "auto", whiteSpace: "nowrap" }}>
 
-                    <h5 className="header-title mb-0" style={{ fontSize: "1rem", whiteSpace: "nowrap" }}>Jobwork InWard</h5>
+                    <h5 className="header-title mb-0" style={{ fontSize: "1.1rem", whiteSpace: "nowrap" }}>Jobwork InWard</h5>
 
                     <select id="sharpSelect" className="form-select w-auto" style={{ minWidth: "90px", fontSize: "0.8rem", padding: "4px 25px 4px 8px" }}>
                       <option defaultValue>Produlink</option>
                     </select>
 
                     <div className="d-flex align-items-center gap-2">
-                      <label htmlFor="seriesSelect" className="mb-0" style={{ whiteSpace: "nowrap", fontSize: "0.8rem" }}>Series:</label>
+                      <label htmlFor="seriesSelect" className="mb-0" style={{ whiteSpace: "nowrap", fontSize: "0.85rem" }}>Series:</label>
                       <select
                         id="seriesSelect"
                         className="form-select w-auto"
@@ -428,8 +441,8 @@ const JobworkInwardChallan = () => {
                       </select>
                       <input
                         type="text"
-                        className="form-control ms-1"
-                        style={{ width: "80px", fontSize: "0.8rem", padding: "4px 8px" }}
+                        className="form-control ms-5"
+                        style={{ width: "110px", fontSize: "0.8rem", padding: "4px 8px" }}
                         placeholder="Enter value"
                         value={inputNo}
                         onChange={(e) => setInputNo(e.target.value)}

@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
+import { useLocation } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min";
 import NavBar from "../../../../NavBar/NavBar.js";
@@ -37,15 +38,33 @@ const getEmptyQcInfo = () => ({
   lab_mill_tc_no: "",
   lab_mill_tc_name: "",
   lab_mill_tc_date: new Date().toISOString().split("T")[0],
-  remark: ""
+  remark: "",
+  grn_57F4_no: "",
+  grn_57F4_date: "",
+  vendor: "",
+  item: ""
 });
 
 const SubconJobworkInwardQC = () => {
+  const location = useLocation();
+  const grnDataFromState = location.state?.grnData;
   const [sideNavOpen, setSideNavOpen] = useState(false);
 
   // State for dropdowns
   const [selectedSeries, setSelectedSeries] = useState("");
   const [selectedItem, setSelectedItem] = useState("");
+
+  const itemOptions = useMemo(() => {
+    if (!grnDataFromState?.InwardChallanTable) return [];
+    return grnDataFromState.InwardChallanTable.map(item => {
+      const desc = item.ItemDescription || "";
+      // Format: "Part: FGFG1001 - 1 - CAP OIL LOCK DF | Op: OP:10 | ..."
+      const partMatch = desc.match(/Part:\s*([^|]+)/);
+      return partMatch ? partMatch[1].trim() : desc;
+    });
+  }, [grnDataFromState]);
+
+
 
   // React-controlled tabs
   const [activeTab, setActiveTab] = useState("dimensional");
@@ -53,6 +72,24 @@ const SubconJobworkInwardQC = () => {
 
 
   const [qcInfo, setQcInfo] = useState(getEmptyQcInfo());
+
+  useEffect(() => {
+    if (grnDataFromState) {
+      setQcInfo(prev => ({
+        ...prev,
+        grn_57F4_no: grnDataFromState.InwardF4No || "",
+        grn_57F4_date: grnDataFromState.InwardDate || "",
+        vendor: grnDataFromState.SupplierName || ""
+      }));
+    }
+  }, [grnDataFromState]);
+
+  useEffect(() => {
+    setQcInfo(prev => ({
+      ...prev,
+      item: selectedItem
+    }));
+  }, [selectedItem]);
 
   const [dimensionTests, setDimensionTests] = useState([]);
 
@@ -315,9 +352,9 @@ const SubconJobworkInwardQC = () => {
                         onChange={(e) => setSelectedItem(e.target.value)}
                       >
                         <option value="">Select</option>
-                        <option value="FG1019|B3SD001260|SPR">
-                          FG1019 | B3SD001260 | SPR
-                        </option>
+                        {itemOptions.map((opt, idx) => (
+                          <option key={idx} value={opt}>{opt}</option>
+                        ))}
                       </select>
                     </div>
                   </div>
@@ -676,11 +713,11 @@ const SubconJobworkInwardQC = () => {
                           {/* Top Header Bar */}
                           <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center bg-light p-2 border-bottom fw-bold rounded-top gap-2" style={{ fontSize: "11px", color: "#333" }}>
                             <div className="d-flex flex-wrap align-items-center">
-                              <span className="text-dark">57F4 GRN No : </span> <span className="text-dark ms-1">252614738</span>
+                              <span className="text-dark">57F4 GRN No : </span> <span className="text-dark ms-1">{grnDataFromState?.InwardF4No || "---"}</span>
                               <span className="mx-2 text-muted">|</span>
-                              <span className="text-dark">57F4 GRN Date : </span> <span className="text-dark ms-1">14/01/2026</span>
+                              <span className="text-dark">57F4 GRN Date : </span> <span className="text-dark ms-1">{grnDataFromState?.InwardDate || "---"}</span>
                               <span className="mx-2 text-muted">|</span>
-                              <span className="text-dark">JV0067 | Ayush Enterprises</span>
+                              <span className="text-dark">{grnDataFromState?.SupplierName || "---"}</span>
                             </div>
                             <div className="text-dark text-nowrap" style={{ cursor: "pointer" }}>
                               View 57F4 Outward Details 👁️

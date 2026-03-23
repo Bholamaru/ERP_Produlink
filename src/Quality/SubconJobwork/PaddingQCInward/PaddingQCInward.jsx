@@ -199,7 +199,7 @@ const PaddingQCInward = () => {
                                 </td>
                                 <td>{item.ChallanNo}</td>
                                 <td>{item.ChallanDate}</td>
-                                <td>{item.InwardChallanGSTDetails && item.InwardChallanGSTDetails.length > 0 ? item.InwardChallanGSTDetails[0].ItemCode?.split(' - ')[0] : ''}</td>
+                                <td></td>
                                 <td>{item.SupplierName}</td>
                                 <td>{item.InwardChallanTable && item.InwardChallanTable.length > 0 ? item.InwardChallanTable[0].OutNo : ''}</td>
                                 <td>Total Item : ({item.TotalItem || 0}) 📝</td>
@@ -209,7 +209,7 @@ const PaddingQCInward = () => {
                                   <FaEye />
                                 </td>
                                 <td>
-                                  <Link to={"/SubconJobworkInwardQC"} className="vndrbtn" >  ! </Link>
+                                  <Link to={"/SubconJobworkInwardQC"} state={{ grnData: item }} className="vndrbtn" >  ! </Link>
                                 </td>
                               </tr>
                             ))

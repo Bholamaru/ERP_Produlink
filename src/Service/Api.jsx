@@ -3134,7 +3134,7 @@ export const deleteItemMaster = async (id) => {
 
 // Subcon Jobwork Inward QC - V3
 export const forceSaveSubconQC = async (data) => {
-  const url = `http://127.0.0.1:8000/Quality/subcon-jobwork-qc/`;
+  const url = `https://erp-render.onrender.com/Quality/subcon-jobwork-qc/`;
   console.log("!!! FORCING API CALL TO:", url);
   try {
     const token = localStorage.getItem("accessToken");
