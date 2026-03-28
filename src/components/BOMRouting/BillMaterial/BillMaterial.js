@@ -192,7 +192,7 @@ const BillMaterial = () => {
     QtyKg: "",
     ScrapCode: "",
     ScracpQty: "",
-    QC: "",
+    QC: false,
     ProdQty: "",
     AssProd: "",
     WipWt: "",
@@ -415,7 +415,7 @@ const BillMaterial = () => {
         (item.QtyKg && item.QtyKg.toLowerCase().includes(searchTerm)) ||
         (item.ScrapCode && item.ScrapCode.toLowerCase().includes(searchTerm)) ||
         (item.ScracpQty && item.ScracpQty.toLowerCase().includes(searchTerm)) ||
-        (item.QC && item.QC.toLowerCase().includes(searchTerm)) ||
+        (item.QC && String(item.QC).toLowerCase().includes(searchTerm)) ||
         (item.AssProd && item.AssProd.toLowerCase().includes(searchTerm)) ||
         (item.ProdQty && item.ProdQty.toLowerCase().includes(searchTerm)) ||
         (item.WipWt && item.WipWt.toLowerCase().includes(searchTerm)) ||
@@ -1168,13 +1168,16 @@ const BillMaterial = () => {
                                     </div>
                                     <div className="col-md-1">
                                       <label>QC</label>
-                                      <input
-                                        type="text"
-                                        className="form-control"
-                                        name="QC"
-                                        value={formData1.QC}
-                                        onChange={handleChange}
-                                      />
+                                      <div className="mt-2">
+                                        <input
+                                          type="checkbox"
+                                          className="form-check-input"
+                                          name="QC"
+                                          checked={!!formData1.QC}
+                                          onChange={handleChange}
+                                          style={{ width: "20px", height: "20px" }}
+                                        />
+                                      </div>
                                     </div>
                                     <div className="col-md-1">
                                       <label>Ass Prod</label>
@@ -1323,7 +1326,15 @@ const BillMaterial = () => {
                                               <td>{item.QtyKg}</td>
                                               <td>{item.ScrapCode}</td>
                                               <td>{item.ScracpQty}</td>
-                                              <td>{item.QC}</td>
+                                              <td>
+                                                <input
+                                                  type="checkbox"
+                                                  checked={!!item.QC}
+                                                  disabled
+                                                  className="form-check-input"
+                                                  style={{ width: "18px", height: "18px" }}
+                                                />
+                                              </td>
                                               <td>{item.ProdQty}</td>
                                               <td>{item.AssProd}</td>
                                               <td>{item.WipWt}</td>

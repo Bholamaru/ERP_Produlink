@@ -66,7 +66,7 @@ const JobworkInwardChallan = () => {
     try {
       const res = await fetch("https://erp-render.onrender.com/All_Masters/api/bom-items/");
       const resData = await res.json();
-      
+
       // Transform keys to "FGCode - Name - ID" instead of "ID - Name - FGCode"
       const transformedData = {};
       Object.keys(resData).forEach(key => {
@@ -304,13 +304,14 @@ const JobworkInwardChallan = () => {
     // Map tableRows to the API's JobworkInwardChallanTable format
     const JobworkInwardChallanTable = tableRows.map((row) => ({
       ItemCode: row.ItemCode,
-      Operation: row.ParticularNatureOfProcess,
+      Operation: row.FGPartCode,
       ChallanQty: row.ChallanQty,
       GRNQty: row.GRNQty,
       MaterialRate: row.MaterialRateChallan,
       HeatNo: row.HeatNo,
       CustHeatNo: row.CustHeatNo,
       ParticularNatureOfProcess: row.ParticularNatureOfProcess,
+      FGPartCode: row.FGPartCode,
     }));
 
     const payload = {
@@ -713,7 +714,7 @@ const JobworkInwardChallan = () => {
                                 <tr key={index}>
                                   <td>{index + 1}</td>
                                   <td>{row.ItemCode}</td>
-                                  <td>{row.ParticularNatureOfProcess}</td>
+                                  <td>{row.FGPartCode}</td>
                                   <td>{row.ChallanQty}</td>
                                   <td>{row.GRNQty}</td>
                                   <td>{row.MaterialRateChallan}</td>

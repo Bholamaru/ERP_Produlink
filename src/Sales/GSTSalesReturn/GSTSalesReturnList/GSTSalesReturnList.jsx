@@ -9,6 +9,7 @@ import {  FaEye, FaRegEdit} from "react-icons/fa";
 import { IoDocuments } from "react-icons/io5";
 import { MdDeleteForever, MdCancel } from "react-icons/md";
 import { useNavigate } from 'react-router-dom';
+import axios from "axios";
 
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
@@ -16,6 +17,8 @@ import { useNavigate } from 'react-router-dom';
 
 const GSTSalesReturnList    = () => {
     const [sideNavOpen, setSideNavOpen] = useState(false);
+    const [salesReturns, setSalesReturns] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
       const navigate = useNavigate();  
       
         const handleButtonClick = () => {
@@ -33,6 +36,25 @@ const GSTSalesReturnList    = () => {
       document.body.classList.remove("side-nav-open");
     }
   }, [sideNavOpen]);
+
+  useEffect(() => {
+    const fetchSalesReturns = async () => {
+      try {
+        const response = await axios.get("https://erp-render.onrender.com/Sales/Gstsalesretun/");
+        setSalesReturns(response.data);
+      } catch (error) {
+        console.error("Error fetching sales returns:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchSalesReturns();
+  }, []);
+
+  const handleViewPdf = (id) => {
+    const url = `https://erp-render.onrender.com/Sales/sales-return-pdf/${id}/`;
+    window.open(url, "_blank");
+  };
 
   return (
     <div className="GSTSalesReturnListMaster">
@@ -160,26 +182,41 @@ const GSTSalesReturnList    = () => {
                       </thead>
 
                       <tbody>
-                        {/* Example data row */}
-                        <tr>
-                          <td>1</td>
-                          <td>24-25</td>
-                          <td>Produlink</td>
-                          <td>GSR-242500116</td>
-                          <td>09/12/24</td>
-                          <td>027</td>
-                          <td>C0005 ENDURANGE TECHNOLOGIES LTD (I) </td>
-                          <td>Rate : 19.86 | Qty : 528 | FG1017</td>
-                          <td>13,355.07</td>
-                          <td>Torge</td>
-                          <td> </td>
-                          <td> </td>
-                          <td> <MdCancel /> </td>
-                          <td> <FaEye /></td>
-                          <td> <FaRegEdit /></td>
-                          <td> <IoDocuments /></td>
-                          <td> <MdDeleteForever /></td>
-                        </tr>
+                        {isLoading ? (
+                          <tr>
+                            <td colSpan="17" className="text-center">Loading...</td>
+                          </tr>
+                        ) : salesReturns.length > 0 ? (
+                          salesReturns.map((item, index) => (
+                            <tr key={item.id}>
+                              <td>{index + 1}</td>
+                              <td>24-25</td>
+                              <td>{item.plant}</td>
+                              <td>{item.sales_return_no}</td>
+                              <td>{item.sales_return_date}</td>
+                              <td>{item.items[0]?.item_code}</td>
+                              <td>{item.cust_name}</td>
+                              <td>
+                                Rate : {item.items[0]?.rate} | Qty : {item.items[0]?.return_qty} | {item.items[0]?.item_code}
+                              </td>
+                              <td>
+                                {item.items.reduce((sum, i) => sum + parseFloat(i.grand_total || 0), 0).toFixed(2)}
+                              </td>
+                              <td> - </td>
+                              <td>{item.remark}</td>
+                              <td>{item.for_e_invoice === "YES" ? "Yes" : "-"}</td>
+                              <td> <MdCancel /> </td>
+                              <td> <FaEye style={{ cursor: 'pointer' }} onClick={() => handleViewPdf(item.id)} /></td>
+                              <td> <FaRegEdit /></td>
+                              <td> <IoDocuments /></td>
+                              <td> <MdDeleteForever /></td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan="17" className="text-center">No records found</td>
+                          </tr>
+                        )}
                       </tbody>  
                     </table>
              </div>

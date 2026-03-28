@@ -60,7 +60,10 @@ const SubconJobworkInwardQC = () => {
       const desc = item.ItemDescription || "";
       // Format: "Part: FGFG1001 - 1 - CAP OIL LOCK DF | Op: OP:10 | ..."
       const partMatch = desc.match(/Part:\s*([^|]+)/);
-      return partMatch ? partMatch[1].trim() : desc;
+      const opMatch = desc.match(/Op:\s*([^|]+)/);
+      const part = partMatch ? partMatch[1].trim() : "";
+      const op = opMatch ? opMatch[1].trim() : "";
+      return `${part} | ${op}`;
     });
   }, [grnDataFromState]);
 
