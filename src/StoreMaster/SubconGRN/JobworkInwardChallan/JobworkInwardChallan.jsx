@@ -304,14 +304,14 @@ const JobworkInwardChallan = () => {
     // Map tableRows to the API's JobworkInwardChallanTable format
     const JobworkInwardChallanTable = tableRows.map((row) => ({
       ItemCode: row.ItemCode,
-      Operation: row.FGPartCode,
+      Operation: row.ParticularNatureOfProcess,
       ChallanQty: row.ChallanQty,
       GRNQty: row.GRNQty,
       MaterialRate: row.MaterialRateChallan,
       HeatNo: row.HeatNo,
       CustHeatNo: row.CustHeatNo,
       ParticularNatureOfProcess: row.ParticularNatureOfProcess,
-      FGPartCode: row.FGPartCode,
+      FGPartCode: (row.FGPartCode || "").toUpperCase(),
     }));
 
     const payload = {
@@ -322,7 +322,7 @@ const JobworkInwardChallan = () => {
       Customer: formData.Customer,
       SelectItem: "",
       ItemCode: tableRows[0]?.ItemCode || "",
-      FGPartCode: tableRows[0]?.FGPartCode || "",
+      FGPartCode: (tableRows[0]?.FGPartCode || "").toUpperCase(),
       ChallanQty: tableRows[0]?.ChallanQty || "",
       GRNQty: tableRows[0]?.GRNQty || "",
       MaterialRate: tableRows[0]?.MaterialRateChallan || "",
@@ -714,7 +714,7 @@ const JobworkInwardChallan = () => {
                                 <tr key={index}>
                                   <td>{index + 1}</td>
                                   <td>{row.ItemCode}</td>
-                                  <td>{row.FGPartCode}</td>
+                                  <td>{row.ParticularNatureOfProcess}</td>
                                   <td>{row.ChallanQty}</td>
                                   <td>{row.GRNQty}</td>
                                   <td>{row.MaterialRateChallan}</td>
