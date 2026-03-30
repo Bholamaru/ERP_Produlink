@@ -155,14 +155,6 @@ const NewGateInward = () => {
     if (name === "Supp_Cust") {
       handleCustomerSearch(value)
     }
-
-    // If selecting a PO from the dropdown, open the PDF
-    if (name === "Select" && value) {
-      const selectedPo = poList.find((po) => po.PoNo === value)
-      if (selectedPo && selectedPo.pdf_link) {
-        window.open(selectedPo.pdf_link, "_blank")
-      }
-    }
   }
 
   // Function to handle customer search
@@ -614,11 +606,11 @@ const NewGateInward = () => {
                                         <div
                                           style={{ cursor: "pointer" }}
                                           onClick={() => {
-                                            const selectedPo = poList.find((po) => po.PoNo === selectedPoNo)
-                                            if (selectedPo?.pdf_link) {
-                                              window.open(selectedPo.pdf_link, "_blank")
+                                            if (selectedPoNo) {
+                                              const pdfUrl = `https://erp-render.onrender.com/Purchase/generate-po-pdf/${selectedPoNo}/`
+                                              window.open(pdfUrl, "_blank")
                                             } else {
-                                              toast.warn("No PDF available for the selected PO.")
+                                              toast.warn("Please select a series first.")
                                             }
                                           }}
                                         >
