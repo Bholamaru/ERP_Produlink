@@ -525,7 +525,7 @@ const InwardChallan1 = () => {
           InQtyNOS: item.bal_Qty || item.qtyNo || "0",
           InQtyKg: item.in_Qty_kg || item.qtyKg || "0",
           JwRate: item.wRate || "0",
-          HeatNo: item.store || "",
+          heat_no: item.store || selectedOutWardChallan?.store || "",
         })),
         InwardChallanGSTDetails: currentItems.map((item) => {
           const poItem = PO[0]?.Item_Detail_Enter?.find(
