@@ -27,7 +27,7 @@ const availablePermissions = {
   Store: [
   "Store", "Gate Inward Entry", "Pending ASN List", "New MRN", "Purchase GRN", "Subcon GRN", "57F4 Inward Challan", "JobWork Inward Challan", "Vendor Scrap Inward", 
                              "Material Issue Challan", "Material Issue Gernal", "Stock Transaction", "Opening Stock", "FG Movement", "RM Stock Transaction", "Stock Transfer", "Delivery Challan", 
-                             "DC GRN", "Store Report", "GRN List", "MRN List", "Inward 57F4 Challan List", "Material Issue Challan List", "General Material Issue Challan List", "Deliver Challan List", "DC GRN List", "Indent List", "Indent Status", "Stock Report", "WIP Stock Report", "RM Stock Report", "Consumable Stock Report", "FG Stock Report"
+                             "DC GRN", "Store Report", "GRN List", "MRN List", "Inward 57F4 Challan List", "Material Issue Challan List", "General Material Issue Challan List", "Deliver Challan List", "DC GRN List", "Indent List", "Indent Status", "Stock Report", "Subcontract Stock", "WIP Stock Report", "RM Stock Report", "Consumable Stock Report", "FG Stock Report"
   ],
   Production: [
    "Production", "Work Order Entry", "Work Order List", "Production Plan List", "Production Entry",

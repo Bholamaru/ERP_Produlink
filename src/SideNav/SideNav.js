@@ -741,6 +741,9 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
                       <span className={`arrow ${isDropdownOpen("stockReport") ? "open" : ""}`}> ▶</span>
                     </div>
                     <div className={`nested-dropdown-menu ${isDropdownOpen("stockReport") ? "show" : ""}`}>
+                      <Link className="dropdown-item" to="/SubcontractStock">
+                        Subcontract Stock
+                      </Link>
                       {permissions.Store.includes("WIP Stock Report") && (
                         <Link className="dropdown-item" to="/WIPStock">
                           WIP Stock Report

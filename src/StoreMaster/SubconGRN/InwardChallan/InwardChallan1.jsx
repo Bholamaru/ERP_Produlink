@@ -512,6 +512,7 @@ const InwardChallan1 = () => {
     try {
       const submissionData = {
         ...formData,
+        OutwardChallan: formData.OutwardChallanNo,
         InwardChallanTable: currentItems.map((item) => ({
           OutNo: selectedOutWardChallan?.challan_no || "",
           OutDate: selectedOutWardChallan?.challan_date || "",
@@ -524,6 +525,7 @@ const InwardChallan1 = () => {
           InQtyNOS: item.bal_Qty || item.qtyNo || "0",
           InQtyKg: item.in_Qty_kg || item.qtyKg || "0",
           JwRate: item.wRate || "0",
+          HeatNo: item.store || "",
         })),
         InwardChallanGSTDetails: currentItems.map((item) => {
           const poItem = PO[0]?.Item_Detail_Enter?.find(

@@ -130,7 +130,7 @@
   margin-left: 15px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
   z-index: 1001;
-  max-height: 400px;
+  max-height: 70vh;
   overflow-y: auto;
   border: 1px solid #2c3e50;
   animation: slideDown 0.3s ease-out;
@@ -338,28 +338,4 @@
   overflow-wrap: break-word;
 }
 
-.blueside-Nav .custom-dropdown-menu::-webkit-scrollbar {
-  width: 0px;
-}
-
-.blueside-Nav .custom-dropdown-menu::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.blueside-Nav .custom-dropdown-menu::-webkit-scrollbar-thumb {
-  background: transparent;
-  border-radius: 2px;
-}
-
-.blueside-Nav .nested-dropdown-menu::-webkit-scrollbar {
-  width: 0px;
-}
-
-.blueside-Nav .nested-dropdown-menu::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.blueside-Nav .nested-dropdown-menu::-webkit-scrollbar-thumb {
-  background: transparent;
-  border-radius: 2px;
-}
+/* Removed transparent zero-width scrollbars to make scrolling visible */
