@@ -606,11 +606,12 @@ const NewGateInward = () => {
                                         <div
                                           style={{ cursor: "pointer" }}
                                           onClick={() => {
-                                            if (selectedPoNo) {
-                                              const pdfUrl = `https://erp-render.onrender.com/Purchase/generate-po-pdf/${selectedPoNo}/`
+                                            if (selectedPoNo && formData.Supp_Cust) {
+                                              const pdfUrl = `http://127.0.0.1:8000/Store/gate/jobwork/purchase/pdf/?po_no=${selectedPoNo}&supplier=${encodeURIComponent(formData.Supp_Cust)}`
+
                                               window.open(pdfUrl, "_blank")
                                             } else {
-                                              toast.warn("Please select a series first.")
+                                              toast.warn("Please select supplier and series first.")
                                             }
                                           }}
                                         >

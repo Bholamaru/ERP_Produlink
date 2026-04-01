@@ -87,12 +87,34 @@ const SubconJobworkInwardQC = () => {
     }
   }, [grnDataFromState]);
 
-  useEffect(() => {
-    setQcInfo(prev => ({
-      ...prev,
-      item: selectedItem
-    }));
-  }, [selectedItem]);
+  const handleItemSelect = (e) => {
+    const value = e.target.value;
+    const selectedIdx = e.target.selectedIndex - 1; // -1 for the "Select" option
+    setSelectedItem(value);
+
+    let matchedItem = null;
+    if (selectedIdx >= 0 && grnDataFromState?.InwardChallanTable) {
+      matchedItem = grnDataFromState.InwardChallanTable[selectedIdx];
+    }
+
+    if (!matchedItem && value && grnDataFromState?.InwardChallanTable) {
+      // Fallback: search by checking if ItemDescription contains the part code
+      const partCode = value.split('|')[0].trim();
+      matchedItem = grnDataFromState.InwardChallanTable.find(item => 
+        item.ItemDescription?.includes(partCode)
+      );
+    }
+
+    if (matchedItem) {
+      setQcInfo(prev => ({
+        ...prev,
+        item: value,
+        heat_no: matchedItem.heat_no || matchedItem.HeatNo || matchedItem.store || ""
+      }));
+    } else {
+      setQcInfo(prev => ({ ...prev, item: value, heat_no: "" }));
+    }
+  };
 
   const [dimensionTests, setDimensionTests] = useState([]);
 
@@ -352,7 +374,7 @@ const SubconJobworkInwardQC = () => {
                         className="form-select form-select-sm shadow-none"
                         style={{ width: "100%", maxWidth: "250px", fontSize: "11px" }}
                         value={selectedItem}
-                        onChange={(e) => setSelectedItem(e.target.value)}
+                        onChange={handleItemSelect}
                       >
                         <option value="">Select</option>
                         {itemOptions.map((opt, idx) => (
@@ -820,7 +842,7 @@ const SubconJobworkInwardQC = () => {
                             {/* Quantities Box Area */}
                             <div className="p-2 mb-3 border rounded bg-light d-flex flex-wrap gap-3 align-items-center">
                               <div className="d-flex gap-2 mb-1">
-                                <div className="d-flex align-items-center"><span className="text-muted me-1">Heat No</span> <input className="form-control form-control-sm border shadow-none" name="heat_no" value={qcInfo.heat_no} onChange={handleInfoChange} style={{ width: "80px" }} /></div>
+                                <div className="d-flex align-items-center"><span className="text-muted me-1">Heat No</span> <input className="form-control form-control-sm border shadow-none" name="heat_no" value={qcInfo.heat_no} readOnly style={{ width: "80px" }} /></div>
                                 <div className="d-flex align-items-center"><span className="text-muted mx-2">GRN Qty:</span> <input className="form-control form-control-sm border shadow-none" name="grn_qty" value={qcInfo.grn_qty} onChange={handleInfoChange} style={{ width: "60px" }} /></div>
                                 <div className="d-flex align-items-center"><span className="text-muted mx-2">QC Qty:</span> <input className="form-control form-control-sm border shadow-none" name="qc_qty_initial" value={qcInfo.qc_qty} readOnly style={{ width: "50px" }} /></div>
                                 <div className="d-flex align-items-center"><span className="text-muted mx-2">Qc Pending Qty:</span> <span className="ms-1 fw-bold text-dark">{qcInfo.qc_pending_qty}</span></div>
