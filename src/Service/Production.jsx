@@ -629,3 +629,14 @@ export const updateFGScrapRejectionNote = async (id, data) => {
     throw error;
   }
 };
+
+export const getProductionFilterReport = async (filters) => {
+  try {
+    const params = new URLSearchParams(filters).toString();
+    const response = await axios.get(`https://erp-render.onrender.com/Production/production-filter/?${params}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching production filter report:", error);
+    throw error;
+  }
+};
