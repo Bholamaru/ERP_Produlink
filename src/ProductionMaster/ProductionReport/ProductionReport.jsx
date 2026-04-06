@@ -15,14 +15,14 @@ const ProductionReport = () => {
   const [activeTab, setActiveTab] = useState("query"); // 'query' or 'result'
 
   // Filter Query States
-  const [fromDate, setFromDate] = useState("2025-11-01");
-  const [toDate, setToDate] = useState("2025-11-30");
-  const [useDateFilter, setUseDateFilter] = useState(true);
-  const [operation, setOperation] = useState("10");
-  const [itemCode, setItemCode] = useState("1");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+  const [useDateFilter, setUseDateFilter] = useState(false);
+  const [operation, setOperation] = useState("");
+  const [itemCode, setItemCode] = useState("");
   const [prodNo, setProdNo] = useState("");
-  const [useOperationFilter, setUseOperationFilter] = useState(true);
-  const [useItemFilter, setUseItemFilter] = useState(true);
+  const [useOperationFilter, setUseOperationFilter] = useState(false);
+  const [useItemFilter, setUseItemFilter] = useState(false);
   const [useProdNoFilter, setUseProdNoFilter] = useState(false);
   const [queryResults, setQueryResults] = useState([]);
   const [queryLoading, setQueryLoading] = useState(false);
@@ -85,7 +85,35 @@ const ProductionReport = () => {
       }
       
       const data = await getProductionFilterReport(filters);
-      setQueryResults(data);
+
+      // 🔍 Frontend filter safeguard to ensure results strictly match the selected query criteria
+      let processedData = data;
+      
+      if (useDateFilter) {
+        if (fromDate) {
+          processedData = processedData.filter(item => item.Date >= fromDate);
+        }
+        if (toDate) {
+          processedData = processedData.filter(item => item.Date <= toDate);
+        }
+      }
+
+      if (useOperationFilter && operation) {
+        processedData = processedData.filter(item => {
+          const opParts = (item.operation || "").split("|");
+          return opParts[0] === operation;
+        });
+      }
+
+      if (useItemFilter && itemCode) {
+        processedData = processedData.filter(item => item.item === itemCode);
+      }
+
+      if (useProdNoFilter && prodNo) {
+        processedData = processedData.filter(item => item.Prod_no === prodNo);
+      }
+
+      setQueryResults(processedData);
       setActiveTab("result");
     } catch (error) {
       console.error("Error executing query:", error);
