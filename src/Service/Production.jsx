@@ -1,4 +1,4 @@
-import axios from "axios";
+﻿import axios from "axios";
 
 const BASE_URL = "http://127.0.0.1:8000/Production/";
 // const BASE_URL = "api/Production/";
@@ -522,7 +522,7 @@ const getAuthHeaders = () => {
   };
 };
 
-// 📄 Get Scrap Line Rejection Report
+// ðŸ“„ Get Scrap Line Rejection Report
 export const getScrapLineRejectionReport = async (params) => {
   try {
     const response = await axios.get(`${BASE_URL}ScrapLineRejectionReport/`, {
@@ -536,7 +536,7 @@ export const getScrapLineRejectionReport = async (params) => {
   }
 };
 
-// 🔍 Fetch scrap rejection detail by ID
+// ðŸ” Fetch scrap rejection detail by ID
 export const fetchScrapRejectionDetail = async (rejectionId) => {
   try {
     const response = await axios.get(`${BASE_URL}api/ScrapLineRejectionNote/${rejectionId}/`, getAuthHeaders());
@@ -547,7 +547,7 @@ export const fetchScrapRejectionDetail = async (rejectionId) => {
   }
 };
 
-// 🔄 Update existing scrap rejection note
+// ðŸ”„ Update existing scrap rejection note
 export const updateScrapRejectionNote = async (id, data) => {
   try {
     const response = await axios.put(`${BASE_URL}api/ScrapLineRejectionNote/${id}/`, data, getAuthHeaders());
@@ -558,7 +558,7 @@ export const updateScrapRejectionNote = async (id, data) => {
   }
 };
 
-// 🆕 Submit new scrap rejection note
+// ðŸ†• Submit new scrap rejection note
 export const submitScrapRejectionNote = async (data) => {
   try {
    const response = await axios.post(`${BASE_URL}api/ScrapLineRejectionNote/`, data, getAuthHeaders());
@@ -608,7 +608,7 @@ export const submitScrapRejectionEntry = async (data) => {
 };
 
 
-// 🔍 Fetch scrap rejection detail by ID
+// ðŸ” Fetch scrap rejection detail by ID
 export const fetchFGScrapRejectionDetail = async (rejectionId) => {
   try {
     const response = await axios.get(`${BASE_URL}api/FGScrapDetails/${rejectionId}/`, getAuthHeaders());
@@ -619,7 +619,7 @@ export const fetchFGScrapRejectionDetail = async (rejectionId) => {
   }
 };
 
-// 🔄 Update existing scrap rejection note
+// ðŸ”„ Update existing scrap rejection note
 export const updateFGScrapRejectionNote = async (id, data) => {
   try {
     const response = await axios.put(`${BASE_URL}api/FGScrapDetails/${id}/`, data, getAuthHeaders());
@@ -637,6 +637,17 @@ export const getProductionFilterReport = async (filters) => {
     return response.data;
   } catch (error) {
     console.error("Error fetching production filter report:", error);
+    throw error;
+  }
+};
+
+export const getDailyProductionReport = async (filters) => {
+  try {
+    const params = new URLSearchParams(filters).toString();
+    const response = await axios.get(`https://erp-render.onrender.com/Production/daily-production/?${params}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching daily production report:", error);
     throw error;
   }
 };

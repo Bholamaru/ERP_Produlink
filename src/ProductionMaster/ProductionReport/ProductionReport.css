@@ -3,6 +3,17 @@
   font-family: Arial, sans-serif;
 }
 
+/* Optimized Full Screen Layout with Responsive Spacing and Light Grey Background */
+.main-content.full-screen-view {
+  padding: 40px !important; /* Spacing from screen sides */
+  background-color: #f1f3f4 !important; /* Unified Light Grey Background */
+}
+
+
+
+
+
+
 /* Header Styling */
 .ProductionReport-header {
   background-color: #f8f9fa;
@@ -83,11 +94,12 @@
 }
 
 /* Production Query Styles - Aligned with Project Standards */
-.container.mt-4 {
+.container-fluid.p-0 {
   background-color: #fff;
-  padding: 20px;
-  border-radius: 8px;
+  padding: 0;
+  border-radius: 0;
 }
+
 
 .top-but3-header {
   background-color: #f8f9fa;
@@ -110,11 +122,11 @@
   background-color: rgba(235, 233, 233, 0.685);
   padding: 5px 15px;
   margin-left: 5px;
-  border: none;
+  border: 1px solid #dee2e6; /* Base border instead of none */
   text-decoration: none;
-  color: black;
+  color: #495057;
   font-size: 13px;
-  border-radius: 4px;
+  border-radius: 10px; /* Consistent rounded corners */
   cursor: pointer;
   transition: background-color 0.2s, color 0.2s;
 }
@@ -131,54 +143,78 @@
 }
 
 .custom-tabs-container {
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  border: 1px solid #dee2e6;
+  border-radius: 10px;
   overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); /* Soft premium shadow */
+  background-color: #fff;
 }
 
 .tab-buttons {
   display: flex;
-  background-color: #f1f7fc;
-  padding: 10px 10px 0 10px;
-  border-bottom: 2px solid #dee2e6; /* Consistent bottom line */
+  background-color: #f8faff;
+  padding: 12px 15px;
+  border-bottom: 1px solid #edf2f7;
+  gap: 12px;
 }
 
-.tab-buttons .vndrbtn {
-  border-radius: 6px 6px 0 0;
-  margin-right: 6px;
+.tab-buttons .vndrbtn,
+.tab-buttons .active {
+  border-radius: 10px; /* Unified rounded corners */
+  padding: 8px 30px;
   background-color: #ffffff;
   color: #495057;
   border: 1px solid #dee2e6;
-  border-bottom: none;
-  padding: 10px 30px;
   font-weight: 600;
   font-size: 13px;
   cursor: pointer;
-  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+  transition: all 0.2s ease-in-out;
   outline: none !important;
-  position: relative;
-  /* Fixed position to prevent jumps */
-  margin-bottom: -2px; /* Align perfectly with bottom border */
-}
-
-.tab-buttons .vndrbtn.active {
-  background-color: #007bff;
-  color: #ffffff;
-  border: 1px solid #007bff;
-  box-shadow: none; /* Removed for maximum stability */
-  z-index: 2;
-  cursor: default;
+  box-shadow: none !important;
+  display: inline-block;
+  text-decoration: none;
 }
 
 .tab-buttons .vndrbtn:hover:not(.active) {
-  background-color: #e9ecef;
-  color: #007bff;
+  background-color: #16bfff;
+  color: #ffffff;
+  border-color: #16bfff;
 }
 
-.tab-buttons .vndrbtn:focus {
-  outline: none;
-  box-shadow: none;
+
+.tab-buttons .active {
+  background-color: #ffffff; 
+  color: #495057;
+  border: 1px solid #16bfff;  /* Blue border for active state */
+  cursor: default;
 }
+
+.tab-buttons .active:hover {
+  background-color: #16bfff;
+  color: #ffffff;
+}
+
+
+.tab-buttons .vndrbtn:focus,
+.tab-buttons .active:focus,
+.tab-buttons .vndrbtn:active,
+.tab-buttons .active:active {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+
+
+
+.tab-buttons .vndrbtn:focus,
+.tab-buttons .vndrbtn:active,
+.tab-buttons .vndrbtn:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+  border-color: inherit;
+}
+
+
 
 .tab-content {
   background-color: #fff;

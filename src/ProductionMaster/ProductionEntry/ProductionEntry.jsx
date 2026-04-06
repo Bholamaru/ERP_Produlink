@@ -7,7 +7,7 @@ import NavBar from "../../NavBar/NavBar.js"
 import SideNav from "../../SideNav/SideNav.js"
 
 import "./ProductionEntry.css"
-import { FaPlus, FaTrash } from "react-icons/fa"
+import { FaPlus, FaTrash, FaEye, FaThList } from "react-icons/fa"
 import Cached from "@mui/icons-material/Cached.js"
 import axios from "axios"
 
@@ -1083,6 +1083,34 @@ const ProductionEntry = () => {
 
 
 
+  // WIP Table state
+  const [showWIPTable, setShowWIPTable] = useState(false)
+  const [wipData, setWipData] = useState([])
+  const [wipLoading, setWipLoading] = useState(false)
+
+  const handleViewWIP = async () => {
+    if (showWIPTable) {
+      setShowWIPTable(false)
+      return
+    }
+    const partNo = formData.part_no
+    if (!partNo) {
+      toast.warning("Please select an item first to view WIP data.")
+      return
+    }
+    try {
+      setWipLoading(true)
+      const res = await axios.get(`https://erp-render.onrender.com/Store/api/WIPstockreport/?q=${partNo}`)
+      setWipData(res.data.data || [])
+      setShowWIPTable(true)
+    } catch (err) {
+      console.error("WIP fetch error:", err)
+      toast.error("Failed to fetch WIP data.")
+    } finally {
+      setWipLoading(false)
+    }
+  }
+
   return (
     // ProductionEntry Component UI
     <div className="ProductionEntryMaster">
@@ -1150,7 +1178,7 @@ const ProductionEntry = () => {
                     <div className="ProductionEntry-main mt-2">
                       <div className="row text-start">
                         {/* First Column */}
-                        <div className="col-md-4">
+                        <div className="col-md-3">
                           {/* Prod. No */}
                           <div className="row mb-2">
                             <div className="col-4">
@@ -1216,12 +1244,12 @@ const ProductionEntry = () => {
                             </div>
                           </div>
 
-                          {/* UNIT/Machine */}
-                          <div className="row mb-2">
-                            <div className="col-4">
-                              <label htmlFor="unit-machine">UNIT/Machine :</label>
-                            </div>
-                            <div className="col-8 position-relative">
+                            {/* UNIT/Machine */}
+                            <div className="row mb-2">
+                              <div className="col-5">
+                                <label htmlFor="unit-machine">UNIT/Machine :</label>
+                              </div>
+                              <div className="col-7 position-relative">
                               <input
                                 id="unit-machine"
                                 className="form-control"
@@ -1336,7 +1364,7 @@ const ProductionEntry = () => {
                         </div>
 
                         {/* Second Column */}
-                        <div className="col-md-4">
+                        <div className="col-md-3">
                           {/* Date & Time */}
                           <div className="row mb-2">
                             <div className="col-4">
@@ -1480,12 +1508,11 @@ const ProductionEntry = () => {
                                 id="parent_operation"
                                 name="ParentOperation"
                                 className="form-control"
-                                value={formData.ParentOperation || ""}
-                                placeholder="Value Automatic Feild"
-                                readOnly
-                              />
+                                  placeholder="Value Automatic Field"
+                                  readOnly
+                                />
+                              </div>
                             </div>
-                          </div>
 
                           {/* Prod Time */}
                           <div className="row mt-4">
@@ -1506,7 +1533,7 @@ const ProductionEntry = () => {
                         </div>
 
                         {/* Third Column */}
-                        <div className="col-md-4">
+                        <div className="col-md-3">
                           {/* Shift */}
                           <div className="row mb-2">
                             <div className="col-4">
@@ -1706,7 +1733,66 @@ const ProductionEntry = () => {
                             </div>
                           </div>
                         </div>
+
+                        {/* Fourth Column - View WIP & Item Wise Stock View */}
+                        <div className="col-md-3 d-flex flex-column align-items-center pt-2">
+                          <button
+                            type="button"
+                            className="view-wip-link mb-2"
+                            style={{ background: "none", border: "none", padding: 0 }}
+                            onClick={handleViewWIP}
+                          >
+                            View WIP
+                          </button>
+
+                           {/* WIP Toggle Table - below View WIP */}
+                           {showWIPTable && (
+                             <div style={{ 
+                               width: "100%",
+                               maxHeight: "200px", 
+                               overflowY: "auto", 
+                               overflowX: "auto", 
+                               border: "1px solid #dee2e6",
+                               borderRadius: "4px",
+                               backgroundColor: "#fff"
+                             }}>
+                               {wipLoading ? (
+                                 <p className="text-center text-muted" style={{ fontSize: "11px", padding: "10px" }}>Loading...</p>
+                               ) : (
+                                 <table className="table table-bordered table-sm mb-0" style={{ fontSize: "11px", tableLayout: "fixed", width: "100%" }}>
+                                   <thead style={{ backgroundColor: "#007bff", color: "#fff", position: "sticky", top: 0 }}>
+                                     <tr className="text-center">
+                                       <th style={{ width: "75px" }}>OP No</th>
+                                       <th style={{ width: "100px" }}>Part Code</th>
+                                       <th style={{ width: "70px" }}>Prod Qty</th>
+                                       <th style={{ width: "80px" }}>Pending QC</th>
+                                     </tr>
+                                   </thead>
+                                   <tbody className="text-center">
+                                     {wipData.length > 0 ? (
+                                       wipData.map((row, idx) => (
+                                         <tr key={idx}>
+                                           <td style={{ padding: "2px" }}>{row.OPNo}</td>
+                                           <td style={{ fontSize: "10px", textAlign: "left", padding: "2px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{row.PartCode}</td>
+                                           <td style={{ padding: "2px" }}>{row.prod_qty}</td>
+                                           <td style={{ padding: "2px" }}>{row.pending_qc}</td>
+                                         </tr>
+                                       ))
+                                     ) : (
+                                       <tr>
+                                         <td colSpan={4} className="text-center text-muted">No data</td>
+                                       </tr>
+                                     )}
+                                   </tbody>
+                                 </table>
+                               )}
+                             </div>
+                           )}
+ 
+                         </div>
+
                       </div>
+
                     </div>
 
                     <div className="ProductionEntry-main mt-2">

@@ -4,10 +4,11 @@ import "bootstrap/dist/js/bootstrap.bundle.min";
 import NavBar from "../../NavBar/NavBar.js";
 import SideNav from "../../SideNav/SideNav.js";
 import "./ProductionReport.css";
-import { getAssemblyReport, getProductionFilterReport } from "../../Service/Production.jsx";
+import { getAssemblyReport, getProductionFilterReport, getDailyProductionReport } from "../../Service/Production.jsx";
 import { FaEdit, FaFileExcel, FaSitemap, FaPrint, FaSearch, FaEye } from "react-icons/fa";
 import { IoDocument } from "react-icons/io5";
 import { Link } from "react-router-dom";
+import * as XLSX from "xlsx";
 
 const ProductionReport = () => {
   const [sideNavOpen, setSideNavOpen] = useState(false);
@@ -26,6 +27,11 @@ const ProductionReport = () => {
   const [useProdNoFilter, setUseProdNoFilter] = useState(false);
   const [queryResults, setQueryResults] = useState([]);
   const [queryLoading, setQueryLoading] = useState(false);
+  
+  // Daily Production Report Filter States
+  const [reportFromDate, setReportFromDate] = useState("");
+  const [reportToDate, setReportToDate] = useState("");
+  const [reportLoading, setReportLoading] = useState(false);
 
   const toggleSideNav = () => {
     setSideNavOpen((prevState) => !prevState);
@@ -58,9 +64,51 @@ const ProductionReport = () => {
     };
 
     fetchData();
-  }, [currentPage]);
+  }, []);
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+  const handleSearchReport = async () => {
+    if (!reportFromDate || !reportToDate) {
+      alert("Please select both From and To dates.");
+      return;
+    }
+
+    setReportLoading(true);
+    try {
+      const filters = {
+        from_date: reportFromDate,
+        to_date: reportToDate
+      };
+      
+      const data = await getDailyProductionReport(filters);
+      
+      // Normalize data: mapping lowercase field names from API to CamelCase expected by table
+      const normalizedData = data.map(item => ({
+        ...item,
+        Plant: "Produlink", // Hardcoded or derive from unit_machine if needed
+        Prod_no: item.Prod_no || "-",
+        Date: item.Date || "-",
+        Time: item.Time || "-",
+        Shift: item.shift || "-",
+        Contractor: item.contractor || "-",
+        Operator: item.operator || "-",
+        FGItem: item.item || "-",
+        ProdQty: item.prod_qty || "0",
+        ReworkQty: item.rework_qty || "0",
+        RejectQty: item.reject_qty || "0"
+      }));
+
+      setAssemblyData(normalizedData);
+      setTotalItems(normalizedData.length);
+      setCurrentPage(1);
+    } catch (error) {
+      console.error("Error searching daily production report:", error);
+      alert("Failed to fetch production report.");
+    } finally {
+      setReportLoading(false);
+    }
+  };
 
   const handleExecuteQuery = async () => {
     setQueryLoading(true);
@@ -123,6 +171,50 @@ const ProductionReport = () => {
     }
   };
 
+  const handleExportExcel = () => {
+    if (queryResults.length === 0) {
+      alert("No data available to export");
+      return;
+    }
+
+    const exportData = queryResults.map((item, index) => {
+      const opParts = (item.operation || "N/A").split("|");
+      const opNo = opParts[0];
+      const opName = opParts[1] || "";
+      
+      return {
+        "Sr. No.": index + 1,
+        "ProdDate": item.Date || "",
+        "OpName": item.operator || "",
+        "Supervisor": item.Supervisor || "",
+        "ProdNo": item.Prod_no || "",
+        "ItemNo": item.item || "",
+        "ItemDesc": item.ItemDescription || item.General || "-",
+        "PartCode": item.ItemCode || item.Series || "-",
+        "ProductionQty": item.prod_qty || "",
+        "ShiftName": item.shift || "",
+        "username": "admin",
+        "MachineName": item.unit_machine || "",
+        "MachineCode": item.unit_machine || "",
+        "OPNo": opNo,
+        "Remark": item.remark || "-",
+        "OperationName": opName,
+      };
+    });
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Production Results");
+
+    // Adjust column widths
+    const wscols = Object.keys(exportData[0]).map(key => ({
+      wch: Math.max(key.length, ...exportData.map(row => row[key] ? row[key].toString().length : 0)) + 2
+    }));
+    worksheet["!cols"] = wscols;
+
+    XLSX.writeFile(workbook, "Production_Query_Report.xlsx");
+  };
+
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = assemblyData.slice(indexOfFirstItem, indexOfLastItem);
@@ -142,15 +234,15 @@ const ProductionReport = () => {
                 sideNavOpen={sideNavOpen}
                 toggleSideNav={toggleSideNav}
               />
-              <main className={`main-content ${sideNavOpen ? "shifted" : ""}`}>
-                <div className="ProductionReport mt-5">
+              <main className={`main-content ${sideNavOpen ? "shifted" : ""} ${view === "query" ? "full-screen-view" : ""}`}>
+                <div className="ProductionReport">
                   {view === "report" ? (
                     <>
                       <div className="ProductionReport-header mb-4 text-start">
                         <div className="row align-items-center">
                           <div className="col-md-4">
                             <h5 className="header-title">
-                              Production Entry Ass Report
+                              Daily Production Report
                             </h5>
                           </div>
                           <div className="col-md-8 text-end">
@@ -184,11 +276,21 @@ const ProductionReport = () => {
                           </div>
                           <div className="col-md-2">
                             <label>From Date</label>
-                            <input type="date" className="form-control" />
+                            <input 
+                              type="date" 
+                              className="form-control" 
+                              value={reportFromDate}
+                              onChange={(e) => setReportFromDate(e.target.value)}
+                            />
                           </div>
                           <div className="col-md-2">
                             <label>To Date</label>
-                            <input type="date" className="form-control" />
+                            <input 
+                              type="date" 
+                              className="form-control" 
+                              value={reportToDate}
+                              onChange={(e) => setReportToDate(e.target.value)}
+                            />
                           </div>
                           <div className="col-md-2">
                             <label>Series</label>
@@ -206,7 +308,13 @@ const ProductionReport = () => {
                             </select>
                           </div>
                           <div className="col-md-2 mt-4">
-                            <button className="btn btn-primary">Search</button>
+                            <button 
+                              className="btn btn-primary" 
+                              onClick={handleSearchReport}
+                              disabled={reportLoading}
+                            >
+                              {reportLoading ? "Searching..." : "Search"}
+                            </button>
                           </div>
                         </div>
                       </div>
@@ -311,8 +419,8 @@ const ProductionReport = () => {
                       </div>
                     </>
                   ) : (
-                    <div className="container mt-4">
-                      <div className="top-but3-header mb-4 text-start">
+                    <div className="container-fluid">
+                      <div className="top-but3-header p-2 mb-4 text-start">
                         <div className="row align-items-center">
                           <div className="col-md-4">
                             <h5 className="header-title">
@@ -324,7 +432,11 @@ const ProductionReport = () => {
                               <button className="vndrbtn me-2">
                                 <FaSitemap className="me-1" /> Query Master
                               </button>
-                              <button className="vndrbtn me-2">
+                              <button 
+                                className="vndrbtn me-2"
+                                onClick={handleExportExcel}
+                                disabled={queryResults.length === 0}
+                              >
                                 <FaFileExcel className="me-1" /> Export Report
                               </button>
                               <button
