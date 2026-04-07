@@ -613,7 +613,9 @@ const ProductionEntry = () => {
       Prod_no: prodNo || "",
       contractor: searchTermContractor || formData.contractor || "N/A", // Save the full display format
       unit_machine: formData.unit_machine || "N/A",
-      item: formData.Item || "N/A", // ✅ Fixed: using Item (capital I) as set in handleSelectItem
+      item: formData.item || "N/A", // Save the full display format
+      ItemCode: formData.ItemCode || "N/A",
+      ItemDescription: formData.ItemDescription || "N/A",
       operation: formData.Operation || "N/A", // ✅ Fixed: using Operation (capital O) as set in operation select
       prod_qty: formData.prod_qty || "0",
       Date: formData.Date || new Date().toISOString().split("T")[0],
@@ -772,11 +774,13 @@ const ProductionEntry = () => {
 
     setFormData((prev) => ({
       ...prev,
-      Item: item.Part_Code, // ✅ Save backend Part_Code
+      Item: item.Part_Code, // ✅ Save backend Part_Code (used for lookups)
       item: fullItemDisplay, // Save full display format
       part_no: item.part_no,
       part_code: item.Part_Code,
       Name_Description: item.Name_Description,
+      ItemCode: item.Part_Code,
+      ItemDescription: item.Name_Description,
     }))
 
     // input use

@@ -1,4 +1,4 @@
-﻿import axios from "axios";
+import axios from "axios";
 
 const BASE_URL = "http://127.0.0.1:8000/Production/";
 // const BASE_URL = "api/Production/";
@@ -479,21 +479,15 @@ export const deleteProductDetail = async (id) => {
   }
 };
 
-
 export const getScrapLineRejectionNote = async (year) => {
   try {
     const response = await axios.get(`${BASE_URL}GetNextNote/?year=${year}`);
     return response.data.next_ScrapRejectionNo; // Ensure this matches API response
-  } catch (error
-
-  ) {
+  } catch (error) {
     console.error("Error fetching next scrap rejection note:", error);
     return null;
   }
 };
-
-
-
 
 export const getAssemblyReport = async () => {
   try {

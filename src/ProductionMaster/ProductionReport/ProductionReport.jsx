@@ -86,6 +86,7 @@ const ProductionReport = () => {
       // Normalize data: mapping lowercase field names from API to CamelCase expected by table
       const normalizedData = data.map(item => ({
         ...item,
+        id: item.id || item.prod_id || item.production_id || item.pk, // Fallback for different ID names
         Plant: "Produlink", // Hardcoded or derive from unit_machine if needed
         Prod_no: item.Prod_no || "-",
         Date: item.Date || "-",
@@ -373,7 +374,7 @@ const ProductionReport = () => {
 
                                   <td>
                                     <a
-                                      href={`http://127.0.0.1:8000/${item.View}`}
+                                      href={`http://127.0.0.1:8000/Production/ProductionEntry/pdf/${item.id}/`}
                                       target="_blank"
                                       rel="noopener noreferrer"
                                       className="btn btn-sm btn-primary"
