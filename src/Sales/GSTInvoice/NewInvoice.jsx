@@ -468,7 +468,7 @@ const NewInvoice = () => {
         po_qty: String(row.po_qty || row.qty || 0),
         assessable_value: String(row.assessable_value || 0),  // ✅ po_qty * rate
         bal_qty: null,
-        inv_qty: null,
+        inv_qty: String(row.inv_qty || row.qty || row.po_qty || 0), // ✅ Populated invoice qty
         pkg_qty: null,
         type_of_packing: "",
         hsn_code: row.HSN_SAC_Code || row.hsn_code || "", // ✅ was null
@@ -485,6 +485,8 @@ const NewInvoice = () => {
         ...formData,
         items: mappedItems,           // ✅ use mapped items
         GSTdetails: [{                // ✅ was: taxes — renamed to match related_name
+          base_value: taxData.base_value || "0.00",          // ✅ Save base value
+          disc_amt: taxData.disc_amt || "0.00",              // ✅ Save discount amount
           assessble_value: totalAssessableValue.toFixed(2),  // ✅ auto-calculated from items (po_qty * rate)
           cgst: taxData.cgst || 0,
           sgst: taxData.sgst || 0,
