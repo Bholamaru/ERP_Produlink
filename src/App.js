@@ -309,6 +309,11 @@ import QueryReportPro from "./ProductionMaster/Report/QueryReportPro.jsx";
 import MachineDefaultBook from "./ProductionMaster/Report/MachineDefaultIdle/MachineDefaultBook.jsx";
 
 
+/////////////////////////////  Planning  ////////////////////////////////////
+
+import ProductionSchedule from "./Planning/ProductionSchedule/ProductionSchedule.jsx";
+
+
 ///////////////////////////////////////// Quality ////////////////////////////////////////////////
 
 import QualityPlan from "./Quality/QualityPlan/QualityPlan.jsx";
@@ -356,6 +361,7 @@ import SalesOrderItemAdd from "./Sales/CustomerSalesOrderAmendment/SalesOrderAme
 import SacheduleSalesNew from "./Sales/SacheduleSalesNew/SacheduleSalesNew.jsx";
 import SalesOrderStatus from "./Sales/SalesOrderStatus/SalesOrderStatus.jsx";
 import NewInvoice from "./Sales/GSTInvoice/NewInvoice.jsx";
+import InvoiceList from "./Sales/GSTInvoice/InvoiceList/InvoiceList.jsx";
 import NewinvoiceGST from "./Sales/GSTInvoice/NewinvoiceGST/NewinvoiceGST.jsx";
 import GSTJobworkInvoice from "./Sales/GSTJobwork/GSTJobworkInvoice/GSTJobworkInvoice.jsx";
 import DChallan from "./Sales/GSTJobwork/DC/DChallan.jsx";
@@ -777,6 +783,11 @@ function App() {
 
 
 
+        {/* ////////////////////////////////// Planning //////////////////////////////////////////// */}
+
+        <Route path="/ProductionSchedule" element={<ProductionSchedule />} />
+
+
         {/* //////////////////////////////////  Quality Plan ///////////////////////////////////// */}
 
         <Route path="QualityPlan" element={<QualityPlan />} />
@@ -826,6 +837,7 @@ function App() {
         <Route path="SacheduleSalesNew" element={<SacheduleSalesNew />} />
         <Route path="SalesOrderStatus" element={<SalesOrderStatus />} />
         <Route path="NewInvoice" element={<NewInvoice />} />
+        <Route path="InvoiceList" element={<InvoiceList />} />
         <Route path="NewinvoiceGST" element={<NewinvoiceGST />} />
         <Route path="GSTJobworkInvoice" element={<GSTJobworkInvoice />} />
         <Route path="DChallan" element={<DChallan />} />

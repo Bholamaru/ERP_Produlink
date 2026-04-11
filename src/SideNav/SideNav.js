@@ -15,7 +15,29 @@ import { SiSalesforce } from "react-icons/si";
 
 const SideNav = ({ sideNavOpen, toggleSideNav }) => {
   const [openDropdowns, setOpenDropdowns] = useState({})
-  const permissions = JSON.parse(localStorage.getItem("permissions"))
+
+  // Load permissions and back-fill Planning if it was added after the user last logged in
+  const rawPermissions = JSON.parse(localStorage.getItem("permissions"))
+  let permissions = rawPermissions
+  if (permissions && !permissions.Planning) {
+    permissions = {
+      ...permissions,
+      Planning: [
+        "Planning",
+        "Manufacturing Order",
+        "Production Schedule",
+        "Min Max Planning",
+        "Dispatch Plan Setup",
+        "Daily Dispatch Plan",
+        "Business Plan",
+        "Upcoming Dispatch List",
+        "Capacity Planning",
+        "Costing",
+        "Vendor Schedule",
+      ],
+    }
+    localStorage.setItem("permissions", JSON.stringify(permissions))
+  }
 
   const handleDropdownToggle = (dropdown) => {
     setOpenDropdowns((prev) => ({
@@ -587,9 +609,11 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
                           57F4 Inward Challan
                         </Link>
                       )}
-                      <Link className="dropdown-item" to="/Jobwork-Inward-Challan">
-                        Jobwork Inward Challan
-                      </Link>
+                      {permissions.Store.includes("Jobwork Inward Challan") && (
+                        <Link className="dropdown-item" to="/Jobwork-Inward-Challan">
+                          Jobwork Inward Challan
+                        </Link>
+                      )}
                       {permissions.Store.includes("Vendor Scrap Inward") && (
                         <Link className="dropdown-item" to="/Vendor-Scrap-Inward">
                           Vendor Scrap Inward
@@ -741,9 +765,11 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
                       <span className={`arrow ${isDropdownOpen("stockReport") ? "open" : ""}`}> ▶</span>
                     </div>
                     <div className={`nested-dropdown-menu ${isDropdownOpen("stockReport") ? "show" : ""}`}>
-                      <Link className="dropdown-item" to="/SubcontractStock">
-                        Subcontract Stock
-                      </Link>
+                      {permissions.Store.includes("Subcontract Stock") && (
+                        <Link className="dropdown-item" to="/SubcontractStock">
+                          Subcontract Stock
+                        </Link>
+                      )}
                       {permissions.Store.includes("WIP Stock Report") && (
                         <Link className="dropdown-item" to="/WIPStock">
                           WIP Stock Report
@@ -1222,6 +1248,78 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
             </li>
           )}
 
+          {/* //////////////////////////////     Planning       /////////////////////////// */}
+          {permissions?.Planning?.length > 0 && (
+            <li className="dropdown-container">
+              <div className="dropdown-toggle" onClick={() => handleDropdownToggle("planning")}>
+                <MdOutlineProductionQuantityLimits />
+                <span>Planning</span>
+                <span className={`dropdown-arrow ${isDropdownOpen("planning") ? "open" : ""}`}>  </span>
+              </div>
+              <div className={`custom-dropdown-menu ${isDropdownOpen("planning") ? "show" : ""}`}>
+                {permissions.Planning.includes("Manufacturing Order") && (
+                  <Link className="dropdown-item" to="/ManufacturingOrder">
+                    Manufacturing Order
+                  </Link>
+                )}
+
+                {permissions.Planning.includes("Production Schedule") && (
+                  <Link className="dropdown-item" to="/ProductionSchedule">
+                    Production Schedule
+                  </Link>
+                )}
+
+                {permissions.Planning.includes("Min Max Planning") && (
+                  <Link className="dropdown-item" to="/MinMaxPlanning">
+                    Min Max Planning
+                  </Link>
+                )}
+
+                {permissions.Planning.includes("Dispatch Plan Setup") && (
+                  <Link className="dropdown-item" to="/DispatchPlanSetup">
+                    Dispatch Plan Setup
+                  </Link>
+                )}
+
+                {permissions.Planning.includes("Daily Dispatch Plan") && (
+                  <Link className="dropdown-item" to="/DailyDispatchPlan">
+                    Daily Dispatch Plan
+                  </Link>
+                )}
+
+                {permissions.Planning.includes("Business Plan") && (
+                  <Link className="dropdown-item" to="/BusinessPlan">
+                    Business Plan
+                  </Link>
+                )}
+
+                {permissions.Planning.includes("Upcoming Dispatch List") && (
+                  <Link className="dropdown-item" to="/UpcomingDispatchList">
+                    Upcoming Dispatch List
+                  </Link>
+                )}
+
+                {permissions.Planning.includes("Capacity Planning") && (
+                  <Link className="dropdown-item" to="/CapacityPlanning">
+                    Capacity Planning
+                  </Link>
+                )}
+
+                {permissions.Planning.includes("Costing") && (
+                  <Link className="dropdown-item" to="/Costing">
+                    Costing
+                  </Link>
+                )}
+
+                {permissions.Planning.includes("Vendor Schedule") && (
+                  <Link className="dropdown-item" to="/VendorSchedule">
+                    Vendor Schedule
+                  </Link>
+                )}
+              </div>
+            </li>
+          )}
+
           {/* //////////////////////////////     Sales       /////////////////////////// */}
           {permissions?.Sales?.length > 0 && (
             <li className="dropdown-container">
@@ -1349,14 +1447,14 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
                           Purchase Debit Note
                         </Link>
                       )}
-                      {permissions.Sales.includes("Sales Rate Diff Debit Note") && (
+                      {permissions.Sales.includes("Credit / Debit Note") && (
                         <Link className="dropdown-item" to="/NewDabitNote">
                           Sales Rate Diff Debit Note
                         </Link>
                       )}
-                      {permissions.Sales.includes("JobWork Rate Diff Debit Note") && (
+                      {permissions.Sales.includes("Credit / Debit Note") && (
                         <Link className="dropdown-item" to="/JobWorkRateDiff">
-                          JobWork Rate Diff Debit Note
+                          Jobwork Rate Diff Debit Note
                         </Link>
                       )}
                       {permissions.Sales.includes("Credit Note Entry") && (

@@ -470,17 +470,19 @@ const BomRouting = () => {
                   <div className="BomRouting">
                     <div className="container-fluid">
                       <div className="BomRoutingheading mb-2 text-start">
-                        <div className="row align-items-center">
-                          <div className="col-md-2">
-                            <h5 className="header-title">
+                        <div className="row align-items-center flex-nowrap overflow-auto pb-1">
+                          <div className="col-auto">
+                            <h5 className="header-title mb-0" style={{ whiteSpace: "nowrap" }}>
                               BOM And Routing List
                             </h5>
                           </div>
-                          <div className="col-md-1 col-form-label">
-                            <label htmlFor="TotalBom">Total BOM:</label>
+                          <div className="col-auto px-1">
+                            <label className="col-form-label text-muted" style={{ fontSize: "14px", whiteSpace: "nowrap" }} htmlFor="TotalBom">
+                              Total BOM:
+                            </label>
                           </div>
 
-                          <div className="col-sm-9 text-end">
+                          <div className="col text-end" style={{ whiteSpace: "nowrap" }}>
                             <button className="vndrbtn">FG:548</button>
                             <button className="vndrbtn">SFG:1</button>
                             <button className="vndrbtn">RM:44</button>

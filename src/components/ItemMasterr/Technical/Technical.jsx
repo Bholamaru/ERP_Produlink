@@ -78,148 +78,95 @@ const Technical = ({ onDataChange }) => {
     <div className="technical">
       <ToastContainer />
       <div className="container-fluid">
-        <div className="row mb-3">
-          <div className="col-md-2">
-            <p style={{ color: "blue" }}>Technical Specification</p>
+        <div className="d-flex justify-content-between align-items-center mb-4 p-2 bg-light border">
+          <div className="tech-header-left">
+            <h6 className="mb-0 fw-bold text-primary">Technical Specification</h6>
           </div>
-          <div className="col-md-4 text-end">
+          <div className="tech-header-right d-flex gap-2">
             <button
-              className="tech-btn btn btn-secondary"
+              className="btn btn-secondary btn-sm rounded-0"
               onClick={handleClear}
             >
               Clear Tech. Specifications
             </button>
-          </div>
-          <div className="col-md-6">
-            <button className="tech-btn btn btn-secondary">
+            <button className="btn btn-secondary btn-sm rounded-0">
               Get Last Tech. Specification
             </button>
           </div>
         </div>
 
         <div className="row" style={{ marginTop: "10px" }}>
-          <div className="col-md-6 mb-4">
-            <table className="table table-bordered">
-              <thead>
-                <tr>
-                  <th scope="col">Specification<span className="text-danger">*</span></th>
-                  <th scope="col">Parameter</th>
-                  <th scope="col">Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>
-                    <input
-                      type="text"
-                      className="form-control"
-                      placeholder="Enter specification"
-                      value={newSpec}
-                      onChange={(e) => setNewSpec(e.target.value)}
-                    />
-                  </td>
-                  <td>
-                    <input
-                      type="text"
-                      className="form-control"
-                      placeholder="Enter parameter"
-                      value={newParam}
-                      onChange={(e) => setNewParam(e.target.value)}
-                    />
-                  </td>
-                  <td>
-                    <button className="btn-tech" onClick={handleSave}>
-                      <FaPlus />
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+          <div className="col-md-4 mb-4">
+            <div className="table-responsive">
+              <table className="table table-bordered">
+                <thead>
+                  <tr>
+                    <th scope="col">Specification<span className="text-danger">*</span></th>
+                    <th scope="col">Parameter</th>
+                    <th scope="col">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>
+                      <input
+                        type="text"
+                        className="form-control"
+                        placeholder="Enter specification"
+                        value={newSpec}
+                        onChange={(e) => setNewSpec(e.target.value)}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="text"
+                        className="form-control"
+                        placeholder="Enter parameter"
+                        value={newParam}
+                        onChange={(e) => setNewParam(e.target.value)}
+                      />
+                    </td>
+                    <td>
+                      <button className="btn-tech-square" onClick={handleSave}>
+                        <FaPlus />
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
-          <div className="col-md-6 mb-4">
-            <table className="table table-bordered">
-              <thead>
-                <tr>
-                  <th scope="col">A</th>
-                  <th scope="col">B</th>
-                  <th scope="col">C</th>
-                  <th scope="col">D</th>
-                  <th scope="col">E</th>
-                  <th scope="col">F</th>
-                  <th scope="col">G</th>
-                  <th scope="col">H</th>
-                  <th scope="col">Capacity</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>
-                    <input
-                      type="text"
-                      className="form-control"
-                      placeholder="A"
-                    />
-                  </td>
-                  <td>
-                    <input
-                      type="text"
-                      className="form-control"
-                      placeholder="B"
-                    />
-                  </td>
-                  <td>
-                    <input
-                      type="text"
-                      className="form-control"
-                      placeholder="C"
-                    />
-                  </td>
-                  <td>
-                    <input
-                      type="text"
-                      className="form-control"
-                      placeholder="D"
-                    />
-                  </td>
-                  <td>
-                    <input
-                      type="text"
-                      className="form-control"
-                      placeholder="E"
-                    />
-                  </td>
-                  <td>
-                    <input
-                      type="text"
-                      className="form-control"
-                      placeholder="F"
-                    />
-                  </td>
-                  <td>
-                    <input
-                      type="text"
-                      className="form-control"
-                      placeholder="G"
-                    />
-                  </td>
-                  <td>
-                    <input
-                      type="text"
-                      className="form-control"
-                      placeholder="H"
-                    />
-                  </td>
-                  <td>
-                    <input
-                      type="text"
-                      className="form-control"
-                      placeholder="Capacity"
-                      style={{ padding: "5px" }}
-                    />
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+          <div className="col-md-8 mb-4">
+            <div className="table-responsive">
+              <table className="table table-bordered wide-tech-table">
+                <thead>
+                  <tr>
+                    <th scope="col">A</th>
+                    <th scope="col">B</th>
+                    <th scope="col">C</th>
+                    <th scope="col">D</th>
+                    <th scope="col">E</th>
+                    <th scope="col">F</th>
+                    <th scope="col">G</th>
+                    <th scope="col">H</th>
+                    <th scope="col">Capacity</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><input type="text" className="form-control p-1" placeholder="A" /></td>
+                    <td><input type="text" className="form-control p-1" placeholder="B" /></td>
+                    <td><input type="text" className="form-control p-1" placeholder="C" /></td>
+                    <td><input type="text" className="form-control p-1" placeholder="D" /></td>
+                    <td><input type="text" className="form-control p-1" placeholder="E" /></td>
+                    <td><input type="text" className="form-control p-1" placeholder="F" /></td>
+                    <td><input type="text" className="form-control p-1" placeholder="G" /></td>
+                    <td><input type="text" className="form-control p-1" placeholder="H" /></td>
+                    <td><input type="text" className="form-control p-1" placeholder="Capacity" /></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
 
@@ -264,14 +211,14 @@ const Technical = ({ onDataChange }) => {
                     <td>
                       {editId === spec.id ? (
                         <button
-                          className="btn-tech"
+                          className="btn-tech-square"
                           onClick={() => handleEdit(spec.id)}
                         >
                           <FaSave />
                         </button>
                       ) : (
                         <button
-                          className="btn-tech"
+                          className="btn-tech-square"
                           onClick={() => handleEditMode(spec)}
                         >
                           <FaEdit />
@@ -280,7 +227,7 @@ const Technical = ({ onDataChange }) => {
                     </td>
                     <td>
                       <button
-                        className="btn-tech"
+                        className="btn-tech-square btn-danger-tech"
                         onClick={() => handleDelete(spec.id)}
                       >
                         <FaTrash />

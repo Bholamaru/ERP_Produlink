@@ -44,9 +44,17 @@
 .btn-uper {
   margin-right: 10px;
   background-color: rgba(235, 233, 233, 0.685);
-  padding: 5px 10px;
-  border: none;
-  border-radius: 10px;
+  padding: 8px 15px;
+  border: 1px solid #ccc;
+  border-radius: 0px; /* Square */
+  font-size: 14px;
+  transition: all 0.3s;
+}
+
+.btn-uper:hover {
+  background-color: #007bff;
+  color: white;
+  border-color: #007bff;
 }
 
 #pills-tab {
@@ -57,21 +65,29 @@
 
 /* custom.css */
 .nav-pills .nav-link {
-  border: none;
-  color: grey; /* Default text color for buttons */
-  /* background-color: white; Default background color for buttons */
+  border: 1px solid #dee2e6;
+  border-radius: 0px !important; /* Square */
+  color: #555;
+  background-color: #fff;
+  padding: 10px 20px;
+  font-weight: 500;
+  margin-right: -1px; /* Overlap borders */
 }
+
 .nav-pills .nav-link:hover {
-  color: gray;
+  background-color: #f8f9fa;
+  color: #000;
 }
+
 .nav-pills .nav-link.active {
-  border: none;
-  background-color: blueviolet !important; /* Active button background color */
-  color: white !important; /* Active button text color */
+  background-color: #007bff !important;
+  color: white !important;
+  border-color: #007bff;
 }
+
 .nav-item {
   border: none;
-  margin: 5px;
+  margin: 0;
 }
 /* new button click card */
 .nav-item button {
@@ -528,58 +544,18 @@
 }
 
 /* Media Queries */
-@media (max-width: 768px) {
-  .main-content.shifted {
-    margin-left: 200px;
-  }
-  .top-but3 {
-    margin-left: 0;
-    text-align: center;
-  }
-  .Itemmastergernalpage {
-    height: auto;
-  }
-  .itemmastergernal {
-    height: auto;
-  }
-  .axcv {
-    height: auto;
-  }
+/* Sidebar Stability - Content moves aside smoothly */
+.main-content {
+  transition: margin-left 0.3s ease !important;
 }
 
-@media (max-width: 576px) {
-  .main-content.shifted {
-    margin-left: 60px;
-  }
-  .Itemmastergernalpage {
-    height: auto;
-  }
-  .top-but3 {
-    flex-direction: column;
-    align-items: center;
-  }
-  .form {
-    height: auto;
-    padding: 10px;
-  }
+.main-content.shifted {
+  margin-left: 250px !important; /* Matches SideNav width */
 }
-@media (max-width: 360px) {
+
+@media (max-width: 768px) {
   .main-content.shifted {
-    margin-left: 60px;
-  }
-  .top-but3 {
-    flex-direction: column;
-    align-items: start;
-  }
-  .form {
-    height: auto;
-    padding: 10px;
-  }
-  .itemmastergernal {
-    height: auto;
-  }
-  .axcv {
-    height: auto;
+    margin-left: 200px !important;
   }
 }
 /* .btn {
@@ -608,10 +584,16 @@
   padding: 20px 20px;
 }
 .axcv {
-  /* background-color: white; */
   height: auto;
-  padding: 20px 20px;
+  padding: 10px 20px;
   margin-bottom: 10px;
+  min-width: 900px; /* More flexible width to fit standard laptops while still preventing excessive reflow */
+}
+
+/* Ensure the container of axcv allows scrolling */
+.main-content {
+  overflow-x: auto;
+  transition: margin-left 0.3s ease !important;
 }
 .bjkd {
   border: none;

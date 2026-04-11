@@ -826,7 +826,7 @@ const SupplierCustomerMaster = () => {
                                           <label htmlFor="Payment_Term" className="col-sm-4 col-form-label">
                                             Payment Term: <span className="text-danger">*</span>
                                           </label>
-                                          <div className="col-sm-5">
+                                          <div className="col-sm-8 d-flex align-items-center gap-2">
                                             <select
                                               id="Payment_Term"
                                               name="Payment_Term"
@@ -842,20 +842,17 @@ const SupplierCustomerMaster = () => {
                                                 </option>
                                               ))}
                                             </select>
-                                          </div>
-                                          <div className="col-sm-1 mt-2">
-                                            <button className="btn" type="button" onClick={toggleCardPayment}>
+                                            <button className="btn btn-sm" type="button" onClick={toggleCardPayment} style={{ whiteSpace: "nowrap", border: "1px solid #ccc" }}>
                                               Add
                                             </button>
-                                          </div>
-                                          <div className="col-sm-1 mt-2">
                                             <button
-                                              className="btn"
+                                              className="btn btn-sm d-flex align-items-center justify-content-center"
                                               type="button"
                                               onClick={handleRefresh}
-                                              style={{ fontSize: "10px" }}
+                                              style={{ border: "1px solid #ccc" }}
+                                              title="Refresh"
                                             >
-                                              <CachedIcon />
+                                              <CachedIcon style={{ fontSize: "18px" }} />
                                             </button>
                                           </div>
                                         </div>
@@ -1525,7 +1522,7 @@ const SupplierCustomerMaster = () => {
                                           <label htmlFor="Sector" className="col-sm-4 col-form-label">
                                             Sector:
                                           </label>
-                                          <div className="col-sm-5">
+                                          <div className="col-sm-8 d-flex align-items-center gap-2">
                                             <select
                                               id="Sector"
                                               name="Sector"
@@ -1540,20 +1537,17 @@ const SupplierCustomerMaster = () => {
                                                 </option>
                                               ))}
                                             </select>
-                                          </div>
-                                          <div className="col-sm-1 mt-2">
-                                            <button className="btn ms-1" type="button" onClick={toggleCardSector}>
+                                            <button className="btn btn-sm" type="button" onClick={toggleCardSector} style={{ whiteSpace: "nowrap", border: "1px solid #ccc" }}>
                                               New
                                             </button>
-                                          </div>
-                                          <div className="col-sm-1 mt-2">
                                             <button
-                                              className="btn"
+                                              className="btn btn-sm d-flex align-items-center justify-content-center"
                                               type="button"
                                               onClick={handleRefresh}
-                                              style={{ fontSize: "10px" }}
+                                              style={{ border: "1px solid #ccc" }}
+                                              title="Refresh"
                                             >
-                                              <CachedIcon />
+                                              <CachedIcon style={{ fontSize: "18px" }} />
                                             </button>
                                           </div>
                                         </div>
@@ -1563,7 +1557,7 @@ const SupplierCustomerMaster = () => {
                                           <label htmlFor="Group" className="col-sm-4 col-form-label">
                                             Group:
                                           </label>
-                                          <div className="col-sm-5">
+                                          <div className="col-sm-8 d-flex align-items-center gap-2">
                                             <select
                                               id="Group"
                                               name="Group"
@@ -1578,20 +1572,17 @@ const SupplierCustomerMaster = () => {
                                                 </option>
                                               ))}
                                             </select>
-                                          </div>
-                                          <div className="col-sm-1 mt">
-                                            <button className="btn ms-1" type="button" onClick={toggleCardGroup}>
+                                            <button className="btn btn-sm" type="button" onClick={toggleCardGroup} style={{ whiteSpace: "nowrap", border: "1px solid #ccc" }}>
                                               New
                                             </button>
-                                          </div>
-                                          <div className="col-sm-1">
                                             <button
-                                              className="btn"
+                                              className="btn btn-sm d-flex align-items-center justify-content-center"
                                               type="button"
                                               onClick={handleRefresh}
-                                              style={{ fontSize: "10px" }}
+                                              style={{ border: "1px solid #ccc" }}
+                                              title="Refresh"
                                             >
-                                              <CachedIcon />
+                                              <CachedIcon style={{ fontSize: "18px" }} />
                                             </button>
                                           </div>
                                         </div>
@@ -1748,7 +1739,7 @@ const SupplierCustomerMaster = () => {
                                           <label htmlFor="QMSC_Code" className="col-sm-4 col-form-label">
                                             QMSC Code:
                                           </label>
-                                          <div className="col-sm-5">
+                                          <div className="col-sm-8 d-flex align-items-center gap-2">
                                             <select
                                               id="QMSC_Code"
                                               name="QMSC_Code"
@@ -1763,30 +1754,17 @@ const SupplierCustomerMaster = () => {
                                                 </option>
                                               ))}
                                             </select>
-                                            {/* 
-                                              {errors.QMSC_Code && (
-                                                <small className="text-danger">
-                                                  {errors.QMSC_Code}
-                                                </small>
-                                              )} */}
-                                          </div>
-                                          <div className="col-sm-1">
-                                            <button
-                                              className="btn ms-1"
-                                              type="button"
-                                              onClick={() => toggleCardQMSCCode()}
-                                            >
+                                            <button className="btn btn-sm" type="button" onClick={() => toggleCardQMSCCode()} style={{ whiteSpace: "nowrap", border: "1px solid #ccc" }}>
                                               New
                                             </button>
-                                          </div>
-                                          <div className="col-sm-1">
                                             <button
-                                              className="btn"
+                                              className="btn btn-sm d-flex align-items-center justify-content-center"
                                               type="button"
                                               onClick={handleRefresh}
-                                              style={{ fontSize: "10px" }}
+                                              style={{ border: "1px solid #ccc" }}
+                                              title="Refresh"
                                             >
-                                              <CachedIcon />
+                                              <CachedIcon style={{ fontSize: "18px" }} />
                                             </button>
                                           </div>
                                         </div>

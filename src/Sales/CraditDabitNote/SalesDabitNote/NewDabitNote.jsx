@@ -43,11 +43,11 @@ const NewDabitNote = () => {
                   <div className="NewDabitNote-header mb-4 text-start">
                     <div className="row align-items-center">
                       <div className="col-md-4">
-                        <h5 className="header-title">New Dabit Note (Sales Rate Diff) </h5>
+                        <h5 className="header-title">New Debit Note (Sales Rate Diff.) </h5>
                       </div>
                       <div className="col-md-8 text-end">
                         <button type="button" className="btn" onClick={handleButtonClick}>
-                          Dabit Note List
+                          Debit Note List
                         </button>
                         </div>
                     </div>
@@ -57,11 +57,11 @@ const NewDabitNote = () => {
                      <div className="row text-start">
 
                      <div className="col-md-2">
-                            <label htmlFor="">Dabit Note No.:</label>
-                            <input type="date" className="form-control" placeholder="24250001"/>                            
+                            <label htmlFor="">Debit Note No :</label>
+                            <input type="text" className="form-control" placeholder="262700001"/>                            
                       </div> 
                      <div className="col-md-2">
-                            <label htmlFor="">Dabit Note Date :</label>
+                            <label htmlFor="">Debit Note Date :</label>
                             <input type="date" className="form-control"/>
                       </div>
                       <div className="col-md-2">
@@ -72,15 +72,9 @@ const NewDabitNote = () => {
                                <option value="">Single</option>
                            </select>
                       </div> 
-                      <div className="col-md-2">
-                            <label htmlFor="">Group :</label>
-                            <label> 1 Dabit Note </label>
-                     </div>
-
-                     <div className="col-md-2">
-                            <label htmlFor="">Single :</label>
-                            <label htmlFor="">Per Item Wise Dabit Note</label>
-                     </div>
+                      <div className="col-md-6 d-flex align-items-center mt-3">
+                            <label className="mb-0">Group : 1 Debit Note , Single : Per Itemwise Debit Note <span className="text-primary">ON Without-Invoice</span></label>
+                      </div>
 
                      </div>
                   </div>
@@ -95,68 +89,61 @@ const NewDabitNote = () => {
                         </li>
                         <li className="nav-item" role="presentation">
                           <button className="nav-link" id="dabitnotedetails-tab" data-bs-toggle="tab" data-bs-target="#dabitnotedetails" type="button" role="tab" >
-                            DabitNoteDetails
+                            Debit Note Details
                           </button>
                         </li>
                       </ul>
 
                       <div className="tab-content mt-4"  id="NewDabitNoteTabsContent">
 
-                        <div  className="tab-pane fade show active" id="invoicedetails" role="tabpanel" >
-                            <div className="NewDabitNote-main mt-5">
-                                  <div className="row text-start">
-
-                                  <div className="col-md-1">
-                                          <label htmlFor="">Plant :</label>
-                                          <select name="" id="" className="form-control">
-                                            <option value="">ProduLink</option>
+                        <div className="tab-pane fade show active" id="invoicedetails" role="tabpanel">
+                            <div className="p-3 bg-light border mt-3 rounded shadow-sm">
+                                <div className="d-flex flex-wrap align-items-end gap-3 text-start">
+                                    <div style={{minWidth: '120px'}}>
+                                        <label className="fw-bold mb-1" style={{fontSize: '12px'}}>Plant :</label>
+                                        <select className="form-control form-control-sm">
+                                            <option>ProduLink</option>
                                         </select>
                                     </div> 
-                                    <div className="col-md-1">
-                                          <label htmlFor="">From Date:</label>
-                                          <input type="date" className="form-control"/>
+                                    <div style={{minWidth: '120px'}}>
+                                        <label className="fw-bold mb-1" style={{fontSize: '12px'}}>From Date :</label>
+                                        <input type="date" className="form-control form-control-sm"/>
                                     </div>
-                                    <div className="col-md-1">
-                                          <label htmlFor="">To Date :</label>
-                                          <input type="date" className="form-control"/>
+                                    <div style={{minWidth: '120px'}}>
+                                        <label className="fw-bold mb-1" style={{fontSize: '12px'}}>To Date :</label>
+                                        <input type="date" className="form-control form-control-sm"/>
                                     </div>
-
-                                  <div className="col-md-1">
-                                          <label htmlFor="">Customer.:</label>
-                                          <input type="date" className="form-control" placeholder="Enter Name ..."/>                            
+                                    <div style={{minWidth: '150px'}} className="flex-grow-1">
+                                        <label className="fw-bold mb-1" style={{fontSize: '12px'}}>Customer :</label>
+                                        <input type="text" className="form-control form-control-sm" placeholder="Enter Name ..."/>                            
                                     </div> 
                                   
-                                    <div className="col-md-1">
-                                          <label htmlFor="">Add Code :</label>
-                                          <select name="" id="" className="form-control">
-                                            <option value="">Select</option>
-                                            <option value="">\</option>
-                                            <option value=""></option>
+                                    <div style={{minWidth: '100px'}}>
+                                        <label className="fw-bold mb-1" style={{fontSize: '12px'}}>Add Code :</label>
+                                        <select className="form-control form-control-sm">
+                                            <option>Select</option>
                                         </select>
                                     </div> 
-                                    <div className="col-md-1">
-                                      <div className="d-flex justify-content-center align-items-center">
-                                            <input type="checkbox" id="Item-checkbox" />
-                                            <label htmlFor="Item-checkbox" className="ms-1">Item:</label>
+                                    <div style={{minWidth: '180px'}}>
+                                        <div className="d-flex align-items-center mb-1">
+                                            <input type="checkbox" id="Item-checkbox" className="mt-0 me-1" style={{width: '13px', height: '13px', cursor: 'pointer'}} />
+                                            <label htmlFor="Item-checkbox" className="fw-bold mb-0" style={{fontSize: '12px', cursor: 'pointer'}}>Item :</label>
                                         </div>
-                                            <input type="text" placeholder="Enter Code | Name" className="form-control"/>
+                                        <input type="text" placeholder="Enter Code | Name" className="form-control form-control-sm"/>
                                     </div> 
 
-                                  <div className="col-md-1">
-                                          <label htmlFor="">Note Type :</label>
-                                          <select name="" id="" className="form-control">
-                                            <option value="">All Inv</option>
-                                            <option value="">\</option>
-                                            <option value=""></option>
+                                    <div style={{minWidth: '120px'}}>
+                                        <label className="fw-bold mb-1" style={{fontSize: '12px'}}>Note Type :</label>
+                                        <select className="form-control form-control-sm">
+                                            <option>All Inv</option>
                                         </select>
                                     </div> 
-                                    <div className="col-md-1 mt-4">
-                                        <button type="button" className="btn btn-primary w-100" >
+                                    <div>
+                                        <button type="button" className="btn btn-primary btn-sm px-4">
                                             Search
                                         </button> 
                                     </div>
-
-                                  </div>
+                                </div>
                             </div> 
                         </div>
 
@@ -164,28 +151,28 @@ const NewDabitNote = () => {
                               <div className="NewDabitNote-header mb-4 text-start">
 
                                  <div className="table-responsive">
-                                  <table className="table table-bordered">
-                                        <thead>
+                                  <table className="table table-bordered table-sm align-middle">
+                                        <thead className="table-light">
                                             <tr>
-                                            <th>No.</th>
-                                            <th>Inv.No </th>
-                                            <th>Inv Date</th>
-                                            <th>HSN Code</th>
-                                            <th>Qty </th>
-                                            <th>Edit</th>
-                                            <th>Old Rate</th>
-                                            <th>New Rate</th>
-                                            <th>Disc %</th>
-                                            <th>Diff</th>
-                                            <th>Diff Amt</th>
-                                            <th>GRIR No</th>
-                                            <th>GRIR Date</th>
-                                            <th>GRIR Qty</th>
-                                            <th>Line No</th>
-                                            <th>PO No Date</th>
-                                            <th>Amd No Date</th>
-                                            <th>Remark</th>
-                                            <th>Del</th>
+                                              <th>No.</th>
+                                              <th>Inv.No</th>
+                                              <th>Item</th>
+                                              <th>HSNCode</th>
+                                              <th>Qty</th>
+                                              <th>Edit</th>
+                                              <th>Old Rate</th>
+                                              <th>New Rate</th>
+                                              <th>Disc(%)</th>
+                                              <th>Diff</th>
+                                              <th>Diff.Amt</th>
+                                              <th>GRIR No.</th>
+                                              <th>GRIR Date</th>
+                                              <th>GRIR Qty</th>
+                                              <th>Line No</th>
+                                              <th>Po No | Date</th>
+                                              <th>Amd No | Date</th>
+                                              <th>Remark</th>
+                                              <th>Del</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -197,104 +184,140 @@ const NewDabitNote = () => {
                                                 <td></td>
                                                 <td>Edit</td>
                                                 <td></td>
-                                                <td><input type="text" className="form-control" /></td>
+                                                <td><input type="text" className="form-control form-control-sm" /></td>
                                                 <td></td>
-                                                <td><input type="text" className="form-control" /></td>
-                                                <td><input type="text" className="form-control" /></td>
-                                                <td><input type="text" className="form-control" /></td>
-                                                <td><input type="date" className="form-control" /></td>
-                                                <td><input type="text" className="form-control" /></td>
-                                                <td><input type="text" className="form-control" /></td>
-                                                <td><input type="date" className="form-control" /></td>
-                                                <td><input type="date" className="form-control" /></td>
-                                                <td><textarea name="" id=""></textarea></td>
-                                                <td> X </td>
+                                                <td><input type="text" className="form-control form-control-sm" /></td>
+                                                <td><input type="text" className="form-control form-control-sm" /></td>
+                                                <td><input type="text" className="form-control form-control-sm" /></td>
+                                                <td><input type="date" className="form-control form-control-sm" /></td>
+                                                <td><input type="text" className="form-control form-control-sm" /></td>
+                                                <td><input type="text" className="form-control form-control-sm" /></td>
+                                                <td>
+                                                  <div className="d-flex gx-1">
+                                                    <input type="text" className="form-control form-control-sm me-1" />
+                                                    <input type="date" className="form-control form-control-sm" />
+                                                  </div>
+                                                </td>
+                                                <td>
+                                                  <div className="d-flex gx-1">
+                                                    <input type="text" className="form-control form-control-sm me-1" />
+                                                    <input type="date" className="form-control form-control-sm" />
+                                                  </div>
+                                                </td>
+                                                <td><input type="text" className="form-control form-control-sm" /></td>
+                                                <td><button className="btn btn-sm btn-outline-danger">X</button></td>
                                             </tr>
                                         </tbody>
                                  </table>
                                  </div>
 
-                                 <div className="row">
-                                    <div className="col-md-12">
-                                      <div className="table-responsive">
-                                        <table className="table table-bordered">
-                                          <tbody>
-                                            <tr>
-                                              <td>SubTotal:</td>
-                                              <td>Disc Amt</td>
-                                              <td>Ass Amt</td>
-                                              <td>CGST</td>
-                                              <td>SGST</td>
-                                              <td>IGST</td>
-                                              <td>UTGST</td>
-                                              <td>TCS</td>
-                                              <td>Grand Total</td>
-                                            </tr>
-                                            <tr>
-                                              <td></td>
-                                              <td></td>
-                                              <td></td>
-                                              <td><input type="text" placeholder="00.00" className="form-control" />%</td>
-                                              <td><input type="text" placeholder="00.00" className="form-control" />%</td>
-                                              <td><input type="text" placeholder="00.00" className="form-control" />%</td>
-                                              <td><input type="text" placeholder="00.00" className="form-control" />%</td>
-                                              <td><input type="text" placeholder="00.00" className="form-control" />%</td>
-                                              <td></td>
-                                            </tr>
-                                            <tr>
-                                              <td><input type="text" className="form-control" /></td>
-                                              <td><input type="text" className="form-control" /></td>
-                                              <td><input type="text" className="form-control" /></td>
-                                              <td><input type="text" placeholder="00.00" className="form-control" /></td>
-                                              <td><input type="text" placeholder="00.00" className="form-control" /></td>
-                                              <td><input type="text" placeholder="00.00" className="form-control" /></td>
-                                              <td><input type="text" placeholder="00.00" className="form-control" /></td>
-                                              <td><input type="text" placeholder="00.00" className="form-control" /></td>
-                                              <td><input type="text" placeholder="00.00" className="form-control" /></td> 
-                                            </tr>
-                                          </tbody>
-                                        </table>
-                                      </div>
-                                    </div>
+                                 <div className="d-flex justify-content-between align-items-center bg-light p-2 border mt-3 fw-bold" style={{fontSize: '0.9rem'}}>
+                                    <span>Debit Note / Tax Details</span>
+                                    <span>Total Qty :</span>
                                  </div>
 
-                                 <div className="row text-start">
-                          <div className="col-md-3">
-                             <label htmlFor="">Bill To Add Code</label>
-                              <select className="form-control" name="" id="">
-                                    <option value=""></option>
-                              </select>
-                          </div>
-                          <div className="col-md-3">
-                             <label htmlFor="">:</label>
-                             <textarea name="" className="form-control" id=""></textarea>
-                          </div>
-                          <div className="col-md-3">
-                             <label htmlFor="">Other Reference:</label>
-                             <textarea name="" className="form-control" id=""></textarea>
-                          </div>
-                          <div className="col-md-3">
-                             <label htmlFor="">Remark :</label>
-                             <textarea name="" className="form-control" id=""></textarea>
-                          </div>
+                                 <div className="table-responsive mt-0">
+                                    <table className="table table-bordered table-sm align-middle text-center">
+                                      <thead className="table-light">
+                                        <tr>
+                                          <th>SubTotal</th>
+                                          <th>Disc Amt</th>
+                                          <th>Ass Amt</th>
+                                          <th>CGST</th>
+                                          <th>SGST</th>
+                                          <th>IGST</th>
+                                          <th>UTGST</th>
+                                          <th>TCS</th>
+                                          <th>Grand Total</th>
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        <tr>
+                                          <td className="border-bottom-0"></td>
+                                          <td className="border-bottom-0"></td>
+                                          <td className="border-bottom-0"></td>
+                                          <td className="border-bottom-0">
+                                            <div className="d-flex justify-content-center align-items-center">
+                                              <input type="text" placeholder="00.00" className="form-control form-control-sm text-end" style={{width: "70px"}} /> <span className="ms-1">%</span>
+                                            </div>
+                                          </td>
+                                          <td className="border-bottom-0">
+                                            <div className="d-flex justify-content-center align-items-center">
+                                              <input type="text" placeholder="00.00" className="form-control form-control-sm text-end" style={{width: "70px"}} /> <span className="ms-1">%</span>
+                                            </div>
+                                          </td>
+                                          <td className="border-bottom-0">
+                                            <div className="d-flex justify-content-center align-items-center">
+                                              <input type="text" placeholder="00.00" className="form-control form-control-sm text-end" style={{width: "70px"}} /> <span className="ms-1">%</span>
+                                            </div>
+                                          </td>
+                                          <td className="border-bottom-0">
+                                            <div className="d-flex justify-content-center align-items-center">
+                                              <input type="text" placeholder="00.00" className="form-control form-control-sm text-end" style={{width: "70px"}} /> <span className="ms-1">%</span>
+                                            </div>
+                                          </td>
+                                          <td className="border-bottom-0">
+                                            <div className="d-flex justify-content-center align-items-center">
+                                              <input type="text" placeholder="00.00" className="form-control form-control-sm text-end" style={{width: "70px"}} /> <span className="ms-1">%</span>
+                                            </div>
+                                          </td>
+                                          <td className="border-bottom-0"></td>
+                                        </tr>
+                                        <tr>
+                                          <td><input type="text" className="form-control form-control-sm" /></td>
+                                          <td><input type="text" className="form-control form-control-sm" /></td>
+                                          <td><input type="text" className="form-control form-control-sm" /></td>
+                                          <td><input type="text" placeholder="00.00" className="form-control form-control-sm text-center" /></td>
+                                          <td><input type="text" placeholder="00.00" className="form-control form-control-sm text-center" /></td>
+                                          <td><input type="text" placeholder="00.00" className="form-control form-control-sm text-center" /></td>
+                                          <td><input type="text" placeholder="00.00" className="form-control form-control-sm text-center" /></td>
+                                          <td><input type="text" placeholder="00.00" className="form-control form-control-sm text-center" /></td>
+                                          <td><input type="text" placeholder="00.00" className="form-control form-control-sm text-center" /></td> 
+                                        </tr>
+                                      </tbody>
+                                    </table>
                                  </div>
-                                  <div className="row text-start">
+
+                                 <div className="d-flex align-items-center flex-nowrap mt-4 pb-2 text-start" style={{overflowX: 'auto', gap: '15px'}}>
+                                    <div className="d-flex align-items-center text-nowrap">
+                                      <label className="me-2 fw-bold">Bill To Add Code :</label>
+                                      <select className="form-control form-control-sm me-2" style={{width: "80px"}}>
+                                          <option></option>
+                                      </select>
+                                      <input type="text" className="form-control form-control-sm" style={{width: "120px"}} readOnly />
+                                    </div>
                                     
-                                      <div className="col-md-3">
-                                          <label htmlFor="">For E-Invoice</label>
-                                        <select name="" className="form-control" id="">
-                                            <option value="">Bussiness To Bussiness</option>
-                                        </select>
-                                      </div>
-                                      <div className="col-md-2">
-                                        <input type="checkbox" className="mt-5 " placeholder="" />
-                                        <label htmlFor=""> IS Service DN</label>
-                                      </div>
-                                      <div className="col-md-2 mt-5">
-                                        <button className="btn">Save Dabit Note</button>
-                                        <button className="btn">Cancel</button>
-                                      </div>
-                                  </div>
+                                    <div className="d-flex align-items-center text-nowrap">
+                                      <label className="me-2 fw-bold">Other Reference(s) :</label>
+                                      <input type="text" className="form-control form-control-sm" style={{width: "120px"}} />
+                                    </div>
+
+                                    <div className="d-flex align-items-center text-nowrap">
+                                      <label className="me-2 fw-bold">Remark :</label>
+                                      <input type="text" className="form-control form-control-sm" style={{width: "120px"}} />
+                                    </div>
+
+                                    <div className="d-flex align-items-center text-nowrap">
+                                      <label className="me-2 fw-bold">For E-Invoice :</label>
+                                      <select className="form-control form-control-sm" style={{width: "120px"}}>
+                                          <option>Business-to-B</option>
+                                      </select>
+                                    </div>
+
+                                    <div className="d-flex align-items-center text-nowrap mx-2 flex-shrink-0">
+                                      <input type="checkbox" id="isServiceInvoice" style={{width: '13px', height: '13px', cursor: 'pointer'}} />
+                                      <label className="mb-0 fw-bold ms-1 cursor-pointer" htmlFor="isServiceInvoice" style={{fontSize: '12px', cursor: 'pointer'}}>Is Service Invoice</label>
+                                    </div>
+                                    
+                                    <div className="d-flex align-items-center text-nowrap">
+                                      <button className="btn btn-primary btn-sm d-flex justify-content-center align-items-center text-nowrap me-2" style={{width: 'auto', padding: '5px 15px'}}>
+                                          <span className="me-1">✔</span> Save Debit Note
+                                      </button>
+                                      <button className="btn btn-primary btn-sm d-flex justify-content-center align-items-center text-nowrap" style={{width: 'auto', padding: '5px 15px'}}>
+                                          <span className="me-1">❌</span> Cancel
+                                      </button>
+                                    </div>
+                                 </div>
 
                              </div>
                          </div>

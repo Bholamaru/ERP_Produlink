@@ -31,6 +31,7 @@ const NewInvoice = () => {
   const [formData, setFormData] = useState({
     invoice_no: "",
     series_type: "",
+    invoice_type: "GST",
     invoice_Date: "",        // ✅ was: invoice_date
     invoice_time: "",
     payment_Date: "",        // ✅ was: payment_date
@@ -59,6 +60,8 @@ const NewInvoice = () => {
 
   // Tax Data State
   const [taxData, setTaxData] = useState({
+    base_value: "0",
+    disc_amt: "0",
     assessable_value: "0",
     cgst: "6",          // ✅ Default 6% for domestic transactions
     sgst: "6",          // ✅ Default 6% for domestic transactions
@@ -137,13 +140,14 @@ const NewInvoice = () => {
 
         if (data.length > 0 && data[0].item && data[0].item.length > 0) {
           const firstItem = data[0].item[0];
-          setTaxData({
+          setTaxData(prev => ({
+            ...prev,
             assessable_value: firstItem.assessable_value || "0",
             cgst: firstItem.cgst || "0",
             sgst: firstItem.sgst || "0",
             igst: firstItem.igst || "0",
             utgst: firstItem.utgst || "0"
-          });
+          }));
         }
       } catch (err) {
         console.error("Tax data load failed:", err);
@@ -179,17 +183,26 @@ const NewInvoice = () => {
 
   // Auto-update assessable value from table items
   useEffect(() => {
-    const totalAssessableValue = tableData.reduce((sum, item) => {
-      const value = parseFloat(item.assessable_value || 0);
-      return sum + value;
-    }, 0);
+    let baseValueSum = 0;
+    let discAmtSum = 0;
+    tableData.forEach((item) => {
+      const qty = parseFloat(item.qty || item.po_qty || 0);
+      const rate = parseFloat(item.rate || 0);
+      const rowBase = qty * rate;
+      baseValueSum += rowBase;
+
+      const discPercent = parseFloat(item.desc || item.desc_percent || item.discount_percent || item.discount_amount || 0);
+      discAmtSum += (rowBase * (discPercent / 100));
+    });
     
-    if (totalAssessableValue > 0) {
-      setTaxData(prev => ({
-        ...prev,
-        assessable_value: totalAssessableValue.toFixed(4)
-      }));
-    }
+    const calculatedAssessableValue = baseValueSum - discAmtSum;
+
+    setTaxData(prev => ({
+      ...prev,
+      base_value: baseValueSum.toFixed(4),
+      disc_amt: discAmtSum.toFixed(4),
+      ...(calculatedAssessableValue > 0 || tableData.length > 0 ? { assessable_value: calculatedAssessableValue.toFixed(4) } : {})
+    }));
   }, [tableData]);
 
   // Fetch Tax Details by HSN Code
@@ -216,13 +229,14 @@ const NewInvoice = () => {
         }
 
         if (foundItem) {
-          setTaxData({
+          setTaxData(prev => ({
+            ...prev,
             assessable_value: foundItem.assessable_value || "0",
             cgst: foundItem.cgst || "0",
             sgst: foundItem.sgst || "0",
             igst: foundItem.igst || "0",
             utgst: foundItem.utgst || "0"
-          });
+          }));
           console.log("Tax details fetched for HSN:", hsnCode, foundItem);
         } else {
           console.log("No matching item found for HSN:", hsnCode);
@@ -442,7 +456,7 @@ const NewInvoice = () => {
       const mappedItems = tableData.map((row) => ({
         plant: row.plant || "ProduLink",
         series: formData.series_type || "",           // ✅ from formData
-        invoice_type: "",
+        invoice_type: formData.invoice_type || "GST",
         invoice_no: formData.invoice_no || "",         // ✅ from formData
         customer: row.customer || formData.bill_to || "",
         po_no: row.cust_po || selectedPO || "",        // ✅ was missing
@@ -504,6 +518,8 @@ const NewInvoice = () => {
         });
         setTableData([]);
         setTaxData({
+          base_value: "0",
+          disc_amt: "0",
           assessable_value: "0",
           cgst: "6",
           sgst: "6",
@@ -693,19 +709,31 @@ const NewInvoice = () => {
 
                       <div className="col-md-1">InvoiceType:</div>
                       <div className="col-md-1">
-                        <select>
-                          <option>GST</option>
-                          <option>SCRAP</option>
-                          <option>Stock Transfer</option>
-                          <option>Direct Export</option>
-                          <option>Third Party EXP (In State)</option>
-                          <option>Third Party Export (Out State)</option>
-                          <option>Asset</option>
-                          <option>Tool</option>
+                        <select
+                          name="invoice_type"
+                          value={formData.invoice_type}
+                          onChange={handleChange}
+                          className="form-control"
+                        >
+                          <option value="GST">GST</option>
+                          <option value="SCRAP">SCRAP</option>
+                          <option value="Stock Transfer">Stock Transfer</option>
+                          <option value="Direct Export">Direct Export</option>
+                          <option value="Third Party EXP (In State)">Third Party EXP (In State)</option>
+                          <option value="Third Party Export (Out State)">Third Party Export (Out State)</option>
+                          <option value="Asset">Asset</option>
+                          <option value="Tool">Tool</option>
                         </select>
                       </div>
 
                       <div className="col-md-3 text-end">
+                        <button
+                          type="button"
+                          className="btn me-2"
+                          onClick={() => navigate("/InvoiceList")}
+                        >
+                          Invoice List
+                        </button>
                         <button
                           type="button"
                           className="btn"
@@ -963,9 +991,19 @@ const NewInvoice = () => {
                                           placeholder="Qty"
                                           defaultValue={row.qty || row.po_qty || 0}
                                           onChange={(e) => {
-                                            const updatedData = tableData.map((item, i) =>
-                                              i === index ? { ...item, qty: e.target.value } : item
-                                            );
+                                            const newQty = e.target.value;
+                                            const updatedData = tableData.map((item, i) => {
+                                              if (i === index) {
+                                                const rate = parseFloat(item.rate || 0);
+                                                const itemTotal = parseFloat(newQty || 0) * rate;
+                                                return { 
+                                                  ...item, 
+                                                  qty: newQty, 
+                                                  assessable_value: itemTotal.toFixed(2) 
+                                                };
+                                              }
+                                              return item;
+                                            });
                                             setTableData(updatedData);
                                           }}
                                         />
@@ -1377,6 +1415,8 @@ const NewInvoice = () => {
                                 <input
                                   className="form-control form-control-sm w-50"
                                   placeholder="0"
+                                  value={taxData.base_value || "0"}
+                                  readOnly
                                 />
                               </div>
 
@@ -1416,6 +1456,8 @@ const NewInvoice = () => {
                                 <input
                                   className="form-control form-control-sm w-50"
                                   placeholder="0"
+                                  value={taxData.disc_amt || "0"}
+                                  readOnly
                                 />
                               </div>
 

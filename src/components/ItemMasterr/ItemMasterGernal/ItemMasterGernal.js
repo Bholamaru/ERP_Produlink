@@ -678,27 +678,25 @@ const ItemMasterGernal = () => {
 
               <main className={`main-content ${sideNavOpen ? "shifted" : ""}`}>
                 <div className="axcv mt-5">
-                  <div className="top-but3-header mb-4 text-start">
-                    <div className="row align-items-center">
-                      <div className="col-md-2">
-                        <h5 className="header-title">
+                  <div className="top-but3-header mb-4">
+                    <div className="d-flex justify-content-between align-items-center">
+                      <div className="header-left">
+                        <h5 className="header-title mb-0">
                           {isEditMode ? "Edit Item" : "Add New Item"}
                         </h5>
                       </div>
-                      <div className="col-md-10 text-end">
-                        <div className="d-flex align-items-center justify-content-end">
-                          <label htmlFor="input" className="me-2">
-                            Search Item For Copy
-                          </label>
-                          <input type="text" id="input" className="me-2" />
-                          <button className="btn-uper me-2">Copy Item</button>
-                          <button className="btn-uper me-2">
-                            Section Group Master
-                          </button>
-                          <Link to={"/item-master"} className="btn-uper">
-                            Item List
-                          </Link>
-                        </div>
+                      <div className="header-right d-flex align-items-center">
+                        <label htmlFor="input" className="me-2 mb-0">
+                          Search Item For Copy
+                        </label>
+                        <input type="text" id="input" className="form-control me-2" style={{ width: "150px" }} />
+                        <button className="btn-uper me-2">Copy Item</button>
+                        <button className="btn-uper me-2">
+                          Section Group Master
+                        </button>
+                        <Link to={"/item-master"} className="btn-uper">
+                          Item List
+                        </Link>
                       </div>
                     </div>
                   </div>
@@ -785,23 +783,23 @@ const ItemMasterGernal = () => {
                                   <div className="container-fluid">
                                     <form>
                                       <div className="row">
-                                        <div className="col-md-4">
+                                        <div className="col-sm-4">
                                           <div className="row text-start">
                                             <div className="row mb-3">
                                               <label
                                                 htmlFor="main_group"
-                                                className="col-sm-5 col-form-label"
+                                                className="col-sm-5 col-form-label text-nowrap"
                                               >
                                                 Main Group:{" "}
                                                 <span className="text-danger">
                                                   *
                                                 </span>
                                               </label>
-                                              <div className="col-sm-4">
+                                              <div className="col-sm-7 d-flex gap-1 align-items-center">
                                                 <select
                                                   name="main_group"
                                                   id="main_group"
-                                                  className="form-select"
+                                                  className="form-select flex-grow-1"
                                                   value={formData.main_group}
                                                   onChange={handleInputChange}
                                                 >
@@ -819,27 +817,19 @@ const ItemMasterGernal = () => {
                                                     </option>
                                                   ))}
                                                 </select>
-                                                {errors.main_group && (
-                                                  <div className="text-danger">
-                                                    {errors.main_group}
-                                                  </div>
-                                                )}
-                                              </div>
-
-                                              <div className="col-sm-2">
                                                 <button
-                                                  className="btn"
+                                                  className="btn btn-sm btn-outline-primary text-nowrap"
+                                                  type="button"
                                                   onClick={
                                                     handleNewCardMainGroup
                                                   }
+                                                  style={{ height: '38px', borderRadius: '0' }}
                                                 >
                                                   New
                                                 </button>
-                                              </div>
-                                              <div className="col-sm-1">
                                                 <button
-                                                  className="btn"
-                                                  style={{ fontSize: "10px" }}
+                                                  className="btn btn-sm btn-outline-secondary"
+                                                  style={{ fontSize: "10px", height: '38px', borderRadius: '0' }}
                                                   type="button"
                                                   onClick={fetchMainGroups}
                                                 >
@@ -870,7 +860,7 @@ const ItemMasterGernal = () => {
                                                       part_no: e.target.value,
                                                     })
                                                   }
-                                                  style={{ width: "115%" }}
+                                                 
                                                 />
                                                 {errors.part_no && (
                                                   <div className="text-danger">
@@ -988,7 +978,7 @@ const ItemMasterGernal = () => {
                                                   id="Part_Code"
                                                   name="Part_Code"
                                                   className="form-control"
-                                                  style={{ width: "115%" }}
+                                                 
                                                   value={formData.Part_Code}
                                                   onChange={handleInputChange}
                                                 />
@@ -1026,7 +1016,7 @@ const ItemMasterGernal = () => {
                                                   id="Cut_Weight_kg"
                                                   name="Cut_Weight_kg"
                                                   className="form-control"
-                                                  style={{ width: "115%" }}
+                                                 
                                                   value={
                                                     formData.Cut_Weight_kg
                                                   }
@@ -1052,7 +1042,7 @@ const ItemMasterGernal = () => {
                                                   id="Rate"
                                                   name="Rate"
                                                   className="form-control"
-                                                  style={{ width: "115%" }}
+                                                 
                                                   value={formData.Rate}
                                                   onChange={handleInputChange}
                                                 />
@@ -1077,7 +1067,7 @@ const ItemMasterGernal = () => {
                                                   id="Revision_No"
                                                   name="Revision_No"
                                                   className="form-control"
-                                                  style={{ width: "115%" }}
+                                                 
                                                   value={formData.Revision_No}
                                                   onChange={handleInputChange}
                                                 />
@@ -1104,7 +1094,7 @@ const ItemMasterGernal = () => {
                                                   id="Item_Size"
                                                   name="Item_Size"
                                                   className="form-control"
-                                                  style={{ width: "115%" }}
+                                                 
                                                   value={formData.Item_Size}
                                                   onChange={handleInputChange}
                                                 />
@@ -1128,7 +1118,7 @@ const ItemMasterGernal = () => {
                                                   name="Heat_Treatment"
                                                   id="Heat_Treatment"
                                                   className="form-control"
-                                                  style={{ width: "115%" }}
+                                                 
                                                   value={
                                                     formData.Heat_Treatment
                                                   }
@@ -1154,7 +1144,7 @@ const ItemMasterGernal = () => {
                                                   id="Color_Code"
                                                   name="Color_Code"
                                                   className="form-control"
-                                                  style={{ width: "115%" }}
+                                                 
                                                   value={formData.Color_Code}
                                                   onChange={handleInputChange}
                                                 />
@@ -1178,7 +1168,7 @@ const ItemMasterGernal = () => {
                                                   id="Min_Rate"
                                                   name="Min_Rate"
                                                   className="form-control"
-                                                  style={{ width: "115%" }}
+                                                 
                                                   value={formData.Min_Rate}
                                                   onChange={handleInputChange}
                                                 />
@@ -1203,7 +1193,7 @@ const ItemMasterGernal = () => {
                                                   id="Length"
                                                   name="Length"
                                                   className="form-control"
-                                                  style={{ width: "115%" }}
+                                                 
                                                   value={formData.Length}
                                                   onChange={handleInputChange}
                                                 />
@@ -1227,21 +1217,20 @@ const ItemMasterGernal = () => {
                                                   id="Shape"
                                                   name="Shape"
                                                   className="form-control"
-                                                  style={{ width: "115%" }}
                                                   value={formData.Shape}
                                                   onChange={handleInputChange}
                                                 />
                                                 {/* {errors.Shape && (
-                                                  <div className="text-danger">
-                                                    {errors.Shape}
-                                                  </div>
-                                                )} */}
+                                                  <div className="text-danger">
+                                                    {errors.Shape}
+                                                  </div>
+                                                )} */}
                                               </div>
                                             </div>
                                             <div className="row mb-3">
                                               <label
                                                 htmlFor="Rate_Remark"
-                                                className="col-sm-5 col-form-label"
+                                                className="col-sm-5 col-form-label text-nowrap"
                                               >
                                                 Rate Remark:
                                               </label>
@@ -1251,28 +1240,27 @@ const ItemMasterGernal = () => {
                                                   id="Rate_Remark"
                                                   name="Rate_Remark"
                                                   className="form-control"
-                                                  style={{ width: "115%" }}
                                                   value={formData.Rate_Remark}
                                                   onChange={handleInputChange}
                                                 />
                                                 {/* {errors.Rate_Remark && (
-                                                  <div className="text-danger">
-                                                    {errors.Rate_Remark}
-                                                  </div>
-                                                )} */}
+                                                  <div className="text-danger">
+                                                    {errors.Rate_Remark}
+                                                  </div>
+                                                )} */}
                                               </div>
                                             </div>
                                             <div className="row mb-3">
                                               <label
                                                 htmlFor="Metal_Type"
-                                                className="col-sm-5 col-form-label"
+                                                className="col-sm-5 col-form-label text-nowrap"
                                               >
                                                 Metal Type:
                                               </label>
-                                              <div className="col-sm-4">
+                                              <div className="col-sm-7 d-flex gap-1 align-items-center">
                                                 <select
                                                   id="Metal_Type"
-                                                  className="form-select"
+                                                  className="form-select flex-grow-1"
                                                   value={formData.Metal_Type}
                                                   name="Metal_Type"
                                                   onChange={handleInputChange}
@@ -1291,11 +1279,6 @@ const ItemMasterGernal = () => {
                                                   <option value="FA">FA</option>
                                                   <option value="FB">FB</option>
                                                 </select>
-                                                {/* {errors.Metal_Type && (
-                                                  <div className="text-danger">
-                                                    {errors.Metal_Type}
-                                                  </div>
-                                                )} */}
                                               </div>
                                               <div className="col-sm-2">
                                                 <button
@@ -1321,7 +1304,7 @@ const ItemMasterGernal = () => {
                                             </div>
                                           </div>
                                         </div>
-                                        <div className="col-md-4">
+                                        <div className="col-sm-4">
                                           <div className="row text-start">
                                             <div className="row mb-3">
                                               <label
@@ -1336,7 +1319,7 @@ const ItemMasterGernal = () => {
                                                   name="Specific_Gravity"
                                                   id="Specific_Gravity"
                                                   className="form-control"
-                                                  style={{ width: "115%" }}
+                                                 
                                                   value={
                                                     formData.Specific_Gravity
                                                   }
@@ -1352,18 +1335,18 @@ const ItemMasterGernal = () => {
                                             <div className="row mb-3">
                                               <label
                                                 htmlFor="item_group"
-                                                className="col-sm-5 col-form-label"
+                                                className="col-sm-5 col-form-label text-nowrap"
                                               >
                                                 Item Group:{" "}
                                                 <span className="text-danger">
                                                   *
                                                 </span>
                                               </label>
-                                              <div className="col-sm-4">
+                                              <div className="col-sm-7 d-flex gap-1 align-items-center">
                                                 <select
                                                   id="item_group"
                                                   name="item_group"
-                                                  className="form-select"
+                                                  className="form-select flex-grow-1"
                                                   value={formData.item_group}
                                                   onChange={handleInputChange}
                                                 >
@@ -1379,27 +1362,19 @@ const ItemMasterGernal = () => {
                                                     </option>
                                                   ))}
                                                 </select>
-                                                {errors.item_group && (
-                                                  <div className="text-danger">
-                                                    {errors.item_group}
-                                                  </div>
-                                                )}
-                                              </div>
-
-                                              <div className="col-sm-2">
                                                 <button
-                                                  className="btn"
+                                                  className="btn btn-sm btn-outline-primary text-nowrap"
+                                                  type="button"
                                                   onClick={
                                                     handleNewButtonItemgroup
                                                   }
+                                                  style={{ height: '38px', borderRadius: '0' }}
                                                 >
                                                   New
                                                 </button>
-                                              </div>
-                                              <div className="col-sm-1">
                                                 <button
-                                                  className="btn"
-                                                  style={{ fontSize: "10px" }}
+                                                  className="btn btn-sm btn-outline-secondary"
+                                                  style={{ fontSize: "10px", height: '38px', borderRadius: '0' }}
                                                   type="button"
                                                   onClick={fetchItemGroups}
                                                 >
@@ -1424,7 +1399,7 @@ const ItemMasterGernal = () => {
                                                   name="Name_Description"
                                                   id="Name_Description"
                                                   className="form-control"
-                                                  style={{ width: "115%" }}
+                                                 
                                                   value={
                                                     formData.Name_Description
                                                   }
@@ -1440,18 +1415,18 @@ const ItemMasterGernal = () => {
                                             <div className="row mb-3">
                                               <label
                                                 htmlFor="Store_Location"
-                                                className="col-sm-5 col-form-label"
+                                                className="col-sm-5 col-form-label text-nowrap"
                                               >
                                                 Store Location:
                                                 <span className="text-danger">
                                                   *
                                                 </span>
                                               </label>
-                                              <div className="col-sm-4">
+                                              <div className="col-sm-7 d-flex gap-1 align-items-center">
                                                 <select
                                                   id="Store_Location"
                                                   name="Store_Location"
-                                                  className="form-select"
+                                                  className="form-select flex-grow-1"
                                                   value={
                                                     formData.Store_Location
                                                   }
@@ -1475,28 +1450,21 @@ const ItemMasterGernal = () => {
                                                   <option>Store</option>
                                                   <option>Maintenance</option>
                                                 </select>
-                                                {errors.Store_Location && (
-                                                  <div className="text-danger">
-                                                    {errors.Store_Location}
-                                                  </div>
-                                                )}
-                                              </div>
-                                              <div className="col-sm-2">
                                                 <button
-                                                  className="btn"
+                                                  className="btn btn-sm btn-outline-primary text-nowrap"
+                                                  type="button"
                                                   onClick={
                                                     handleNewButtonStoreLocation
                                                   }
+                                                  style={{ height: '38px', borderRadius: '0' }}
                                                 >
                                                   New
                                                 </button>
-                                              </div>
-                                              <div className="col-sm-1">
                                                 <button
                                                   type="button"
-                                                  className="btn"
+                                                  className="btn btn-sm btn-outline-secondary"
                                                   onClick={fetchstorelocation}
-                                                  style={{ fontSize: "10px" }}
+                                                  style={{ fontSize: "10px", height: '38px', borderRadius: '0' }}
                                                 >
                                                   <CachedIcon />
                                                 </button>
@@ -1505,15 +1473,15 @@ const ItemMasterGernal = () => {
                                             <div className="row mb-3">
                                               <label
                                                 htmlFor="Route"
-                                                className="col-sm-5 col-form-label"
+                                                className="col-sm-5 col-form-label text-nowrap"
                                               >
                                                 Route:
                                               </label>
-                                              <div className="col-sm-4">
+                                              <div className="col-sm-7 d-flex gap-1 align-items-center">
                                                 <select
                                                   id="Route"
                                                   name="Route"
-                                                  className="form-select"
+                                                  className="form-select flex-grow-1"
                                                   value={formData.Route}
                                                   onChange={handleInputChange}
                                                 >
@@ -1532,27 +1500,20 @@ const ItemMasterGernal = () => {
                                                   <option value="BO">BO</option>
                                                   <option value="DI">DI</option>
                                                 </select>
-                                                {/* {errors.Route && (
-                                                  <div className="text-danger">
-                                                    {errors.Route}
-                                                  </div>
-                                                )} */}
-                                              </div>
-                                              <div className="col-sm-2">
                                                 <button
-                                                  className="btn"
+                                                  className="btn btn-sm btn-outline-primary text-nowrap"
+                                                  type="button"
                                                   onClick={handleNewButtonRoute}
+                                                  style={{ height: '38px', borderRadius: '0' }}
                                                 >
                                                   New
                                                 </button>
-                                              </div>
-                                              <div className="col-sm-1">
                                                 <button
                                                   type="button"
-                                                  className="btn"
+                                                  className="btn btn-sm btn-outline-secondary"
                                                   onClick={fetchRoute}
-                                                  title="Refresh metal types"
-                                                  style={{ fontSize: "10px" }}
+                                                  title="Refresh route"
+                                                  style={{ fontSize: "10px", height: '38px', borderRadius: '0' }}
                                                 >
                                                   <CachedIcon />
                                                 </button>
@@ -1561,14 +1522,14 @@ const ItemMasterGernal = () => {
                                             <div className="row mb-3">
                                               <label
                                                 htmlFor="Parent_FG_Code"
-                                                className="col-sm-5 col-form-label"
+                                                className="col-sm-5 col-form-label text-nowrap"
                                               >
                                                 Parent FG Code:
                                               </label>
-                                              <div className="col-sm-4">
+                                              <div className="col-sm-7 d-flex gap-1 align-items-center">
                                                 <select
                                                   id="Parent_FG_Code"
-                                                  className="form-select"
+                                                  className="form-select flex-grow-1"
                                                   value={
                                                     formData.Parent_FG_Code
                                                   }
@@ -1591,29 +1552,22 @@ const ItemMasterGernal = () => {
                                                   <option value="FA">FA</option>
                                                   <option value="FB">FB</option>
                                                 </select>
-                                                {/* {errors.Parent_FG_Code && (
-                                                  <div className="text-danger">
-                                                    {errors.Parent_FG_Code}
-                                                  </div>
-                                                )} */}
-                                              </div>
-                                              <div className="col-sm-2">
                                                 <button
-                                                  className="btn"
+                                                  className="btn btn-sm btn-outline-primary text-nowrap"
+                                                  type="button"
                                                   onClick={
                                                     handleNewButtonParentFg
                                                   }
+                                                  style={{ height: '38px', borderRadius: '0' }}
                                                 >
                                                   New
                                                 </button>
-                                              </div>
-                                              <div className="col-sm-1">
                                                 <button
                                                   type="button"
-                                                  className="btn"
+                                                  className="btn btn-sm btn-outline-secondary"
                                                   onClick={fetchParentFG}
-                                                  title="Refresh metal types"
-                                                  style={{ fontSize: "10px" }}
+                                                  title="Refresh parent fg"
+                                                  style={{ fontSize: "10px", height: '38px', borderRadius: '0' }}
                                                 >
                                                   <CachedIcon />
                                                 </button>
@@ -1632,7 +1586,7 @@ const ItemMasterGernal = () => {
                                                   name="Finish_Weight"
                                                   type="text"
                                                   className="form-control"
-                                                  style={{ width: "115%" }}
+                                                 
                                                   value={
                                                     formData.Finish_Weight
                                                   }
@@ -1648,15 +1602,15 @@ const ItemMasterGernal = () => {
                                             <div className="row mb-3">
                                               <label
                                                 htmlFor="Sector"
-                                                className="col-sm-5 col-form-label"
+                                                className="col-sm-5 col-form-label text-nowrap"
                                               >
                                                 Sector:
                                               </label>
-                                              <div className="col-sm-4">
+                                              <div className="col-sm-7 d-flex gap-1 align-items-center">
                                                 <select
                                                   id="Sector"
                                                   name="Sector"
-                                                  className="form-select"
+                                                  className="form-select flex-grow-1"
                                                   value={formData.Sector}
                                                   onChange={handleInputChange}
                                                 >
@@ -1678,29 +1632,22 @@ const ItemMasterGernal = () => {
                                                   <option>BO</option>
                                                   <option>DI</option>
                                                 </select>
-                                                {/* {errors.Sector && (
-                                                  <div className="text-danger">
-                                                    {errors.Sector}
-                                                  </div>
-                                                )} */}
-                                              </div>
-                                              <div className="col-sm-2">
                                                 <button
-                                                  className="btn"
+                                                  className="btn btn-sm btn-outline-primary text-nowrap"
+                                                  type="button"
                                                   onClick={
                                                     handleNewButtonSector
                                                   }
+                                                  style={{ height: '38px', borderRadius: '0' }}
                                                 >
                                                   New
                                                 </button>
-                                              </div>
-                                              <div className="col-sm-1">
                                                 <button
                                                   type="button"
-                                                  className="btn"
+                                                  className="btn btn-sm btn-outline-secondary"
                                                   onClick={fetchSector}
-                                                  title="Refresh metal types"
-                                                  style={{ fontSize: "10px" }}
+                                                  title="Refresh sectors"
+                                                  style={{ fontSize: "10px", height: '38px', borderRadius: '0' }}
                                                 >
                                                   <CachedIcon />
                                                 </button>
@@ -1719,7 +1666,7 @@ const ItemMasterGernal = () => {
                                                   name="SAC_Code"
                                                   type="text"
                                                   className="form-control"
-                                                  style={{ width: "115%" }}
+                                                 
                                                   value={formData.SAC_Code}
                                                   onChange={handleInputChange}
                                                 />
@@ -1733,16 +1680,16 @@ const ItemMasterGernal = () => {
                                             <div className="row mb-3">
                                               <label
                                                 htmlFor="Item_Sector"
-                                                className="col-sm-5 col-form-label"
+                                                className="col-sm-5 col-form-label text-nowrap"
                                               >
                                                 Item Sector:
                                               </label>
-                                              <div className="col-sm-4">
+                                              <div className="col-sm-7 d-flex gap-1 align-items-center">
                                                 <select
                                                   id="Item_Sector"
                                                   type="text"
                                                   name="Item_Sector"
-                                                  className="form-select"
+                                                  className="form-select flex-grow-1"
                                                   value={formData.Item_Sector}
                                                   onChange={handleInputChange}
                                                 >
@@ -1770,29 +1717,22 @@ const ItemMasterGernal = () => {
                                                   <option>BO</option>
                                                   <option>DI</option>
                                                 </select>
-                                                {/* {errors.Item_Sector && (
-                                                  <div className="text-danger">
-                                                    {errors.Item_Sector}
-                                                  </div>
-                                                )} */}
-                                              </div>
-                                              <div className="col-sm-2">
                                                 <button
-                                                  className="btn"
+                                                  className="btn btn-sm btn-outline-primary text-nowrap"
+                                                  type="button"
                                                   onClick={
                                                     handleNewButtonSector
                                                   }
+                                                  style={{ height: '38px', borderRadius: '0' }}
                                                 >
                                                   New
                                                 </button>
-                                              </div>
-                                              <div className="col-sm-1">
                                                 <button
                                                   type="button"
-                                                  className="btn"
+                                                  className="btn btn-sm btn-outline-secondary"
                                                   onClick={fetchItemGroups}
-                                                  title="Refresh metal types"
-                                                  style={{ fontSize: "10px" }}
+                                                  title="Refresh item sectors"
+                                                  style={{ fontSize: "10px", height: '38px', borderRadius: '0' }}
                                                 >
                                                   <CachedIcon />
                                                 </button>
@@ -1811,7 +1751,7 @@ const ItemMasterGernal = () => {
                                                   name="Hardness"
                                                   type="text"
                                                   className="form-control"
-                                                  style={{ width: "115%" }}
+                                                 
                                                   value={formData.Hardness}
                                                   onChange={handleInputChange}
                                                 />
@@ -1835,7 +1775,7 @@ const ItemMasterGernal = () => {
                                                   name="Male"
                                                   type="text"
                                                   className="form-control"
-                                                  style={{ width: "115%" }}
+                                                 
                                                   value={formData.Male}
                                                   onChange={handleInputChange}
                                                 />
@@ -1859,7 +1799,7 @@ const ItemMasterGernal = () => {
                                                   name="Max_Rate"
                                                   type="text"
                                                   className="form-control"
-                                                  style={{ width: "115%" }}
+                                                 
                                                   value={formData.Max_Rate}
                                                   onChange={handleInputChange}
                                                 />
@@ -1884,7 +1824,7 @@ const ItemMasterGernal = () => {
                                                   name="Thickness"
                                                   type="text"
                                                   className="form-control"
-                                                  style={{ width: "115%" }}
+                                                 
                                                   value={formData.Thickness}
                                                   onChange={handleInputChange}
                                                 />
@@ -1908,7 +1848,7 @@ const ItemMasterGernal = () => {
                                                   name="Diameter"
                                                   type="text"
                                                   className="form-control"
-                                                  style={{ width: "115%" }}
+                                                 
                                                   value={formData.Diameter}
                                                   onChange={handleInputChange}
                                                 />
@@ -1932,7 +1872,7 @@ const ItemMasterGernal = () => {
                                                   name="Other_Desce"
                                                   type="text"
                                                   className="form-control"
-                                                  style={{ width: "115%" }}
+                                                 
                                                   value={formData.Other_Desce}
                                                   onChange={handleInputChange}
                                                 />
@@ -1956,7 +1896,7 @@ const ItemMasterGernal = () => {
                                                   id="Grade"
                                                   name="Grade"
                                                   className="form-control"
-                                                  style={{ width: "115%" }}
+                                                 
                                                   value={formData.Grade}
                                                   onChange={handleInputChange}
                                                 />
@@ -1969,7 +1909,7 @@ const ItemMasterGernal = () => {
                                             </div> */}
                                           </div>
                                         </div>
-                                        <div className="col-md-4">
+                                        <div className="col-sm-4">
                                           <div className="row text-start">
                                             <div className="row mb-3">
                                               <label
@@ -1984,7 +1924,7 @@ const ItemMasterGernal = () => {
                                                   name="Metal"
                                                   type="text"
                                                   className="form-control"
-                                                  style={{ width: "115%" }}
+                                                 
                                                   value={formData.Metal}
                                                   onChange={handleInputChange}
                                                 />
@@ -2008,7 +1948,7 @@ const ItemMasterGernal = () => {
                                                   name="Finish"
                                                   type="text"
                                                   className="form-control"
-                                                  style={{ width: "115%" }}
+                                                 
                                                   value={formData.Finish}
                                                   onChange={handleInputChange}
                                                 />
@@ -2148,7 +2088,7 @@ const ItemMasterGernal = () => {
                                                   name="HSN_SAC_Code"
                                                   type="text"
                                                   className="form-control"
-                                                  style={{ width: "115%" }}
+                                                 
                                                   value={formData.HSN_SAC_Code}
                                                   onChange={handleInputChange}
                                                 />
@@ -2172,7 +2112,7 @@ const ItemMasterGernal = () => {
                                                   name="Gross_Weight"
                                                   type="text"
                                                   className="form-control"
-                                                  style={{ width: "115%" }}
+                                                 
                                                   value={formData.Gross_Weight}
                                                   onChange={handleInputChange}
                                                 />
@@ -2196,7 +2136,7 @@ const ItemMasterGernal = () => {
                                                   name="Tool_Die_Life"
                                                   type="text"
                                                   className="form-control"
-                                                  style={{ width: "115%" }}
+                                                 
                                                   value={
                                                     formData.Tool_Die_Life
                                                   }
@@ -2213,9 +2153,9 @@ const ItemMasterGernal = () => {
                                               <label
                                                 htmlFor="Resharpening_Reconditionning"
                                                 className="col-sm-5 col-form-label"
+                                                style={{ fontSize: '11px', lineHeight: '1.2' }}
                                               >
-                                                No of
-                                                Resharpening_Reconditionning/Reconditioning:
+                                                No of Resharpening /<br/> Reconditioning:
                                               </label>
                                               <div className="col-sm-7">
                                                 <input
@@ -2223,7 +2163,7 @@ const ItemMasterGernal = () => {
                                                   name="Resharpening_Reconditionning"
                                                   type="text"
                                                   className="form-control"
-                                                  style={{ width: "115%" }}
+                                                 
                                                   value={
                                                     formData.Resharpening_Reconditionning
                                                   }
@@ -2320,7 +2260,7 @@ const ItemMasterGernal = () => {
                                                   name="Jominy"
                                                   type="text"
                                                   className="form-control"
-                                                  style={{ width: "115%" }}
+                                                 
                                                   value={formData.Jominy}
                                                   onChange={handleInputChange}
                                                 />
@@ -2344,7 +2284,7 @@ const ItemMasterGernal = () => {
                                                   name="Microstructure"
                                                   type="text"
                                                   className="form-control"
-                                                  style={{ width: "115%" }}
+                                                 
                                                   value={
                                                     formData.Microstructure
                                                   }
@@ -2370,7 +2310,7 @@ const ItemMasterGernal = () => {
                                                   name="Drawing_No"
                                                   type="text"
                                                   className="form-control"
-                                                  style={{ width: "115%" }}
+                                                 
                                                   value={formData.Drawing_No}
                                                   onChange={handleInputChange}
                                                 />
@@ -2408,7 +2348,7 @@ const ItemMasterGernal = () => {
                                                   name="Width"
                                                   type="text"
                                                   className="form-control"
-                                                  style={{ width: "115%" }}
+                                                 
                                                   value={formData.Width}
                                                   onChange={handleInputChange}
                                                 />
@@ -2432,7 +2372,7 @@ const ItemMasterGernal = () => {
                                                   name="Old_ERP_Code"
                                                   type="text"
                                                   className="form-control"
-                                                  style={{ width: "115%" }}
+                                                 
                                                   value={formData.Old_ERP_Code}
                                                   onChange={handleInputChange}
                                                 />
@@ -2456,7 +2396,7 @@ const ItemMasterGernal = () => {
                                                   name="Note"
                                                   type="text"
                                                   className="form-control"
-                                                  style={{ width: "115%" }}
+                                                 
                                                   value={formData.Note}
                                                   onChange={handleInputChange}
                                                 />
@@ -2480,7 +2420,7 @@ const ItemMasterGernal = () => {
                                                   name="KgMM3"
                                                   type="text"
                                                   className="form-control"
-                                                  style={{ width: "115%" }}
+                                                 
                                                   value={formData.KgMM3}
                                                   onChange={handleInputChange}
                                                 />

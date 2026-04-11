@@ -107,7 +107,7 @@ const Data2 = ({onDataChange}) => {
       <div className="container-fluid">
         <form>
           <div className="row">
-            <div className="col-md-4">
+            <div className="col-sm-4">
               <div className="row text-start">
                 <div className="row mb-3">
                   <label
@@ -181,11 +181,11 @@ const Data2 = ({onDataChange}) => {
                 <div className="row mb-3">
                   <label
                     htmlFor="Item_Shelf_Life"
-                    className="col-sm-5 col-form-label"
+                    className="col-sm-5 col-form-label text-nowrap"
                   >
                     Item Shelf Life:
                   </label>
-                  <div className="col-sm-6">
+                  <div className="col-sm-7 d-flex gap-2 align-items-center">
                     <input
                       id="Item_Shelf_Life"
                       name="Item_Shelf_Life"
@@ -193,17 +193,8 @@ const Data2 = ({onDataChange}) => {
                       value={formData.Item_Shelf_Life}
                       onChange={handleChange}
                       type="text"
-                      style={{ width: "115%" }}
                     />
-                    {errors.Item_Shelf_Life && (
-                      <div className="text-danger">
-                        {errors.Item_Shelf_Life}
-                      </div>
-                    )}
-                  </div>
-                  <div className="col-sm-1">
-                    {" "}
-                    <span style={{ padding: "2px" }}>Days</span>
+                    <span className="text-nowrap" style={{ minWidth: '40px' }}>Days</span>
                   </div>
                 </div>
                 <div className="row mb-3">
@@ -221,7 +212,7 @@ const Data2 = ({onDataChange}) => {
                       name="Item_Wip_Wt"
                       value={formData.Item_Wip_Wt}
                       onChange={handleChange}
-                      style={{ width: "115%" }}
+                     
                     />
                     {errors.Item_Wip_Wt && (
                       <div className="text-danger">{errors.Item_Wip_Wt}</div>
@@ -244,7 +235,7 @@ const Data2 = ({onDataChange}) => {
                       name="Min_Level"
                       value={formData.Min_Level}
                       onChange={handleChange}
-                      style={{ width: "115%" }}
+                     
                     />
                     {errors.Min_Level && (
                       <div className="text-danger">{errors.Min_Level}</div>
@@ -266,7 +257,7 @@ const Data2 = ({onDataChange}) => {
                       name="Inventry_Service"
                       value={formData.Inventry_Service}
                       onChange={handleChange}
-                      style={{ width: "115%" }}
+                     
                     />
                     {errors.Inventry_Service && (
                       <div className="text-danger">
@@ -287,7 +278,7 @@ const Data2 = ({onDataChange}) => {
                       name="CPC_Code"
                       value={formData.CPC_Code}
                       onChange={handleChange}
-                      style={{ width: "115%" }}
+                     
                     />
                     {errors.CPC_Code && (
                       <div className="text-danger">{errors.CPC_Code}</div>
@@ -309,7 +300,7 @@ const Data2 = ({onDataChange}) => {
                       name="Auxiliary_Factor"
                       value={formData.Auxiliary_Factor}
                       onChange={handleChange}
-                      style={{ width: "115%" }}
+                     
                     />
                     {errors.Auxiliary_Factor && (
                       <div className="text-danger">
@@ -334,7 +325,7 @@ const Data2 = ({onDataChange}) => {
                       id="Mechanical_Std"
                       value={formData.Mechanical_Std}
                       onChange={handleChange}
-                      style={{ width: "115%" }}
+                     
                     />
                     {errors.Mechanical_Std && (
                       <div className="text-danger">{errors.Mechanical_Std}</div>
@@ -356,7 +347,7 @@ const Data2 = ({onDataChange}) => {
                       id="Tool_Layout_No"
                       value={formData.Tool_Layout_No}
                       onChange={handleChange}
-                      style={{ width: "115%" }}
+                     
                     />
                     {errors.Tool_Layout_No && (
                       <div className="text-danger">{errors.Tool_Layout_No}</div>
@@ -389,109 +380,81 @@ const Data2 = ({onDataChange}) => {
                 </div>
                 <div className="row mb-3">
                   <label
-                    for="Sales_Conversion_Factor"
-                    className="col-sm-5 col-form-label"
+                    htmlFor="Sales_Conversion_Factor"
+                    className="col-sm-5 col-form-label text-nowrap"
                   >
                     Sales Conversion Factor:
                   </label>
-                  <div className="col-sm-3">
+                  <div className="col-sm-7 d-flex gap-1 align-items-center">
                     <input
                       type="text"
                       className="form-control"
+                      style={{ width: '60px' }}
                       name="Sales_Conversion_Factor"
                       id="Sales_Conversion_Factor"
                       value={formData.Sales_Conversion_Factor}
                       onChange={handleChange}
-                      style={{ width: "115%" }}
                     />
-                    {errors.Sales_Conversion_Factor && (
-                      <div className="text-danger">
-                        {errors.Sales_Conversion_Factor}
-                      </div>
-                    )}
-                  </div>
-                  <div className="col-sm-4">
                     <select
-                      id="Sales_Conversion_Factor"
+                      id="Sales_Conversion_Factor_Select"
                       type="text"
-                      name="Sales_Conversion_Factor"
-                      className="form-select"
+                      className="form-select flex-grow-1"
                       value={formData.Sales_Conversion_Factor}
                       onChange={handleChange}
                     >
-                      <option selected>Open this select menu</option>
-                      <option value="1">PCS</option>
-                      <option value="2">KGS</option>
-                      <option value="3">BOX</option>
-                      <option value="3">LTR</option>
-                      <option value="1">NOS</option>
-                      <option value="2">SQFT</option>
-                      <option value="3">MTR</option>
-                      <option value="3">FOOT</option>
-                      <option value="1">SQMTR</option>
-                      <option value="2">PAIR</option>
-                      <option value="3">BAG</option>
-                      <option value="3">PACKET</option>
-                      <option value="1">RIM</option>
-                      <option value="2">SET</option>
-                      <option value="3">MT</option>
-                      <option value="3">PER DAY</option>
-                      <option value="1">DOZEN</option>
-                      <option value="2">JOB</option>
-                      <option value="3">SQINCH</option>
-                      <option value="3">LTR</option>
+                      <option value="">Select Unit</option>
+                      <option value="PCS">PCS</option>
+                      <option value="KGS">KGS</option>
+                      <option value="BOX">BOX</option>
+                      <option value="LTR">LTR</option>
+                      <option value="NOS">NOS</option>
+                      <option value="SQFT">SQFT</option>
+                      <option value="MTR">MTR</option>
+                      <option value="FOOT">FOOT</option>
+                      <option value="SQMTR">SQMTR</option>
+                      <option value="PAIR">PAIR</option>
+                      <option value="BAG">BAG</option>
+                      <option value="PACKET">PACKET</option>
+                      <option value="RIM">RIM</option>
+                      <option value="SET">SET</option>
+                      <option value="MT">MT</option>
+                      <option value="PER DAY">PER DAY</option>
+                      <option value="DOZEN">DOZEN</option>
+                      <option value="JOB">JOB</option>
+                      <option value="SQINCH">SQINCH</option>
                     </select>
-                    {errors.Sales_Conversion_Factor && (
-                      <div className="text-danger">
-                        {errors.Sales_Conversion_Factor}
-                      </div>
-                    )}
                   </div>
                 </div>
 
                 <div className="row mb-3">
                   <label
-                    className="col-sm-5 col-form-label"
-                    for="GRN_Conversion_Factor"
+                    className="col-sm-5 col-form-label text-nowrap"
+                    htmlFor="GRN_Conversion_Factor"
                   >
                     GRN Conversion Factor:
                   </label>
-
-                  <div className="col-sm-3">
+                  <div className="col-sm-7 d-flex gap-1 align-items-center">
                     <input
                       type="text"
                       className="form-control"
+                      style={{ width: '60px' }}
                       name="GRN_Conversion_Factor"
                       id="GRN_Conversion_Factor"
                       onClick={handleChange}
                       value={formData.GRN_Conversion_Factor}
-                      style={{ width: "115%" }}
                     />
-                    {errors.GRN_Conversion_Factor && (
-                      <div className="text-danger">
-                        {errors.GRN_Conversion_Factor}
-                      </div>
-                    )}
-                  </div>
-                  <div className="col-sm-4">
                     <select
-                      id="GRN_Conversion_Factor"
+                      id="GRN_Conversion_Factor_Select"
                       type="text"
-                      name="GRN_Conversion_Factor"
-                      className="form-select"
+                      className="form-select flex-grow-1"
                       value={formData.GRN_Conversion_Factor}
                       onChange={handleChange}
                     >
-                      <option selected>Open this select menu</option>
-                      <option value="1">One</option>
-                      <option value="2">Two</option>
-                      <option value="3">Three</option>
+                      <option value="">Select Logic</option>
+                      <option value="1">Standard</option>
+                      <option value="2">Alternate</option>
+                      <option value="3">Custom</option>
                     </select>
-                    {errors.GRN_Conversion_Factor && (
-                      <div className="text-danger">
-                        {errors.GRN_Conversion_Factor}
-                      </div>
-                    )}
                   </div>
                 </div>
 
@@ -507,7 +470,7 @@ const Data2 = ({onDataChange}) => {
                       id="Buyer"
                       value={formData.Buyer}
                       onChange={handleChange}
-                      style={{ width: "115%" }}
+                     
                     />
                     {errors.Buyer && (
                       <div className="text-danger">{errors.Buyer}</div>
@@ -516,23 +479,22 @@ const Data2 = ({onDataChange}) => {
                 </div>
               </div>
             </div>
-            <div className="col-md-4">
+            <div className="col-sm-4">
               <div className="row text-start">
                 <div className="row mb-3">
                   <label
                     htmlFor="Qty_Packing"
-                    className="col-sm-5 col-form-label"
+                    className="col-sm-5 col-form-label text-nowrap"
                   >
                     Qty Packing:
                   </label>
-
-                  <div className="col-sm-4">
+                  <div className="col-sm-7 d-flex gap-1 align-items-center">
                     <select
                       id="Qty_Packing"
                       name="Qty_Packing"
                       value={formData.Qty_Packing}
                       onChange={handleChange}
-                      className="form-select"
+                      className="form-select flex-grow-1"
                     >
                       <option value="">Select ..</option>
                       {qtyPacks.map((item) => (
@@ -543,26 +505,20 @@ const Data2 = ({onDataChange}) => {
                       <option value="FG">FG</option>
                       <option value="RM">RM</option>
                     </select>
-                    {errors.Qty_Packing && (
-                      <div className="text-danger">{errors.Qty_Packing}</div>
-                    )}
-                  </div>
-                  <div className="col-sm-2">
                     <button
-                      className="btn"
+                      className="btn btn-sm btn-outline-primary text-nowrap"
                       type="button"
                       onClick={handleNewButtonQtypack}
+                      style={{ height: '38px', borderRadius: '0' }}
                     >
                       New
                     </button>
-                  </div>
-                  <div className="col-sm-1">
                     <button
                       type="button"
-                      className="btn"
+                      className="btn btn-sm btn-outline-secondary"
                       onClick={fetchQtyPacks}
-                      title="Refresh metal types"
-                      style={{ fontSize: "10px" }}
+                      title="Refresh qty packs"
+                      style={{ fontSize: "10px", height: '38px', borderRadius: '0' }}
                     >
                       <CachedIcon />
                     </button>
@@ -609,7 +565,7 @@ const Data2 = ({onDataChange}) => {
                       value={formData.Machine_Weight}
                       onChange={handleChange}
                       className="form-control"
-                      style={{ width: "115%" }}
+                     
                     />
                     {errors.Machine_Weight && (
                       <div className="text-danger">{errors.Machine_Weight}</div>
@@ -631,7 +587,7 @@ const Data2 = ({onDataChange}) => {
                       value={formData.Buffer_Qty}
                       onChange={handleChange}
                       className="form-control"
-                      style={{ width: "115%" }}
+                     
                     />
                     {errors.Buffer_Qty && (
                       <div className="text-danger">{errors.Buffer_Qty}</div>
@@ -650,7 +606,7 @@ const Data2 = ({onDataChange}) => {
                       value={formData.MOQ}
                       onChange={handleChange}
                       className="form-control"
-                      style={{ width: "115%" }}
+                     
                     />
                     {errors.MOQ && (
                       <div className="text-danger">{errors.MOQ}</div>
@@ -672,7 +628,7 @@ const Data2 = ({onDataChange}) => {
                       value={formData.Max_Level}
                       onChange={handleChange}
                       className="form-control"
-                      style={{ width: "115%" }}
+                     
                     />
                     {errors.Max_Level && (
                       <div className="text-danger">{errors.Max_Level}</div>
@@ -691,7 +647,7 @@ const Data2 = ({onDataChange}) => {
                       value={formData.BOM_Type}
                       onChange={handleChange}
                       className="form-control"
-                      style={{ width: "115%" }}
+                     
                     />
                     {errors.BOM_Type && (
                       <div className="text-danger">{errors.BOM_Type}</div>
@@ -740,7 +696,7 @@ const Data2 = ({onDataChange}) => {
                       value={formData.Over_Head_Rate}
                       onChange={handleChange}
                       className="form-control"
-                      style={{ width: "115%" }}
+                     
                     />
                     {errors.Over_Head_Rate && (
                       <div className="text-danger">{errors.Over_Head_Rate}</div>
@@ -762,7 +718,7 @@ const Data2 = ({onDataChange}) => {
                       value={formData.Valuation_Method}
                       onChange={handleChange}
                       className="form-control"
-                      style={{ width: "115%" }}
+                     
                     />
                     {errors.Valuation_Method && (
                       <div className="text-danger">
@@ -786,7 +742,7 @@ const Data2 = ({onDataChange}) => {
                       value={formData.Dimensional_Std_Reference}
                       onChange={handleChange}
                       className="form-control"
-                      style={{ width: "115%" }}
+                     
                     />
                     {errors.Dimensional_Std_Reference && (
                       <div className="text-danger">
@@ -810,7 +766,7 @@ const Data2 = ({onDataChange}) => {
                       value={formData.Raw_Material_Grade}
                       onChange={handleChange}
                       className="form-control"
-                      style={{ width: "115%" }}
+                     
                     />
                     {errors.Raw_Material_Grade && (
                       <div className="text-danger">
@@ -834,7 +790,7 @@ const Data2 = ({onDataChange}) => {
                       value={formData.RM_Tolerance}
                       onChange={handleChange}
                       className="form-control"
-                      style={{ width: "115%" }}
+                     
                     />
                     {errors.RM_Tolerance && (
                       <div className="text-danger">{errors.RM_Tolerance}</div>
@@ -856,7 +812,7 @@ const Data2 = ({onDataChange}) => {
                       value={formData.FG_Std_Cavity}
                       onChange={handleChange}
                       className="form-control"
-                      style={{ width: "115%" }}
+                     
                     />
                     {errors.FG_Std_Cavity && (
                       <div className="text-danger">{errors.FG_Std_Cavity}</div>
@@ -879,7 +835,7 @@ const Data2 = ({onDataChange}) => {
                       value={formData.Design_Cost}
                       onChange={handleChange}
                       className="form-control"
-                      style={{ width: "115%" }}
+                     
                     />
                     {errors.Design_Cost && (
                       <div className="text-danger">{errors.Design_Cost}</div>
@@ -901,7 +857,7 @@ const Data2 = ({onDataChange}) => {
                       value={formData.Transport_Cost}
                       onChange={handleChange}
                       className="form-control"
-                      style={{ width: "115%" }}
+                     
                     />
                     {errors.Transport_Cost && (
                       <div className="text-danger">{errors.Transport_Cost}</div>
@@ -910,7 +866,7 @@ const Data2 = ({onDataChange}) => {
                 </div>
               </div>
             </div>
-            <div className="col-md-4">
+            <div className="col-sm-4">
               <div className="row text-start">
                 <div className="row mb-3">
                   <label
@@ -978,7 +934,7 @@ const Data2 = ({onDataChange}) => {
                       id="Eoonomical_Batch_Size"
                       name="Eoonomical_Batch_Size"
                       className="form-control"
-                      style={{ width: "115%" }}
+                     
                       value={formData.Eoonomical_Batch_Size}
                       onChange={handleChange}
                     />
@@ -1002,7 +958,7 @@ const Data2 = ({onDataChange}) => {
                       id="Re_Order_Level"
                       name="Re_Order_Level"
                       className="form-control"
-                      style={{ width: "115%" }}
+                     
                       value={formData.Re_Order_Level}
                       onChange={handleChange}
                     />
@@ -1024,7 +980,7 @@ const Data2 = ({onDataChange}) => {
                       id="Pre_Shift_Qty"
                       name="Pre_Shift_Qty"
                       className="form-control"
-                      style={{ width: "115%" }}
+                     
                       value={formData.Pre_Shift_Qty}
                       onChange={handleChange}
                     />
@@ -1046,7 +1002,7 @@ const Data2 = ({onDataChange}) => {
                       id="Scrap_Item"
                       name="Scrap_Item"
                       className="form-control"
-                      style={{ width: "115%" }}
+                     
                       value={formData.Scrap_Item}
                       onChange={handleChange}
                     />
@@ -1068,7 +1024,7 @@ const Data2 = ({onDataChange}) => {
                       id="Scrap_Qty"
                       name="Scrap_Qty"
                       className="form-control"
-                      style={{ width: "115%" }}
+                     
                       value={formData.Scrap_Qty}
                       onChange={handleChange}
                     />
@@ -1116,7 +1072,7 @@ const Data2 = ({onDataChange}) => {
                       id="Business_Associate"
                       name="Business_Associate"
                       className="form-control"
-                      style={{ width: "115%" }}
+                     
                       value={formData.Business_Associate}
                       onChange={handleChange}
                     />
@@ -1142,7 +1098,7 @@ const Data2 = ({onDataChange}) => {
                       value={formData.Purchase_Lead_Time}
                       onChange={handleChange}
                       className="form-control"
-                      style={{ width: "115%" }}
+                     
                     />
                     {errors.Purchase_Lead_Time && (
                       <div className="text-danger">
@@ -1166,7 +1122,7 @@ const Data2 = ({onDataChange}) => {
                       value={formData.Business_Head}
                       onChange={handleChange}
                       className="form-control"
-                      style={{ width: "115%" }}
+                     
                     />
                     {errors.Business_Head && (
                       <div className="text-danger">{errors.Business_Head}</div>
@@ -1185,7 +1141,7 @@ const Data2 = ({onDataChange}) => {
                       onChange={handleChange}
                       className="form-control"
                       name="Packing_Cost"
-                      style={{ width: "115%" }}
+                     
                     />
                     {errors.Packing_Cost && (
                       <div className="text-danger">{errors.Packing_Cost}</div>
@@ -1205,7 +1161,7 @@ const Data2 = ({onDataChange}) => {
                       id="Production_Lead_Time"
                       name="Production_Lead_Time"
                       className="form-control"
-                      style={{ width: "115%" }}
+                     
                       value={formData.Production_Lead_Time}
                       onChange={handleChange}
                     />

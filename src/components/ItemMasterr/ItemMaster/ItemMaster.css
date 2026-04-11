@@ -49,10 +49,14 @@
   background-color: rgba(235, 233, 233, 0.685);
   padding: 5px 10px;
   border: none;
-  border-radius: 10px;
+  border-radius: 0px; /* Square */
   margin-left: 10px;
   text-decoration: none;
   color: black;
+}
+
+.btn-square {
+  border-radius: 0px !important;
 }
 
 .search-row {
@@ -60,6 +64,13 @@
   border-bottom: 1px solid #dee2e6; /* Border for header */
   padding: 10px 15px; /* Padding around header */
   border-radius: 5px;
+}
+
+.search-row label {
+  margin-bottom: 0 !important;
+  font-weight: 600;
+  color: #555;
+  font-size: 13px;
 }
 
 .form-select {
@@ -153,24 +164,36 @@
   margin-top: 20px;
 }
 
-.pagination .page-item {
-  cursor: pointer;
-}
-
 .pagination .page-item.active .page-link {
   background-color: #007bff;
   border-color: #007bff;
   color: white;
+  font-weight: bold;
 }
 
 .pagination .page-link {
   color: #007bff;
-  border: 1px solid #007bff;
+  border: 1px solid #dee2e6;
+  border-radius: 0px !important;
+  padding: 5px 12px;
+  font-size: 14px;
+  min-width: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 38px;
 }
 
 .pagination .page-link:hover {
-  background-color: #0056b3;
-  color: white;
+  background-color: #f8f9fa;
+  color: #0056b3;
+  border-color: #dee2e6;
+}
+
+.pagination .page-item.disabled .page-link {
+  color: #6c757d;
+  background-color: #fff;
+  border-color: #dee2e6;
 }
 
 

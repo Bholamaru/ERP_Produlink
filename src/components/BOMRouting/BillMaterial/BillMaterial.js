@@ -759,11 +759,11 @@ const BillMaterial = () => {
               <main className={`main-content ${sideNavOpen ? "shifted" : ""}`}>
                 <div className="BillMaterial1">
                   <div className="BillMaterialMain mb-4 text-start mt-5">
-                    <div className="row align-items-center">
-                      <div className="col-md-5">
-                        <h5 className="header-title">Routing & Bill of Material (BOM)</h5>
+                    <div className="row align-items-center flex-nowrap overflow-auto pb-1">
+                      <div className="col-auto">
+                        <h5 className="header-title mb-0" style={{ whiteSpace: "nowrap" }}>Routing & Bill of Material (BOM)</h5>
                       </div>
-                      <div className="col-md-7 text-end">
+                      <div className="col text-end" style={{ whiteSpace: "nowrap" }}>
                         <button className="Billmaterialbtn" onClick={toggleCardProduction}>
                           1. Production Dept
                         </button>
@@ -930,12 +930,12 @@ const BillMaterial = () => {
                         </div>
                       )} */}
 
-                      <div className="row mt-3 text-start mt-4">
-                        <div className="col-md-1 mt-2">
-                          <label>Select Item:</label>
+                      <div className="row align-items-center flex-nowrap overflow-auto mt-3 text-start pb-2">
+                        <div className="col-auto">
+                          <label style={{ whiteSpace: "nowrap" }}>Select Item:</label>
                         </div>
 
-                        <div className="col-md-2 mt-1 position-relative" ref={dropdownRef}>
+                        <div className="col position-relative" style={{ minWidth: "200px" }} ref={dropdownRef}>
                           <input
                             type="text"
                             className="form-control"
@@ -966,7 +966,7 @@ const BillMaterial = () => {
                           )}
                         </div>
 
-                        <div className="col-md-2">
+                        <div className="col-auto" style={{ whiteSpace: "nowrap" }}>
                           <button className="materialbtn me-2" onClick={(e) => handleSearch(e)}>
                             Search
                           </button>
@@ -975,20 +975,20 @@ const BillMaterial = () => {
                           </button>
                         </div>
 
-                        <div className="col-md-1" style={{ marginTop: "10px" }}>
-                          <label className="form-label">Born Authorise</label>
+                        <div className="col-auto">
+                          <label className="form-label mb-0" style={{ whiteSpace: "nowrap" }}>Born Authorise</label>
                         </div>
-                        <div className="col-md-1">
-                          <select className="form-select">
+                        <div className="col-auto">
+                          <select className="form-select" style={{ width: "auto" }}>
                             <option>No</option>
                             <option>Yes</option>
                           </select>
                         </div>
-                        <div className="col-md-1">
-                          <button className="materialbtn">Copy BOM</button>
+                        <div className="col-auto">
+                          <button className="materialbtn" style={{ whiteSpace: "nowrap" }}>Copy BOM</button>
                         </div>
-                        <div className="col-md-2">
-                          <p style={{ color: "blue", marginTop: "10px" }}>Calculate RM Wt</p>
+                        <div className="col-auto">
+                          <p className="mb-0" style={{ color: "blue", whiteSpace: "nowrap" }}>Calculate RM Wt</p>
                         </div>
                       </div>
 

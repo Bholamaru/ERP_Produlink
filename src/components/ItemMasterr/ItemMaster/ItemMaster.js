@@ -117,8 +117,8 @@ const ItemMaster = () => {
                         <h5 className="header-title">Item List</h5>
                       </div>
                       <div className="col-md-6 text-end">
-                        <Link to="/item-master-gernal" className="btn btn-primary m-1">Add New Item</Link>
-                        <Link to="/item-master-query" className="btn btn-secondary m-1">Item Query</Link>
+                        <Link to="/item-master-gernal" className="btn btn-primary m-1 btn-square">Add New Item</Link>
+                        <Link to="/item-master-query" className="btn btn-secondary m-1 btn-square">Item Query</Link>
                       </div>
                     </div>
                   </div>
@@ -126,8 +126,8 @@ const ItemMaster = () => {
                   {/* Search Bar */}
                   <div className="itemListMain search-row mb-3">
                     <div className="row g-2">
-                      <div className="col-md-2">
-                        <label>Item Search</label>
+                      <div className="col-md-3 d-flex align-items-center">
+                        <label className="me-2 text-nowrap">Item Search</label>
                         <input
                           type="text"
                           className="form-control"
@@ -136,8 +136,8 @@ const ItemMaster = () => {
                           onChange={(e) => setSearchQuery(e.target.value)}
                         />
                       </div>
-                      <div className="col-md-2">
-                        <label>Main Group</label>
+                      <div className="col-md-2 d-flex align-items-center">
+                        <label className="me-2 text-nowrap">Main Group</label>
                         <select
                           className="form-select"
                           value={mainGroup}
@@ -152,8 +152,8 @@ const ItemMaster = () => {
                         </select>
                       </div>
 
-                      <div className="col-md-2">
-                        <label>Item Group</label>
+                      <div className="col-md-2 d-flex align-items-center">
+                        <label className="me-2 text-nowrap">Item Group</label>
                         <select className="form-select" value={itemGroup} onChange={(e) => setItemGroup(e.target.value)}>
                           <option value="">ALL</option>
                           {itemGroups.map(group => (
@@ -161,8 +161,8 @@ const ItemMaster = () => {
                           ))}
                         </select>
                       </div>
-                      <div className="col-md-2">
-                        <label>Item Grade</label>
+                      <div className="col-md-2 d-flex align-items-center">
+                        <label className="me-2 text-nowrap">Item Grade</label>
                         <select className="form-select" value={itemGrade} onChange={(e) => setItemGrade(e.target.value)}>
                           <option value="">All</option>
                           {itemGrades.map(grade => (
@@ -170,7 +170,7 @@ const ItemMaster = () => {
                           ))}
                         </select>
                       </div>
-                      <div className="col-md-4 d-flex align-items-end justify-content-end">
+                      <div className="col-md-3 d-flex align-items-center justify-content-end">
                         <button className="btn m-1" onClick={handleSearch}>Search</button>
                         <button className="btn m-1" onClick={handleViewAll}>All Items</button>
                       </div>

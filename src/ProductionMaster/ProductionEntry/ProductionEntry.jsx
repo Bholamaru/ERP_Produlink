@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect, useCallback, useRef } from "react"
@@ -812,8 +813,11 @@ const ProductionEntry = () => {
   const handleOperationChange = (e) => {
     const selectedValue = e.target.value // User select: "OPNo|PartCode"
     const parts = selectedValue.split('|')
+    const currentOPNo = parts[0]
+    const currentPartCode = parts[1]
+
     // 🆕 Update the selected OP number state
-    setSelectedOPNo(parts[0])
+    setSelectedOPNo(currentOPNo)
 
     const selectedIndex = operationList.findIndex(
       (op) => `${op.OPNo}|${op.PartCode}` === selectedValue,
@@ -824,21 +828,13 @@ const ProductionEntry = () => {
     // Reset lot info and BOM Qty when operation changes
     setBomQtyPerPiece(null)
     setSelectedLotMaxQty(null)
-    setFormData((prev) => ({
-      ...prev,
-      lot_no: "",
-      lot_heat_no: "",
-      lot_qty: "",
-      // ...
-    }))
 
     if (selectedIndex === 0) {
       // --- LOGIC: First Operation (OP 10) ---
       const firstOperation = operationList[0]
 
       // Parent Operation field shows: Scrap Qty | BOM Qty
-      parentOperationDisplay = `ScracpQty: ${firstOperation.ScracpQty || "N/A"} | BOMQty: ${firstOperation.QtyKg || "N/A"
-        }`
+      parentOperationDisplay = `ScrapQty: ${firstOperation.ScrapQty || firstOperation.ScracpQty || "N/A"} | BOMQty: ${firstOperation.QtyKg || "N/A"}`
 
       const bomQty = parseFloat(firstOperation.QtyKg)
       if (!isNaN(bomQty) && bomQty > 0) {
@@ -858,8 +854,12 @@ const ProductionEntry = () => {
     setFormData((prev) => ({
       ...prev,
       Operation: selectedValue,
+      OPNo: currentOPNo,
+      PartCode: currentPartCode,
       ParentOperation: parentOperationDisplay, // Yeh check karega ki pichla OP kya hai
-      // ... (rest of the form data update)
+      lot_no: "",
+      lot_heat_no: "",
+      lot_qty: "",
     }))
   }
 
@@ -1248,12 +1248,12 @@ const ProductionEntry = () => {
                             </div>
                           </div>
 
-                            {/* UNIT/Machine */}
-                            <div className="row mb-2">
-                              <div className="col-5">
-                                <label htmlFor="unit-machine">UNIT/Machine :</label>
-                              </div>
-                              <div className="col-7 position-relative">
+                          {/* UNIT/Machine */}
+                          <div className="row mb-2">
+                            <div className="col-5">
+                              <label htmlFor="unit-machine">UNIT/Machine :</label>
+                            </div>
+                            <div className="col-7 position-relative">
                               <input
                                 id="unit-machine"
                                 className="form-control"
@@ -1512,11 +1512,12 @@ const ProductionEntry = () => {
                                 id="parent_operation"
                                 name="ParentOperation"
                                 className="form-control"
-                                  placeholder="Value Automatic Field"
-                                  readOnly
-                                />
-                              </div>
+                                placeholder="Value Automatic Field"
+                                value={formData.ParentOperation || ""}
+                                readOnly
+                              />
                             </div>
+                          </div>
 
                           {/* Prod Time */}
                           <div className="row mt-4">
@@ -1749,51 +1750,51 @@ const ProductionEntry = () => {
                             View WIP
                           </button>
 
-                           {/* WIP Toggle Table - below View WIP */}
-                           {showWIPTable && (
-                             <div style={{ 
-                               width: "100%",
-                               maxHeight: "200px", 
-                               overflowY: "auto", 
-                               overflowX: "auto", 
-                               border: "1px solid #dee2e6",
-                               borderRadius: "4px",
-                               backgroundColor: "#fff"
-                             }}>
-                               {wipLoading ? (
-                                 <p className="text-center text-muted" style={{ fontSize: "11px", padding: "10px" }}>Loading...</p>
-                               ) : (
-                                 <table className="table table-bordered table-sm mb-0" style={{ fontSize: "11px", tableLayout: "fixed", width: "100%" }}>
-                                   <thead style={{ backgroundColor: "#007bff", color: "#fff", position: "sticky", top: 0 }}>
-                                     <tr className="text-center">
-                                       <th style={{ width: "75px" }}>OP No</th>
-                                       <th style={{ width: "100px" }}>Part Code</th>
-                                       <th style={{ width: "70px" }}>Prod Qty</th>
-                                       <th style={{ width: "80px" }}>Pending QC</th>
-                                     </tr>
-                                   </thead>
-                                   <tbody className="text-center">
-                                     {wipData.length > 0 ? (
-                                       wipData.map((row, idx) => (
-                                         <tr key={idx}>
-                                           <td style={{ padding: "2px" }}>{row.OPNo}</td>
-                                           <td style={{ fontSize: "10px", textAlign: "left", padding: "2px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{row.PartCode}</td>
-                                           <td style={{ padding: "2px" }}>{row.prod_qty}</td>
-                                           <td style={{ padding: "2px" }}>{row.pending_qc}</td>
-                                         </tr>
-                                       ))
-                                     ) : (
-                                       <tr>
-                                         <td colSpan={4} className="text-center text-muted">No data</td>
-                                       </tr>
-                                     )}
-                                   </tbody>
-                                 </table>
-                               )}
-                             </div>
-                           )}
- 
-                         </div>
+                          {/* WIP Toggle Table - below View WIP */}
+                          {showWIPTable && (
+                            <div style={{
+                              width: "100%",
+                              maxHeight: "200px",
+                              overflowY: "auto",
+                              overflowX: "auto",
+                              border: "1px solid #dee2e6",
+                              borderRadius: "4px",
+                              backgroundColor: "#fff"
+                            }}>
+                              {wipLoading ? (
+                                <p className="text-center text-muted" style={{ fontSize: "11px", padding: "10px" }}>Loading...</p>
+                              ) : (
+                                <table className="table table-bordered table-sm mb-0" style={{ fontSize: "11px", tableLayout: "fixed", width: "100%" }}>
+                                  <thead style={{ backgroundColor: "#007bff", color: "#fff", position: "sticky", top: 0 }}>
+                                    <tr className="text-center">
+                                      <th style={{ width: "75px" }}>OP No</th>
+                                      <th style={{ width: "100px" }}>Part Code</th>
+                                      <th style={{ width: "70px" }}>Prod Qty</th>
+                                      <th style={{ width: "80px" }}>Pending QC</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody className="text-center">
+                                    {wipData.length > 0 ? (
+                                      wipData.map((row, idx) => (
+                                        <tr key={idx}>
+                                          <td style={{ padding: "2px" }}>{row.OPNo}</td>
+                                          <td style={{ fontSize: "10px", textAlign: "left", padding: "2px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{row.PartCode}</td>
+                                          <td style={{ padding: "2px" }}>{row.prod_qty}</td>
+                                          <td style={{ padding: "2px" }}>{row.pending_qc}</td>
+                                        </tr>
+                                      ))
+                                    ) : (
+                                      <tr>
+                                        <td colSpan={4} className="text-center text-muted">No data</td>
+                                      </tr>
+                                    )}
+                                  </tbody>
+                                </table>
+                              )}
+                            </div>
+                          )}
+
+                        </div>
 
                       </div>
 
@@ -2575,3 +2576,4 @@ const ProductionEntry = () => {
 }
 
 export default ProductionEntry
+

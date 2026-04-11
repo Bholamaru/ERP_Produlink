@@ -127,7 +127,7 @@ const BankDetail = ({ bankDetails = [], setBankDetails = () => {} }) => {
                 <th>Branch Name <span className="text-danger">*</span></th>
                 <th>Bank A/c No <span className="text-danger">*</span></th>
                 <th>IFSC Code <span className="text-danger">*</span></th>
-                <th>Action</th>
+                <th className="text-center">Action</th>
               </tr>
             </thead>
             <tbody>
@@ -145,10 +145,12 @@ const BankDetail = ({ bankDetails = [], setBankDetails = () => {} }) => {
                     {errors[field] && <div className="text-danger">{capitalize(errors[field])}</div>}
                   </td>
                 ))}
-                <td>
-                  <button className="btn btn-sm btn-primary" onClick={handleAddOrUpdateBankDetail}>
-                    <i className={`fas ${editingId ? "fa-edit" : "fa-plus"}`}></i> {editingId ? "Update" : "Add"}
-                  </button>
+                <td style={{ verticalAlign: "top", padding: "0" }}>
+                  <div style={{ marginTop: "12px", height: "40px" }} className="d-flex justify-content-center align-items-center">
+                    <button className="btn btn-sm btn-primary" style={{ margin: "0" }} onClick={handleAddOrUpdateBankDetail}>
+                      <i className={`fas ${editingId ? "fa-edit" : "fa-plus"}`}></i> {editingId ? "Update" : "Add"}
+                    </button>
+                  </div>
                 </td>
               </tr>
             </tbody>
@@ -164,7 +166,7 @@ const BankDetail = ({ bankDetails = [], setBankDetails = () => {} }) => {
                 <th>Branch Name</th>
                 <th>Bank Ac No</th>
                 <th>IFSC Code</th>
-                <th>Actions</th>
+                <th className="text-center">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -176,13 +178,15 @@ const BankDetail = ({ bankDetails = [], setBankDetails = () => {} }) => {
                     <td>{detail.Branch_Name}</td>
                     <td>{detail.Bank_Account}</td>
                     <td>{detail.IFSC_Code}</td>
-                    <td>
-                      <button className="btn me-2" onClick={() => handleEditBankDetail(detail)}>
-                        <i className="fas fa-edit"></i>
-                      </button>
-                      <button className="btn" onClick={() => handleDeleteBankDetail(detail.id)}>
-                        <i className="fas fa-trash-alt"></i>
-                      </button>
+                    <td style={{ textAlign: "center", verticalAlign: "middle" }}>
+                      <div className="d-flex justify-content-center align-items-center">
+                        <button className="btn me-2" onClick={() => handleEditBankDetail(detail)}>
+                          <i className="fas fa-edit"></i>
+                        </button>
+                        <button className="btn" onClick={() => handleDeleteBankDetail(detail.id)}>
+                          <i className="fas fa-trash-alt"></i>
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))

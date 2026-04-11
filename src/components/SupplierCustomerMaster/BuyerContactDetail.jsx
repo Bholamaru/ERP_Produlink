@@ -149,7 +149,7 @@ const BuyerContactDetail = ({ buyerContacts = [], setBuyerContacts = () => {} })
                       <th className="blue-th" scope="col">
                         Birth Date<span className="text-danger">*</span>
                       </th>
-                      <th className="blue-th" scope="col">
+                      <th className="blue-th text-center" scope="col">
                         Action
                       </th>
                     </tr>
@@ -231,18 +231,20 @@ const BuyerContactDetail = ({ buyerContacts = [], setBuyerContacts = () => {} })
                           <small className="text-danger">{capitalizeFirstLetter(errors.Birth_Date)}</small>
                         )}
                       </td>
-                      <td>
-                        <button className="bankbtn" onClick={handleAddBuyerContact}>
-                          {formData.id ? (
-                            <>
-                              <i className="fas fa-save"></i> Save
-                            </>
-                          ) : (
-                            <>
-                              <i className="fas fa-plus"></i> Add
-                            </>
-                          )}
-                        </button>
+                      <td style={{ verticalAlign: "top", padding: "0" }}>
+                        <div style={{ marginTop: "12px", height: "40px" }} className="d-flex justify-content-center align-items-center">
+                          <button className="bankbtn" style={{ margin: "0" }} onClick={handleAddBuyerContact}>
+                            {formData.id ? (
+                              <>
+                                <i className="fas fa-save"></i> Save
+                              </>
+                            ) : (
+                              <>
+                                <i className="fas fa-plus"></i> Add
+                              </>
+                            )}
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   </tbody>
@@ -277,9 +279,7 @@ const BuyerContactDetail = ({ buyerContacts = [], setBuyerContacts = () => {} })
                       <th className="blue-th" scope="col">
                         Birth Date
                       </th>
-                      <th className="blue-th" scope="col">
-                        Actions
-                      </th>
+                      <th className="blue-th text-center" scope="col">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -292,13 +292,15 @@ const BuyerContactDetail = ({ buyerContacts = [], setBuyerContacts = () => {} })
                           <td>{contact.Department}</td>
                           <td>{contact.Designation}</td>
                           <td>{contact.Birth_Date}</td>
-                          <td>
-                            <button className="bankbtn me-2" onClick={() => handleEditBuyerContact(contact)}>
-                              <i className="fas fa-edit"></i>
-                            </button>
-                            <button className="bankbtn" onClick={() => handleDeleteBuyerContact(contact.id)}>
-                              <i className="fas fa-trash"></i>
-                            </button>
+                          <td style={{ textAlign: "center", verticalAlign: "middle" }}>
+                            <div className="d-flex justify-content-center align-items-center">
+                              <button className="bankbtn me-2" onClick={() => handleEditBuyerContact(contact)}>
+                                <i className="fas fa-edit"></i>
+                              </button>
+                              <button className="bankbtn" onClick={() => handleDeleteBuyerContact(contact.id)}>
+                                <i className="fas fa-trash"></i>
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))
