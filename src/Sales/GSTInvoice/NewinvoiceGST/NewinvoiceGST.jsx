@@ -224,12 +224,12 @@ const NewinvoiceGST = () => {
                                     className="form-control"/>
                                 </div>
                                 <div className="col-2">
-                                  <label htmlFor="payment">
+                                  <label htmlFor="payment_note">
                                     Note :
                                   </label>
                                 </div>
                                 <div className="col-3">
-                                  <input type="text" id="payment"
+                                  <input type="text" id="payment_note"
                                     className="form-control"/>
                                 </div>
                               </div>
@@ -269,7 +269,7 @@ const NewinvoiceGST = () => {
                               {/* Item */}
                               <div className="row mb-2">
                                 <div className="col-4">
-                                  <label htmlFor="item">Bill TO  :</label>
+                                  <label htmlFor="billto">Bill TO  :</label>
                                 </div>
                                 <div className="col-8 d-flex align-items-center">
                                    <input type="text" placeholder="" id="billto"
@@ -289,7 +289,7 @@ const NewinvoiceGST = () => {
                                   <label htmlFor="shipto">Ship TO :</label>
                                 </div>
                                 <div className="col-8 d-flex align-items-center">
-                                   <input type="text" placeholder="" id="billto"
+                                   <input type="text" placeholder="" id="shipto"
                                     className="form-control"/>
                                   <button
                                     type="button"
@@ -364,11 +364,11 @@ const NewinvoiceGST = () => {
                               {/* Date & Time */}
                               <div className="row mb-2">
                                 <div className="col-4">
-                                  <label htmlFor="date">Invoice Date :</label>
+                                  <label htmlFor="invoicedate">Invoice Date :</label>
                                 </div>
                                 <div className="col-8">
                                   <input
-                                    id="time"
+                                    id="invoicedate"
                                     type="datetime-local"
                                     className="form-control"
                                   />
@@ -481,10 +481,10 @@ const NewinvoiceGST = () => {
                               </div>
                               <div className="row mb-2">
                                 <div className="col-4">
-                                  <label htmlFor="invoicetime"> Time :</label>
+                                  <label htmlFor="time2"> Time :</label>
                                 </div>
                                 <div className="col-8">
-                                 <input type="time" id="invoicetime" className="form-control"/>
+                                 <input type="time" id="time2" className="form-control"/>
                                 </div>
                               </div>
 
@@ -524,11 +524,11 @@ const NewinvoiceGST = () => {
 
                               <div className="row mb-2">
                                 <div className="col-4">
-                                  <label htmlFor="ewaybill">Eway Bill No:</label>
+                                  <label htmlFor="ewaybill2">Eway Bill No:</label>
                                 </div>
                                 <div className="col-8 d-flex">
                                   <input
-                                    id="ewaybill" placeholder="0"
+                                    id="ewaybill2" placeholder="0"
                                     className="form-control"
                                    />
                                 </div>
@@ -536,19 +536,19 @@ const NewinvoiceGST = () => {
 
                               <div className="row mb-2">
                                 <div className="col-4">
-                                  <label htmlFor="delivey"> Destination Code:</label>
+                                  <label htmlFor="destcode"> Destination Code:</label>
                                 </div>
                                 <div className="col-8 d-flex">
-                                   <input type="text" className="form-control"/>
+                                   <input type="text" id="destcode" className="form-control"/>
                                 </div>
                               </div>
 
                               <div className="row mb-2">
                                 <div className="col-4">
-                                  <label htmlFor="dcno">D.C. Date:</label>
+                                  <label htmlFor="dcdate">D.C. Date:</label>
                                 </div>
                                 <div className="col-8 d-flex">
-                                    <input type="date" id="dcno" className="form-control" />
+                                    <input type="date" id="dcdate" className="form-control" />
                                 </div>
                               </div>
 

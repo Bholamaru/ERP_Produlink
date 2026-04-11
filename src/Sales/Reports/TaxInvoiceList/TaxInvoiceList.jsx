@@ -15,6 +15,100 @@ const TaxInvoiceList = () => {
   const [sideNavOpen, setSideNavOpen] = useState(false);
   const navigate = useNavigate();
 
+  const [invoices, setInvoices] = useState([]);
+  const [filteredInvoices, setFilteredInvoices] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const fetchInvoices = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch("http://127.0.0.1:8000/Sales/invoice/");
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`);
+      }
+      const data = await response.json();
+
+      let invList = [];
+      if (Array.isArray(data)) {
+        invList = data;
+      } else if (data.data && Array.isArray(data.data)) {
+        invList = data.data;
+      } else if (data.results && Array.isArray(data.results)) {
+        invList = data.results;
+      }
+
+      setInvoices(invList);
+      setFilteredInvoices(invList);
+    } catch (err) {
+      console.error("Error fetching invoices:", err);
+      setInvoices([]);
+      setFilteredInvoices([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchInvoices();
+  }, []);
+
+  const getCustomerName = (inv) => {
+    if (inv.bill_to) return inv.bill_to;
+    if (inv.customer) return inv.customer;
+    if (inv.items && inv.items.length > 0) return inv.items[0].customer || "";
+    return "";
+  };
+
+  const getCustomerCode = (inv) => {
+    return inv.cust_code || inv.customer_code || inv.destenation_code || "";
+  };
+
+  const getItemDesc = (inv) => {
+    if (!inv.items || inv.items.length === 0) return "-";
+    const item = inv.items[0];
+    const qty = item.inv_qty || item.po_qty || item.qty || "";
+    const rate = item.rate || "";
+    const desc = item.description || item.item_description || "";
+    const itemCode = item.id || item.item_code || "";
+
+    if (inv.items.length === 1) {
+      return `Qty: ${qty} Rate: ${rate} | ${itemCode} | ${desc}`;
+    }
+    return `Total Item : ${inv.items.length}`;
+  };
+
+  const getInvoiceQty = (inv) => {
+    if (!inv.items || inv.items.length === 0) return 0;
+    return inv.items.reduce((sum, item) => sum + parseFloat(item.inv_qty || item.po_qty || item.qty || 0), 0);
+  };
+
+  const getAssessableValue = (inv) => {
+    if (inv.GSTdetails && inv.GSTdetails.length > 0) {
+      return parseFloat(inv.GSTdetails[0].assessble_value || inv.GSTdetails[0].assessable_value || 0);
+    }
+    return 0;
+  };
+
+  const getTotal = (inv) => {
+    const assessable = getAssessableValue(inv);
+    const cgstAmt = inv.GSTdetails?.[0] ? parseFloat(inv.GSTdetails[0].cgst_amt || 0) : 0;
+    const sgstAmt = inv.GSTdetails?.[0] ? parseFloat(inv.GSTdetails[0].sgst_amt || 0) : 0;
+    const igstAmt = inv.GSTdetails?.[0] ? parseFloat(inv.GSTdetails[0].igst_amt || 0) : 0;
+    return assessable + cgstAmt + sgstAmt + igstAmt;
+  };
+
+  const getInvoiceDate = (inv) => {
+    return inv.invoice_Date || inv.date_of_removal || "";
+  };
+
+  const getFinancialYear = (inv) => {
+    if (inv.financial_year) return inv.financial_year;
+    const no = String(inv.invoice_no || "");
+    if (no.length >= 4) {
+      return no.substring(0, 2) + "-" + no.substring(2, 4);
+    }
+    return "";
+  };
   const handleButtonClick = () => {
     navigate('/');
   };
@@ -207,40 +301,39 @@ const TaxInvoiceList = () => {
                           <th scope="col">Ass Amt</th>
                           <th scope="col">Total </th>
                           <th scope="col">User </th>
-                          <th scope="col">Info </th>
-                          <th scope="col">IRN </th>
-                          <th scope="col">Cancel </th>
-                          <th scope="col"> Email </th>
-                          <th scope="col">Edit </th>
-                          <th scope="col">View </th>
 
                         </tr>
                       </thead>
 
                       <tbody>
-                        {/* Example data row */}
-                        <tr>
-                          <td>1</td>
-                          <td></td>
-                          <td></td>
-                          <td></td>
-                          <td></td>
-                          <td></td>
-                          <td></td>
-                          <td></td>
-                          <td></td>
-                          <td></td>
-                          <td></td>
-                          <td></td>
-                          <td></td>
-                          <td></td>
-                          <td></td>
-                          <td></td>
-                          <td></td>
-                          <td></td>
-                          <td></td>
-                          <td></td>
-                        </tr>
+                        {loading ? (
+                          <tr>
+                            <td colSpan="14" className="text-center">Loading invoices...</td>
+                          </tr>
+                        ) : filteredInvoices.length > 0 ? (
+                          filteredInvoices.map((inv, index) => (
+                            <tr key={inv.id || index}>
+                              <td>{index + 1}</td>
+                              <td>{getFinancialYear(inv)}</td>
+                              <td>{inv.plant || inv.items?.[0]?.plant || "SHARP"}</td>
+                              <td style={{ fontWeight: "600" }}>{inv.invoice_no || ""}</td>
+                              <td>{getInvoiceDate(inv)}</td>
+                              <td>{inv.items?.[0]?.po_no || inv.cust_po || inv.d_c_no || ""}</td>
+                              <td>{inv.series_type || inv.invoice_type || "GST"}</td>
+                              <td>{getCustomerCode(inv)}</td>
+                              <td>{getCustomerName(inv)}</td>
+                              <td style={{ maxWidth: "250px", fontSize: "11px" }}>{getItemDesc(inv)}</td>
+                              <td>{getInvoiceQty(inv)}</td>
+                              <td>{getAssessableValue(inv).toFixed(2)}</td>
+                              <td style={{ fontWeight: "600" }}>{getTotal(inv).toFixed(2)}</td>
+                              <td>{inv.user || inv.created_by || "sandeep"}</td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan="14" className="text-center">No invoices found</td>
+                          </tr>
+                        )}
                       </tbody>
                     </table>
                   </div>

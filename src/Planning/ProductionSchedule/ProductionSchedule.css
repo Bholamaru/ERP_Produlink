@@ -277,7 +277,8 @@
 }
 
 /* Hide native date picker icon to use our custom one */
-input[type="date"]::-webkit-calendar-picker-indicator {
+.ProductionScheduleEdit input[type="date"]::-webkit-calendar-picker-indicator,
+.ProductionScheduleStatus input[type="date"]::-webkit-calendar-picker-indicator {
     background: transparent;
     bottom: 0;
     color: transparent;
