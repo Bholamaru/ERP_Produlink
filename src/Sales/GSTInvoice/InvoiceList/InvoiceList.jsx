@@ -444,6 +444,7 @@ const InvoiceList = () => {
                             <th scope="col">Ass Amt</th>
                             <th scope="col">Total</th>
                             <th scope="col">User</th>
+                            <th scope="col">View</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -470,11 +471,21 @@ const InvoiceList = () => {
                                   {getTotal(inv).toFixed(2)}
                                 </td>
                                 <td>{inv.user || inv.created_by || "sandeep"}</td>
+                                <td>
+                                  <a 
+                                    href={`http://127.0.0.1:8000/Sales/invoice-pdf/${inv.id}/`} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer" 
+                                    style={{ cursor: "pointer", color: "#0d6efd", textDecoration: "underline" }}
+                                  >
+                                    View
+                                  </a>
+                                </td>
                               </tr>
                             ))
                           ) : (
                             <tr>
-                              <td colSpan="14" className="text-center">
+                              <td colSpan="15" className="text-center">
                                 {loading ? "Loading..." : "No invoices found"}
                               </td>
                             </tr>

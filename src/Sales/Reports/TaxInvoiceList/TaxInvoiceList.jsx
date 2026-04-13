@@ -301,6 +301,7 @@ const TaxInvoiceList = () => {
                           <th scope="col">Ass Amt</th>
                           <th scope="col">Total </th>
                           <th scope="col">User </th>
+                          <th scope="col">View</th>
 
                         </tr>
                       </thead>
@@ -308,7 +309,7 @@ const TaxInvoiceList = () => {
                       <tbody>
                         {loading ? (
                           <tr>
-                            <td colSpan="14" className="text-center">Loading invoices...</td>
+                            <td colSpan="15" className="text-center">Loading invoices...</td>
                           </tr>
                         ) : filteredInvoices.length > 0 ? (
                           filteredInvoices.map((inv, index) => (
@@ -327,11 +328,21 @@ const TaxInvoiceList = () => {
                               <td>{getAssessableValue(inv).toFixed(2)}</td>
                               <td style={{ fontWeight: "600" }}>{getTotal(inv).toFixed(2)}</td>
                               <td>{inv.user || inv.created_by || "sandeep"}</td>
+                              <td>
+                                <a 
+                                  href={`http://127.0.0.1:8000/Sales/invoice-pdf/${inv.id}/`} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer" 
+                                  style={{ cursor: "pointer", color: "#0d6efd", textDecoration: "underline" }}
+                                >
+                                  View
+                                </a>
+                              </td>
                             </tr>
                           ))
                         ) : (
                           <tr>
-                            <td colSpan="14" className="text-center">No invoices found</td>
+                            <td colSpan="15" className="text-center">No invoices found</td>
                           </tr>
                         )}
                       </tbody>
