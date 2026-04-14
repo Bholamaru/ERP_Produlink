@@ -4,12 +4,66 @@
 
 /* Layout overrides for new design */
 .dn-main {
-  padding: 28px 32px !important;
+  padding: 0 32px !important;
   background: #f0f4fc;
   gap: 0;
 }
 
-/* ─── Stat Cards Row ─── */
+/* ─── Department Cards Row ─── */
+.dn-dept-cards-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+/* ─── Department Card ─── */
+.dn-dept-card {
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 8px 2px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  cursor: pointer;
+  border: 1px solid #eef2f8;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+  transition: all 0.2s ease;
+  min-width: 0;
+}
+
+.dn-dept-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(80, 120, 220, 0.1);
+  border-color: #dbe4f0;
+}
+
+.dn-dept-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.dn-dept-label {
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 0.05px;
+  text-align: center;
+  line-height: 1;
+  white-space: nowrap;
+  color: #334155;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ─── Stat Cards Row (legacy) ─── */
 .dn-cards-row {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -86,7 +140,7 @@
 /* ─── Charts Row ─── */
 .dn-charts-row {
   display: grid;
-  grid-template-columns: 1fr 380px;
+  grid-template-columns: 1fr;
   gap: 20px;
   align-items: start;
 }
@@ -178,7 +232,7 @@
 }
 
 .dn-profit-title {
-  font-size: 18px;
+  font-size: 14px;
   font-weight: 800;
   color: #1a2340;
   line-height: 1.25;
@@ -216,6 +270,9 @@
 }
 
 /* ─── Responsive ─── */
+@media (max-width: 1400px) {
+}
+
 @media (max-width: 1100px) {
   .dn-charts-row {
     grid-template-columns: 1fr;

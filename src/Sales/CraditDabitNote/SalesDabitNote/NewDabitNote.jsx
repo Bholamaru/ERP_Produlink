@@ -23,6 +23,7 @@ const NewDabitNote = () => {
 
   // Data states
   const [debitNoteItems, setDebitNoteItems] = useState([]);
+  const [searchResults, setSearchResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -159,6 +160,7 @@ const NewDabitNote = () => {
     try {
       setLoading(true);
       setError(null);
+      setSearchResults([]);
       
       const params = new URLSearchParams({
         plant: plant,
@@ -182,33 +184,65 @@ const NewDabitNote = () => {
       const data = await response.json();
       console.log("Sales Rate Diff API Response:", data);
 
-      let items = [];
+      let invoices = [];
       if (Array.isArray(data)) {
-        items = data;
+        invoices = data;
       } else if (data.data && Array.isArray(data.data)) {
-        items = data.data;
+        invoices = data.data;
       } else if (data.results && Array.isArray(data.results)) {
-        items = data.results;
+        invoices = data.results;
       }
 
-      setDebitNoteItems(items);
+      // Flatten items from all invoices
+      const flattened = invoices.flatMap(inv => 
+        (inv.items || []).map(item => ({
+          ...item,
+          invoice_no: inv.invoice_no,
+          invoice_Date: inv.invoice_Date,
+          shift_add_code: inv.addr_code || "",
+          bill_to: inv.bill_to || ""
+        }))
+      );
+
+      setSearchResults(flattened);
       
-      // Auto switch to Debit Note Details tab if data is found
-      if (items.length > 0) {
-        const tabTrigger = document.querySelector('#dabitnotedetails-tab');
-        if (tabTrigger) {
-          const tab = new window.bootstrap.Tab(tabTrigger);
-          tab.show();
-        }
-      }
-
     } catch (err) {
       console.error("Error searching sales rate diff:", err);
       setError(err.message);
-      setDebitNoteItems([]);
+      setSearchResults([]);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleAddToDebitNote = (item) => {
+    if (headerType === "Single" && debitNoteItems.length > 0) {
+      alert("Only one entry allowed for Single type Debit Note.");
+      return;
+    }
+
+    // Check if already added using unique item ID
+    const isAlreadyAdded = debitNoteItems.some(existingItem => 
+      (existingItem.id && item.id && existingItem.id === item.id) ||
+      (existingItem.invoice_no === item.invoice_no && 
+       (existingItem.description || existingItem.item_description) === (item.description || item.item_description))
+    );
+
+    if (isAlreadyAdded) {
+      alert("This item is already added to the Debit Note.");
+      return;
+    }
+
+    setDebitNoteItems(prev => [...prev, {
+      ...item,
+      qty: item.inv_qty || item.po_qty || item.qty || 0,
+      item_description: item.description || item.item_description || "",
+      old_rate: item.rate || item.old_rate || 0,
+      new_rate: "", // Set blank as per user request
+      diff: 0,
+      diff_amt: 0
+    }]);
+    
   };
 
   const handleInputChange = (index, field, value) => {
@@ -419,7 +453,98 @@ const NewDabitNote = () => {
                                         </button> 
                                     </div>
                                 </div>
-                            </div> 
+                            </div>
+
+                            {searchResults.length > 0 && (
+                                <div className="mt-4">
+                                    <div className="table-responsive search-results-container">
+                                        <table className="table table-bordered table-sm align-middle search-results-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>No.</th>
+                                                    <th>Invoice No</th>
+                                                    <th>Invoice Date</th>
+                                                    <th>PO Number</th>
+                                                    <th>Shift Add Code</th>
+                                                    <th>Bill Add Code</th>
+                                                    <th>HSN Code</th>
+                                                    <th>Item No</th>
+                                                    <th>Item Code</th>
+                                                    <th style={{ minWidth: '200px' }}>Item Desc</th>
+                                                    <th>Qty</th>
+                                                    <th>R.Qty</th>
+                                                    <th>Old Rate</th>
+                                                    <th>Disc Per</th>
+                                                    <th>Disc Amt</th>
+                                                    <th>Dr Note No</th>
+                                                    <th>Rate Diff</th>
+                                                    <th>Select</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {searchResults.map((item, index) => {
+                                                    const isAdded = debitNoteItems.some(existingItem => 
+                                                        (existingItem.id && item.id && existingItem.id === item.id) ||
+                                                        (existingItem.invoice_no === item.invoice_no && 
+                                                         (existingItem.description || existingItem.item_description) === (item.description || item.item_description))
+                                                    );
+                                                    return (
+                                                        <tr key={index} className={isAdded ? "row-added" : ""}>
+                                                            <td>{index + 1}</td>
+                                                            <td>{item.invoice_no || ""}</td>
+                                                            <td>{item.invoice_Date || ""}</td>
+                                                            <td>{item.po_no || ""}</td>
+                                                            <td>{item.shift_add_code || ""}</td>
+                                                            <td>{item.bill_add_code || ""}</td>
+                                                            <td>{item.hsn_code || ""}</td>
+                                                            <td>{item.item_no || ""}</td>
+                                                            <td>{item.item_code || ""}</td>
+                                                            <td className="text-start">{item.description || item.item_description || ""}</td>
+                                                            <td>{item.inv_qty || item.po_qty || item.qty || 0}</td>
+                                                            <td>{item.r_qty || 0}</td>
+                                                            <td>{item.rate || item.old_rate || 0}</td>
+                                                            <td>{item.dis || item.disc_per || 0}</td>
+                                                            <td>{item.disc_amt || 0}</td>
+                                                            <td>{item.dr_note_no || ""}</td>
+                                                            <td>{item.rate_diff || 0}</td>
+                                                            <td>
+                                                                {isAdded ? (
+                                                                    <span className="text-primary fw-bold">Added</span>
+                                                                ) : (
+                                                                    <span 
+                                                                        className="text-primary cursor-pointer fw-bold" 
+                                                                        style={{ cursor: 'pointer' }}
+                                                                        onClick={() => handleAddToDebitNote(item)}
+                                                                    >
+                                                                        Add
+                                                                    </span>
+                                                                )}
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })}
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <div className="d-flex justify-content-between align-items-center mt-3 search-table-footer">
+                                        <div className="d-flex gap-2">
+                                            <span className="badge bg-info text-dark px-3 py-2">Selected Invoice For Debit Note</span>
+                                            <span className="badge bg-warning text-dark px-3 py-2">Sales Return Invoices</span>
+                                        </div>
+                                        <div className="d-flex gap-4 align-items-center me-2">
+                                            <div className="form-check d-flex align-items-center gap-1 mb-0">
+                                                <input className="form-check-input mt-0" type="checkbox" id="selectAll" />
+                                                <label className="form-check-label mb-0" htmlFor="selectAll" style={{ fontSize: '13px' }}>Select ALL</label>
+                                            </div>
+                                            <div className="form-check d-flex align-items-center gap-1 mb-0">
+                                                <input className="form-check-input mt-0" type="checkbox" id="selectNew" />
+                                                <label className="form-check-label mb-0" htmlFor="selectNew" style={{ fontSize: '13px' }}>Select New</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                          <div className="tab-pane fade" id="dabitnotedetails" role="tabpanel" >

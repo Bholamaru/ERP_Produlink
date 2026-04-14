@@ -175,3 +175,88 @@
       padding: 5px;
     }
   }
+
+  /* Search Results Table Styling */
+  .search-results-table {
+    font-size: 11px !important;
+    border-collapse: separate;
+    border-spacing: 0;
+    width: 100%;
+    margin-bottom: 0 !important;
+  }
+  
+  .search-results-table thead th {
+    background: #16bfff !important;
+    color: white !important;
+    font-weight: 500 !important;
+    padding: 8px 4px !important;
+    border: 1px solid #dee2e6 !important;
+    text-align: center;
+    white-space: nowrap;
+  }
+  
+  .search-results-table tbody tr:nth-child(even) {
+    background-color: #f2f7ff !important;
+  }
+  
+  .search-results-table tbody tr:hover {
+    background-color: #e3efff !important;
+  }
+  
+  .search-results-table td {
+    padding: 4px 6px !important;
+    border: 1px solid #dee2e6 !important;
+    vertical-align: middle;
+    text-align: center;
+  }
+  
+  .search-results-table .text-start {
+    text-align: left !important;
+  }
+  
+  .search-results-container {
+    max-height: 350px;
+    overflow-y: auto;
+    border: 1px solid #dee2e6;
+  }
+  
+  .search-table-footer {
+    background-color: #f8f9fa;
+    padding: 10px;
+    border: 1px solid #dee2e6;
+    border-top: none;
+  }
+  
+  .search-table-footer .badge {
+    cursor: default;
+    font-size: 11px;
+    font-weight: 500;
+  }
+  
+  .search-table-footer .form-check-input {
+      width: 15px;
+      height: 15px;
+      cursor: pointer;
+      border: 1px solid #007bff;
+  }
+
+  .search-table-footer .form-check-label {
+      cursor: pointer;
+      user-select: none;
+      color: #333;
+      font-weight: 500;
+  }
+
+  .cursor-pointer {
+    cursor: pointer;
+  }
+
+  /* Added Row Styling - Blue Cover as requested */
+  .row-added {
+    background-color: #e7f3ff !important; /* Very light blue background */
+  }
+  
+  .row-added td {
+      color: #007bff !important; /* Corporate blue text */
+      border-color: #cce5ff !important;
+  }

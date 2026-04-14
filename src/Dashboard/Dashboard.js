@@ -61,61 +61,89 @@ const profitData = [
   { label: "Sun", sales: 60, revenue: 78 },
 ];
 
-const statCards = [
+const deptCards = [
   {
-    id: "views",
+    id: "financial",
+    label: "Financial",
+    color: "#4f8ef7",
+    bg: "linear-gradient(135deg, #e8f0fe 0%, #c7d9fd 100%)",
     icon: (
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#4f8ef7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-        <circle cx="12" cy="12" r="3"/>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4f8ef7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <line x1="12" y1="1" x2="12" y2="23"/>
+        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
       </svg>
     ),
-    value: "$3.456K",
-    label: "Total views",
-    change: "0.43%",
-    up: true,
   },
   {
-    id: "profit",
+    id: "purchase",
+    label: "Purchase",
+    color: "#a855f7",
+    bg: "linear-gradient(135deg, #f3e8ff 0%, #ddb6fd 100%)",
     icon: (
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#4f8ef7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a855f7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
         <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
       </svg>
     ),
-    value: "$45,2K",
-    label: "Total Profit",
-    change: "4.35%",
-    up: true,
   },
   {
-    id: "product",
+    id: "ppc",
+    label: "PPC",
+    color: "#f59e0b",
+    bg: "linear-gradient(135deg, #fef3c7 0%, #fde08a 100%)",
     icon: (
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#4f8ef7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
-        <line x1="3" y1="6" x2="21" y2="6"/>
-        <path d="M16 10a4 4 0 0 1-8 0"/>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+        <line x1="8" y1="21" x2="16" y2="21"/>
+        <line x1="12" y1="17" x2="12" y2="21"/>
       </svg>
     ),
-    value: "2.450",
-    label: "Total Product",
-    change: "2.59%",
-    up: true,
   },
   {
-    id: "users",
+    id: "oee",
+    label: "OEE",
+    color: "#10b981",
+    bg: "linear-gradient(135deg, #d1fae5 0%, #6ee7b7 100%)",
     icon: (
-      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#4f8ef7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-        <circle cx="9" cy="7" r="4"/>
-        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="10"/>
+        <polyline points="12 6 12 12 16 14"/>
       </svg>
     ),
-    value: "3.456",
-    label: "Total Users",
-    change: "0.95%",
-    up: false,
+  },
+  {
+    id: "quality",
+    label: "Quality",
+    color: "#ef4444",
+    bg: "linear-gradient(135deg, #fee2e2 0%, #fca5a5 100%)",
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+      </svg>
+    ),
+  },
+  {
+    id: "stores",
+    label: "Stores",
+    color: "#06b6d4",
+    bg: "linear-gradient(135deg, #cffafe 0%, #67e8f9 100%)",
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#06b6d4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M5 8h14M5 8a2 2 0 1 0-4 0v11a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8a2 2 0 1 0-4 0M5 8V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v3"/>
+      </svg>
+    ),
+  },
+  {
+    id: "subcon",
+    label: "Subcon",
+    color: "#f97316",
+    bg: "linear-gradient(135deg, #ffedd5 0%, #fdba74 100%)",
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f97316" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/>
+      </svg>
+    ),
   },
 ];
 
@@ -145,22 +173,15 @@ const Dashboard = () => {
         <SideNav sideNavOpen={sideNavOpen} toggleSideNav={toggleSideNav} />
 
         <main className={`mainContent dn-main ${sideNavOpen ? "shifted" : ""}`}>
-          {/* ── Stat Cards ── */}
-          <div className="dn-cards-row">
-            {statCards.map((card) => (
-              <div key={card.id} className="dn-stat-card">
-                <div className="dn-stat-icon">{card.icon}</div>
-                <div className="dn-stat-value">{card.value}</div>
-                <div className="dn-stat-meta">
-                  <span className="dn-stat-label">{card.label}</span>
-                  <span className={`dn-stat-change ${card.up ? "up" : "down"}`}>
-                    {card.change}
-                    {card.up ? (
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="18 15 12 9 6 15"/></svg>
-                    ) : (
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="6 9 12 15 18 9"/></svg>
-                    )}
-                  </span>
+          {/* ── Department Cards ── */}
+          <div className="dn-dept-cards-row">
+            {deptCards.map((card) => (
+              <div key={card.id} className="dn-dept-card">
+                <div className="dn-dept-icon" style={{ background: card.bg }}>
+                  {card.icon}
+                </div>
+                <div className="dn-dept-label">
+                  {card.label}
                 </div>
               </div>
             ))}
@@ -220,35 +241,10 @@ const Dashboard = () => {
               </ResponsiveContainer>
             </div>
 
-            {/* Right: Bar Chart */}
+            {/* Right: Bar Chart (Commented)
             <div className="dn-chart-card dn-chart-side">
-              <div className="dn-chart-header">
-                <div>
-                  <div className="dn-profit-title">Profit this<br />week</div>
-                </div>
-                <div className="dn-week-select">
-                  This Week
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{marginLeft:4}}><polyline points="6 9 12 15 18 9"/></svg>
-                </div>
-              </div>
-              <div className="dn-bar-legends">
-                <span className="dn-legend-dot blue-dot" /> <span className="dn-bar-legend-label">Sales</span>
-                <span className="dn-legend-dot teal-dot" style={{ marginLeft: 14 }} /> <span className="dn-bar-legend-label">Revenue</span>
-              </div>
-              <ResponsiveContainer width="100%" height={240}>
-                <BarChart data={profitData} margin={{ top: 5, right: 5, left: -20, bottom: 0 }} barGap={3}>
-                  <CartesianGrid strokeDasharray="4 4" stroke="#e8edf3" vertical={false} />
-                  <XAxis dataKey="label" tick={{ fontSize: 11, fill: "#8fa3c0" }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 11, fill: "#8fa3c0" }} axisLine={false} tickLine={false} domain={[0, 100]} ticks={[0,20,40,60,80,100]} />
-                  <Tooltip
-                    contentStyle={{ borderRadius: 12, border: "none", boxShadow: "0 4px 20px rgba(0,0,0,0.12)", fontSize: 12 }}
-                    cursor={{ fill: "rgba(0,0,0,0.03)" }}
-                  />
-                  <Bar dataKey="sales" fill="#4f8ef7" radius={[4, 4, 0, 0]} barSize={12} />
-                  <Bar dataKey="revenue" fill="#38c5c5" radius={[4, 4, 0, 0]} barSize={12} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+              ... (hidden for brevity) ...
+            </div> */}
           </div>
         </main>
       </div>
