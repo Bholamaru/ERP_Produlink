@@ -100,7 +100,26 @@ const NewDabitNote = () => {
       customer: customer,
       note_type: noteType,
       item: debitNoteItems,
-      ...summary
+      // Map summary fields to snake_case for backend compatibility
+      sub_total: summary.subTotal,
+      disc_amt: summary.discAmt,
+      ass_amt: summary.assAmt,
+      cgst_pct: summary.cgstPct,
+      cgst_amt: summary.cgstAmt,
+      sgst_pct: summary.sgstPct,
+      sgst_amt: summary.sgstAmt,
+      igst_pct: summary.igstPct,
+      igst_amt: summary.igstAmt,
+      utgst_pct: summary.utgstPct,
+      utgst_amt: summary.utgstAmt,
+      tcs_pct: summary.tcsPct,
+      tcs_amt: summary.tcsAmt,
+      grand_total: summary.grandTotal,
+      bill_to_add_code: summary.billToAddCode,
+      other_ref: summary.otherRef,
+      footer_remark: summary.footerRemark,
+      for_e_invoice: summary.forEInvoice,
+      is_service_invoice: summary.isServiceInvoice
     };
 
     console.log("Saving Debit Note Payload:", payload);
@@ -193,15 +212,26 @@ const NewDabitNote = () => {
         invoices = data.results;
       }
 
-      // Flatten items from all invoices
+      // Flatten items from all invoices and extract tax rates
       const flattened = invoices.flatMap(inv => 
-        (inv.items || []).map(item => ({
-          ...item,
-          invoice_no: inv.invoice_no,
-          invoice_Date: inv.invoice_Date,
-          shift_add_code: inv.addr_code || "",
-          bill_to: inv.bill_to || ""
-        }))
+        (inv.items || []).map(item => {
+          // Look for tax details in the parent invoice (GSTdetails or taxes array)
+          const gst = (inv.GSTdetails && inv.GSTdetails[0]) || (inv.taxes && inv.taxes[0]) || {};
+          
+          return {
+            ...item,
+            invoice_no: inv.invoice_no,
+            invoice_Date: inv.invoice_Date,
+            shift_add_code: inv.addr_code || "",
+            bill_to: inv.bill_to || "",
+            // Inject tax percentages from invoice level if not on item level
+            cgst: item.cgst !== undefined ? item.cgst : (gst.cgst !== undefined ? gst.cgst : 0),
+            sgst: item.sgst !== undefined ? item.sgst : (gst.sgst !== undefined ? gst.sgst : 0),
+            igst: item.igst !== undefined ? item.igst : (gst.igst !== undefined ? gst.igst : 0),
+            utgst: item.utgst !== undefined ? item.utgst : (gst.utgst !== undefined ? gst.utgst : 0),
+            tcs: item.tcs !== undefined ? item.tcs : (gst.tcs !== undefined ? gst.tcs : 0)
+          };
+        })
       );
 
       setSearchResults(flattened);
@@ -239,9 +269,21 @@ const NewDabitNote = () => {
       item_description: item.description || item.item_description || "",
       old_rate: item.rate || item.old_rate || 0,
       new_rate: "", // Set blank as per user request
+      po_no: item.po_no || item.po_number || "",
+      po_date: item.date || item.po_date || "",
       diff: 0,
       diff_amt: 0
     }]);
+
+    // Update summary percentages from the added item
+    setSummary(prev => ({
+      ...prev,
+      cgstPct: (item.cgst !== undefined ? item.cgst : (item.cgst_pct !== undefined ? item.cgst_pct : (item.cgst_rate !== undefined ? item.cgst_rate : "0"))),
+      sgstPct: (item.sgst !== undefined ? item.sgst : (item.sgst_pct !== undefined ? item.sgst_pct : (item.sgst_rate !== undefined ? item.sgst_rate : "0"))),
+      igstPct: (item.igst !== undefined ? item.igst : (item.igst_pct !== undefined ? item.igst_pct : (item.igst_rate !== undefined ? item.igst_rate : "0"))),
+      utgstPct: (item.utgst !== undefined ? item.utgst : (item.utgst_pct !== undefined ? item.utgst_pct : (item.utgst_rate !== undefined ? item.utgst_rate : "0"))),
+      tcsPct: (item.tcs !== undefined ? item.tcs : (item.tcs_pct !== undefined ? item.tcs_pct : (item.tcs_rate !== undefined ? item.tcs_rate : "0")))
+    }));
     
   };
 
@@ -249,11 +291,11 @@ const NewDabitNote = () => {
     const updatedItems = [...debitNoteItems];
     updatedItems[index] = { ...updatedItems[index], [field]: value };
     
-    // Auto calculate diff if new rate is changed
-    if (field === 'new_rate' || field === 'old_rate') {
-      const oldRate = parseFloat(updatedItems[index].old_rate || 0);
-      const newRate = parseFloat(updatedItems[index].new_rate || 0);
-      const qty = parseFloat(updatedItems[index].qty || 0);
+    // Auto calculate diff if rate or qty is changed
+    if (['new_rate', 'old_rate', 'qty'].includes(field)) {
+      const oldRate = parseFloat(updatedItems[index].old_rate) || 0;
+      const newRate = parseFloat(updatedItems[index].new_rate) || 0;
+      const qty = parseFloat(updatedItems[index].qty) || 0;
       
       const diff = newRate - oldRate;
       updatedItems[index].diff = diff.toFixed(2);
@@ -262,6 +304,78 @@ const NewDabitNote = () => {
     
     setDebitNoteItems(updatedItems);
   };
+
+  // Safe parsing helper
+  const getNum = (val) => {
+    const n = parseFloat(val);
+    return isNaN(n) ? 0 : n;
+  };
+
+  // Real-time Summary Calculations
+  useEffect(() => {
+    if (debitNoteItems.length === 0) {
+      setSummary(prev => ({
+        ...prev,
+        subTotal: "0.00",
+        discAmt: "0.00",
+        assAmt: "0.00",
+        cgstAmt: "0.00",
+        sgstAmt: "0.00",
+        igstAmt: "0.00",
+        utgstAmt: "0.00",
+        tcsAmt: "0.00",
+        grandTotal: "0.00"
+      }));
+      return;
+    }
+
+    let subTotalSum = 0;
+    let totalDiscAmt = 0;
+
+    debitNoteItems.forEach(item => {
+      const diffAmt = getNum(item.diff_amt);
+      const discPct = getNum(item.dis || item.disc_percent || item.discount);
+      subTotalSum += diffAmt;
+      totalDiscAmt += (diffAmt * discPct / 100);
+    });
+
+    const assAmt = subTotalSum - totalDiscAmt;
+
+    // Calculate taxes based on summary percentages
+    const cgstAmt = (assAmt * getNum(summary.cgstPct) / 100);
+    const sgstAmt = (assAmt * getNum(summary.sgstPct) / 100);
+    const igstAmt = (assAmt * getNum(summary.igstPct) / 100);
+    const utgstAmt = (assAmt * getNum(summary.utgstPct) / 100);
+
+    // Grand total based on user rule: ass amount to tcs
+    // First calculate sum of all GSTs
+    const sumGst = cgstAmt + sgstAmt + igstAmt + utgstAmt;
+    const amountBeforeTcs = assAmt + sumGst;
+    
+    // Calculate TCS on (Ass Amount + GST)
+    const tcsAmt = (amountBeforeTcs * getNum(summary.tcsPct) / 100);
+    const grandTotal = amountBeforeTcs + tcsAmt;
+
+    setSummary(prev => ({
+      ...prev,
+      subTotal: isNaN(subTotalSum) ? "0.00" : subTotalSum.toFixed(2),
+      discAmt: isNaN(totalDiscAmt) ? "0.00" : totalDiscAmt.toFixed(2),
+      assAmt: isNaN(assAmt) ? "0.00" : assAmt.toFixed(2),
+      cgstAmt: isNaN(cgstAmt) ? "0.00" : cgstAmt.toFixed(2),
+      sgstAmt: isNaN(sgstAmt) ? "0.00" : sgstAmt.toFixed(2),
+      igstAmt: isNaN(igstAmt) ? "0.00" : igstAmt.toFixed(2),
+      utgstAmt: isNaN(utgstAmt) ? "0.00" : utgstAmt.toFixed(2),
+      tcsAmt: isNaN(tcsAmt) ? "0.00" : tcsAmt.toFixed(2),
+      grandTotal: isNaN(grandTotal) ? "0.00" : grandTotal.toFixed(2)
+    }));
+  }, [
+    debitNoteItems, 
+    summary.cgstPct, 
+    summary.sgstPct, 
+    summary.igstPct, 
+    summary.utgstPct, 
+    summary.tcsPct
+  ]);
 
   const handleDeleteItem = (index) => {
     const updatedItems = debitNoteItems.filter((_, i) => i !== index);
@@ -321,7 +435,7 @@ const NewDabitNote = () => {
 
                      <div className="col-md-2">
                             <label htmlFor="">Debit Note No :</label>
-                            <input type="text" className="form-control" name="debitNoteNo" value={debitNoteNo} onChange={(e) => setDebitNoteNo(e.target.value)} placeholder="Enter Number..."/>                            
+                            <input type="text" className="form-control" name="debitNoteNo" value={debitNoteNo} readOnly placeholder="Enter Number..."/>                            
                       </div> 
                      <div className="col-md-2">
                             <label htmlFor="">Debit Note Date :</label>
@@ -572,7 +686,7 @@ const NewDabitNote = () => {
                                               <th>Po No | Date</th>
                                               <th>Amd No | Date</th>
                                               <th>Remark</th>
-                                              <th>Del</th>
+                                              <th style={{ width: '40px' }}>Del</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -644,32 +758,32 @@ const NewDabitNote = () => {
                                                             />
                                                         </td>
                                                         <td>
-                                                            <div className="d-flex gx-1">
+                                                            <div className="d-flex flex-column gap-1">
                                                                 <input 
                                                                     type="text" 
-                                                                    className="form-control form-control-sm me-1" 
+                                                                    className="form-control form-control-sm text-center" 
                                                                     value={item.po_no || ""}
-                                                                    onChange={(e) => handleInputChange(index, 'po_no', e.target.value)}
+                                                                    readOnly
                                                                 />
                                                                 <input 
                                                                     type="date" 
-                                                                    className="form-control form-control-sm" 
-                                                                    value={item.date || item.po_date || ""}
+                                                                    className="form-control form-control-sm text-center" 
+                                                                    value={item.po_date || item.date || ""}
                                                                     onChange={(e) => handleInputChange(index, 'po_date', e.target.value)}
                                                                 />
                                                             </div>
                                                         </td>
                                                         <td>
-                                                            <div className="d-flex gx-1">
+                                                            <div className="d-flex flex-column gap-1">
                                                                 <input 
                                                                     type="text" 
-                                                                    className="form-control form-control-sm me-1" 
+                                                                    className="form-control form-control-sm text-center" 
                                                                     value={item.amd_no || ""}
                                                                     onChange={(e) => handleInputChange(index, 'amd_no', e.target.value)}
                                                                 />
                                                                 <input 
                                                                     type="date" 
-                                                                    className="form-control form-control-sm" 
+                                                                    className="form-control form-control-sm text-center" 
                                                                     value={item.amd_date || ""}
                                                                     onChange={(e) => handleInputChange(index, 'amd_date', e.target.value)}
                                                                 />
@@ -683,7 +797,15 @@ const NewDabitNote = () => {
                                                                 onChange={(e) => handleInputChange(index, 'remark', e.target.value)}
                                                             />
                                                         </td>
-                                                        <td><button className="btn btn-sm btn-outline-danger" onClick={() => handleDeleteItem(index)}>X</button></td>
+                                                        <td className="text-center">
+                                                            <button 
+                                                                className="btn btn-sm btn-outline-danger d-flex align-items-center justify-content-center mx-auto" 
+                                                                style={{ width: '25px', height: '25px', padding: 0 }}
+                                                                onClick={() => handleDeleteItem(index)}
+                                                            >
+                                                                X
+                                                            </button>
+                                                        </td>
                                                     </tr>
                                                 ))
                                             ) : (
@@ -724,41 +846,41 @@ const NewDabitNote = () => {
                                           <td className="border-bottom-0"></td>
                                           <td className="border-bottom-0">
                                             <div className="d-flex justify-content-center align-items-center">
-                                              <input type="text" placeholder="00.00" className="form-control form-control-sm text-end" style={{width: "70px"}} name="cgstPct" value={summary.cgstPct} onChange={handleSummaryChange} /> <span className="ms-1">%</span>
+                                              <input type="text" placeholder="00.00" className="form-control form-control-sm text-end" style={{width: "70px"}} name="cgstPct" value={summary.cgstPct} readOnly /> <span className="ms-1">%</span>
                                             </div>
                                           </td>
                                           <td className="border-bottom-0">
                                             <div className="d-flex justify-content-center align-items-center">
-                                              <input type="text" placeholder="00.00" className="form-control form-control-sm text-end" style={{width: "70px"}} name="sgstPct" value={summary.sgstPct} onChange={handleSummaryChange} /> <span className="ms-1">%</span>
+                                              <input type="text" placeholder="00.00" className="form-control form-control-sm text-end" style={{width: "70px"}} name="sgstPct" value={summary.sgstPct} readOnly /> <span className="ms-1">%</span>
                                             </div>
                                           </td>
                                           <td className="border-bottom-0">
                                             <div className="d-flex justify-content-center align-items-center">
-                                              <input type="text" placeholder="00.00" className="form-control form-control-sm text-end" style={{width: "70px"}} name="igstPct" value={summary.igstPct} onChange={handleSummaryChange} /> <span className="ms-1">%</span>
+                                              <input type="text" placeholder="00.00" className="form-control form-control-sm text-end" style={{width: "70px"}} name="igstPct" value={summary.igstPct} readOnly /> <span className="ms-1">%</span>
                                             </div>
                                           </td>
                                           <td className="border-bottom-0">
                                             <div className="d-flex justify-content-center align-items-center">
-                                              <input type="text" placeholder="00.00" className="form-control form-control-sm text-end" style={{width: "70px"}} name="utgstPct" value={summary.utgstPct} onChange={handleSummaryChange} /> <span className="ms-1">%</span>
+                                              <input type="text" placeholder="00.00" className="form-control form-control-sm text-end" style={{width: "70px"}} name="utgstPct" value={summary.utgstPct} readOnly /> <span className="ms-1">%</span>
                                             </div>
                                           </td>
                                           <td className="border-bottom-0">
                                             <div className="d-flex justify-content-center align-items-center">
-                                              <input type="text" placeholder="00.00" className="form-control form-control-sm text-end" style={{width: "70px"}} name="tcsPct" value={summary.tcsPct} onChange={handleSummaryChange} /> <span className="ms-1">%</span>
+                                              <input type="text" placeholder="00.00" className="form-control form-control-sm text-end" style={{width: "70px"}} name="tcsPct" value={summary.tcsPct} readOnly /> <span className="ms-1">%</span>
                                             </div>
                                           </td>
                                           <td className="border-bottom-0"></td>
                                         </tr>
                                         <tr>
-                                          <td><input type="text" className="form-control form-control-sm text-end" name="subTotal" value={summary.subTotal} onChange={handleSummaryChange} /></td>
-                                          <td><input type="text" className="form-control form-control-sm text-end" name="discAmt" value={summary.discAmt} onChange={handleSummaryChange} /></td>
-                                          <td><input type="text" className="form-control form-control-sm text-end" name="assAmt" value={summary.assAmt} onChange={handleSummaryChange} /></td>
-                                          <td><input type="text" placeholder="00.00" className="form-control form-control-sm text-center" name="cgstAmt" value={summary.cgstAmt} onChange={handleSummaryChange} /></td>
-                                          <td><input type="text" placeholder="00.00" className="form-control form-control-sm text-center" name="sgstAmt" value={summary.sgstAmt} onChange={handleSummaryChange} /></td>
-                                          <td><input type="text" placeholder="00.00" className="form-control form-control-sm text-center" name="igstAmt" value={summary.igstAmt} onChange={handleSummaryChange} /></td>
-                                          <td><input type="text" placeholder="00.00" className="form-control form-control-sm text-center" name="utgstAmt" value={summary.utgstAmt} onChange={handleSummaryChange} /></td>
-                                          <td><input type="text" placeholder="00.00" className="form-control form-control-sm text-center" name="tcsAmt" value={summary.tcsAmt} onChange={handleSummaryChange} /></td>
-                                          <td><input type="text" placeholder="00.00" className="form-control form-control-sm text-center" name="grandTotal" value={summary.grandTotal} onChange={handleSummaryChange} /></td> 
+                                          <td><input type="text" className="form-control form-control-sm text-end" name="subTotal" value={summary.subTotal} readOnly /></td>
+                                          <td><input type="text" className="form-control form-control-sm text-end" name="discAmt" value={summary.discAmt} readOnly /></td>
+                                          <td><input type="text" className="form-control form-control-sm text-end" name="assAmt" value={summary.assAmt} readOnly /></td>
+                                          <td><input type="text" placeholder="00.00" className="form-control form-control-sm text-center" name="cgstAmt" value={summary.cgstAmt} readOnly /></td>
+                                          <td><input type="text" placeholder="00.00" className="form-control form-control-sm text-center" name="sgstAmt" value={summary.sgstAmt} readOnly /></td>
+                                          <td><input type="text" placeholder="00.00" className="form-control form-control-sm text-center" name="igstAmt" value={summary.igstAmt} readOnly /></td>
+                                          <td><input type="text" placeholder="00.00" className="form-control form-control-sm text-center" name="utgstAmt" value={summary.utgstAmt} readOnly /></td>
+                                          <td><input type="text" placeholder="00.00" className="form-control form-control-sm text-center" name="tcsAmt" value={summary.tcsAmt} readOnly /></td>
+                                          <td><input type="text" placeholder="00.00" className="form-control form-control-sm text-center" name="grandTotal" value={summary.grandTotal} readOnly /></td> 
                                         </tr>
                                       </tbody>
                                     </table>
