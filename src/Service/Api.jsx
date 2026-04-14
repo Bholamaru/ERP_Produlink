@@ -4,7 +4,7 @@ import axios from "axios";
 
 
 // Define base URLs
-const BASE_URL = "https://erp-render.onrender.com/All_Masters/";
+const BASE_URL = "http://127.0.0.1:8000/All_Masters/";
 // const BASE_URL = "api/All_Masters/";
 const TAX_CODE_URL = `${BASE_URL}Tax_Code/`;
 const GST_MASTER_URL = `${BASE_URL}GST_Master/`;
@@ -15,7 +15,7 @@ const UPLOAD_URL = `${BASE_URL}upload/`;
 // Home
 
 
-const BASE_URL1 = "https://erp-render.onrender.com/";
+const BASE_URL1 = "http://127.0.0.1:8000/";
 // const BASE_URL1 = "api";
 
 
@@ -3134,7 +3134,7 @@ export const deleteItemMaster = async (id) => {
 
 // Subcon Jobwork Inward QC - V3
 export const forceSaveSubconQC = async (data) => {
-  const url = `https://erp-render.onrender.com/Quality/subcon-jobwork-qc/`;
+  const url = `http://127.0.0.1:8000/Quality/subcon-jobwork-qc/`;
   console.log("!!! FORCING API CALL TO:", url);
   try {
     const token = localStorage.getItem("accessToken");

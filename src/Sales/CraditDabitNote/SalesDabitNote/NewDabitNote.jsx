@@ -66,7 +66,7 @@ const NewDabitNote = () => {
   const fetchDebitNoteNo = async () => {
     try {
       // Add a timestamp to prevent the browser from caching the old number
-      const response = await fetch(`https://erp-render.onrender.com/Sales/sales-diff/no/?t=${new Date().getTime()}`);
+      const response = await fetch(`http://127.0.0.1:8000/Sales/sales-diff/no/?t=${new Date().getTime()}`);
       if (response.ok) {
         const data = await response.json();
         if (data && data.debit_note_no) {
@@ -107,7 +107,7 @@ const NewDabitNote = () => {
 
     try {
       setLoading(true);
-      const response = await fetch("https://erp-render.onrender.com/Sales/sales-rate-diff/", {
+      const response = await fetch("http://127.0.0.1:8000/Sales/sales-rate-diff/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -175,7 +175,7 @@ const NewDabitNote = () => {
         params.append('item_code', itemCode);
       }
 
-      const response = await fetch(`https://erp-render.onrender.com/Sales/sales-diff/invoice/?${params.toString()}`);
+      const response = await fetch(`http://127.0.0.1:8000/Sales/sales-diff/invoice/?${params.toString()}`);
       
       if (!response.ok) {
         throw new Error(`API error: ${response.status}`);

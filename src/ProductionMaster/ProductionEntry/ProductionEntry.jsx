@@ -1104,7 +1104,7 @@ const ProductionEntry = () => {
     }
     try {
       setWipLoading(true)
-      const res = await axios.get(`https://erp-render.onrender.com/Store/api/WIPstockreport/?q=${partNo}`)
+      const res = await axios.get(`http://127.0.0.1:8000/Store/api/WIPstockreport/?q=${partNo}`)
       setWipData(res.data.data || [])
       setShowWIPTable(true)
     } catch (err) {
