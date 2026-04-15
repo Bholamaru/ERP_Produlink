@@ -98,26 +98,29 @@ const NewDabitNote = () => {
       from_date: fromDate,
       to_date: toDate,
       customer: customer,
-      note_type: noteType,
-      item: debitNoteItems,
-      // Map summary fields to snake_case for backend compatibility
-      sub_total: summary.subTotal,
-      disc_amt: summary.discAmt,
-      ass_amt: summary.assAmt,
-      cgst_pct: summary.cgstPct,
+      type: noteType,
+      item: debitNoteItems.map(itm => ({
+        ...itm,
+        item: itm.item_code || itm.item_no || itm.description || itm.item_description || itm.item || ""
+      })),
+      // Fixed mapping based on backend JSON snippet
+      subtotal: summary.subTotal,
+      dis_amount: summary.discAmt,
+      ass_amount: summary.assAmt,
+      cgst: summary.cgstPct,
       cgst_amt: summary.cgstAmt,
-      sgst_pct: summary.sgstPct,
+      sgst: summary.sgstPct,
       sgst_amt: summary.sgstAmt,
-      igst_pct: summary.igstPct,
+      igst: summary.igstPct,
       igst_amt: summary.igstAmt,
-      utgst_pct: summary.utgstPct,
+      utgst: summary.utgstPct,
       utgst_amt: summary.utgstAmt,
-      tcs_pct: summary.tcsPct,
+      tcs: summary.tcsPct,
       tcs_amt: summary.tcsAmt,
       grand_total: summary.grandTotal,
       bill_to_add_code: summary.billToAddCode,
-      other_ref: summary.otherRef,
-      footer_remark: summary.footerRemark,
+      other_reference: summary.otherRef,
+      remark: summary.footerRemark,
       for_e_invoice: summary.forEInvoice,
       is_service_invoice: summary.isServiceInvoice
     };
@@ -164,12 +167,17 @@ const NewDabitNote = () => {
           isServiceInvoice: false
         });
       } else {
-        const errorData = await response.json();
-        alert("Failed to save: " + JSON.stringify(errorData));
+        const errorText = await response.text();
+        try {
+          const errorJson = JSON.parse(errorText);
+          alert("Failed to save: " + JSON.stringify(errorJson));
+        } catch (e) {
+          alert(`Server Error (${response.status}):\n` + errorText.substring(0, 300));
+        }
       }
     } catch (err) {
       console.error("Error saving debit note:", err);
-      alert("An error occurred while saving.");
+      alert("Network or system error: " + err.message);
     } finally {
       setLoading(false);
     }
@@ -270,9 +278,11 @@ const NewDabitNote = () => {
       old_rate: item.rate || item.old_rate || 0,
       new_rate: "", // Set blank as per user request
       po_no: item.po_no || item.po_number || "",
-      po_date: item.date || item.po_date || "",
+      date: item.date || item.po_date || "",
+      dis: item.dis || item.disc_per || 0,
       diff: 0,
-      diff_amt: 0
+      diff_amt: 0,
+      remark: item.remark || item.item_remark || ""
     }]);
 
     // Update summary percentages from the added item
