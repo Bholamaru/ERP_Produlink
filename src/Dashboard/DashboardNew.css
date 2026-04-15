@@ -137,21 +137,197 @@
   color: #ef4444;
 }
 
-/* ─── Charts Row ─── */
-.dn-charts-row {
+/* ─── Main Content Grid ─── */
+.dn-content-grid {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 20px;
+  grid-template-columns: 350px 1fr;
+  gap: 24px;
   align-items: start;
+  margin-top: 10px;
 }
 
-/* ─── Chart Card base ─── */
+/* ─── Side Column & Cards ─── */
+.dn-side-column {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.dn-side-card {
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.dn-side-header {
+  padding: 12px 16px;
+  border-bottom: 1px solid #f1f5f9;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f8fafc;
+}
+
+.dn-side-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1e293b;
+  display: flex;
+  align-items: center;
+}
+
+.dn-side-link {
+  font-size: 11px;
+  font-weight: 600;
+  color: #4f46e5;
+  text-decoration: none;
+}
+
+.dn-side-link:hover {
+  text-decoration: underline;
+}
+
+/* ─── Filter Strips ─── */
+.dn-filter-strip {
+  padding: 10px 16px;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  border-bottom: 1px solid #f8fafc;
+}
+
+.dn-filter-strip.row-gap {
+  justify-content: space-between;
+}
+
+.dn-filter-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dn-mini-select {
+  padding: 4px 8px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #334155;
+  background: #fcfdfe;
+  cursor: pointer;
+}
+
+.dn-action-group {
+  display: flex;
+  gap: 6px;
+}
+
+.dn-icon-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.dn-icon-btn:hover {
+  background: #f8fafc;
+  color: #4f46e5;
+  border-color: #cbd5e1;
+}
+
+.dn-icon-btn.excel {
+  color: #16a34a;
+}
+
+/* ─── Alerts List ─── */
+.dn-alert-list {
+  padding: 8px 0;
+}
+
+.dn-alert-item {
+  padding: 10px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background 0.2s;
+  cursor: pointer;
+}
+
+.dn-alert-item:hover {
+  background: #f8fafc;
+}
+
+.dn-alert-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #475569;
+}
+
+.dn-alert-badge {
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 20px;
+  min-width: 28px;
+  text-align: center;
+}
+
+/* ─── Records Table ─── */
+.dn-records-table-container {
+  overflow-x: auto;
+}
+
+.dn-records-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.dn-records-table th {
+  text-align: left;
+  padding: 10px 16px;
+  background: #f8fafc;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #64748b;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.dn-records-table td {
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #334155;
+  border-bottom: 1px solid #f8fafc;
+}
+
+.dn-records-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* ─── Chart Card override ─── */
 .dn-chart-card {
   background: #ffffff;
-  border-radius: 18px;
+  border-radius: 12px;
   padding: 22px 24px 16px 24px;
-  box-shadow: 0 2px 14px rgba(80, 120, 220, 0.07);
-  border: 1px solid #e9eef8;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  border: 1px solid #e2e8f0;
 }
 
 /* ─── Chart Header ─── */
@@ -269,24 +445,205 @@
   font-weight: 600;
 }
 
-/* ─── Responsive ─── */
-@media (max-width: 1400px) {
+/* ─── Sidebar Records Card overrides ─── */
+.dn-records-table-container.scrollable {
+  /* Scrollbar removed to allow single side scrollbar as requested */
 }
 
-@media (max-width: 1100px) {
-  .dn-charts-row {
-    grid-template-columns: 1fr;
-  }
+/* ─── Sales & Purchase Card specialized styling ─── */
+.dn-sales-purchase-card {
+  min-height: 400px;
 }
 
-@media (max-width: 800px) {
-  .dn-cards-row {
-    grid-template-columns: repeat(2, 1fr);
-  }
+.dn-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
-@media (max-width: 480px) {
-  .dn-cards-row {
-    grid-template-columns: 1fr;
-  }
+.dn-header-toggle {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1a2340;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.dn-header-toggle span {
+  font-size: 9px;
+  color: #64748b;
+}
+
+.dn-filter-bar-complex {
+  background: #f8fafc;
+  padding: 8px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #f1f5f9;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.dn-f-left, .dn-f-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.dn-f-item {
+  font-size: 12px;
+  font-weight: 600;
+  color: #475569;
+}
+
+.dn-f-item.note {
+  color: #1a2340;
+  font-style: italic;
+  font-size: 11px;
+}
+
+.dn-f-item.link {
+  color: #4f46e5;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.dn-radio-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #475569;
+}
+
+.dn-radio-group label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+}
+
+/* ─── Sales & Purchase Content ─── */
+.dn-sp-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.dn-sp-chart-area {
+  padding: 16px;
+  background: #fff;
+}
+
+/* ─── ERP High-Density Table ─── */
+.dn-sp-table-area {
+  padding: 0;
+  border-top: 1px solid #f1f5f9;
+}
+
+.dn-erp-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: inherit;
+}
+
+.dn-erp-table th {
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 1px solid #e2e8f0;
+  white-space: nowrap;
+}
+
+.dn-erp-table td {
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #1a2340;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.dn-erp-table tr:nth-child(even) {
+  background: #fcfdfe;
+}
+
+.dn-erp-table tr:hover {
+  background: #f8fafc;
+}
+
+.dn-erp-table td.val-cell {
+  text-align: right;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: #334155;
+}
+
+.dn-erp-table td.type-cell {
+  color: #4f46e5;
+}
+
+/* ─── Accordion Row Styling ─── */
+.dn-accordion-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.dn-accordion-row {
+  background: #f1f5f9;
+  padding: 8px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #e2e8f0;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.dn-accordion-row:hover {
+  background: #e2e8f0;
+}
+
+.dn-acc-left {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1a2340;
+  display: flex;
+  align-items: center;
+}
+
+.dn-acc-right {
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #334155;
+  background: #cbd5e1;
+  padding: 4px 10px;
+  border-radius: 4px;
+  border: 1px solid #94a3b8;
+}
+
+.dn-acc-right span {
+  text-transform: capitalize;
+}
+
+/* ─── Icons & Buttons overrides ─── */
+.dn-icon-btn.small {
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+}
+
+.dn-icon-btn.small svg {
+  width: 10px;
+  height: 10px;
 }
