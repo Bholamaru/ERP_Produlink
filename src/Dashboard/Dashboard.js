@@ -216,16 +216,28 @@ const monthlySalesData = [
   { month: "Jan-2027", sales: 0 }, { month: "Feb-2027", sales: 0 }, { month: "Mar-2027", sales: 0 },
 ];
 
+const top5SalesData = [
+  { name: "SHARP LTD", value: 125.5 }, { name: "TECHNO CORP", value: 98.2 },
+  { name: "GLOBAL MFG", value: 75.8 }, { name: "PRECISION INC", value: 45.0 },
+  { name: "ALPHA IND", value: 32.1 },
+];
+
+const itemWiseDispatchData = [
+  { sr: 1, customer: "AURANGABAD PRES SING GST", itemNo: "FG1001", itemCode: "520MC00712", itemDesc: "PINION (N)", qty: 6000, amount: 22920 },
+  { sr: 2, customer: "SRI CHANIKYA TECH COMPONENTS GST", itemNo: "FG1001", itemCode: "520MC00712", itemDesc: "PINION (N)", qty: 5000, amount: 19000 },
+  { sr: 3, customer: "ENDURANCE TECHNOLOGIES LTD (DISC BRAKE) GST", itemNo: "FG1003", itemCode: "B2AW002260", itemDesc: "BLEEDER SCREW - REML", qty: 11000, amount: 48290 },
+  { sr: 4, customer: "ENDURANCE TECHNOLOGIES LTD (DISC BREAK DIVISION E-7 1) GST", itemNo: "FG1003", itemCode: "B2AW002260", itemDesc: "BLEEDER SCREW - REML", qty: 5000, amount: 21950 },
+  { sr: 5, customer: "ENDURANCE TECHNOLOGIES LTD (DISC BREAK DIVISION E-7", itemNo: "FG1005", itemCode: "520AW00212", itemDesc: "BLEEDER SCREW(M7)", qty: 7000, amount: 27020 },
+];
+
 /* ─── Component ─── */
 const Dashboard = () => {
   const [sideNavOpen, setSideNavOpen] = useState(false);
   const [activeRange, setActiveRange] = useState("Week");
-  const [isSPVisible, setIsSPVisible] = useState(true);
+  const [isSPVisible, setIsSPVisible] = useState(false);
   
   // Track visibility for each accordion section independently
-  const [expandedSections, setExpandedSections] = useState({
-    "Daily Sales": true, // Default open as per user request
-  });
+  const [expandedSections, setExpandedSections] = useState({});
 
   const toggleSection = (label) => {
     setExpandedSections(prev => ({ ...prev, [label]: !prev[label] }));
@@ -620,6 +632,136 @@ const Dashboard = () => {
                             <div className="dn-status-badge-red-text">
                               * Values are in Lacs
                             </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {isOpen && label === "Top 5 (Sales) Customer / Item" && (
+                        <div className="dn-card-body dn-top5-body">
+                          {/* Tabular Filter Bar */}
+                          <div className="dn-tabular-filters-wrapper">
+                            <div className="dn-tabular-flex">
+                              <table className="dn-filter-grid">
+                                <thead>
+                                  <tr>
+                                    <th>Plant</th>
+                                    <th>Year</th>
+                                    <th>Month</th>
+                                    <th>Top</th>
+                                    <th>Type</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  <tr>
+                                    <td><select className="dn-mini-select" style={{ minWidth: 100 }}><option>SHARP</option></select></td>
+                                    <td><select className="dn-mini-select" style={{ minWidth: 110 }}><option>2026-2027</option></select></td>
+                                    <td><select className="dn-mini-select" style={{ minWidth: 90 }}><option>ALL</option></select></td>
+                                    <td>
+                                      <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
+                                        <input type="text" className="dn-mini-input" defaultValue="5" style={{ width: 40, marginTop: 1 }} />
+                                        <select className="dn-mini-select" style={{ minWidth: 90 }}><option>Customer</option><option>Item</option></select>
+                                      </div>
+                                    </td>
+                                    <td>
+                                      <div className="dn-radio-group mini">
+                                        <label><input type="radio" name="toptype" /> ALL</label>
+                                        <label><input type="radio" name="toptype" defaultChecked /> GST</label>
+                                        <label><input type="radio" name="toptype" /> Export</label>
+                                        <label><input type="radio" name="toptype" /> Jobwork</label>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                              <button className="dn-icon-btn small excel" style={{ marginBottom: 4 }}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></button>
+                            </div>
+                          </div>
+
+                          {/* White blank space below filters */}
+                          <div style={{ height: 120, background: "#fff" }}></div>
+
+                          {/* Footer Info */}
+                          <div className="dn-card-footer-info" style={{ marginTop: 0, padding: 12 }}>
+                            <div className="dn-footer-notes">
+                              Values Include : <span className="blue-link">GST Sales</span>, <span className="blue-link">Export Sales</span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {isOpen && label === "Item wise Dispatch" && (
+                        <div className="dn-card-body dn-dispatch-body">
+                          {/* Specialized Dispatch Filter Bar (Tabular Style) */}
+                          <div className="dn-table-scroll-container dispatch-filters-scroll">
+                            <div className="dispatch-filters">
+                              <table className="dn-filter-grid">
+                                <thead>
+                                  <tr>
+                                    <th>Plant :</th>
+                                    <th>From Date :</th>
+                                    <th>To:</th>
+                                    <th>Cust group:</th>
+                                    <th><label><input type="checkbox" defaultChecked /> Item :</label></th>
+                                    <th><label><input type="checkbox" /> Customer :</label></th>
+                                    <th>Type</th>
+                                    <th></th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  <tr>
+                                    <td><select className="dn-mini-select full"><option>SHARP</option></select></td>
+                                    <td><input type="text" className="dn-mini-input full" defaultValue="10/04/2026" /></td>
+                                    <td><input type="text" className="dn-mini-input full" defaultValue="11/04/2026" /></td>
+                                    <td><select className="dn-mini-select full"><option>Select</option></select></td>
+                                    <td colSpan={2}></td>
+                                    <td><select className="dn-mini-select full"><option>ALL</option></select></td>
+                                    <td><button className="dn-btn-search">Search</button></td>
+                                  </tr>
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+
+                          {/* Data Table with Scrollable Wrapper */}
+                          <div className="dn-table-scroll-container">
+                            <table className="dn-erp-table high-density">
+                              <thead>
+                                <tr>
+                                  <th style={{ width: 40 }}>Sr.</th>
+                                  <th>Customer</th>
+                                  <th>Item No</th>
+                                  <th>Item Code</th>
+                                  <th>Item Desc</th>
+                                  <th style={{ textAlign: "right" }}>Qty</th>
+                                  <th style={{ textAlign: "right" }}>Amount</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {itemWiseDispatchData.map((item) => (
+                                  <tr key={item.sr}>
+                                    <td style={{ textAlign: "center" }}>{item.sr}</td>
+                                    <td>{item.customer}</td>
+                                    <td>{item.itemNo}</td>
+                                    <td>{item.itemCode}</td>
+                                    <td>{item.itemDesc}</td>
+                                    <td style={{ textAlign: "right" }}>{item.qty}</td>
+                                    <td style={{ textAlign: "right" }}>{item.amount}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+
+                          {/* Summary Footer Bar */}
+                          <div className="dn-dispatch-summary-footer">
+                             <div className="dn-summary-row">
+                                <div className="dn-summary-badge blue">Total Qty: 43321</div>
+                                <div className="dn-summary-badge blue">Total Amt: 3674297.44 | Other Charges: 0 | Total: 3674297.44</div>
+                             </div>
+                             <div className="dn-summary-actions">
+                               <button className="dn-icon-btn small excel"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></button>
+                               <span style={{ fontSize: 11, fontWeight: 700, color: "#333", marginLeft: 4 }}>Excel</span>
+                             </div>
                           </div>
                         </div>
                       )}

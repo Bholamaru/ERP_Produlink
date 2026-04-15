@@ -22,6 +22,7 @@ const NewSalesOrder = () => {
   const [currentItem, setCurrentItem] = useState({
     selectedSearch: "",
     part_no: "",
+    item_no: "",
     part_code: "",
     description: "",
     rate: "",
@@ -131,13 +132,13 @@ const NewSalesOrder = () => {
 
     if (name === "customer") {
       const selectedCust = customers.find(
-        (c) => c.Name === value
+        (c) => `${c.Name} | ${c.number}` === value || c.Name === value
       );
 
       if (selectedCust) {
         setFormData((prev) => ({
           ...prev,
-          customer: selectedCust.Name,
+          customer: `${selectedCust.Name} | ${selectedCust.number}`,
           ship_to: selectedCust.Name,
           pay_day: selectedCust.Payment_Term || "",
           incoterms: selectedCust.Incoterms || "",
@@ -163,6 +164,7 @@ const NewSalesOrder = () => {
       setCurrentItem({
         selectedSearch: val,
         part_no: item.part_no,
+        item_no: item.part_no,
         part_code: item.Part_Code,
         description: item.Name_Description,
         rate: item.Rate || "",
@@ -192,6 +194,7 @@ const NewSalesOrder = () => {
 
       // Display + API 
       part_no: currentItem.part_no,
+      item_no: currentItem.item_no,
       part_code: currentItem.part_code,
       description: currentItem.description,
       hsn: currentItem.hsn,
@@ -229,6 +232,7 @@ const NewSalesOrder = () => {
     setCurrentItem({
       selectedSearch: "",
       part_no: "",
+      item_no: "",
       part_code: "",
       description: "",
       rate: "",
@@ -267,6 +271,7 @@ const NewSalesOrder = () => {
         ...formData,
         item: orderItems.map(item => ({
           rev_no: item.rev_no || "0",
+          item_no: item.item_no,
           item_code: item.item_code,
           item_description: item.item_description,
           rate: parseFloat(item.rate) || 0,
@@ -578,9 +583,9 @@ const NewSalesOrder = () => {
                           {customers.map((cust) => (
                             <option
                               key={cust.id}
-                              value={cust.Name}   // ✅ Correct key
+                              value={`${cust.Name} | ${cust.number}`}
                             >
-                              {`${cust.Name} | Code: ${cust.number}`}   {/* ✅ Correct */}
+                              {`${cust.Name} | Code: ${cust.number}`}
                             </option>
                           ))}
                         </datalist>
