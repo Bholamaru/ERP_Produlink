@@ -179,12 +179,13 @@ const salesPurchaseRows = [
 ];
 
 const spChartData = [
-  { name: "Domestic", amount: 26634732 },
-  { name: "Jobwork", amount: 0 },
-  { name: "Export", amount: 1540200 },
+  { name: "Domestic Sales", amount: 26634732 },
+  { name: "Jobwork Sales", amount: 0 },
+  { name: "Export Sales", amount: 1540200 },
   { name: "Rate Diff", amount: 0 },
-  { name: "Scrap", amount: 538160 },
+  { name: "Scrap Sales", amount: 538160 },
   { name: "Total Sales", amount: 28713092 },
+  { name: "Sales Return", amount: 16664 },
   { name: "Purchase", amount: 23761388 },
 ];
 
@@ -197,11 +198,38 @@ const accordionList = [
   "State Wise Sales",
 ];
 
+const dailySalesData = [
+  { day: 1, sales: 0 }, { day: 2, sales: 30 }, { day: 3, sales: 33 }, { day: 4, sales: 31 },
+  { day: 5, sales: 9 }, { day: 6, sales: 42 }, { day: 7, sales: 32 }, { day: 8, sales: 28 },
+  { day: 9, sales: 30 }, { day: 10, sales: 33 }, { day: 11, sales: 4 }, { day: 12, sales: 0 },
+  { day: 13, sales: 0 }, { day: 14, sales: 0 }, { day: 15, sales: 0 }, { day: 16, sales: 0 },
+  { day: 17, sales: 0 }, { day: 18, sales: 0 }, { day: 19, sales: 0 }, { day: 20, sales: 0 },
+  { day: 21, sales: 0 }, { day: 22, sales: 0 }, { day: 23, sales: 0 }, { day: 24, sales: 0 },
+  { day: 25, sales: 0 }, { day: 26, sales: 0 }, { day: 27, sales: 0 }, { day: 28, sales: 0 },
+  { day: 29, sales: 0 }, { day: 30, sales: 0 }, { day: 31, sales: 0 },
+];
+
+const monthlySalesData = [
+  { month: "Apr-2026", sales: 271.73 }, { month: "May-2026", sales: 0 }, { month: "Jun-2026", sales: 0 },
+  { month: "Jul-2026", sales: 0 }, { month: "Aug-2026", sales: 0 }, { month: "Sep-2026", sales: 0 },
+  { month: "Oct-2026", sales: 0 }, { month: "Nov-2026", sales: 0 }, { month: "Dec-2026", sales: 0 },
+  { month: "Jan-2027", sales: 0 }, { month: "Feb-2027", sales: 0 }, { month: "Mar-2027", sales: 0 },
+];
+
 /* ─── Component ─── */
 const Dashboard = () => {
   const [sideNavOpen, setSideNavOpen] = useState(false);
   const [activeRange, setActiveRange] = useState("Week");
   const [isSPVisible, setIsSPVisible] = useState(true);
+  
+  // Track visibility for each accordion section independently
+  const [expandedSections, setExpandedSections] = useState({
+    "Daily Sales": true, // Default open as per user request
+  });
+
+  const toggleSection = (label) => {
+    setExpandedSections(prev => ({ ...prev, [label]: !prev[label] }));
+  };
 
   const toggleSideNav = () => setSideNavOpen((p) => !p);
 
@@ -374,14 +402,13 @@ const Dashboard = () => {
               <div className="dn-side-card dn-sales-purchase-card" style={{ marginTop: 24 }}>
                 <div className="dn-side-header">
                   <div className="dn-side-title">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{marginRight: 8}}><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{marginRight: 8, color: "#94a3b8"}}><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/></svg>
                     Sales & Purchase
                   </div>
                   <div className="dn-header-actions">
                     <span className="dn-header-toggle" onClick={() => setIsSPVisible(!isSPVisible)} style={{ cursor: "pointer" }}>
                       {isSPVisible ? "Hide" : "Show"} <span>{isSPVisible ? "▲" : "▼"}</span>
                     </span>
-                    <button className="dn-icon-btn small"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg></button>
                   </div>
                 </div>
 
@@ -392,12 +419,12 @@ const Dashboard = () => {
                         <div className="dn-f-item">Plant: <select className="dn-mini-select"><option>SHARP</option></select></div>
                         <div className="dn-f-item">Month: <select className="dn-mini-select"><option>Apr-2026</option></select></div>
                         <div className="dn-f-item note">* Values are Assessable</div>
-                      </div>
-                      <div className="dn-f-right">
                         <div className="dn-radio-group">
                           <label><input type="radio" name="valunit" defaultChecked /> In RS.</label>
                           <label><input type="radio" name="valunit" /> In Lakh</label>
                         </div>
+                      </div>
+                      <div className="dn-f-right">
                         <div className="dn-f-item link">Yearly</div>
                         <button className="dn-icon-btn small excel"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></button>
                       </div>
@@ -443,20 +470,162 @@ const Dashboard = () => {
                 )}
               </div>
 
-              {/* Bottom: Accordion Data Sections */}
-              <div className="dn-accordion-container" style={{ marginTop: 12 }}>
-                {accordionList.map((label, idx) => (
-                  <div key={idx} className="dn-accordion-row">
-                    <div className="dn-acc-left">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{marginRight: 8, color: "#94a3b8"}}><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/></svg>
-                      {label}
+              {/* Bottom: Accordion Data Sections styled as Cards */}
+              <div className="dn-accordion-container" style={{ marginTop: 16 }}>
+                {accordionList.map((label, idx) => {
+                  const isOpen = expandedSections[label];
+                  return (
+                    <div key={idx} className="dn-side-card" style={{ marginBottom: 12 }}>
+                      <div className="dn-side-header">
+                        <div className="dn-side-title">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{marginRight: 8, color: "#94a3b8"}}><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/></svg>
+                          {label}
+                        </div>
+                        <div className="dn-header-actions">
+                          <span className="dn-header-toggle" onClick={() => toggleSection(label)} style={{ cursor: "pointer" }}>
+                            {isOpen ? "Hide" : "Show"} <span>{isOpen ? "▲" : "▼"}</span>
+                          </span>
+                        </div>
+                      </div>
+
+                      {isOpen && label === "Daily Sales" && (
+                        <div className="dn-card-body dn-daily-sales-body">
+                          {/* Inner Filter Bar */}
+                          <div className="dn-inner-filter-bar">
+                            <div className="dn-f-left">
+                              <div className="dn-f-item sm">Plant <select className="dn-mini-select"><option>SHARP</option></select></div>
+                              <div className="dn-f-item sm">Sales Month <select className="dn-mini-select"><option>Apr-2026</option></select></div>
+                              <select className="dn-mini-select"><option>ALL</option></select>
+                              <div className="dn-f-item note red">* Values are in Lacs</div>
+                            </div>
+                            <div className="dn-f-right">
+                              <a href="#" className="dn-link-sm">View More</a>
+                              <button className="dn-icon-btn small excel"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></button>
+                            </div>
+                          </div>
+
+                          {/* Daily Sales Bar Chart */}
+                          <div className="dn-chart-content">
+                            <ResponsiveContainer width="100%" height={260}>
+                              <BarChart data={dailySalesData} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
+                                <defs>
+                                  <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0%" stopColor="#4f8ef7" stopOpacity={1} />
+                                    <stop offset="100%" stopColor="#2563eb" stopOpacity={0.8} />
+                                  </linearGradient>
+                                </defs>
+                                <CartesianGrid strokeDasharray="0 0" vertical={false} stroke="#eee" />
+                                <XAxis dataKey="day" axisLine={{ stroke: "#333", strokeWidth: 1 }} tickLine={true} tick={{ fontSize: 10, fill: "#333" }} interval={0} />
+                                <YAxis axisLine={{ stroke: "#333", strokeWidth: 1 }} tickLine={true} tick={{ fontSize: 10, fill: "#333" }} domain={[0, 50]} ticks={[0, 10, 20, 30, 40, 50]} />
+                                <Tooltip cursor={{ fill: "transparent" }} contentStyle={{ borderRadius: 8, border: "none", boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }} />
+                                <Bar dataKey="sales" fill="url(#barGradient)" radius={[2, 2, 0, 0]} barSize={12} />
+                                <Legend verticalAlign="bottom" height={36} content={() => (
+                                  <div style={{ display: "flex", justifyContent: "center", alignItems: "center", fontSize: 11, color: "#333", gap: 8, marginTop: 10 }}>
+                                    <span style={{ width: 14, height: 14, background: "#4f8ef7", display: "inline-block" }}></span>
+                                    Sales
+                                  </div>
+                                )} />
+                              </BarChart>
+                            </ResponsiveContainer>
+                          </div>
+
+                          {/* Footer Info */}
+                          <div className="dn-card-footer-info">
+                            <div className="dn-footer-notes">
+                              Values Include : <span className="blue-link">GST Sales</span>, <span className="blue-link">Export Sales</span>, <span className="blue-link">Job-work Sales</span>
+                            </div>
+                            <div className="dn-status-badge-orange">
+                              Daily Sales : Apr-2026
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {isOpen && label === "Monthly Sales" && (
+                        <div className="dn-card-body dn-monthly-sales-body">
+                          {/* Inner Filter Bar with Checkboxes/Radios */}
+                          <div className="dn-inner-filter-bar complex">
+                            <div className="dn-f-left">
+                              <div className="dn-f-item sm">Plant <select className="dn-mini-select" style={{ minWidth: 70 }}><option>SHARP</option></select></div>
+                              <div className="dn-f-item sm">Year <select className="dn-mini-select" style={{ minWidth: 90 }}><option>2026-2027</option></select></div>
+                              
+                              <div className="dn-radio-group mini">
+                                <label><input type="radio" name="monval" defaultChecked /> Value</label>
+                                <label><input type="radio" name="monval" /> Qty</label>
+                              </div>
+
+                              <div className="dn-checkbox-group mini">
+                                <span className="dn-f-item sm">Type :</span>
+                                <label><input type="checkbox" defaultChecked /> GST</label>
+                                <label><input type="checkbox" defaultChecked /> Export</label>
+                                <label><input type="checkbox" defaultChecked /> Jobwork</label>
+                                <label><input type="checkbox" defaultChecked /> Scrap</label>
+                              </div>
+                            </div>
+                            <div className="dn-f-right">
+                              <a href="#" className="dn-link-sm">View More</a>
+                              <button className="dn-icon-btn small excel"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></button>
+                            </div>
+                          </div>
+
+                          {/* Monthly Sales Bar Chart */}
+                          <div className="dn-chart-content">
+                            <ResponsiveContainer width="100%" height={260}>
+                              <BarChart data={monthlySalesData} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
+                                <defs>
+                                  <linearGradient id="barGradientBlue" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0%" stopColor="#60a5fa" stopOpacity={1} />
+                                    <stop offset="100%" stopColor="#2563eb" stopOpacity={0.8} />
+                                  </linearGradient>
+                                </defs>
+                                <CartesianGrid strokeDasharray="0 0" vertical={false} stroke="#eee" />
+                                <XAxis dataKey="month" angle={-45} textAnchor="end" height={60} axisLine={{ stroke: "#333", strokeWidth: 1 }} tickLine={true} tick={{ fontSize: 10, fill: "#333" }} />
+                                <YAxis axisLine={{ stroke: "#333", strokeWidth: 1 }} tickLine={true} tick={{ fontSize: 10, fill: "#333" }} domain={[0, 300]} ticks={[0, 50, 100, 150, 200, 250, 300]} />
+                                <Tooltip cursor={{ fill: "transparent" }} contentStyle={{ borderRadius: 8, border: "none", boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }} />
+                                <Bar dataKey="sales" fill="url(#barGradientBlue)" radius={[2, 2, 0, 0]} barSize={24} stroke="#2563eb" strokeWidth={1} />
+                              </BarChart>
+                            </ResponsiveContainer>
+                          </div>
+
+                          {/* Status Badge Blue */}
+                          <div style={{ display: "flex", justifyContent: "center", marginBottom: 8 }}>
+                            <div className="dn-status-badge-blue">
+                              Type : Monthly Sales : GST + Export + Jobwork + Scrap
+                            </div>
+                          </div>
+
+                          {/* Monthly Summary Table */}
+                          <div className="dn-monthly-table-wrapper">
+                            <table className="dn-monthly-grid">
+                              <thead>
+                                <tr>
+                                  {monthlySalesData.map(d => <th key={d.month}>{d.month.split("-")[0]}<br/>{d.month.split("-")[1]}</th>)}
+                                  <th className="total-col">Total</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr>
+                                  {monthlySalesData.map((d, i) => <td key={i}>{d.sales || 0}</td>)}
+                                  <td className="total-col">271.73</td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </div>
+
+                          {/* Footer Info */}
+                          <div className="dn-card-footer-info">
+                            <div className="dn-footer-notes">
+                              Values Include : <span className="blue-link">GST Sales</span>, <span className="blue-link">Export Sales</span>, <span className="blue-link">Job-work Sales</span>, <span className="blue-link">Scrap Sales</span>
+                            </div>
+                            <div className="dn-status-badge-red-text">
+                              * Values are in Lacs
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
-                    <div className="dn-acc-right">
-                      <span>Show</span>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" style={{marginLeft: 6}}><polyline points="6 9 12 15 18 9"/></svg>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
             </div>
