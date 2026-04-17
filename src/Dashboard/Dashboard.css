@@ -29,14 +29,13 @@
 
 .App {
   min-height: 100vh;
-  overflow-y: auto;
   background-color: var(--bg-main);
 }
 
 .dashboard {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  min-height: 100vh;
   font-family: 'Outfit', 'Inter', sans-serif;
   color: var(--text-main);
   /* Mesh Gradient Background for a creative look */
@@ -52,13 +51,11 @@
   width: 100%;
   min-height: calc(100vh - var(--navbar-height));
   margin-top: var(--navbar-height);
-  overflow-y: auto;
 }
 
 .mainContent {
   flex-grow: 1;
   padding: 32px 32px 0 32px; /* Bottom padding handled by footer */
-  overflow-y: auto;
   scroll-behavior: smooth;
   max-width: 1500px;
   margin: 0 auto;

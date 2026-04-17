@@ -56,6 +56,7 @@ const NewInvoice = () => {
     d_c_no: "",
     d_c_Date: "",            // ✅ was: d_c_date
     delivery_terms: "",
+    plant: "ProduLink",      // ✅ added missing plant state
   });
 
   // Tax Data State
@@ -81,25 +82,33 @@ const NewInvoice = () => {
         const data = await res.json();
 
         const flatItems = data.flatMap((order) =>
-          (order.item || []).map((itm) => ({
-            ...itm,
-            customer: order.customer,
-            cust_po: order.cust_po,
-            plant: order.plant,
-            ship_to: order.ship_to,
-            item_code: itm.item_code || itm.part_no || itm.Item || itm.part_no,
-            item_description:
-              itm.item_description || itm.Name_Description || itm.ItemDescription || itm.description || "",
-            rate: itm.rate || itm.Rate || itm.Rate_per || itm.price || itm.rate_value || 0,
-            desc_percent: itm.desc_percent || itm.desc || itm.discount_percent || itm.default_discount || 0,
-            HSN_SAC_Code: itm.HSN_SAC_Code || itm.hsn_code || itm.HSN || itm.hsn || "",
-            pkg_trans: itm.pkg_trans || itm.pkg_charges || itm.Pkg_Charges || itm.pkg || "",
-            trans_charges: itm.trans_charges || itm.Trans_Charges || itm.transport_charges || "",
-            Finish_Weight: itm.Finish_Weight || itm.item_wt || itm.Gross_Weight || itm.weight || 0,
-            Unit_Code: itm.Unit_Code || itm.uom || itm.unit || itm.Unit || "pcs",
-            plan_date: itm.plan_date || itm.Plan_Date || itm.due_date || itm.Due_Date || null,
-            po_qty: itm.po_qty || itm.qty || itm.order_qty || itm.Qty || itm.PO_Qty || 0,
-          }))
+          (order.item || []).map((itm) => {
+            const partNo = itm.part_no || itm.item_no || "";
+            const itemCode = itm.item_code || itm.part_code || "";
+            const itemDesc = itm.item_description || itm.Name_Description || itm.ItemDescription || itm.description || "";
+            const fullLabel = `${partNo} -${itemCode}-${itemDesc}`;
+            
+            return {
+              ...itm,
+              customer: order.customer,
+              cust_po: order.cust_po,
+              plant: order.plant,
+              ship_to: order.ship_to,
+              part_no: partNo,
+              item_code_short: itemCode,
+              item_code: fullLabel, // Use full label as the primary identifier
+              item_description: itemDesc,
+              rate: itm.rate || itm.Rate || itm.Rate_per || itm.price || itm.rate_value || 0,
+              desc_percent: itm.desc_percent || itm.desc || itm.discount_percent || itm.default_discount || 0,
+              HSN_SAC_Code: itm.HSN_SAC_Code || itm.hsn_code || itm.HSN || itm.hsn || "",
+              pkg_trans: itm.pkg_trans || itm.pkg_charges || itm.Pkg_Charges || itm.pkg || "",
+              trans_charges: itm.trans_charges || itm.Trans_Charges || itm.transport_charges || "",
+              Finish_Weight: itm.Finish_Weight || itm.item_wt || itm.Gross_Weight || itm.weight || 0,
+              Unit_Code: itm.Unit_Code || itm.uom || itm.unit || itm.Unit || "pcs",
+              plan_date: itm.plan_date || itm.Plan_Date || itm.due_date || itm.Due_Date || null,
+              po_qty: itm.po_qty || itm.qty || itm.order_qty || itm.Qty || itm.PO_Qty || 0,
+            };
+          })
         );
 
         setItems(flatItems);
@@ -251,18 +260,21 @@ const NewInvoice = () => {
 
   // 2. Handle Item Selection and Fetch Stock
   const handleItemSelect = async (e) => {
-    const itemCode = e.target.value;
-    setSelectedItemCode(itemCode);
+    const fullItemCode = e.target.value;
+    setSelectedItemCode(fullItemCode);
 
-    const itemObj = customerItems.find(i => i.item_code === itemCode);
+    const itemObj = customerItems.find(i => i.item_code === fullItemCode);
     if (!itemObj) return;
+
+    // Use short code or part number for API parameters
+    const lookupKey = itemObj.item_code_short || itemObj.part_no || fullItemCode;
 
     try {
       setItemSearchLoading(true);
 
       const [stockRes, itemFieldsRes] = await Promise.all([
-        fetch(`http://127.0.0.1:8000/Sales/wip/stock/get/?q=${itemCode}`),
-        fetch(`http://127.0.0.1:8000/All_Masters/Fetch_Item_fields/?q=${encodeURIComponent(itemCode)}`)
+        fetch(`http://127.0.0.1:8000/Sales/wip/stock/get/?q=${lookupKey}`),
+        fetch(`http://127.0.0.1:8000/All_Masters/Fetch_Item_fields/?q=${encodeURIComponent(lookupKey)}`)
       ]);
 
       const stockData = await stockRes.json();
@@ -284,7 +296,7 @@ const NewInvoice = () => {
         ...itemObj,
         last_operation: stockData?.last_operation || {
           part_code: itemFieldsData?.Part_Code || "",
-          part_no: itemCode,
+          part_no: lookupKey,
           Name_Description: itemFieldsData?.Name_Description || itemObj.item_description,
           OPNo: stockData?.last_operation?.OPNo || "",
           Operation: stockData?.last_operation?.Operation || "",
@@ -295,7 +307,7 @@ const NewInvoice = () => {
         op_no: stockData?.last_operation?.OPNo ?? "",
         operation_name: stockData?.last_operation?.Operation ?? "",
         part_code: itemFieldsData?.Part_Code || stockData?.last_operation?.part_code || "",
-        part_no: stockData?.last_operation?.part_no || itemCode,
+        part_no: stockData?.last_operation?.part_no || lookupKey,
         Name_Description: itemFieldsData?.Name_Description || itemObj.item_description,
         rate: rate,
         HSN_SAC_Code: itemFieldsData?.HSN_SAC_Code || itemFieldsData?.HSN || itemObj.HSN_SAC_Code || "",
@@ -310,7 +322,7 @@ const NewInvoice = () => {
         assessable_value: assessableValue.toFixed(2),
       });
 
-      toast.info(`Selected: ${itemCode}`);
+      toast.info(`Selected: ${fullItemCode}`);
     } catch (error) {
       console.error("Item fetch error:", error);
 
@@ -330,7 +342,7 @@ const NewInvoice = () => {
         assessable_value: assessableValue.toFixed(2),
         last_operation: {
           part_code: itemObj.Part_Code || "",
-          part_no: itemCode,
+          part_no: lookupKey,
           Name_Description: itemObj.item_description,
           OPNo: "",
           Operation: "",
@@ -401,7 +413,8 @@ const NewInvoice = () => {
       "plant", "series", "invoice_type", "invoice_no",
       "customer", "po_no", "date", "stock", "description",
       "rate", "dis", "po_qty", "bal_qty", "inv_qty",
-      "pkg_qty", "type_of_packing", "hsn_code", "invoice"
+      "pkg_qty", "type_of_packing", "hsn_code", "invoice",
+      "item_code"
     ];
 
     const cleaned = {};
@@ -454,7 +467,7 @@ const NewInvoice = () => {
     try {
       // --- FIX 2: Map frontend fields to backend fields ---
       const mappedItems = tableData.map((row) => ({
-        plant: row.plant || "ProduLink",
+        plant: formData.plant || row.plant || "ProduLink",
         series: formData.series_type || "",           // ✅ from formData
         invoice_type: formData.invoice_type || "GST",
         invoice_no: formData.invoice_no || "",         // ✅ from formData
@@ -472,6 +485,7 @@ const NewInvoice = () => {
         pkg_qty: null,
         type_of_packing: "",
         hsn_code: row.HSN_SAC_Code || row.hsn_code || "", // ✅ was null
+        item_code: row.item_code || "", // ✅ New field for formatted item string
       }));
 
       // Calculate total assessable value from all items (po_qty * rate)
@@ -682,40 +696,48 @@ const NewInvoice = () => {
                         <h5 className="header-title">New Invoice</h5>
                       </div>
 
-                      <div className="col-md-1">Plant</div>
-                      <div className="col-md-1">
-                        <select>
-                          <option>ProduLink</option>
+                      <div className="col-md-2 d-flex align-items-center gap-1">
+                        <label className="mb-0">Plant:</label>
+                        <select
+                          className="form-select form-select-sm"
+                          name="plant"
+                          value={formData.plant}
+                          onChange={handleChange}
+                        >
+                          <option value="ProduLink">ProduLink</option>
                         </select>
                       </div>
 
-                      <div className="col-md-1">Series</div>
-                      <div className="col-md-1">
+                      <div className="col-md-2 d-flex align-items-center gap-1">
+                        <label className="mb-0">Series:</label>
                         <select
-                          className="form-control"
+                          className="form-select form-select-sm"
+                          name="series_type"
+                          value={formData.series_type}
                           onChange={handleSeriesChange}
                         >
                           <option value="">Select</option>
                           <option value="GST Invoice">GST Invoice</option>
                         </select>
                       </div>
+
                       <div className="col-md-1">
                         <input
                           type="text"
-                          placeholder="InvoiceNo:"
-                          className="w-100"
+                          placeholder="Inv No"
+                          className="form-control form-control-sm"
                           value={formData.invoice_no || ""}
                           readOnly
                         />
                       </div>
 
-                      <div className="col-md-1">InvoiceType:</div>
-                      <div className="col-md-1">
+                      <div className="col-md-2 d-flex align-items-center gap-1">
+                        <label className="mb-0">Type:</label>
                         <select
                           name="invoice_type"
                           value={formData.invoice_type}
                           onChange={handleChange}
-                          className="form-control"
+                          className="form-select form-select-sm"
                         >
                           <option value="GST">GST</option>
                           <option value="SCRAP">SCRAP</option>
@@ -898,7 +920,7 @@ const NewInvoice = () => {
                                     key={index}
                                     value={item.item_code}
                                   >
-                                    {item.item_code} - {item.item_description}
+                                    {item.item_code}
                                   </option>
                                 ))}
                               </select>

@@ -189,6 +189,25 @@ const NewSalesOrder = () => {
       return;
     }
 
+    const rate = parseFloat(currentItem.rate) || 0;
+    const qty = parseFloat(currentItem.qty) || 0;
+    const subtotal = rate * qty;
+    
+    // Percentages
+    const cgstPer = parseFloat(currentItem.cgst) || 0;
+    const sgstPer = parseFloat(currentItem.sgst) || 0;
+    const igstPer = parseFloat(currentItem.igst) || 0;
+    const utgstPer = parseFloat(currentItem.utgst) || 0;
+
+    // Amounts
+    const cgstAmt = (subtotal * cgstPer) / 100;
+    const sgstAmt = (subtotal * sgstPer) / 100;
+    const igstAmt = (subtotal * igstPer) / 100;
+    const utgstAmt = (subtotal * utgstPer) / 100;
+    
+    const totalTax = cgstAmt + sgstAmt + igstAmt + utgstAmt;
+    const grandTotal = subtotal + totalTax;
+
     const newItem = {
       id: Date.now(),
 
@@ -198,17 +217,26 @@ const NewSalesOrder = () => {
       part_code: currentItem.part_code,
       description: currentItem.description,
       hsn: currentItem.hsn,
-      cgst: currentItem.cgst,
-      sgst: currentItem.sgst,
-      igst: currentItem.igst,
+      
+      // Percentages
+      cgst: cgstPer.toFixed(2),
+      sgst: sgstPer.toFixed(2),
+      igst: igstPer.toFixed(2),
+      utgst: utgstPer.toFixed(2),
+
+      // Calculated Amounts
+      cgst_amt: cgstAmt.toFixed(2),
+      sgst_amt: sgstAmt.toFixed(2),
+      igst_amt: igstAmt.toFixed(2),
+      utgst_amt: utgstAmt.toFixed(2),
 
       // API required
       rev_no: "0",
       item_code: currentItem.part_code,
       item_description: currentItem.description,
 
-      rate: parseFloat(currentItem.rate) || 0,
-      qty: parseFloat(currentItem.qty) || 0,
+      rate: rate,
+      qty: qty,
       uom: currentItem.uom,
       item_wt: currentItem.item_wt || "",
 
@@ -221,9 +249,9 @@ const NewSalesOrder = () => {
       item_category: "",
       remark: "",
       hsn_code: currentItem.hsn_code || null,
-      assessable_value: currentItem.assessable_value || "0.0000",
-      subtotal: currentItem.subtotal || "0.00",
-      gr_total: currentItem.gr_total || "0.00",
+      assessable_value: subtotal.toFixed(2),
+      subtotal: subtotal.toFixed(2),
+      gr_total: grandTotal.toFixed(2),
     };
 
     setOrderItems([...orderItems, newItem]);
@@ -267,8 +295,28 @@ const NewSalesOrder = () => {
         return;
       }
 
+      // Calculate Top Level Totals
+      const totalSubtotal = orderItems.reduce((acc, item) => acc + parseFloat(item.subtotal || 0), 0);
+      const totalCgstAmt = orderItems.reduce((acc, item) => acc + parseFloat(item.cgst_amt || 0), 0);
+      const totalSgstAmt = orderItems.reduce((acc, item) => acc + parseFloat(item.sgst_amt || 0), 0);
+      const totalIgstAmt = orderItems.reduce((acc, item) => acc + parseFloat(item.igst_amt || 0), 0);
+      const totalUtgstAmt = orderItems.reduce((acc, item) => acc + parseFloat(item.utgst_amt || 0), 0);
+      const totalGrTotal = orderItems.reduce((acc, item) => acc + parseFloat(item.gr_total || 0), 0);
+
       const payload = {
         ...formData,
+        // Top-level tax summaries
+        subtotal: totalSubtotal.toFixed(2),
+        cgst: orderItems[0]?.cgst || "0.00",
+        sgst: orderItems[0]?.sgst || "0.00",
+        igst: orderItems[0]?.igst || "0.00",
+        utgst: orderItems[0]?.utgst || "0.00",
+        cgst_amt: totalCgstAmt.toFixed(2),
+        sgst_amt: totalSgstAmt.toFixed(2),
+        igst_amt: totalIgstAmt.toFixed(2),
+        utgst_amt: totalUtgstAmt.toFixed(2),
+        gr_total: totalGrTotal.toFixed(2),
+
         item: orderItems.map(item => ({
           rev_no: item.rev_no || "0",
           item_no: item.item_no,
@@ -287,12 +335,16 @@ const NewSalesOrder = () => {
           item_category: item.item_category || "",
           remark: item.remark || "",
           hsn_code: item.hsn_code || null,
-          assessable_value: item.assessable_value || "0.0000",
+          assessable_value: item.assessable_value || "0.00",
           subtotal: item.subtotal || "0.00",
           cgst: item.cgst || "0.00",
           sgst: item.sgst || "0.00",
           igst: item.igst || "0.00",
           utgst: item.utgst || "0.00",
+          cgst_amt: item.cgst_amt || "0.00",
+          sgst_amt: item.sgst_amt || "0.00",
+          igst_amt: item.igst_amt || "0.00",
+          utgst_amt: item.utgst_amt || "0.00",
           gr_total: item.gr_total || "0.00",
         }))
       };
@@ -374,13 +426,13 @@ const NewSalesOrder = () => {
   }, [sideNavOpen]);
 
   // GST Calculations
-  const subTotal = orderItems.reduce(
-    (acc, item) => acc + Number(item.rate) * Number(item.qty),
-    0
-  );
-  const gstRate = 18; // 18% default
-  const gstAmount = (subTotal * gstRate) / 100;
-  const grandTotal = subTotal + gstAmount;
+  const totalSubtotal = orderItems.reduce((acc, item) => acc + parseFloat(item.subtotal || 0), 0);
+  const totalCgstAmt = orderItems.reduce((acc, item) => acc + parseFloat(item.cgst_amt || 0), 0);
+  const totalSgstAmt = orderItems.reduce((acc, item) => acc + parseFloat(item.sgst_amt || 0), 0);
+  const totalIgstAmt = orderItems.reduce((acc, item) => acc + parseFloat(item.igst_amt || 0), 0);
+  const totalUtgstAmt = orderItems.reduce((acc, item) => acc + parseFloat(item.utgst_amt || 0), 0);
+  const totalGrTotal = orderItems.reduce((acc, item) => acc + parseFloat(item.gr_total || 0), 0);
+  const gstAmount = totalCgstAmt + totalSgstAmt + totalIgstAmt + totalUtgstAmt;
 
   const navigate = useNavigate();
 
@@ -951,9 +1003,11 @@ const NewSalesOrder = () => {
                                       <td></td>
 
                                       <td>
-                                        CGST : {item.cgst}<br />
-                                        SGST : {item.sgst}<br />
-                                        IGST : {item.igst}<br /> Gross Rate:
+                                        CGST ({item.cgst}%): {item.cgst_amt}<br />
+                                        SGST ({item.sgst}%): {item.sgst_amt}<br />
+                                        IGST ({item.igst}%): {item.igst_amt}<br />
+                                        UTGST ({item.utgst}%): {item.utgst_amt}<br />
+                                        <strong>Total: {item.gr_total}</strong>
                                       </td>
                                       <td>{item.CGST}</td>
                                       <td>Edit</td>
@@ -1223,7 +1277,7 @@ const NewSalesOrder = () => {
                                       }}
                                     >
                                       {" "}
-                                      {subTotal.toFixed(2)}
+                                      {totalSubtotal.toFixed(2)}
                                     </td>
                                     <td
                                       style={{
@@ -1309,7 +1363,7 @@ const NewSalesOrder = () => {
                                       }}
                                     >
                                       {" "}
-                                      {(gstAmount / 2).toFixed(2)}
+                                      {totalCgstAmt.toFixed(2)}
                                     </td>
                                     <td
                                       style={{
@@ -1395,7 +1449,7 @@ const NewSalesOrder = () => {
                                       }}
                                     >
                                       {" "}
-                                      {(gstAmount / 2).toFixed(2)}
+                                      {totalSgstAmt.toFixed(2)}
                                     </td>
                                     <td
                                       style={{
@@ -1496,7 +1550,7 @@ const NewSalesOrder = () => {
                                       }}
                                     >
                                       {" "}
-                                      00 . 00
+                                      {totalIgstAmt.toFixed(2)}
                                     </td>
                                     <td
                                       style={{
@@ -1578,7 +1632,7 @@ const NewSalesOrder = () => {
                                       }}
                                     >
                                       {" "}
-                                      00 . 00
+                                      {totalUtgstAmt.toFixed(2)}
                                     </td>
                                     <td
                                       style={{
@@ -1596,7 +1650,7 @@ const NewSalesOrder = () => {
                                       }}
                                     >
                                       {" "}
-                                      {grandTotal.toFixed(2)}
+                                      {totalGrTotal.toFixed(2)}
                                     </td>
                                   </tr>
                                 </tbody>
