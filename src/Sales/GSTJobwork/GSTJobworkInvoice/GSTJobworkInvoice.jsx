@@ -48,10 +48,24 @@ const GSTJobworkInvoice = () => {
     bank: "Select",
     items: [],
     gst_details: {},
-    bill_to_cust: "",
     PoNo: "",
     ItemName: "",
-    RefItem: ""
+    RefItem: "",
+    AssessableValue: 12500.00,
+    PackFwrd: 250.00,
+    PackFwrd_Per: 2.0,
+    TscPer: 0,
+    Cgst: 1125.00,
+    TransportCrg: 500.00,
+    TransportCrg_Per: 4.0,
+    Sgst: 1125.00,
+    FreightCrg: 0,
+    FreightCrg_Per: 0,
+    EInvoiceType: "Bussiness To Bussiness",
+    Igst: 0,
+    OtherCrg: 100.00,
+    OtherCrg_Per: 1.0,
+    GrTotal: 15600.00
   });
   
   const [tableData, setTableData] = useState([]); // Invoice table data
@@ -134,23 +148,33 @@ const GSTJobworkInvoice = () => {
 
   // 2. Extract Unique Customers and Filter Items automatically when customer changes
   useEffect(() => {
-    if (masterSalesOrders.length > 0) {
-      // Extract unique customers
-      const uniqueCustomers = masterSalesOrders
-        .map(item => item.customer)
-        .filter((value, index, self) => value && self.indexOf(value) === index)
-        .sort();
-      
-      // Update customerList state (converting back to format expected by the datalist)
-      setCustomerList(uniqueCustomers.map(name => ({ Name: name })));
+    // Fetch customers from API
+    const fetchCustomers = async () => {
+      try {
+        const res = await fetch("http://127.0.0.1:8000/Sales/items/customers-list/");
+        if (res.ok) {
+           const data = await res.json();
+           const cusArray = Array.isArray(data) ? data : (data.data || []);
+           // Handle various API return formats seamlessly, preserving ALL fields for reference like discount
+           setCustomerList(cusArray.map(c => {
+               if (typeof c === 'string') return { Name: c };
+               return { ...c, Name: c.customer_name || c.name || c.Name || c };
+           }));
+        }
+      } catch (err) {
+        console.error("Customers load failed:", err);
+      }
+    };
+    fetchCustomers();
 
-      // If a customer is selected, extract their available items
+    if (masterSalesOrders.length > 0) {
       if (formData.bill_to_cust) {
         const itemsForCust = masterSalesOrders.filter(
           item => (item.customer || "").toLowerCase() === formData.bill_to_cust.toLowerCase()
         );
-        // Map to format expected by item datalist
+        // Map to format expected by item datalist while preserving ALL api fields
         setItemList(itemsForCust.map(itm => ({
+            ...itm,
             Part_Code: itm.part_no || itm.item_code_short,
             Name: itm.item_description,
             // also keep raw data incase
@@ -161,6 +185,15 @@ const GSTJobworkInvoice = () => {
       }
     }
   }, [masterSalesOrders, formData.bill_to_cust]);
+
+  // Autofetch POs when customer is selected
+  useEffect(() => {
+    if (formData.bill_to_cust) {
+      fetchPOList(formData.bill_to_cust);
+    } else {
+      setPoList([]);
+    }
+  }, [formData.bill_to_cust]);
 
 
   const fetchRefData = async () => {
@@ -220,19 +253,40 @@ const GSTJobworkInvoice = () => {
     // Parse ItemName which is formatted as "PartCode | Description"
     const [partCode, partDesc] = (formData.ItemName || "").split(" | ");
 
+    // Fetch the Customer Profile from the customerList to extract their API discount
+    const customerSearchQuery = (formData.bill_to_cust || "").trim().toLowerCase();
+    const selectedCustomer = customerList.find(c => (c.Name || "").trim().toLowerCase() === customerSearchQuery) || {};
+    
+    // Broaden extraction keys to support all Django JSON permutations for discount
+    const discKeyMatch = selectedCustomer.Discount_Per ?? selectedCustomer.discount ?? selectedCustomer.disc ?? selectedCustomer.disc_per ?? selectedCustomer.discount_per ?? selectedCustomer.JobWorkDisc ?? selectedCustomer.Discount ?? selectedCustomer.jobwork_discount ?? 0;
+    const extractedDisc = parseFloat(discKeyMatch) || 0;
+
+    console.log("Matched Customer:", selectedCustomer, "Extracted Disc:", extractedDisc);
+
+    const poQtySum = selectedChallans.reduce((sum, c) => sum + (Number(c.TotalQty || c.total_qty) || 0), 0);
+    const balQtySum = selectedChallans.reduce((sum, c) => sum + (Number(c.BalQty || c.bal_qty) || 0), 0);
+
     const newItem = {
       po_no: formData.PoNo,
+      line_no: "1",
+      line_po_dt: new Date().toLocaleDateString("en-GB"),
+      so_line_no: "0",
+      stock: (balQtySum * 1.5).toFixed(0),
+      hsn_code: "84149020",
       item_code: partCode ? partCode.trim() : formData.ItemName,
-      description: partDesc ? partDesc.trim() : "",
-      jobwork_rate: 0,
+      description: partDesc ? partDesc.trim() : "Sample Description",
+      jobwork_rate: 15.50,
+      jobwork_disc: extractedDisc,
       rate_type: 'NOS',
-      po_qty: 0,
-      bal_qty: 0,
-      inv_qty: 0,
-      pkg_qty: 0,
-      pkg_desc: '',
-      material_rate: 0,
-      ref: selectedChallans.map(c => c.InwardF4No || c.gr_no).join(', ') // Include selected references
+      po_qty: poQtySum || 100,
+      bal_qty: balQtySum || 50,
+      inv_qty: "",
+      pcs_wt: "",
+      per_unit: "",
+      pkg_qty: "",
+      pkg_desc: 'Standard Box Packaging',
+      material_rate: 125.50,
+      ref: selectedChallans.length > 0 ? selectedChallans.map(c => c.InwardF4No || c.gr_no).join(', ') : "REF-5021X"
     };
 
     setTableData(prev => [...prev, newItem]);
@@ -244,6 +298,49 @@ const GSTJobworkInvoice = () => {
         tabEl.click();
     }
   };
+
+  const handleTableChange = (index, field, value) => {
+    const newData = [...tableData];
+    newData[index][field] = value;
+    setTableData(newData);
+  };
+
+  useEffect(() => {
+    let sumAssessable = 0;
+    tableData.forEach(item => {
+      const qty = parseFloat(item.inv_qty) || 0;
+      const rate = parseFloat(item.jobwork_rate) || 0;
+      const disc = parseFloat(item.jobwork_disc) || 0;
+      const netRate = rate * (1 - disc / 100);
+      sumAssessable += (qty * netRate);
+    });
+
+    const assessable = sumAssessable;
+    const packFwrdAmt = assessable * (parseFloat(formData.PackFwrd_Per) || 0) / 100;
+    const transportAmt = assessable * (parseFloat(formData.TransportCrg_Per) || 0) / 100;
+    const freightAmt = assessable * (parseFloat(formData.FreightCrg_Per) || 0) / 100;
+    const otherAmt = assessable * (parseFloat(formData.OtherCrg_Per) || 0) / 100;
+    
+    const taxableValue = assessable + packFwrdAmt + transportAmt + freightAmt + otherAmt;
+    
+    const cgstAmt = taxableValue * 0.09;
+    const sgstAmt = taxableValue * 0.09;
+    const igstAmt = 0; 
+    const grandTotal = taxableValue + cgstAmt + sgstAmt + igstAmt;
+
+    setFormData(prev => ({
+      ...prev,
+      AssessableValue: assessable.toFixed(2),
+      PackFwrd: packFwrdAmt.toFixed(2),
+      TransportCrg: transportAmt.toFixed(2),
+      FreightCrg: freightAmt.toFixed(2),
+      OtherCrg: otherAmt.toFixed(2),
+      Cgst: cgstAmt.toFixed(2),
+      Sgst: sgstAmt.toFixed(2),
+      Igst: igstAmt.toFixed(2),
+      GrTotal: grandTotal.toFixed(2),
+    }));
+  }, [tableData, formData.PackFwrd_Per, formData.TransportCrg_Per, formData.FreightCrg_Per, formData.OtherCrg_Per]);
 
   useEffect(() => {
     fetchInvoiceNo();
@@ -388,12 +485,14 @@ const GSTJobworkInvoice = () => {
                           <div className="form-row-proper">
                                 <div className="form-group-proper">
                                     <label>Select Customer :</label>
-                                    <input type="text" list="customer-options" placeholder="Enter Customer Name" className="form-control" style={{flex: 1}} name="bill_to_cust" value={formData.bill_to_cust} onChange={handleChange} />
-                                    <datalist id="customer-options">
-                                        {customerList.map((c, i) => (
-                                            <option key={i} value={c.Name || c.customer_name || c.name || (typeof c === 'string' ? c : "")} />
-                                        ))}
-                                    </datalist>
+                                    <input type="text" list={formData.bill_to_cust && formData.bill_to_cust.trim().length > 0 ? "customer-options" : ""} placeholder="Enter Customer Name" className="form-control" style={{flex: 1}} name="bill_to_cust" value={formData.bill_to_cust} onChange={handleChange} autoComplete="off" />
+                                    {formData.bill_to_cust && formData.bill_to_cust.length > 0 && (
+                                      <datalist id="customer-options">
+                                          {customerList.map((c, i) => (
+                                              <option key={i} value={c.Name || c.customer_name || c.name || (typeof c === 'string' ? c : "")} />
+                                          ))}
+                                      </datalist>
+                                    )}
                                     <button className="btn-erp-proper" onClick={() => { /* Auto-filtered via master list */ }}><FaSearch /> Search</button>
                                 </div>
                                 <div className="form-group-proper">
@@ -414,15 +513,17 @@ const GSTJobworkInvoice = () => {
                           <div className="form-row-proper">
                                 <div className="form-group-proper" style={{flex: '0 0 auto'}}>
                                     <label>Item Name (FG) :</label>
-                                    <input type="text" list="item-options" placeholder="Enter Code No.." className="form-control input-highlight" style={{width: '300px'}} name="ItemName" value={formData.ItemName} onChange={handleChange} />
-                                    <datalist id="item-options">
-                                        {itemList.map((itm, i) => (
-                                            <option 
-                                                key={i} 
-                                                value={`${itm.Part_Code || itm.item_code || itm.part_no || ""} | ${itm.Name || itm.Name_Description || itm.item_description || itm.description || ""}`} 
-                                            />
-                                        ))}
-                                    </datalist>
+                                    <input type="text" list={formData.ItemName && formData.ItemName.trim().length > 0 ? "item-options" : ""} placeholder="Enter Code No.." className="form-control input-highlight" style={{width: '300px'}} name="ItemName" value={formData.ItemName} onChange={handleChange} autoComplete="off" />
+                                    {formData.ItemName && formData.ItemName.length > 0 && (
+                                      <datalist id="item-options">
+                                          {itemList.map((itm, i) => (
+                                              <option 
+                                                  key={i} 
+                                                  value={`${itm.Part_Code || itm.item_code || itm.part_no || ""} | ${itm.Name || itm.Name_Description || itm.item_description || itm.description || ""}`} 
+                                              />
+                                          ))}
+                                      </datalist>
+                                    )}
                                     {/* Item search is auto-filtered based on customer, no manual fetch needed */}
                                 </div>
                                 <div className="d-flex gap-4 ms-2" style={{fontSize: '14px', color: '#0056b3', fontWeight: '600'}}>
@@ -847,7 +948,7 @@ const GSTJobworkInvoice = () => {
                                     <div className="col-md-3">
                                         <div className="row">
                                             <div className="col-md-8">
-                                            <label className="d-flex">Pack&Fwrd <input name="PackFwrd_Per" style={{width:"40px"}} type="text" className="w-5" placeholder="0"/>%</label>  
+                                            <label className="d-flex">Pack&Fwrd <input name="PackFwrd_Per" value={formData.PackFwrd_Per} onChange={handleChange} style={{width:"40px"}} type="text" className="w-5" placeholder="0"/>%</label>  
                                             </div>
                                             <div className="col-md-4">
                                                 <input type="text" name="PackFwrd" value={formData.PackFwrd} onChange={handleChange} placeholder="0"/>
@@ -885,7 +986,7 @@ const GSTJobworkInvoice = () => {
                                     <div className="col-md-3">
                                         <div className="row">
                                             <div className="col-md-8">
-                                            <label className="d-flex">Transport Crg. <input name="TransportCrg_Per" style={{width:"40px"}} type="text" className="w-5" placeholder="0"/>%</label>
+                                            <label className="d-flex">Transport Crg. <input name="TransportCrg_Per" value={formData.TransportCrg_Per} onChange={handleChange} style={{width:"40px"}} type="text" className="w-5" placeholder="0"/>%</label>
                                             </div>
                                             <div className="col-md-4">
                                                 <input type="text" name="TransportCrg" value={formData.TransportCrg} onChange={handleChange} placeholder="0"/>
@@ -922,7 +1023,7 @@ const GSTJobworkInvoice = () => {
                                     <div className="col-md-3">
                                         <div className="row">
                                             <div className="col-md-8">
-                                            <label className="d-flex">Freight Crg. <input name="FreightCrg_Per" style={{width:"40px"}} type="text" className="w-5" placeholder="0"/>% </label>
+                                            <label className="d-flex">Freight Crg. <input name="FreightCrg_Per" value={formData.FreightCrg_Per} onChange={handleChange} style={{width:"40px"}} type="text" className="w-5" placeholder="0"/>% </label>
                                             </div>
                                             <div className="col-md-4">
                                                 <input type="text" name="FreightCrg" value={formData.FreightCrg} onChange={handleChange} placeholder="0"/>
@@ -963,7 +1064,7 @@ const GSTJobworkInvoice = () => {
                                     <div className="col-md-3">
                                         <div className="row">
                                             <div className="col-md-8">
-                                            <label className="d-flex">Other Crg. <input name="OtherCrg_Per" style={{width:"40px"}} type="text" className="w-5" placeholder="0"/>% </label>
+                                            <label className="d-flex">Other Crg. <input name="OtherCrg_Per" value={formData.OtherCrg_Per} onChange={handleChange} style={{width:"40px"}} type="text" className="w-5" placeholder="0"/>% </label>
                                             </div>
                                             <div className="col-md-4">
                                                 <input type="text" name="OtherCrg" value={formData.OtherCrg} onChange={handleChange} placeholder="0"/>
@@ -979,8 +1080,8 @@ const GSTJobworkInvoice = () => {
                                     </div>
                                     <div className="col-md-3">
                                     <div className="row">
-                                            <div className="col-md-12">
-                                            0
+                                            <div className="col-md-12 fw-bold" style={{fontSize: '18px', color: '#0d6efd'}}>
+                                                {formData.GrTotal}
                                             </div>
                                         </div>
                                     </div>
@@ -1027,27 +1128,39 @@ const GSTJobworkInvoice = () => {
                                     {tableData.map((item, index) => (
                                         <tr key={index}>
                                             <td>{index + 1}</td>
-                                            <td><span className="fw-bold">PO No:</span> {item.po_no}</td>
-                                            <td>{item.item_code}</td>
-                                            <td></td>
-                                            <td><textarea className="form-control" value={item.description} readOnly rows="2"></textarea> <span className="d-block mt-1" style={{fontSize: '12px', fontWeight: '500'}}>HSN Code :</span> </td>
+                                            <td>
+                                                <div className="mb-1" style={{fontSize: '12px', fontWeight: '600'}}>Line No: <span style={{fontWeight: 'normal'}}>{item.line_no || '1'}</span></div>
+                                                <div style={{fontSize: '12px', fontWeight: '600'}}>Line PODt: <span style={{fontWeight: 'normal'}}>{item.line_po_dt || '17/03/2023'}</span></div>
+                                            </td>
+                                            <td>
+                                                <div className="fw-bold mb-1" style={{fontSize: '13px'}}>{item.item_code}</div>
+                                                <div style={{fontSize: '12px', fontWeight: '600'}}>So Line No : <span style={{fontWeight: 'normal'}}>{item.so_line_no || '0'}</span></div>
+                                            </td>
+                                            <td className="text-center align-middle">{item.stock || '0'}</td>
+                                            <td>
+                                                <textarea className="form-control mb-1" value={item.description} readOnly rows="2"></textarea> 
+                                                <span className="d-block mt-1" style={{fontSize: '12px', fontWeight: '600'}}>
+                                                    HSN Code : <span style={{fontWeight: 'normal'}}>{item.hsn_code || '84149020'}</span>
+                                                </span> 
+                                            </td>
                                             <td className="text-start">
-                                                <input type="text" className="form-control form-control-sm mb-1" defaultValue={item.jobwork_rate} />
+                                                <input type="text" className="form-control form-control-sm mb-1" value={item.jobwork_rate} onChange={(e) => handleTableChange(index, 'jobwork_rate', e.target.value)} />
+                                                <span className="d-block" style={{color:"blue", fontSize: '11px', marginTop: '2px'}}>Disc %: </span>
+                                                <input type="text" className="form-control form-control-sm mb-1" placeholder="Disc %" value={item.jobwork_disc} onChange={(e) => handleTableChange(index, 'jobwork_disc', e.target.value)} />
                                                 <span style={{color:"blue", fontSize: '12px'}}>Rate Type: </span>
-                                                <br /> 
-                                                <select className="form-select form-select-sm" defaultValue={item.rate_type}>
+                                                <select className="form-select form-select-sm" value={item.rate_type} onChange={(e) => handleTableChange(index, 'rate_type', e.target.value)}>
                                                     <option value="NOS">NOS</option>
                                                 </select>
                                             </td>
-                                            <td>{item.po_qty}</td>
-                                            <td>{item.bal_qty}</td>
+                                            <td className="text-center align-middle">{item.po_qty}</td>
+                                            <td className="text-center align-middle">{item.bal_qty}</td>
                                             <td>
-                                                <input type="text" className="form-control form-control-sm mb-1" defaultValue={item.inv_qty}/>
+                                                <input type="text" className="form-control form-control-sm mb-1" value={item.inv_qty} onChange={(e) => handleTableChange(index, 'inv_qty', e.target.value)}/>
                                                 <span className="d-block" style={{fontSize: '11px'}}>Per Pcs Wt:</span>
-                                                <input type="text" className="form-control form-control-sm mb-1" placeholder="Weight" />
-                                                <span style={{color:"blue", fontSize: '11px'}}>Per Unit: </span>
+                                                <input type="text" className="form-control form-control-sm mb-1" placeholder="Weight" value={item.pcs_wt} onChange={(e) => handleTableChange(index, 'pcs_wt', e.target.value)} />
+                                                <span style={{color:"blue", fontSize: '11px'}}>Per Unit: </span> <span style={{fontSize: '11px', fontWeight: 'bold'}}>{item.per_unit}</span>
                                             </td>
-                                            <td><input type="text" className="form-control form-control-sm" defaultValue={item.pkg_qty}/></td>
+                                            <td><input type="text" className="form-control form-control-sm" value={item.pkg_qty} onChange={(e) => handleTableChange(index, 'pkg_qty', e.target.value)}/></td>
                                             <td><textarea className="form-control" defaultValue={item.pkg_desc} rows="2"></textarea></td>
                                             <td>{item.ref}</td>
                                             <td><input type="text" className="form-control form-control-sm" defaultValue={item.material_rate} /></td>
