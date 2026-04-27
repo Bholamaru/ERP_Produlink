@@ -53,7 +53,13 @@ const NavBar = ({ toggleSideNav }) => {
         <button className="navbar-toggle" onClick={toggleSideNav}>
           ☰
         </button>
-        <h6 className="navbar-logo">Produlink</h6>
+        <h6 
+          className="navbar-logo" 
+          onClick={() => navigate("/dashboard")} 
+          style={{ cursor: "pointer" }}
+        >
+          Produlink
+        </h6>
       </div>
 
       <div className="navbar-menu">
