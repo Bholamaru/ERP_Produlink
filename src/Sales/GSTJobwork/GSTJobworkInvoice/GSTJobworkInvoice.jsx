@@ -362,13 +362,60 @@ const GSTJobworkInvoice = () => {
 
   const handleSubmit = async () => {
     try {
-      console.log("Submitting formData:", formData);
+      // Calculate aggregate discounts for the whole invoice
+      let totalDiscountAmt = 0;
+      tableData.forEach(item => {
+        const qty = parseFloat(item.inv_qty) || 0;
+        const rate = parseFloat(item.jobwork_rate) || 0;
+        const disc = parseFloat(item.jobwork_disc) || 0;
+        totalDiscountAmt += (qty * rate * (disc / 100));
+      });
+      const avgDiscountPer = tableData.length > 0 ? (parseFloat(tableData[0].jobwork_disc) || 0) : 0;
+
+      const dataToSubmit = {
+        ...formData,
+        items: tableData.map(item => ({
+          ...item,
+          invoice_qty_nos: item.rate_type === 'NOS' ? item.inv_qty : null,
+          invoice_qty_kg: item.rate_type !== 'NOS' || item.per_unit === 'KGS' ? item.inv_qty : null,
+          itemwt: item.pcs_wt,
+          jobwork_rate: parseFloat(item.jobwork_rate) || 0,
+          jobwork_disc: parseFloat(item.jobwork_disc) || 0,
+          inv_qty: parseFloat(item.inv_qty) || 0,
+        })),
+        gst_details: {
+          assessable_value: formData.AssessableValue,
+          sub_total: formData.AssessableValue,
+          discount_per: avgDiscountPer.toFixed(2),
+          discount_amt: totalDiscountAmt.toFixed(2),
+          pack_fwrd: formData.PackFwrd,
+          pack_fwrd_per: formData.PackFwrd_Per,
+          tsc_per: formData.TscPer,
+          tcs: formData.TscPer,
+          tcs_amt: (parseFloat(formData.AssessableValue) * parseFloat(formData.TscPer || 0) / 100).toFixed(2),
+          cgst: formData.Cgst,
+          cgst_amt: formData.Cgst,
+          transport_crg: formData.TransportCrg,
+          transport_crg_per: formData.TransportCrg_Per,
+          sgst: formData.Sgst,
+          sgst_amt: formData.Sgst,
+          freight_crg: formData.FreightCrg,
+          freight_crg_per: formData.FreightCrg_Per,
+          igst: formData.Igst,
+          igst_amt: formData.Igst,
+          other_crg: formData.OtherCrg,
+          other_crg_per: formData.OtherCrg_Per,
+          e_invoice_type: formData.EInvoiceType,
+          gr_total: formData.GrTotal
+        }
+      };
+      console.log("Submitting dataToSubmit:", dataToSubmit);
       const response = await fetch("https://erp-render.onrender.com/Sales/gst-jobwork-invoice/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(dataToSubmit),
       });
 
       if (response.ok) {
