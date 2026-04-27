@@ -604,7 +604,7 @@
   background: #fcfdfe;
 }
 
-.dn-erp-table tr:hover {
+.dn-erp-table tr:not(thead tr):hover {
   background: #f8fafc;
 }
 
@@ -623,16 +623,29 @@
 .dn-accordion-container {
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: 8px; /* Space between accordion items */
+}
+
+.dn-accordion-item {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.erp-header {
+  background: #f1f5f9 !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  color: #1a2340;
 }
 
 .dn-accordion-row {
   background: #f1f5f9;
-  padding: 8px 16px;
+  padding: 10px 16px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid #e2e8f0;
   transition: all 0.2s;
   cursor: pointer;
 }
@@ -649,20 +662,34 @@
   align-items: center;
 }
 
-.dn-acc-right {
+.dn-acc-right-wrapper {
   display: flex;
   align-items: center;
-  font-size: 12px;
-  font-weight: 700;
-  color: #000;
+}
+
+.dn-acc-toggle-btn {
+  width: 24px;
+  height: 24px;
   background: #cbd5e1;
-  padding: 4px 10px;
-  border-radius: 4px;
   border: 1px solid #94a3b8;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #1a2340;
 }
 
 .dn-acc-right span {
   text-transform: capitalize;
+}
+
+.erp-style-content .dn-mini-select:focus {
+  outline: none;
+}
+
+.erp-report-area {
+  padding: 0 !important;
+  overflow: hidden !important;
 }
 
 /* ─── Daily Sales Card Body Styling ─── */
@@ -671,14 +698,25 @@
   background: #fff;
 }
 
-.dn-inner-filter-bar {
-  padding: 4px 16px;
-  background: #f1f5f9;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid #e2e8f0;
-  flex-wrap: nowrap;
+.erp-th-gradient {
+  background: #007bff !important;
+  color: #fff !important;
+}
+
+.erp-th-gradient:hover {
+  background: #007bff !important;
+}
+
+.erp-th-gradient th {
+  color: #fff !important;
+  background: transparent !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  text-transform: uppercase;
+  font-size: 11px;
+}
+
+.erp-summary-table td {
+  border: 1px solid #e2e8f0;
 }
 
 .dn-f-left, .dn-f-right {
@@ -1289,3 +1327,674 @@ html, body {
   height: 28px;
   min-width: 80px;
 }
+
+/* ─── ERP Modern Modal ─── */
+.dn-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(2px);
+}
+
+.dn-modal-container {
+  background: white;
+  width: 90%;
+  max-width: 700px;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.dn-modal-header {
+  background: #f1f5f9;
+  padding: 10px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.dn-modal-header span {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.dn-modal-close-x {
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: #64748b;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.dn-modal-body {
+  padding: 20px;
+  flex: 1;
+  background: #fff;
+}
+
+.dn-modal-footer {
+  padding: 10px 20px;
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.dn-modal-btn-close {
+  background: #ffffff;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  padding: 6px 20px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #333;
+  cursor: pointer;
+}
+
+.dn-modal-btn-close:hover {
+  background: #f8f9fa;
+  border-color: #adb5bd;
+}
+
+/* Animations */
+.scale-in {
+  animation: scaleIn 0.2s ease-out;
+}
+
+/* Legend Color Helpers */
+.dn-bg-min { background: #fecaca; }
+.dn-bg-min-re { background: #fef08a; }
+.dn-bg-re-max { background: #d9f99d; }
+.dn-bg-above { background: #bfdbfe; }
+
+.dn-legend-status {
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #1a2340;
+  border: 1px solid rgba(0,0,0,0.05);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ─── Stores Dashboard Extensions ─── */
+
+/* Radio Button Styling */
+.dn-radio-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.dn-radio-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #007bff;
+  cursor: pointer;
+}
+
+.dn-radio-item input[type="radio"] {
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+}
+
+/* Tabs Styling */
+.dn-tabs-container {
+  display: flex;
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 0 16px;
+}
+
+.dn-tab-item {
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748b;
+  cursor: pointer;
+  border: 1px solid transparent;
+  border-bottom: none;
+  border-radius: 4px 4px 0 0;
+  transition: all 0.2s;
+}
+
+.dn-tab-item.active {
+  background: #007bff;
+  color: #fff;
+}
+
+/* Footer Totals Bar */
+.dn-footer-totals {
+  background: #f1f5f9;
+  padding: 8px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid #e2e8f0;
+  font-size: 11px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.dn-btn-clear {
+  background: #fff;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #ef4444;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+}
+
+/* ─── Financial Dashboard Extensions ─── */
+
+.dn-chart-with-sidebar {
+  display: flex;
+  height: 300px;
+}
+
+.dn-chart-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 5px;
+  background: #fff;
+  border-right: 1px solid #e2e8f0;
+}
+
+.dn-sidebar-btn {
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  color: #1e293b;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.dn-sidebar-btn.active {
+  background: #f1f5f9;
+  border-color: #007bff;
+  color: #007bff;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.dn-y-axis-label {
+  writing-mode: vertical-lr;
+  transform: rotate(180deg);
+  font-size: 10px;
+  font-weight: 700;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 5px;
+}
+
+/* ─── Subcon Ageing Buckets Styling ─── */
+.dn-ageing-buckets-row {
+  background: white !important;
+}
+
+.dn-ageing-box {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #f1f5f9;
+  padding: 6px 12px;
+  border-radius: 4px;
+  border: 1px solid #e2e8f0;
+  font-size: 11px;
+  font-weight: 700;
+  color: #1e293b;
+  flex: 1;
+  justify-content: center;
+  white-space: nowrap;
+}
+
+.dn-ageing-box.all {
+  background: #f0f9ff;
+  border-color: #bae6fd;
+}
+
+.count-badge {
+  padding: 2px 8px;
+  border-radius: 4px;
+  color: white;
+  font-size: 11px;
+  font-weight: 800;
+  min-width: 30px;
+  text-align: center;
+}
+
+.count-badge.blue {
+  background: #3b82f6;
+}
+
+.count-badge.dark-blue {
+  background: #1d4ed8;
+}
+
+.count-badge.red {
+  background: #ef4444;
+}
+
+.count-badge.light-blue {
+  background: #0ea5e9;
+}
+
+/* ─── Subcon High-Density Table Styling ─── */
+.dn-subcon-body .dn-erp-table th {
+  padding: 10px 12px !important;
+  font-size: 11px !important;
+  border-right: 1px solid rgba(255,255,255,0.1) !important;
+  text-transform: none !important;
+  background: transparent !important;
+}
+
+.dn-subcon-body .dn-erp-table td {
+  padding: 8px 12px !important;
+  font-size: 11px !important;
+}
+
+.dn-subcon-body .dn-erp-table tr:nth-child(even) {
+  background: #f8fafc;
+}
+
+.dn-subcon-body .dn-erp-table tr:hover {
+  background: #f1f5f9;
+}
+
+/* ─── OEE Specific Styling ─── */
+.dn-badge-orange {
+  display: inline-block;
+  background: #d35400;
+  color: #fff;
+  padding: 2px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  box-shadow: 0 2px 4px rgba(211, 84, 0, 0.2);
+}
+
+.dn-oee-chart-box h3 {
+  letter-spacing: 1px;
+  position: relative;
+  display: inline-block;
+}
+
+.dn-oee-chart-box h3::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 25%;
+  width: 50%;
+  height: 2px;
+  background: #16a34a;
+  border-radius: 2px;
+}
+
+.dn-oee-legend {
+  background: #f8fafc;
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 1px solid #e2e8f0;
+  display: inline-flex !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+/* Custom Scrollbar for OEE Area */
+.dn-oee-scroll-area::-webkit-scrollbar {
+  width: 6px;
+}
+
+.dn-oee-scroll-area::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 10px;
+}
+
+.dn-oee-scroll-area::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+
+.dn-oee-scroll-area::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Horizontal Scrollbar for Operator Efficiency */
+.dn-oee-scroll-x::-webkit-scrollbar {
+  height: 8px;
+}
+
+.dn-oee-scroll-x::-webkit-scrollbar-track {
+  background: #f8fafc;
+  border-radius: 10px;
+}
+
+.dn-oee-scroll-x::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+
+.dn-oee-scroll-x::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+.dn-average-badge {
+  transition: all 0.2s;
+  cursor: default;
+}
+
+.dn-average-badge:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0,123,255,0.3) !important;
+}
+
+/* OEE Graph Quadrants */
+.dn-quadrant-header {
+  border-left: 3px solid #cbd5e1;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  font-family: 'Inter', sans-serif;
+}
+
+.dn-graph-quadrant {
+  transition: background 0.2s;
+}
+
+.dn-graph-quadrant:hover {
+  background: #fdfdfd;
+}
+
+.dn-btn-search:hover {
+  background: #e2e8f0 !important;
+  border-color: #94a3b8 !important;
+}
+
+.dn-mini-select:focus {
+  border-color: #007bff !important;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0,123,255,0.1);
+}
+
+/* ─── Shiftwise OEE Scrollbar Customization ─── */
+.oee-shift-scroll::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+
+.oee-shift-scroll::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+.oee-shift-scroll::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+  border: 2px solid #f1f5f9;
+}
+
+.oee-shift-scroll::-webkit-scrollbar-thumb:hover {
+  background: #007bff;
+}
+
+
+/* ─── Purchase Dashboard Design Elements ─── */
+
+.dn-title-accent {
+  color: #6366f1;
+  font-weight: 900;
+  font-size: 20px;
+  margin-right: 10px;
+  vertical-align: middle;
+}
+
+.dn-chart-title-sm {
+  display: flex !important;
+  align-items: center !important;
+}
+
+
+
+/* --- Hero Section Precision Styling --- */
+
+.dn-hero-card {
+  background: #ffffff !important;
+  border-radius: 16px !important;
+  padding: 28px 32px !important;
+  border: 1px solid #eef2f8 !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04) !important;
+  margin-bottom: 30px !important;
+}
+
+.dn-hero-title {
+  font-size: 26px !important;
+  font-weight: 800 !important;
+  color: #1e293b !important;
+  margin-bottom: 6px !important;
+  letter-spacing: -0.02em !important;
+  font-family: "Outfit", sans-serif !important;
+}
+
+.dn-hero-subtitle {
+  font-size: 14.5px !important;
+  color: #64748b !important;
+  font-weight: 500 !important;
+  margin: 0 !important;
+  max-width: 80% !important;
+  line-height: 1.5 !important;
+}
+
+.dn-master-export-btn {
+  background: #6366f1 !important;
+  padding: 12px 24px !important;
+  border-radius: 10px !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.25) !important;
+  transition: all 0.3s ease !important;
+}
+
+.dn-master-export-btn:hover {
+  background: #4f46e5 !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 20px rgba(99, 102, 241, 0.35) !important;
+}
+
+
+
+/* --- Purchase View Integration --- */
+
+.dn-purchase-view {
+  background: #f0f4fc !important;
+  padding: 20px 0 !important;
+  border-radius: 20px !important;
+}
+
+.dn-top-chart-card {
+  border-radius: 16px !important;
+  border: 1px solid #eef2f8 !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03) !important;
+  background: #fff !important;
+  transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+}
+
+.dn-top-chart-card:hover {
+  transform: translateY(-4px) !important;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06) !important;
+}
+
+
+
+/* --- Hero Subtitle One-Line Refinement --- */
+
+.dn-hero-subtitle {
+  white-space: nowrap !important;
+  max-width: none !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+
+
+/* --- Export Button Size Adjustment --- */
+
+.dn-master-export-btn {
+  padding: 8px 16px !important;
+  font-size: 13px !important;
+}
+
+
+
+/* --- Export Button Height Adjustment --- */
+
+.dn-master-export-btn {
+  padding: 5px 16px !important;
+}
+
+
+
+/* --- Purchase Grid Layout (Side-by-Side) --- */
+
+.dn-purchase-top-charts {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 24px !important;
+  margin-top: 24px !important;
+  width: 100% !important;
+}
+
+.dn-chart-header-row {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  margin-bottom: 20px !important;
+}
+
+.dn-chart-title-sm {
+  font-size: 14px !important;
+  font-weight: 800 !important;
+  color: #334155 !important;
+  margin: 0 !important;
+}
+
+.dn-chart-select-sm {
+  padding: 4px 10px !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 6px !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  color: #475569 !important;
+  background: #f8fafc !important;
+}
+
+
+
+/* --- High-Density Table & Tags --- */
+
+.high-density {
+  width: 100% !important;
+  border-collapse: collapse !important;
+}
+
+.high-density th {
+  padding: 12px 15px !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  color: #64748b !important;
+  border-bottom: 2px solid #f1f5f9 !important;
+}
+
+.high-density td {
+  padding: 10px 15px !important;
+  font-size: 12px !important;
+  color: #1e293b !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+}
+
+.dn-tag-pill {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.dn-tag-pill.red {
+  background: #fee2e2 !important;
+  color: #b91c1c !important;
+}
+
+.dn-tag-pill.yellow {
+  background: #fef9c3 !important;
+  color: #a16207 !important;
+}
+
+.dn-tag-pill.blue {
+  background: #e0f2fe !important;
+  color: #0369a1 !important;
+}
+
+.dn-search-pill input:focus {
+  outline: none !important;
+  border-color: #6366f1 !important;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1) !important;
+}
+
+
+
+/* --- Chart Select Compactness --- */
+
+.dn-chart-select-sm {
+  padding: 2px 6px !important;
+  font-size: 11px !important;
+  height: auto !important;
+}
+
+
+
+/* --- Dropdown Width Refinement --- */
+
+.dn-chart-select-sm {
+  width: 100px !important;
+  padding: 4px 6px !important;
+}
+
+
+
+/* --- Blue Table Headings --- */
+
+.high-density th {
+  color: #1e40af !important;
+  background: #f1f5ff !important;
+}
+
