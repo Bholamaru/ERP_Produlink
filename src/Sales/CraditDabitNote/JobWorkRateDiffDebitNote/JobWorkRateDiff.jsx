@@ -63,39 +63,45 @@ const JobWorkRateDiff = () => {
   // POST API handler
   const handleSave = async () => {
     setSaving(true);
+
+    const parseNum = (val) => (val === "" ? 0 : parseFloat(val));
+    const parseDate = (val) => (val === "" ? null : val);
+
     const payload = {
       debit_note_no: debitNoteNo,
-      debit_note_date: debitNoteDate,
-      from_date: fromDate,
-      to_date: toDate,
+      debit_note_date: parseDate(debitNoteDate),
+      from_date: parseDate(fromDate),
+      to_date: parseDate(toDate),
       customer,
       item_code: itemCode,
       invoice_no: invoiceNo,
       remark,
       is_service_invoice: isServiceInvoice,
-      // Tax fields at root level (matching API response structure)
-      sub_total: subTotal || null,
-      cgst: cgst || null,
-      sgst: sgst || null,
-      igst: igst || null,
-      utgst: utgst || null,
-      cgst_amt: cgstAmt || null,
-      sgst_amt: sgstAmt || null,
-      igst_amt: igstAmt || null,
-      utgst_amt: utgstAmt || null,
-      grand_total: grandTotal || null,
+      
+      // Tax fields at root level
+      sub_total: parseNum(subTotal),
+      cgst: parseNum(cgst),
+      sgst: parseNum(sgst),
+      igst: parseNum(igst),
+      utgst: parseNum(utgst),
+      cgst_amt: parseNum(cgstAmt),
+      sgst_amt: parseNum(sgstAmt),
+      igst_amt: parseNum(igstAmt),
+      utgst_amt: parseNum(utgstAmt),
+      grand_total: parseNum(grandTotal),
+
       items: [
         {
-          inv_no: invNo || null,
-          inv_date: invDate || null,
-          hsn_code: hsnCode || null,
-          qty: qty || null,
-          old_rate: oldRate || null,
-          new_rate: newRate || null,
-          diff: diff || null,
-          diff_amt: diffAmt || null,
-          grir_no: grirNo || null,
-          grir_date: grirDate || null,
+          inv_no: invNo,
+          inv_date: parseDate(invDate),
+          hsn_code: hsnCode,
+          qty: parseNum(qty),
+          old_rate: parseNum(oldRate),
+          new_rate: parseNum(newRate),
+          diff: parseNum(diff),
+          diff_amt: parseNum(diffAmt),
+          grir_no: grirNo,
+          grir_date: parseDate(grirDate),
         }
       ],
     };
