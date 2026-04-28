@@ -49,7 +49,7 @@ const JobWorkRateDiff = () => {
 
   const fetchDebitNoteNo = async () => {
     try {
-      const res = await fetch("https://erp-render.onrender.com/Sales/Gst-jobwork-diff/no/");
+      const res = await fetch("http://127.0.0.1:8000/Sales/Gst-jobwork-diff/no/");
       if (res.ok) {
         const data = await res.json();
         const no = data.debit_note_no || data.invoice_no || data.no || (Array.isArray(data) ? data[0]?.debit_note_no : "");
@@ -107,7 +107,7 @@ const JobWorkRateDiff = () => {
     };
 
     try {
-      const response = await fetch("https://erp-render.onrender.com/Sales/gst-jobwork-rate-diff/", {
+      const response = await fetch("http://127.0.0.1:8000/Sales/gst-jobwork-rate-diff/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
