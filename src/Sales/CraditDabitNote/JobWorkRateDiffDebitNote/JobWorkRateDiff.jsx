@@ -5,6 +5,7 @@ import NavBar from "../../../NavBar/NavBar.js";
 import SideNav from "../../../SideNav/SideNav.js";
 import { useNavigate } from 'react-router-dom';
 import { FaSearch } from "react-icons/fa";
+import axios from "axios";
 import "./JobWorkRateDiff.css";
 
 const JobWorkRateDiff = () => {
@@ -23,85 +24,248 @@ const JobWorkRateDiff = () => {
   const [isServiceInvoice, setIsServiceInvoice] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  // Table row fields
-  const [invNo, setInvNo] = useState("");
-  const [invDate, setInvDate] = useState("");
-  const [hsnCode, setHsnCode] = useState("");
-  const [qty, setQty] = useState("");
-  const [oldRate, setOldRate] = useState("");
-  const [newRate, setNewRate] = useState("");
-  const [diff, setDiff] = useState("");
-  const [diffAmt, setDiffAmt] = useState("");
-  const [grirNo, setGrirNo] = useState("");
-  const [grirDate, setGrirDate] = useState("");
+  // Search and selected rows management
+  const [searchResults, setSearchResults] = useState([]);
+  const [selectedInvoices, setSelectedInvoices] = useState([]);
+  const [newRate, setNewRate] = useState(""); // Missing state restored
 
   // Tax summary fields
-  const [cgst, setCgst] = useState("");
-  const [sgst, setSgst] = useState("");
-  const [igst, setIgst] = useState("");
-  const [utgst, setUtgst] = useState("");
-  const [subTotal, setSubTotal] = useState("");
-  const [cgstAmt, setCgstAmt] = useState("");
-  const [sgstAmt, setSgstAmt] = useState("");
-  const [igstAmt, setIgstAmt] = useState("");
-  const [utgstAmt, setUtgstAmt] = useState("");
-  const [grandTotal, setGrandTotal] = useState("");
+  const [cgst, setCgst] = useState("0");
+  const [sgst, setSgst] = useState("0");
+  const [igst, setIgst] = useState("0");
+  const [utgst, setUtgst] = useState("0");
+  const [subTotal, setSubTotal] = useState("0.00");
+  const [cgstAmt, setCgstAmt] = useState("0.00");
+  const [sgstAmt, setSgstAmt] = useState("0.00");
+  const [igstAmt, setIgstAmt] = useState("0.00");
+  const [utgstAmt, setUtgstAmt] = useState("0.00");
+  const [grandTotal, setGrandTotal] = useState("0.00");
 
   const fetchDebitNoteNo = async () => {
     try {
-      const res = await fetch("https://erp-render.onrender.com/Sales/Gst-jobwork-diff/no/");
+<<<<<<< HEAD
+      // Using the user-specified remote production URL
+      const res = await axios.get(`https://erp-render.onrender.com/Sales/gst-jobwork-rate-diff/no/?t=${Date.now()}`);
+      console.log("Fetched Debit Note No Response:", res.data);
+      
+      const no = res.data.debit_note_no || res.data.invoice_no || res.data.no || (Array.isArray(res.data) ? res.data[0]?.debit_note_no : "");
+      if (no) {
+        setDebitNoteNo(String(no));
+=======
+      const res = await fetch("http://127.0.0.1:8000/Sales/Gst-jobwork-diff/no/");
       if (res.ok) {
         const data = await res.json();
         const no = data.debit_note_no || data.invoice_no || data.no || (Array.isArray(data) ? data[0]?.debit_note_no : "");
         if (no) setDebitNoteNo(String(no));
+>>>>>>> 4a4ea18289ed098645e87d01919848e4990b8104
       }
     } catch (err) {
       console.error("Debit Note No fetch error:", err);
     }
   };
 
+  const handleSearch = async () => {
+    try {
+      const url = `https://erp-render.onrender.com/Sales/gst-jobwork-invoice/`;
+      const response = await axios.get(url);
+      const allInvoices = Array.isArray(response.data) ? response.data : [];
+
+      // Client-side filtering
+      const filtered = allInvoices.filter(inv => {
+        if (customer) {
+          const custName = (inv.bill_to_cust || "").toLowerCase();
+          if (!custName.includes(customer.toLowerCase())) return false;
+        }
+        if (invoiceNo && inv.invoice_no !== invoiceNo) return false;
+        if (!inv.items || inv.items.length === 0) return false;
+        return true;
+      });
+
+      // Flatten: one row per item
+      const flattened = [];
+      filtered.forEach(inv => {
+        inv.items.forEach(itm => {
+          flattened.push({
+            invoice_no: inv.invoice_no,
+            invoice_date: inv.invoice_date || "",
+            bill_to: inv.bill_to_cust,
+            display_item: {
+              hsn_code: itm.hsn_code || "",
+              description: itm.description || "",
+              inv_qty: itm.invoice_qty_nos || itm.inv_qty || itm.invoice_qty_kg || 0,
+              qty: itm.invoice_qty_nos || itm.inv_qty || itm.invoice_qty_kg || 0,
+              jobwork_rate: parseFloat(itm.jobwork_rate) || 0,
+              item_code: itm.item_code || ""
+            },
+            gst_details: inv.gst_details || null
+          });
+        });
+      });
+
+      setSearchResults(flattened);
+      if (flattened.length === 0) alert("No matching invoices with items found.");
+    } catch (err) {
+      console.error("Search error:", err);
+      alert(`Search error: ${err.message}`);
+    }
+  };
+
+  const handleAddInvoice = (row) => {
+    const itm = row.display_item || {};
+    // Check if this specific item from this specific invoice is already added
+    if (selectedInvoices.some(si => si.inv_no === row.invoice_no && si.item_desc === itm.description)) {
+      alert("This item from the invoice is already added.");
+      return;
+    }
+    
+    // API might return qty in different fields, we check all common ones
+    const quantity = itm.inv_qty || itm.qty || itm.invoice_qty_nos || itm.invoice_qty_kg || 0;
+
+    const newEntry = {
+      inv_no: row.invoice_no || "",
+      inv_date: row.invoice_date || "",
+      hsn_code: itm.hsn_code || "",
+      item_code: itm.item_code || "",
+      qty: quantity,
+      old_rate: itm.jobwork_rate || 0,
+      new_rate: "",
+      diff: "0.00",
+      diff_amt: "0.00",
+      grir_no: "",
+      grir_date: "",
+      item_desc: itm.description || ""
+    };
+    setSelectedInvoices([...selectedInvoices, newEntry]);
+
+    // Pull GST percentages from invoice gst_details
+    const gstData = row.gst_details || null;
+    
+    if (gstData) {
+      // API sometimes stores amount in cgst field instead of percentage
+      // If value > 50, it's likely an amount — use 9% as default percentage
+      const cVal = parseFloat(gstData.cgst) || 0;
+      const sVal = parseFloat(gstData.sgst) || 0;
+      const iVal = parseFloat(gstData.igst) || 0;
+      const uVal = parseFloat(gstData.utgst) || 0;
+      
+      setCgst(cVal > 0 && cVal <= 50 ? String(cVal) : "9");
+      setSgst(sVal > 0 && sVal <= 50 ? String(sVal) : "9");
+      setIgst(iVal > 0 && iVal <= 50 ? String(iVal) : "0");
+      setUtgst(uVal > 0 && uVal <= 50 ? String(uVal) : "0");
+    } else {
+      setCgst("9");
+      setSgst("9");
+      setIgst("0");
+      setUtgst("0");
+    }
+  };
+
+  const handleTableChange = (index, field, value) => {
+    const updated = [...selectedInvoices];
+    updated[index][field] = value;
+    
+    // Auto calculate diff if rates are changed
+    if (field === 'new_rate' || field === 'old_rate' || field === 'qty') {
+      const nr = parseFloat(updated[index].new_rate) || 0;
+      const or = parseFloat(updated[index].old_rate) || 0;
+      const qtyVal = parseFloat(updated[index].qty) || 0;
+      const diffVal = (nr - or).toFixed(2);
+      updated[index].diff = diffVal;
+      updated[index].diff_amt = (parseFloat(diffVal) * qtyVal).toFixed(2);
+    }
+    
+    setSelectedInvoices(updated);
+  };
+
+  // Real-time calculations for Summary Section
+  useEffect(() => {
+    const totalDiffAmt = selectedInvoices.reduce((sum, itm) => sum + (parseFloat(itm.diff_amt) || 0), 0);
+    setSubTotal(totalDiffAmt.toFixed(2));
+
+    const cRate = parseFloat(cgst) || 0;
+    const sRate = parseFloat(sgst) || 0;
+    const iRate = parseFloat(igst) || 0;
+    const uRate = parseFloat(utgst) || 0;
+
+    const cAmt = totalDiffAmt * (cRate / 100);
+    const sAmt = totalDiffAmt * (sRate / 100);
+    const iAmt = totalDiffAmt * (iRate / 100);
+    const uAmt = totalDiffAmt * (uRate / 100);
+
+    setCgstAmt(cAmt.toFixed(2));
+    setSgstAmt(sAmt.toFixed(2));
+    setIgstAmt(iAmt.toFixed(2));
+    setUtgstAmt(uAmt.toFixed(2));
+
+    const gt = totalDiffAmt + cAmt + sAmt + iAmt + uAmt;
+    setGrandTotal(gt.toFixed(2));
+  }, [selectedInvoices, cgst, sgst, igst, utgst]);
+
+  const handleSetAllNewRate = () => {
+    if (!newRate) return;
+    const updated = selectedInvoices.map(itm => {
+      const nr = parseFloat(newRate) || 0;
+      const or = parseFloat(itm.old_rate) || 0;
+      const qtyVal = parseFloat(itm.qty) || 0;
+      const diffVal = (nr - or).toFixed(2);
+      return {
+        ...itm,
+        new_rate: newRate,
+        diff: diffVal,
+        diff_amt: (parseFloat(diffVal) * qtyVal).toFixed(2)
+      };
+    });
+    setSelectedInvoices(updated);
+  };
+
   // POST API handler
   const handleSave = async () => {
     setSaving(true);
+
+    const parseNum = (val) => (val === "" ? 0 : parseFloat(val));
+    const parseDate = (val) => (val === "" ? null : val);
+
     const payload = {
       debit_note_no: debitNoteNo,
-      debit_note_date: debitNoteDate,
-      from_date: fromDate,
-      to_date: toDate,
+      debit_note_date: parseDate(debitNoteDate),
+      from_date: parseDate(fromDate),
+      to_date: parseDate(toDate),
       customer,
       item_code: itemCode,
       invoice_no: invoiceNo,
       remark,
       is_service_invoice: isServiceInvoice,
-      // Tax fields at root level (matching API response structure)
-      sub_total: subTotal || null,
-      cgst: cgst || null,
-      sgst: sgst || null,
-      igst: igst || null,
-      utgst: utgst || null,
-      cgst_amt: cgstAmt || null,
-      sgst_amt: sgstAmt || null,
-      igst_amt: igstAmt || null,
-      utgst_amt: utgstAmt || null,
-      grand_total: grandTotal || null,
-      items: [
-        {
-          inv_no: invNo || null,
-          inv_date: invDate || null,
-          hsn_code: hsnCode || null,
-          qty: qty || null,
-          old_rate: oldRate || null,
-          new_rate: newRate || null,
-          diff: diff || null,
-          diff_amt: diffAmt || null,
-          grir_no: grirNo || null,
-          grir_date: grirDate || null,
-        }
-      ],
+      
+      // Totals and Tax (at root level as expected by backend)
+      sub_total: parseNum(subTotal),
+      cgst: parseNum(cgst),
+      sgst: parseNum(sgst),
+      igst: parseNum(igst),
+      utgst: parseNum(utgst),
+      cgst_amt: parseNum(cgstAmt),
+      sgst_amt: parseNum(sgstAmt),
+      igst_amt: parseNum(igstAmt),
+      utgst_amt: parseNum(utgstAmt),
+      grand_total: parseNum(grandTotal),
+
+      items: selectedInvoices.map(itm => ({
+        inv_no: itm.inv_no,
+        inv_date: parseDate(itm.inv_date),
+        hsn_code: itm.hsn_code,
+        item_code: itm.item_code || "",
+        description: itm.item_desc || "",
+        qty: parseNum(itm.qty),
+        old_rate: parseNum(itm.old_rate),
+        new_rate: parseNum(itm.new_rate),
+        diff: parseNum(itm.diff),
+        diff_amt: parseNum(itm.diff_amt),
+        grir_no: itm.grir_no,
+        grir_date: parseDate(itm.grir_date),
+      })),
     };
 
     try {
-      const response = await fetch("https://erp-render.onrender.com/Sales/gst-jobwork-rate-diff/", {
+      const response = await fetch("http://127.0.0.1:8000/Sales/gst-jobwork-rate-diff/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
@@ -113,8 +277,11 @@ const JobWorkRateDiff = () => {
 
       if (response.ok) {
         alert("Debit Note saved successfully!");
-        // Auto-update debit note number after save
-        fetchDebitNoteNo();
+        
+        // Auto-update debit note number after save (with small delay for local DB consistency)
+        setTimeout(() => {
+          fetchDebitNoteNo();
+        }, 500);
         
         // Reset form fields
         setCustomer("");
@@ -122,35 +289,26 @@ const JobWorkRateDiff = () => {
         setInvoiceNo("");
         setRemark("");
         setIsServiceInvoice(false);
-        setDebitNoteDate("");
         setFromDate("");
         setToDate("");
-        
-        // Reset table row fields
-        setInvNo("");
-        setInvDate("");
-        setHsnCode("");
-        setQty("");
-        setOldRate("");
         setNewRate("");
-        setDiff("");
-        setDiffAmt("");
-        setGrirNo("");
-        setGrirDate("");
         
-        // Reset tax summary fields
-        setCgst("");
-        setSgst("");
-        setIgst("");
-        setUtgst("");
-        setSubTotal("");
-        setCgstAmt("");
-        setSgstAmt("");
-        setIgstAmt("");
-        setUtgstAmt("");
-        setGrandTotal("");
+        // Reset table rows
+        setSelectedInvoices([]);
+        setSearchResults([]);
         
-        // Page stays open after save
+        // Reset tax summary fields (back to defaults)
+        setCgst("0");
+        setSgst("0");
+        setIgst("0");
+        setUtgst("0");
+        setSubTotal("0.00");
+        setCgstAmt("0.00");
+        setSgstAmt("0.00");
+        setIgstAmt("0.00");
+        setUtgstAmt("0.00");
+        setGrandTotal("0.00");
+        
       } else {
         alert("Save failed (Status " + response.status + "): " + responseText);
       }
@@ -240,14 +398,60 @@ const JobWorkRateDiff = () => {
                             <label htmlFor="chkInvoiceNo" style={{cursor: 'pointer'}}>Invoice No :</label>
                             <input type="text" placeholder="Invoice No" style={{width: '100px'}} value={invoiceNo} onChange={e => setInvoiceNo(e.target.value)} />
                         </div>
-                        <button className="btn btn-sm btn-light border py-0 px-2 d-flex align-items-center gap-1" style={{height: '22px', fontSize: '11px'}}>
+                        <button 
+                            className="btn btn-sm btn-light border py-0 px-2 d-flex align-items-center gap-1" 
+                            style={{height: '22px', fontSize: '11px'}}
+                            onClick={handleSearch}
+                        >
                             <FaSearch size={10} /> Search
                         </button>
                     </div>
 
-                    {/* Message Bar */}
-                    <div style={{fontSize: '11px', color: '#666', borderBottom: '1px solid #ddd', padding: '2px 5px', background: '#fff'}}>
-                        No Data Found !!
+                    {/* Message Bar / Search Results Table */}
+                    {searchResults.length > 0 ? (
+                      <div className="table-responsive search-results-table mt-2" style={{maxHeight: '200px', overflowY: 'auto'}}>
+                         <table className="table-erp table-hover">
+                           <thead style={{position: 'sticky', top: 0, zIndex: 1}}>
+                             <tr>
+                               <th>No.</th>
+                               <th>Invoice No</th>
+                               <th>Invoice Date</th>
+                               <th>HSN Code</th>
+                               <th>Item Desc</th>
+                               <th>Qty</th>
+                               <th>Debit Note No</th>
+                               <th>Rate Diff</th>
+                               <th>Select</th>
+                             </tr>
+                           </thead>
+                           <tbody style={{background: '#f8f9fa'}}>
+                             {searchResults.map((row, idx) => (
+                               <tr key={idx} style={{fontSize: '11px'}}>
+                                 <td>{idx + 1}</td>
+                                 <td>{row.invoice_no}</td>
+                                 <td>{row.invoice_date}</td>
+                                 <td>{row.display_item?.hsn_code}</td>
+                                 <td>{row.display_item?.description}</td>
+                                 <td>{row.display_item?.inv_qty || row.display_item?.qty || row.display_item?.invoice_qty_nos || '0'}</td>
+                                 <td>{row.debit_note_no || '-'}</td>
+                                 <td>{row.rate_diff || '-'}</td>
+                                 <td className="text-center">
+                                   <button className="btn btn-xs btn-primary py-0" style={{fontSize: '10px'}} onClick={() => handleAddInvoice(row)}>Add</button>
+                                 </td>
+                               </tr>
+                             ))}
+                           </tbody>
+                         </table>
+                      </div>
+                    ) : (
+                      <div style={{fontSize: '11px', color: '#666', borderBottom: '1px solid #ddd', padding: '2px 5px', background: '#fff'}}>
+                          {searchResults.length === 0 && customer ? "No Data Found !!" : "Enter filters and click Search to see results."}
+                      </div>
+                    )}
+ 
+                    {/* Selected Invoice List Label */}
+                    <div className="mt-3 mb-1" style={{fontSize: '12px', fontWeight: 'bold', color: '#0d6efd'}}>
+                      Selected Invoice List :
                     </div>
 
                     {/* Table Section */}
@@ -266,7 +470,7 @@ const JobWorkRateDiff = () => {
                                     <th>
                                         <div className="d-flex align-items-center justify-content-center gap-1">
                                             New Rate <input type="text" style={{width: '40px', height: '18px', color: '#000'}} value={newRate} onChange={e => setNewRate(e.target.value)} />
-                                            <button className="btn btn-xs btn-success py-0" style={{fontSize: '9px', height: '18px'}}>Set All</button>
+                                            <button className="btn btn-xs btn-success py-0" style={{fontSize: '9px', height: '18px'}} onClick={handleSetAllNewRate}>Set All</button>
                                         </div>
                                     </th>
                                     <th>Diff</th>
@@ -277,22 +481,36 @@ const JobWorkRateDiff = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td>1</td>
-                                    <td><input type="text" className="form-control form-control-sm py-0" style={{height: '22px'}} value={invNo} onChange={e => setInvNo(e.target.value)} /></td>
-                                    <td><input type="date" className="form-control form-control-sm py-0" style={{height: '22px'}} value={invDate} onChange={e => setInvDate(e.target.value)} /></td>
-                                    <td><input type="text" className="form-control form-control-sm py-0" style={{height: '22px'}} value={hsnCode} onChange={e => setHsnCode(e.target.value)} /></td>
-                                    <td><input type="text" className="form-control form-control-sm py-0" style={{height: '22px'}} value={qty} onChange={e => setQty(e.target.value)} /></td>
-                                    <td className="text-primary" style={{cursor: 'pointer'}}>Edit</td>
-                                    <td><input type="text" className="form-control form-control-sm py-0" style={{height: '22px'}} value={oldRate} onChange={e => setOldRate(e.target.value)} /></td>
-                                    <td></td>
-                                    <td><input type="text" className="form-control form-control-sm py-0" style={{height: '22px'}} value={newRate} onChange={e => setNewRate(e.target.value)} /></td>
-                                    <td><input type="text" className="form-control form-control-sm py-0" style={{height: '22px'}} value={diff} onChange={e => setDiff(e.target.value)} /></td>
-                                    <td><input type="text" className="form-control form-control-sm py-0" style={{height: '22px'}} value={diffAmt} onChange={e => setDiffAmt(e.target.value)} /></td>
-                                    <td><input type="text" className="form-control form-control-sm py-0" style={{height: '22px'}} value={grirNo} onChange={e => setGrirNo(e.target.value)} /></td>
-                                    <td><input type="date" className="form-control form-control-sm py-0" style={{height: '22px'}} value={grirDate} onChange={e => setGrirDate(e.target.value)} /></td>
-                                    <td className="text-danger"><span style={{border: '1px solid #ccc', padding: '0 5px', cursor: 'pointer'}}>X</span></td>
-                                </tr>
+                                {selectedInvoices.map((item, index) => (
+                                  <tr key={index}>
+                                      <td>{index + 1}</td>
+                                      <td><input type="text" className="form-control form-control-sm py-0" style={{height: '22px'}} value={item.inv_no} readOnly /></td>
+                                      <td><input type="date" className="form-control form-control-sm py-0" style={{height: '22px'}} value={item.inv_date} readOnly /></td>
+                                      <td><input type="text" className="form-control form-control-sm py-0" style={{height: '22px'}} value={item.hsn_code} readOnly /></td>
+                                      <td><input type="text" className="form-control form-control-sm py-0" style={{height: '22px'}} value={item.qty} onChange={e => handleTableChange(index, 'qty', e.target.value)} /></td>
+                                      <td className="text-primary" style={{cursor: 'pointer'}}>Edit</td>
+                                      <td><input type="text" className="form-control form-control-sm py-0" style={{height: '22px'}} value={item.old_rate} onChange={e => handleTableChange(index, 'old_rate', e.target.value)} /></td>
+                                      <td></td>
+                                      <td><input type="text" className="form-control form-control-sm py-0" style={{height: '22px'}} value={item.new_rate} onChange={e => handleTableChange(index, 'new_rate', e.target.value)} /></td>
+                                      <td><input type="text" className="form-control form-control-sm py-0" style={{height: '22px'}} value={item.diff} readOnly /></td>
+                                      <td><input type="text" className="form-control form-control-sm py-0" style={{height: '22px'}} value={item.diff_amt} readOnly /></td>
+                                      <td><input type="text" className="form-control form-control-sm py-0" style={{height: '22px'}} value={item.grir_no} onChange={e => handleTableChange(index, 'grir_no', e.target.value)} /></td>
+                                      <td><input type="date" className="form-control form-control-sm py-0" style={{height: '22px'}} value={item.grir_date} onChange={e => handleTableChange(index, 'grir_date', e.target.value)} /></td>
+                                      <td className="text-center">
+                                        <span 
+                                          style={{border: '1px solid #ccc', padding: '0 5px', cursor: 'pointer', borderRadius: '3px', color: 'red'}}
+                                          onClick={() => setSelectedInvoices(selectedInvoices.filter((_, i) => i !== index))}
+                                        >
+                                          &times;
+                                        </span>
+                                      </td>
+                                  </tr>
+                                ))}
+                                {selectedInvoices.length === 0 && (
+                                  <tr>
+                                    <td colSpan="14" className="text-center text-muted" style={{fontSize: '11px', padding: '10px'}}>No invoices selected. Use the search table above to add rows.</td>
+                                  </tr>
+                                )}
                             </tbody>
                         </table>
                     </div>
