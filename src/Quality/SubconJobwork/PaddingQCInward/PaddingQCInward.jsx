@@ -31,7 +31,7 @@ const PaddingQCInward = () => {
   const fetchPendingQcData = async () => {
     setLoading(true);
     try {
-      const response = await fetch("https://erp-render.onrender.com/Quality/inward-pending-qc/");
+      const response = await fetch("http://127.0.0.1:8000/Quality/inward-pending-qc/");
       const data = await response.json();
       setPendingQcData(data);
     } catch (error) {

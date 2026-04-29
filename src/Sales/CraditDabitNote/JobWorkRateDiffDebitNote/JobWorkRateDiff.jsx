@@ -43,6 +43,7 @@ const JobWorkRateDiff = () => {
 
   const fetchDebitNoteNo = async () => {
     try {
+<<<<<<< HEAD
       // Using the user-specified remote production URL
       const res = await axios.get(`https://erp-render.onrender.com/Sales/gst-jobwork-rate-diff/no/?t=${Date.now()}`);
       console.log("Fetched Debit Note No Response:", res.data);
@@ -50,6 +51,13 @@ const JobWorkRateDiff = () => {
       const no = res.data.debit_note_no || res.data.invoice_no || res.data.no || (Array.isArray(res.data) ? res.data[0]?.debit_note_no : "");
       if (no) {
         setDebitNoteNo(String(no));
+=======
+      const res = await fetch("http://127.0.0.1:8000/Sales/Gst-jobwork-diff/no/");
+      if (res.ok) {
+        const data = await res.json();
+        const no = data.debit_note_no || data.invoice_no || data.no || (Array.isArray(data) ? data[0]?.debit_note_no : "");
+        if (no) setDebitNoteNo(String(no));
+>>>>>>> 4a4ea18289ed098645e87d01919848e4990b8104
       }
     } catch (err) {
       console.error("Debit Note No fetch error:", err);
@@ -257,7 +265,7 @@ const JobWorkRateDiff = () => {
     };
 
     try {
-      const response = await fetch("https://erp-render.onrender.com/Sales/gst-jobwork-rate-diff/", {
+      const response = await fetch("http://127.0.0.1:8000/Sales/gst-jobwork-rate-diff/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)

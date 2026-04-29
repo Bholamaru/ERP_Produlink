@@ -4,7 +4,7 @@ let content = fs.readFileSync(path, 'utf8');
 const brokenContent = `export const getDailyProductionReport = async (filters) => {
   try {
     const params = new URLSearchParams(filters).toString();
-    const response = await axios.get(\\https://erp-render.onrender.com/Production/daily-production/?\\\\);
+    const response = await axios.get(\\http://127.0.0.1:8000/Production/daily-production/?\\\\);
     return response.data;
   } catch (error) {
     console.error("Error fetching daily production report:, error);
@@ -15,7 +15,7 @@ const brokenContent = `export const getDailyProductionReport = async (filters) =
 const fixedFunction = `export const getDailyProductionReport = async (filters) => {
   try {
     const params = new URLSearchParams(filters).toString();
-    const response = await axios.get(\`https://erp-render.onrender.com/Production/daily-production/?\${params}\`);
+    const response = await axios.get(\`http://127.0.0.1:8000/Production/daily-production/?\${params}\`);
     return response.data;
   } catch (error) {
     console.error("Error fetching daily production report:", error);

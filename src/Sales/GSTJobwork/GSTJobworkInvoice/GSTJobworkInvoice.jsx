@@ -72,7 +72,7 @@ const GSTJobworkInvoice = () => {
 
   const fetchInvoiceNo = async () => {
     try {
-      const response = await fetch("https://erp-render.onrender.com/Sales/gstjobwork/invoice/no/");
+      const response = await fetch("http://127.0.0.1:8000/Sales/gstjobwork/invoice/no/");
       if (response.ok) {
         const data = await response.json();
         const nextNo = data.invoice_no || (Array.isArray(data) ? data[0]?.invoice_no : data);
@@ -410,7 +410,7 @@ const GSTJobworkInvoice = () => {
         }
       };
       console.log("Submitting dataToSubmit:", dataToSubmit);
-      const response = await fetch("https://erp-render.onrender.com/Sales/gst-jobwork-invoice/", {
+      const response = await fetch("http://127.0.0.1:8000/Sales/gst-jobwork-invoice/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
