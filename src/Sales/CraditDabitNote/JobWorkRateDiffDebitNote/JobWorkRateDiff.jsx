@@ -43,21 +43,13 @@ const JobWorkRateDiff = () => {
 
   const fetchDebitNoteNo = async () => {
     try {
-<<<<<<< HEAD
       // Using the user-specified remote production URL
-      const res = await axios.get(`https://erp-render.onrender.com/Sales/gst-jobwork-rate-diff/no/?t=${Date.now()}`);
+      const res = await axios.get(`https://erp-render.onrender.com/Sales/Gst-jobwork-diff/no/?t=${Date.now()}`);
       console.log("Fetched Debit Note No Response:", res.data);
       
       const no = res.data.debit_note_no || res.data.invoice_no || res.data.no || (Array.isArray(res.data) ? res.data[0]?.debit_note_no : "");
       if (no) {
         setDebitNoteNo(String(no));
-=======
-      const res = await fetch("http://127.0.0.1:8000/Sales/Gst-jobwork-diff/no/");
-      if (res.ok) {
-        const data = await res.json();
-        const no = data.debit_note_no || data.invoice_no || data.no || (Array.isArray(data) ? data[0]?.debit_note_no : "");
-        if (no) setDebitNoteNo(String(no));
->>>>>>> 4a4ea18289ed098645e87d01919848e4990b8104
       }
     } catch (err) {
       console.error("Debit Note No fetch error:", err);
@@ -135,6 +127,16 @@ const JobWorkRateDiff = () => {
       grir_date: "",
       item_desc: itm.description || ""
     };
+
+    // Auto-set customer if not set, or warn if different
+    if (!customer) {
+      setCustomer(row.bill_to || "");
+    } else if (customer && row.bill_to && customer.toLowerCase() !== row.bill_to.toLowerCase()) {
+       if (!window.confirm(`This invoice belongs to ${row.bill_to}, but you already have ${customer} selected. Do you want to continue?`)) {
+         return;
+       }
+    }
+
     setSelectedInvoices([...selectedInvoices, newEntry]);
 
     // Pull GST percentages from invoice gst_details
@@ -220,6 +222,14 @@ const JobWorkRateDiff = () => {
 
   // POST API handler
   const handleSave = async () => {
+    if (!customer) {
+      alert("Please enter or select a customer.");
+      return;
+    }
+    if (selectedInvoices.length === 0) {
+      alert("Please add at least one invoice item.");
+      return;
+    }
     setSaving(true);
 
     const parseNum = (val) => (val === "" ? 0 : parseFloat(val));
@@ -231,6 +241,7 @@ const JobWorkRateDiff = () => {
       from_date: parseDate(fromDate),
       to_date: parseDate(toDate),
       customer,
+      party_name: customer, // Added party_name for backend compatibility
       item_code: itemCode,
       invoice_no: invoiceNo,
       remark,
@@ -265,7 +276,7 @@ const JobWorkRateDiff = () => {
     };
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/Sales/gst-jobwork-rate-diff/", {
+      const response = await fetch("https://erp-render.onrender.com/Sales/gst-jobwork-rate-diff/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
@@ -416,6 +427,7 @@ const JobWorkRateDiff = () => {
                                <th>No.</th>
                                <th>Invoice No</th>
                                <th>Invoice Date</th>
+                               <th>Customer</th>
                                <th>HSN Code</th>
                                <th>Item Desc</th>
                                <th>Qty</th>
@@ -430,6 +442,7 @@ const JobWorkRateDiff = () => {
                                  <td>{idx + 1}</td>
                                  <td>{row.invoice_no}</td>
                                  <td>{row.invoice_date}</td>
+                                 <td style={{color: '#000'}}>{row.bill_to}</td>
                                  <td>{row.display_item?.hsn_code}</td>
                                  <td>{row.display_item?.description}</td>
                                  <td>{row.display_item?.inv_qty || row.display_item?.qty || row.display_item?.invoice_qty_nos || '0'}</td>
