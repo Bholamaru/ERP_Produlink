@@ -833,11 +833,10 @@ const Dashboard = () => {
       if (!response.ok) throw new Error("Failed to fetch daily sales report");
       const data = await response.json();
 
-      const updated = data.map((item, index) => ({
-        day: index + 1,
-        sales: parseFloat(item.total_assessable || 0) / 100000 // Convert to Lacs to match chart scale
+      const updated = data.map((item) => ({
+        day: parseInt(item.date.split("-")[2]),
+        sales: parseFloat(item.total_assessable || 0) / 1000 // scale for visible bars (1000lac fallback)
       }));
-
       setDailySalesData(updated);
     } catch (err) {
       console.error("Error fetching daily report:", err);
@@ -1429,12 +1428,12 @@ const Dashboard = () => {
                                       const x = cx + radius * Math.cos(-midAngle * RADIAN);
                                       const y = cy + radius * Math.sin(-midAngle * RADIAN);
                                       return (
-                                        <text x={x} y={y} fill="#64748b" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" style={{ fontSize: 11, fontWeight: 700 }}>
+                                        <text x={x} y={y} fill="#000" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" style={{ fontSize: 11, fontWeight: 700 }}>
                                           {`( ${(percent * 100).toFixed(2)}% ) ${name}`}
                                         </text>
                                       );
                                     }}
-                                    labelLine={{ stroke: '#38bdf8', strokeWidth: 1 }}
+                                    labelLine={{ stroke: '#000', strokeWidth: 1 }}
                                   >
                                     {top5SalesData.map((entry, index) => (
                                       <Cell key={`cell-${index}`} fill={entry.fill} />
@@ -1679,7 +1678,7 @@ const Dashboard = () => {
                                       const x = cx + radius * Math.cos(-midAngle * RADIAN);
                                       const y = cy + radius * Math.sin(-midAngle * RADIAN);
                                       return (
-                                        <text x={x} y={y} fill="#64748b" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" style={{ fontSize: 11, fontWeight: 700 }}>
+                                        <text x={x} y={y} fill="#000" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" style={{ fontSize: 11, fontWeight: 700 }}>
                                           {`( ${(percent * 100).toFixed(2)}% ) ${name}`}
                                         </text>
                                       );
