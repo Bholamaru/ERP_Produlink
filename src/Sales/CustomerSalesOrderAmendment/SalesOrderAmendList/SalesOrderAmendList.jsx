@@ -1,19 +1,23 @@
 import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from 'react-router-dom';
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min";
 import NavBar from "../../../NavBar/NavBar.js";
 import SideNav from "../../../SideNav/SideNav.js";
 import "./SalesOrderAmendList.css";
-import {  FaEye} from "react-icons/fa";
+import { FaEye, FaSearch } from "react-icons/fa";
+import { Search, FileSpreadsheet, BarChart } from "lucide-react";
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-
-
-const SalesOrderAmendList    = () => {
-    const [sideNavOpen, setSideNavOpen] = useState(false);
+const SalesOrderAmendList = () => {
+  const [sideNavOpen, setSideNavOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const toggleSideNav = () => {
     setSideNavOpen((prevState) => !prevState);
+  };
+
+  const toggleMenu = () => {
+    setMenuOpen((prevState) => !prevState);
   };
 
   useEffect(() => {
@@ -26,168 +30,146 @@ const SalesOrderAmendList    = () => {
 
   return (
     <div className="SalesOrderAmendListMaster">
-    <div className="container-fluid">
-      <div className="row">
-        <div className="col-md-12">
-          <div className="Main-NavBar">
-            <NavBar toggleSideNav={toggleSideNav} />
-            <SideNav
-              sideNavOpen={sideNavOpen}
-              toggleSideNav={toggleSideNav}
-            />
-            <main className={`main-content ${sideNavOpen ? "shifted" : ""}`}>
-              <div className="SalesOrderAmendList mt-5">
-                <div className="SalesOrderAmendList-header mb-4 text-start">
-                  <div className="row align-items-center">
-                    <div className="col-md-4">
-                      <h5 className="header-title">Sales Order Amendment List </h5>
+      <div className="container-fluid p-0">
+        <div className="row m-0">
+          <div className="col-md-12 p-0">
+            <div className="Main-NavBar">
+              <NavBar toggleSideNav={toggleSideNav} />
+              <SideNav sideNavOpen={sideNavOpen} toggleSideNav={toggleSideNav} />
+              <main className={`main-content ${sideNavOpen ? "shifted" : ""}`} style={{ paddingTop: '60px' }}>
+                
+                {/* Header Section */}
+                <div className="SalesOrderAmendList-header d-flex justify-content-between align-items-center">
+                  <h5 className="header-title">
+                    Sales Order Amendment List
+                  </h5>
+
+                  <div className="d-flex gap-2">
+                    <button type="button" className="btn btn-action">
+                      <FileSpreadsheet size={16} className="text-success" />
+                      SO Amendment Register
+                    </button>
+                    <div className="custom-dropdown">
+                      <button 
+                        className="btn btn-action dropdown-toggle" 
+                        type="button" 
+                        onClick={toggleMenu}
+                      >
+                        <BarChart size={16} className="text-primary" />
+                        Sales Order Amendment Menu
+                      </button>
+                      {menuOpen && (
+                        <ul className="custom-dropdown-menu">
+                          <li><Link className="dropdown-item" to="/CustPOAmend">SO Amendment</Link></li>
+                          <li><Link className="dropdown-item" to="#">Item Addition (Regular)</Link></li>
+                          <li><Link className="dropdown-item" to="#">Item Addition (Export)</Link></li>
+                        </ul>
+                      )}
                     </div>
-
-                    <div className="col-md-8 d-flex text-end">
-                        <button type="button" className="btn" to="#/">
-                            SO Amendment Register
-                        </button>
-                        <div className="dropdown">
-                            <button className="btn dropdown-toggle" type="button" id="salesOrderDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                            Sales Order Amendment Menu
-                            </button>
-                            <ul className="dropdown-menu" aria-labelledby="salesOrderDropdown">
-                            <li>
-                                <button className="dropdown-item" type="button" to="/">
-                                    SO Amendment
-                                </button>
-                            </li>
-                            <li>
-                                <button className="dropdown-item" type="button" to="/">
-                                 Item Addition  (Regular)
-                                </button>
-                            </li>
-                            <li>
-                                <button className="dropdown-item" type="button" to="/">
-                                 Item Addition  (Export)
-                                </button>
-                            </li>
-                            </ul>
-                        </div>
-                    </div>
-
-
                   </div>
                 </div>
-               
+
                 <div className="SalesOrderAmendList-Main">
-                    <div className="container-fluid">
-                  <div className="row g-3 text-start mt-3">  
-
-                       <div className="col-sm-6 col-md-2 col-lg-1">
-                          <label>From:</label>
-                          <input type="date" className="form-control" />
-                        </div>
-
-                        <div className="col-sm-6 col-md-2 col-lg-1">
-                          <label>To:</label>
-                          <input type="date" className="form-control" />
-                        </div>
-                       
-                      <div className="col-sm-6 col-md-2 col-lg-2">
-                       <div className="form-check">
-                            <input type="checkbox" className="form-check-input" id="Checkbox" />
-                            <label htmlFor="Checkbox" className="form-check-label">Customer: </label>
-                        </div>
-                        <input type="text"  placeholder="Name" className="form-control"/>
-                      </div>
-
-                      <div className="col-sm-6 col-md-2 col-lg-2">
-                      <div className="form-check">
-                            <input type="checkbox" className="form-check-input" id="Checkbox" />
-                            <label htmlFor="Checkbox" className="form-check-label">Item: </label>
-                        </div>
-                        <input type="text" placeholder="Name" className="form-control" />
-                      </div>
-
-                      <div className="col-sm-6 col-md-2 col-lg-1">
-                        <div className="form-check">
-                            <input type="checkbox" className="form-check-input" id="Checkbox" />
-                            <label htmlFor="Checkbox" className="form-check-label"> Amd.No: </label>
-                        </div>
-                        <input type="text" placeholder="" className="form-control" />
-                      </div>
-                      <div className="col-sm-6 col-md-2 col-lg-1">
-                        <div className="form-check">
-                            <input type="checkbox" className="form-check-input" id="Checkbox" />
-                            <label htmlFor="Checkbox" className="form-check-label"> PO.No: </label>
-                        </div>
-                        <input type="text" placeholder="" className="form-control" />
-                      </div>
-
-
-                      <div className="col-6 col-md-1">
-                      <div className="form-check">
-                            <input type="checkbox" className="form-check-input" id="machineUtilizeCheckbox" />
-                            <label htmlFor="machineUtilizeCheckbox" className="form-check-label"> LastOption: </label>
-                        </div>
-                          <button type="button" className="btn btn-primary">
-                            Search
-                          </button>
-                        </div>
-
-                      </div>
-
+                  {/* Compact Filter Bar */}
+                  <div className="compact-filter-bar">
+                    <div className="filter-group">
+                      <label>From:</label>
+                      <input type="date" className="form-control" style={{ width: '110px' }} />
                     </div>
+
+                    <div className="filter-group">
+                      <label>To:</label>
+                      <input type="date" className="form-control" style={{ width: '110px' }} />
+                    </div>
+
+                    <div className="filter-group">
+                      <input type="checkbox" className="form-check-input" id="custCheck" />
+                      <label htmlFor="custCheck">Customer:</label>
+                      <input type="text" placeholder="Name..." className="form-control" style={{ width: '140px' }} />
+                    </div>
+
+                    <div className="filter-group">
+                      <input type="checkbox" className="form-check-input" id="itemCheck" />
+                      <label htmlFor="itemCheck">Item:</label>
+                      <input type="text" placeholder="Name..." className="form-control" style={{ width: '140px' }} />
+                    </div>
+
+                    <div className="filter-group">
+                      <input type="checkbox" className="form-check-input" id="amdCheck" />
+                      <label htmlFor="amdCheck">Amd No:</label>
+                      <input type="text" className="form-control" style={{ width: '60px' }} />
+                    </div>
+
+                    <div className="filter-group">
+                      <input type="checkbox" className="form-check-input" id="poCheck" />
+                      <label htmlFor="poCheck">Po No:</label>
+                      <input type="text" className="form-control" style={{ width: '60px' }} />
+                    </div>
+
+                    <div className="filter-group">
+                      <input type="checkbox" className="form-check-input" id="authCheck" />
+                      <label htmlFor="authCheck">Auth Pending:</label>
+                    </div>
+
+                    <button type="button" className="btn-search">
+                      <FaSearch size={11} /> Search
+                    </button>
                   </div>
 
-             <div className="table-responsive">
-                    <table className="table table-bordered table-striped">
-                      <thead>
-                        <tr>
-                          <th scope="col">Sr.</th>
-                          <th scope="col">Type</th>
-                          <th scope="col">Amd No</th>
-                          <th scope="col">Amd Date</th>
-                          <th scope="col">Ref No</th>
-                          <th scope="col">Ref Date</th>
-                          <th scope="col">Cust Name</th>
-                          <th scope="col">SO No</th>
-                          <th scope="col">SO Date</th>
-                          <th scope="col">CustPO No</th>
-                          <th scope="col">CustPO Date</th>
-                          <th scope="col">User</th>
-                          <th scope="col">Auth </th>
-                          <th scope="col">View </th>
+                  {/* Table Section */}
+                  <div className="table-container">
+                    <div className="table-responsive">
+                      <table className="table table-bordered table-striped table-hover">
+                        <thead>
+                          <tr>
+                            <th>Sr.</th>
+                            <th>Type</th>
+                            <th>Amd No</th>
+                            <th>Amd Date</th>
+                            <th>Ref No</th>
+                            <th>Ref Date</th>
+                            <th>Cust Name</th>
+                            <th>SO No</th>
+                            <th>SO Date</th>
+                            <th>CustPo No</th>
+                            <th>CustPo Date</th>
+                            <th>User</th>
+                            <th>Auth Status</th>
+                            <th>View</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td className="text-center">1</td>
+                            <td>Rate</td>
+                            <td>SOAMD242500123</td>
+                            <td className="text-center">02/12/24</td>
+                            <td>00000034</td>
+                            <td className="text-center">12/12/24</td>
+                            <td>C0005 ENDURANGE TECHNOLOGIES LTD (I)</td>
+                            <td>2223000135</td>
+                            <td className="text-center">10/11/23</td>
+                            <td>19000008022</td>
+                            <td className="text-center">09/01/23</td>
+                            <td>More</td>
+                            <td className="text-center">! More</td>
+                            <td className="text-center">
+                              <FaEye className="view-icon" />
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
 
-                        </tr>
-                      </thead>
-
-                      <tbody>
-                        {/* Example data row */}
-                        <tr>
-                          <td>1</td>
-                          <td>Rate</td>
-                          <td>SOAMD242500123</td>
-                          <td>02/12/24</td>
-                          <td>00000034</td>
-                          <td>12/12/24</td>
-                          <td>C0005 ENDURANGE TECHNOLOGIES LTD (I) </td>
-                          <td>2223000135</td>
-                          <td>10/11/23</td>
-                          <td>19000008022</td>
-                          <td>09/01/23</td>
-                          <td>More</td>
-                          <td>! More</td>
-                          <td> <FaEye /></td>
-                        </tr>
-                      </tbody>  
-                    </table>
-             </div>
-
-              </div>
-            </main>
+              </main>
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
-  )
-}
+  );
+};
 
-export default SalesOrderAmendList
+export default SalesOrderAmendList;
