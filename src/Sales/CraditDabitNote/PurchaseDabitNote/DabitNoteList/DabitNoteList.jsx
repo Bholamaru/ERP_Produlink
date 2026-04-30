@@ -208,14 +208,29 @@ const DabitNoteList = () => {
       try {
         setLoading(true);
         setError(null);
-        const response = await fetch("http://127.0.0.1:8000/Sales/debitnote/");
-        if (!response.ok) {
-          throw new Error(`API error: ${response.status}`);
+        
+        // Fetch from both endpoints in parallel
+        const [res1, res2] = await Promise.all([
+          fetch("http://127.0.0.1:8000/Sales/debitnote/"),
+          fetch("https://erp-render.onrender.com/Sales/gst-jobwork-rate-diff/")
+        ]);
+
+        if (!res1.ok || !res2.ok) {
+          throw new Error(`API error: ${res1.status} / ${res2.status}`);
         }
-        const data = await response.json();
-        console.log("Debit Note API Response:", data);
-        setDebitNoteData(Array.isArray(data) ? data : data.data || []);
-        setFilteredData(Array.isArray(data) ? data : data.data || []);
+
+        const data1 = await res1.json();
+        const data2 = await res2.json();
+
+        const list1 = Array.isArray(data1) ? data1 : data1.data || [];
+        const list2 = Array.isArray(data2) ? data2 : data2.data || [];
+
+        // Combine the results
+        const combined = [...list1, ...list2];
+        
+        console.log("Combined Debit Note Data:", combined);
+        setDebitNoteData(combined);
+        setFilteredData(combined);
       } catch (err) {
         setError(err.message);
         console.error("Error fetching debit note data:", err);
@@ -253,9 +268,10 @@ const DabitNoteList = () => {
 
     // Filter by party name
     if (partyNameChecked && partyName) {
-      results = results.filter(item => 
-        (item.party_name || "").toLowerCase().includes(partyName.toLowerCase())
-      );
+      results = results.filter(item => {
+                const name = (item.party_name || item.customer || item.bill_to_cust || item.bill_to || item.vendor_name || item.supplier_name || item.cust_name || item.Customer || item.Name || item.party || item.vendor || item.supplier || item.customer_name || (item.items && item.items[0] ? (item.items[0].customer || item.items[0].bill_to_cust || item.items[0].party_name || item.items[0].party || "") : "") || "").toLowerCase();
+        return name.includes(partyName.toLowerCase());
+      });
     }
 
     // Filter by item (from items array)
@@ -489,61 +505,36 @@ const DabitNoteList = () => {
                                             <th>Code No</th>
                                             <th>Cust. Name</th>
                                             <th>Total Amt</th>
-                                            <th>User</th>
-                                            <th>IRN</th>
-                                            <th>Cancel</th>
-                                            <th>View</th>
-                                            <th>Email</th>
-                                            <th>Edit</th>
-                                            <th>Del</th>
-                                            <th>All</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                           {filteredData && filteredData.length > 0 ? (
                                             filteredData.map((item, index) => {
                                               // Calculate total amount from items
-                                              const totalAmount = item.items && item.items.length > 0 
-                                                ? item.items.reduce((sum, lineItem) => sum + parseFloat(lineItem.grand_total || 0), 0)
-                                                : 0;
+                                              const totalAmount = parseFloat(item.grand_total || item.total_amt || 0) || (item.items && item.items.length > 0 
+                                                ? item.items.reduce((sum, lineItem) => sum + parseFloat(lineItem.grand_total || lineItem.diff_amt || 0), 0)
+                                                : 0);
                                               
-                                              // Extract year from created_at
-                                              const createdYear = item.created_at ? new Date(item.created_at).getFullYear() : "-";
+                                              // Extract year from created_at or debit_note_date
+                                              const createdYear = (item.created_at || item.debit_note_date) ? new Date(item.created_at || item.debit_note_date).getFullYear() : "-";
                                               
                                               return (
                                                 <tr key={index}>
                                                   <td>{index + 1}</td>
                                                   <td>{createdYear}</td>
-                                                  <td>-</td>
+                                                  <td>{item.plant || "ProduLink"}</td>
                                                   <td>{item.debit_note_no || "-"}</td>
                                                   <td>{item.debit_note_date || "-"}</td>
-                                                  <td>{item.notetype || item.type || "-"}</td>
-                                                  <td>{item.po_no || "-"}</td>
-                                                  <td>{item.party_name || "-"}</td>
+                                                  <td>{item.notetype || item.type || (item.customer ? "Rate Diff." : "-")}</td>
+                                                  <td>{item.po_no || item.invoice_no || "-"}</td>
+                                                                                                     <td>{item.party_name || item.customer || item.bill_to_cust || item.bill_to || item.vendor_name || item.supplier_name || item.cust_name || item.Customer || item.Name || item.party || item.vendor || item.supplier || item.customer_name || (item.items && item.items[0] ? (item.items[0].customer || item.items[0].bill_to_cust || item.items[0].party_name || item.items[0].party || "") : "") || "-"}</td>
                                                   <td>{totalAmount.toFixed(2)}</td>
-                                                  <td>-</td>
-                                                  <td>{item.eway_bill_no || "-"}</td>
-                                                  <td>-</td>
-                                                  <td>
-                                                    <button
-                                                      type="button"
-                                                      className="btn btn-link p-0"
-                                                      onClick={() => handleView(item)}
-                                                      title="View PDF"
-                                                    >
-                                                      Pdf 
-                                                    </button>
-                                                  </td>
-                                                  <td>-</td>
-                                                  <td>-</td>
-                                                  <td>🗑️</td>
-                                                  <td>⋯</td>
                                                 </tr>
                                               );
                                             })
                                           ) : (
                                             <tr>
-                                              <td colSpan="17" className="text-center">No data found</td>
+                                              <td colSpan="9" className="text-center">No data found</td>
                                             </tr>
                                           )}
                                         </tbody>

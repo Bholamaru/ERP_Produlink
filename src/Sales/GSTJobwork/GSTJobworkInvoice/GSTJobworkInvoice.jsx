@@ -56,13 +56,16 @@ const GSTJobworkInvoice = () => {
     PackFwrd_Per: 2.0,
     TscPer: 0,
     Cgst: 1125.00,
+    Cgst_Per: 9,
     TransportCrg: 500.00,
     TransportCrg_Per: 4.0,
     Sgst: 1125.00,
+    Sgst_Per: 9,
     FreightCrg: 0,
     FreightCrg_Per: 0,
     EInvoiceType: "Bussiness To Bussiness",
     Igst: 0,
+    Igst_Per: 0,
     OtherCrg: 100.00,
     OtherCrg_Per: 1.0,
     GrTotal: 15600.00
@@ -72,7 +75,7 @@ const GSTJobworkInvoice = () => {
 
   const fetchInvoiceNo = async () => {
     try {
-      const response = await fetch("http://127.0.0.1:8000/Sales/gstjobwork/invoice/no/");
+      const response = await fetch("https://erp-render.onrender.com/Sales/gstjobwork/invoice/no/");
       if (response.ok) {
         const data = await response.json();
         const nextNo = data.invoice_no || (Array.isArray(data) ? data[0]?.invoice_no : data);
@@ -92,11 +95,28 @@ const GSTJobworkInvoice = () => {
     }
     try {
       setPoSearchLoading(true);
-      const response = await fetch(`http://127.0.0.1:8000/Sales/customer/po/?customer=${encodeURIComponent(customerName)}`);
+      const response = await fetch(`https://erp-render.onrender.com/Sales/customer/po/?customer=${encodeURIComponent(customerName)}`);
       if (response.ok) {
         const data = await response.json();
-        const poArray = Array.isArray(data) ? data : (data.data || data.po || []);
-        setPoList(poArray);
+        const rawPoArray = Array.isArray(data) ? data : (data.data || data.po || []);
+        
+        // De-duplicate POs by merging items for the same cust_po
+        const mergedPoMap = new Map();
+        
+        rawPoArray.forEach(po => {
+          const key = po.cust_po || po.po_no || po.id;
+          if (mergedPoMap.has(key)) {
+            const existing = mergedPoMap.get(key);
+            // Merge items if they exist
+            if (po.item && Array.isArray(po.item)) {
+              existing.item = [...(existing.item || []), ...po.item];
+            }
+          } else {
+            mergedPoMap.set(key, { ...po });
+          }
+        });
+        
+        setPoList(Array.from(mergedPoMap.values()));
       } else {
         setPoList([]);
       }
@@ -167,24 +187,47 @@ const GSTJobworkInvoice = () => {
     };
     fetchCustomers();
 
-    if (masterSalesOrders.length > 0) {
-      if (formData.bill_to_cust) {
+    if (formData.bill_to_cust) {
+      // Logic for filtering items
+      let itemsToUse = [];
+      
+      const selectedPoDetail = poList.find(p => (p.cust_po || p.po_no || p.id || "").toString() === (formData.PoNo || "").toString());
+      
+      if (selectedPoDetail && selectedPoDetail.item && Array.isArray(selectedPoDetail.item)) {
+        // If PO is selected, use its specific items from the PO API
+        itemsToUse = selectedPoDetail.item.map(itm => ({
+          ...itm,
+          Part_Code: itm.item_no || itm.item_code || itm.part_no || "",
+          Name: itm.item_description || itm.description || ""
+          // Removed overwriting of item_code here
+        }));
+      } else if (masterSalesOrders.length > 0) {
+        // Fallback to master sales orders for that customer
         const itemsForCust = masterSalesOrders.filter(
-          item => (item.customer || "").toLowerCase() === formData.bill_to_cust.toLowerCase()
+          item => (item.customer || "").toLowerCase().includes(formData.bill_to_cust.toLowerCase())
         );
-        // Map to format expected by item datalist while preserving ALL api fields
-        setItemList(itemsForCust.map(itm => ({
+        itemsToUse = itemsForCust.map(itm => ({
             ...itm,
-            Part_Code: itm.part_no || itm.item_code_short,
-            Name: itm.item_description,
-            // also keep raw data incase
-            item_code: itm.item_code
-        })));
-      } else {
-        setItemList([]);
+            Part_Code: itm.item_no || itm.part_no || itm.item_code_short || "",
+            Name: itm.item_description || itm.description || ""
+            // Removed overwriting of item_code here
+        }));
       }
+      
+      // Filter out duplicate display labels to keep the dropdown clean
+      const uniqueItemsMap = new Map();
+      itemsToUse.forEach(itm => {
+          const key = `${itm.Part_Code} | ${itm.Name}`;
+          if (!uniqueItemsMap.has(key)) {
+              uniqueItemsMap.set(key, itm);
+          }
+      });
+      
+      setItemList(Array.from(uniqueItemsMap.values()));
+    } else {
+      setItemList([]);
     }
-  }, [masterSalesOrders, formData.bill_to_cust]);
+  }, [masterSalesOrders, formData.bill_to_cust, formData.PoNo, poList]);
 
   // Autofetch POs when customer is selected
   useEffect(() => {
@@ -250,8 +293,12 @@ const GSTJobworkInvoice = () => {
       return;
     }
     
-    // Parse ItemName which is formatted as "PartCode | Description"
-    const [partCode, partDesc] = (formData.ItemName || "").split(" | ");
+    const selectedItemDetail = itemList.find(itm => 
+      `${itm.Part_Code || ""} | ${itm.Name || ""}` === formData.ItemName
+    ) || {};
+    
+    const partCode = selectedItemDetail.Part_Code || selectedItemDetail.item_no || selectedItemDetail.item_code || "";
+    const partDesc = selectedItemDetail.Name || selectedItemDetail.item_description || "";
 
     // Fetch the Customer Profile from the customerList to extract their API discount
     const customerSearchQuery = (formData.bill_to_cust || "").trim().toLowerCase();
@@ -261,20 +308,21 @@ const GSTJobworkInvoice = () => {
     const discKeyMatch = selectedCustomer.Discount_Per ?? selectedCustomer.discount ?? selectedCustomer.disc ?? selectedCustomer.disc_per ?? selectedCustomer.discount_per ?? selectedCustomer.JobWorkDisc ?? selectedCustomer.Discount ?? selectedCustomer.jobwork_discount ?? 0;
     const extractedDisc = parseFloat(discKeyMatch) || 0;
 
-    console.log("Matched Customer:", selectedCustomer, "Extracted Disc:", extractedDisc);
+    console.log("Matched Customer:", selectedCustomer, "Extracted Disc:", extractedDisc, "Item Detail:", selectedItemDetail);
 
     const poQtySum = selectedChallans.reduce((sum, c) => sum + (Number(c.TotalQty || c.total_qty) || 0), 0);
     const balQtySum = selectedChallans.reduce((sum, c) => sum + (Number(c.BalQty || c.bal_qty) || 0), 0);
 
     const newItem = {
       po_no: formData.PoNo,
-      line_no: "1",
-      line_po_dt: new Date().toLocaleDateString("en-GB"),
+      line_pono: "1",
+      line_podt: new Date().toISOString().split('T')[0],
       so_line_no: "0",
       stock: (balQtySum * 1.5).toFixed(0),
-      hsn_code: "84149020",
-      item_code: partCode ? partCode.trim() : formData.ItemName,
-      description: partDesc ? partDesc.trim() : "Sample Description",
+      hsn_code: selectedItemDetail.hsn_code || "84149020",
+      item_code: selectedItemDetail.item_code || partCode,
+      item_no: selectedItemDetail.item_no || partCode,
+      description: partDesc || "Sample Description",
       jobwork_rate: 15.50,
       jobwork_disc: extractedDisc,
       rate_type: 'NOS',
@@ -323,9 +371,13 @@ const GSTJobworkInvoice = () => {
     
     const taxableValue = assessable + packFwrdAmt + transportAmt + freightAmt + otherAmt;
     
-    const cgstAmt = taxableValue * 0.09;
-    const sgstAmt = taxableValue * 0.09;
-    const igstAmt = 0; 
+    const cgstPer = parseFloat(formData.Cgst_Per) || 0;
+    const sgstPer = parseFloat(formData.Sgst_Per) || 0;
+    const igstPer = parseFloat(formData.Igst_Per) || 0;
+
+    const cgstAmt = taxableValue * (cgstPer / 100);
+    const sgstAmt = taxableValue * (sgstPer / 100);
+    const igstAmt = taxableValue * (igstPer / 100); 
     const grandTotal = taxableValue + cgstAmt + sgstAmt + igstAmt;
 
     setFormData(prev => ({
@@ -340,7 +392,7 @@ const GSTJobworkInvoice = () => {
       Igst: igstAmt.toFixed(2),
       GrTotal: grandTotal.toFixed(2),
     }));
-  }, [tableData, formData.PackFwrd_Per, formData.TransportCrg_Per, formData.FreightCrg_Per, formData.OtherCrg_Per]);
+  }, [tableData, formData.PackFwrd_Per, formData.TransportCrg_Per, formData.FreightCrg_Per, formData.OtherCrg_Per, formData.Cgst_Per, formData.Sgst_Per, formData.Igst_Per]);
 
   useEffect(() => {
     fetchInvoiceNo();
@@ -393,15 +445,15 @@ const GSTJobworkInvoice = () => {
           tsc_per: formData.TscPer,
           tcs: formData.TscPer,
           tcs_amt: (parseFloat(formData.AssessableValue) * parseFloat(formData.TscPer || 0) / 100).toFixed(2),
-          cgst: formData.Cgst,
+          cgst: formData.Cgst_Per,
           cgst_amt: formData.Cgst,
           transport_crg: formData.TransportCrg,
           transport_crg_per: formData.TransportCrg_Per,
-          sgst: formData.Sgst,
+          sgst: formData.Sgst_Per,
           sgst_amt: formData.Sgst,
           freight_crg: formData.FreightCrg,
           freight_crg_per: formData.FreightCrg_Per,
-          igst: formData.Igst,
+          igst: formData.Igst_Per,
           igst_amt: formData.Igst,
           other_crg: formData.OtherCrg,
           other_crg_per: formData.OtherCrg_Per,
@@ -410,7 +462,7 @@ const GSTJobworkInvoice = () => {
         }
       };
       console.log("Submitting dataToSubmit:", dataToSubmit);
-      const response = await fetch("http://127.0.0.1:8000/Sales/gst-jobwork-invoice/", {
+      const response = await fetch("https://erp-render.onrender.com/Sales/gst-jobwork-invoice/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -1023,7 +1075,7 @@ const GSTJobworkInvoice = () => {
                                     <div className="col-md-3">
                                         <div className="row">
                                             <div className="col-md-8">
-                                            <label>CGST : 00.00%</label>
+                                            <label className="d-flex align-items-center">CGST : <input name="Cgst_Per" value={formData.Cgst_Per} onChange={handleChange} style={{width:"50px", margin: "0 5px"}} type="text" className="w-5" placeholder="0"/>%</label>
                                             </div>
                                             <div className="col-md-4">
                                                 <input type="text" name="Cgst" value={formData.Cgst} onChange={handleChange} placeholder="0"/>
@@ -1060,7 +1112,7 @@ const GSTJobworkInvoice = () => {
                                     <div className="col-md-3">
                                         <div className="row">
                                             <div className="col-md-8">
-                                            <label>SGST : 00.00%</label>
+                                            <label className="d-flex align-items-center">SGST : <input name="Sgst_Per" value={formData.Sgst_Per} onChange={handleChange} style={{width:"50px", margin: "0 5px"}} type="text" className="w-5" placeholder="0"/>%</label>
                                             </div>
                                             <div className="col-md-4">
                                                 <input type="text" name="Sgst" value={formData.Sgst} onChange={handleChange} placeholder="0"/>
@@ -1101,7 +1153,7 @@ const GSTJobworkInvoice = () => {
                                     <div className="col-md-3">
                                         <div className="row">
                                             <div className="col-md-8">
-                                            <label>IGST : 00.00%</label>
+                                            <label className="d-flex align-items-center">IGST : <input name="Igst_Per" value={formData.Igst_Per} onChange={handleChange} style={{width:"50px", margin: "0 5px"}} type="text" className="w-5" placeholder="0"/>%</label>
                                             </div>
                                             <div className="col-md-4">
                                                 <input type="text" name="Igst" value={formData.Igst} onChange={handleChange} placeholder="0"/>
@@ -1176,11 +1228,12 @@ const GSTJobworkInvoice = () => {
                                         <tr key={index}>
                                             <td>{index + 1}</td>
                                             <td>
-                                                <div className="mb-1" style={{fontSize: '12px', fontWeight: '600'}}>Line No: <span style={{fontWeight: 'normal'}}>{item.line_no || '1'}</span></div>
-                                                <div style={{fontSize: '12px', fontWeight: '600'}}>Line PODt: <span style={{fontWeight: 'normal'}}>{item.line_po_dt || '17/03/2023'}</span></div>
+                                                <div className="mb-1" style={{fontSize: '12px', fontWeight: '600'}}>Line No: <span style={{fontWeight: 'normal'}}>{item.line_pono || '1'}</span></div>
+                                                <div style={{fontSize: '12px', fontWeight: '600'}}>Line PODt: <span style={{fontWeight: 'normal'}}>{item.line_podt || '2026-04-29'}</span></div>
                                             </td>
                                             <td>
-                                                <div className="fw-bold mb-1" style={{fontSize: '13px'}}>{item.item_code}</div>
+                                                <div className="fw-bold mb-1" style={{fontSize: '13px', color: '#000'}}>{item.item_no}</div>
+                                                <div className="mb-1" style={{fontSize: '12px', fontWeight: '600'}}>Code: <span style={{fontWeight: 'normal'}}>{item.item_code}</span></div>
                                                 <div style={{fontSize: '12px', fontWeight: '600'}}>So Line No : <span style={{fontWeight: 'normal'}}>{item.so_line_no || '0'}</span></div>
                                             </td>
                                             <td className="text-center align-middle">{item.stock || '0'}</td>

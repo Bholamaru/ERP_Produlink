@@ -227,16 +227,8 @@ const ppcAccordionList = [
   "Upcoming Dispatch",
 ];
 
-const dailySalesData = [
-  { day: 1, sales: 0 }, { day: 2, sales: 30 }, { day: 3, sales: 33 }, { day: 4, sales: 31 },
-  { day: 5, sales: 9 }, { day: 6, sales: 42 }, { day: 7, sales: 32 }, { day: 8, sales: 28 },
-  { day: 9, sales: 30 }, { day: 10, sales: 33 }, { day: 11, sales: 4 }, { day: 12, sales: 0 },
-  { day: 13, sales: 0 }, { day: 14, sales: 0 }, { day: 15, sales: 0 }, { day: 16, sales: 0 },
-  { day: 17, sales: 0 }, { day: 18, sales: 0 }, { day: 19, sales: 0 }, { day: 20, sales: 0 },
-  { day: 21, sales: 0 }, { day: 22, sales: 0 }, { day: 23, sales: 0 }, { day: 24, sales: 0 },
-  { day: 25, sales: 0 }, { day: 26, sales: 0 }, { day: 27, sales: 0 }, { day: 28, sales: 0 },
-  { day: 29, sales: 0 }, { day: 30, sales: 0 }, { day: 31, sales: 0 },
-];
+  // Daily Sales will be handled in state inside the component
+
 
 const oeeAccordionList = [
   "Machine Utilization (Groupwise)",
@@ -828,34 +820,151 @@ const Dashboard = () => {
   const [showAddFavoriteModal, setShowAddFavoriteModal] = useState(false);
   const [stockTab, setStockTab] = useState("Consumable Stock");
   const [salesGranularity, setSalesGranularity] = useState("M");
+  const [dailySalesData, setDailySalesData] = useState(
+    Array.from({ length: 31 }, (_, i) => ({ day: i + 1, sales: 0 }))
+  );
 
-  const salesPurchaseTableData = [
-    { sr: 1, type: "Domestic Sales", assessable: "2,66,34,732.05", total: "3,14,28,984.09" },
+  const [top5SalesData, setTop5SalesData] = useState([]);
+  const [itemWiseDispatchData, setItemWiseDispatchData] = useState([]);
+
+  const fetchDailySalesReport = async () => {
+    try {
+      const response = await fetch("https://erp-render.onrender.com/Dashboard/monthly/daily/report/?month=4&year=2026");
+      if (!response.ok) throw new Error("Failed to fetch daily sales report");
+      const data = await response.json();
+
+      const updated = data.map((item) => ({
+        day: parseInt(item.date.split("-")[2]),
+        sales: parseFloat(item.total_assessable || 0) / 1000 // scale for visible bars (1000lac fallback)
+      }));
+      setDailySalesData(updated);
+    } catch (err) {
+      console.error("Error fetching daily report:", err);
+    }
+  };
+
+  const fetchTop5SalesData = async () => {
+    try {
+      const response = await fetch("https://erp-render.onrender.com/Dashboard/Top/5/Customer/");
+      if (!response.ok) throw new Error("Failed to fetch top 5 sales data");
+      const data = await response.json();
+
+      const colors = ["#0ea5e9", "#3b82f6", "#6366f1", "#8b5cf6", "#a855f7"];
+      const updated = data.map((item, index) => ({
+        name: item.customer,
+        value: parseFloat(item.total_assessable || 0),
+        qty: item.total_po_qty,
+        fill: colors[index % colors.length]
+      }));
+
+      setTop5SalesData(updated);
+    } catch (err) {
+      console.error("Error fetching top 5 report:", err);
+    }
+  };
+
+  const fetchItemWiseDispatchData = async () => {
+    try {
+      const response = await fetch("https://erp-render.onrender.com/Dashboard/itemwise/data/");
+      if (!response.ok) throw new Error("Failed to fetch itemwise dispatch data");
+      const data = await response.json();
+
+      const updated = data.map((item, index) => ({
+        sr: index + 1,
+        customer: item.customer,
+        itemNo: "-",
+        itemCode: "-",
+        itemDesc: item.description || "N/A",
+        qty: item.total_po_qty || 0,
+        amount: parseFloat(item.total_assessable_value || 0)
+      }));
+
+      setItemWiseDispatchData(updated);
+    } catch (err) {
+      console.error("Error fetching itemwise report:", err);
+    }
+  };
+
+
+  const [salesPurchaseTableData, setSalesPurchaseTableData] = useState([
+    { sr: 1, type: "Domestic Sales", assessable: "0.00", total: "0.00" },
     { sr: 2, type: "Jobwork Sales", assessable: "0.00", total: "0.00" },
     { sr: 3, type: "Export Sales", assessable: "0.00", total: "0.00" },
     { sr: 4, type: "Rate Diff", assessable: "0.00", total: "0.00" },
-    { sr: 5, type: "Scrap Sales", assessable: "5,38,160.00", total: "6,40,410.40" },
-    { sr: 6, type: "Total Sales", assessable: "2,71,72,892.05", total: "3,20,69,394.49" },
-    { sr: 7, type: "Sales Return", assessable: "16,664.02", total: "19,663.54" },
-    { sr: 8, type: "Purchase", assessable: "2,37,61,368.81", total: "2,80,38,415.23" }
-  ];
+    { sr: 5, type: "Scrap Sales", assessable: "0.00", total: "0.00" },
+    { sr: 6, type: "Total Sales", assessable: "0.00", total: "0.00" },
+    { sr: 7, type: "Sales Return", assessable: "0.00", total: "0.00" },
+    { sr: 8, type: "Purchase", assessable: "0.00", total: "0.00" }
+  ]);
 
-  const salesPurchaseChartData = [
-    { name: "Domestic Sales", value: 26634732 },
+  const [salesPurchaseChartData, setSalesPurchaseChartData] = useState([
+    { name: "Domestic Sales", value: 0 },
     { name: "Jobwork Sales", value: 0 },
     { name: "Export Sales", value: 0 },
     { name: "Rate Diff", value: 0 },
-    { name: "Scrap Sales", value: 538160 },
-    { name: "Total Sales", value: 27172892 },
-    { name: "Sales Return", value: 16664 },
-    { name: "Purchase", value: 23761368 }
-  ];
+    { name: "Scrap Sales", value: 0 },
+    { name: "Total Sales", value: 0 },
+    { name: "Sales Return", value: 0 },
+    { name: "Purchase", value: 0 }
+  ]);
+
+  const fetchAssessableReport = async () => {
+    try {
+      const response = await fetch("https://erp-render.onrender.com/Dashboard/assessable-report/?month=4&year=2026");
+      if (!response.ok) throw new Error("Failed to fetch assessable report");
+      const data = await response.json();
+
+      const gst = parseFloat(data.GST_total_assessable_value || 0);
+      const scrap = parseFloat(data.SCRAP_total_assessable_value || 0);
+      const rateDiff = parseFloat(data.RATE_DIFF_total_assessable_value || 0);
+      const total = parseFloat(data.GRAND_TOTAL || 0);
+
+      // Map to table data
+      const updatedTable = [
+        { sr: 1, type: "Domestic Sales", assessable: gst.toLocaleString('en-IN', { minimumFractionDigits: 2 }), total: (gst * 1.18).toLocaleString('en-IN', { minimumFractionDigits: 2 }) },
+        { sr: 2, type: "Jobwork Sales", assessable: "0.00", total: "0.00" },
+        { sr: 3, type: "Export Sales", assessable: "0.00", total: "0.00" },
+        { sr: 4, type: "Rate Diff", assessable: rateDiff.toLocaleString('en-IN', { minimumFractionDigits: 2 }), total: (rateDiff * 1.18).toLocaleString('en-IN', { minimumFractionDigits: 2 }) },
+        { sr: 5, type: "Scrap Sales", assessable: scrap.toLocaleString('en-IN', { minimumFractionDigits: 2 }), total: (scrap * 1.18).toLocaleString('en-IN', { minimumFractionDigits: 2 }) },
+        { sr: 6, type: "Total Sales", assessable: total.toLocaleString('en-IN', { minimumFractionDigits: 2 }), total: (total * 1.18).toLocaleString('en-IN', { minimumFractionDigits: 2 }) },
+        { sr: 7, type: "Sales Return", assessable: "0.00", total: "0.00" },
+        { sr: 8, type: "Purchase", assessable: "0.00", total: "0.00" }
+      ];
+
+      // Map to chart data
+      const updatedChart = [
+        { name: "Domestic Sales", value: gst },
+        { name: "Jobwork Sales", value: 0 },
+        { name: "Export Sales", value: 0 },
+        { name: "Rate Diff", value: rateDiff },
+        { name: "Scrap Sales", value: scrap },
+        { name: "Total Sales", value: total },
+        { name: "Sales Return", value: 0 },
+        { name: "Purchase", value: 0 }
+      ];
+
+      setSalesPurchaseTableData(updatedTable);
+      setSalesPurchaseChartData(updatedChart);
+    } catch (err) {
+      console.error("Error fetching report:", err);
+    }
+  };
+
 
   const toggleSection = (label) => {
     setExpandedSections(prev => ({ ...prev, [label]: !prev[label] }));
   };
 
   const toggleSideNav = () => setSideNavOpen((p) => !p);
+
+  useEffect(() => {
+    fetchAssessableReport();
+    fetchDailySalesReport();
+    fetchTop5SalesData();
+    fetchItemWiseDispatchData();
+  }, []);
+
+
 
   useEffect(() => {
     document.body.classList.toggle("side-nav-open", sideNavOpen);
@@ -1307,7 +1416,7 @@ const Dashboard = () => {
                               <ResponsiveContainer width="100%" height={280}>
                                 <PieChart>
                                   <Pie
-                                    data={stateWiseSalesData} // Reuse data for visualization
+                                     data={top5SalesData} // Use dynamic data
                                     dataKey="value"
                                     nameKey="name"
                                     cx="50%"
@@ -1319,14 +1428,14 @@ const Dashboard = () => {
                                       const x = cx + radius * Math.cos(-midAngle * RADIAN);
                                       const y = cy + radius * Math.sin(-midAngle * RADIAN);
                                       return (
-                                        <text x={x} y={y} fill="#64748b" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" style={{ fontSize: 11, fontWeight: 700 }}>
+                                        <text x={x} y={y} fill="#000" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" style={{ fontSize: 11, fontWeight: 700 }}>
                                           {`( ${(percent * 100).toFixed(2)}% ) ${name}`}
                                         </text>
                                       );
                                     }}
-                                    labelLine={{ stroke: '#38bdf8', strokeWidth: 1 }}
+                                    labelLine={{ stroke: '#000', strokeWidth: 1 }}
                                   >
-                                    {stateWiseSalesData.map((entry, index) => (
+                                    {top5SalesData.map((entry, index) => (
                                       <Cell key={`cell-${index}`} fill={entry.fill} />
                                     ))}
                                   </Pie>
@@ -1346,12 +1455,12 @@ const Dashboard = () => {
                                   </tr>
                                 </thead>
                                 <tbody>
-                                  {stateWiseSalesData.map((row, idx) => (
+                                  {top5SalesData.map((row, idx) => (
                                     <tr key={idx}>
                                       <td style={{ border: '1px solid #cbd5e1', textAlign: 'center', fontWeight: 600 }}>{idx + 1}</td>
                                       <td style={{ border: '1px solid #cbd5e1', textAlign: 'left', fontWeight: 600 }}>{row.name}</td>
                                       <td style={{ border: '1px solid #cbd5e1', textAlign: 'right', fontWeight: 600 }}>{row.value.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
-                                      <td style={{ border: '1px solid #cbd5e1', textAlign: 'right', fontWeight: 700, color: '#007bff' }}>{( (row.value / stateWiseSalesData.reduce((acc,curr)=>acc+curr.value,0)) * 100 ).toFixed(2)}%</td>
+                                      <td style={{ border: '1px solid #cbd5e1', textAlign: 'right', fontWeight: 700, color: '#007bff' }}>{top5SalesData.reduce((acc,curr)=>acc+curr.value,0) > 0 ? ( (row.value / top5SalesData.reduce((acc,curr)=>acc+curr.value,0)) * 100 ).toFixed(2) : "0.00"}%</td>
                                     </tr>
                                   ))}
                                 </tbody>
@@ -1408,8 +1517,8 @@ const Dashboard = () => {
                                   </tr>
                                 </thead>
                                 <tbody>
-                                  {itemWiseDispatchData.map((item) => (
-                                    <tr key={item.sr}>
+                                   {itemWiseDispatchData.map((item, idx) => (
+                                    <tr key={idx}>
                                       <td style={{ textAlign: "center", border: '1px solid #e2e8f0', padding: '1px 4px', fontSize: '11px' }}>{item.sr}</td>
                                       <td style={{ fontSize: 10, fontWeight: 600, border: '1px solid #e2e8f0', padding: '1px 4px' }}>{item.customer}</td>
                                       <td style={{ border: '1px solid #e2e8f0', padding: '1px 4px', fontSize: '11px' }}>{item.itemNo}</td>
@@ -1419,6 +1528,7 @@ const Dashboard = () => {
                                       <td style={{ textAlign: "right", fontWeight: 700, border: '1px solid #e2e8f0', padding: '1px 4px', fontSize: '11px' }}>{item.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
                                     </tr>
                                   ))}
+
                                 </tbody>
                               </table>
                             </div>
@@ -1568,7 +1678,7 @@ const Dashboard = () => {
                                       const x = cx + radius * Math.cos(-midAngle * RADIAN);
                                       const y = cy + radius * Math.sin(-midAngle * RADIAN);
                                       return (
-                                        <text x={x} y={y} fill="#64748b" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" style={{ fontSize: 11, fontWeight: 700 }}>
+                                        <text x={x} y={y} fill="#000" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" style={{ fontSize: 11, fontWeight: 700 }}>
                                           {`( ${(percent * 100).toFixed(2)}% ) ${name}`}
                                         </text>
                                       );
