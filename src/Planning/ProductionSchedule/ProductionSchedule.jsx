@@ -10,21 +10,101 @@ const ProductionSchedule = () => {
   const [sideNavOpen, setSideNavOpen] = useState(false);
   const [currentView, setCurrentView] = useState("list"); // 'list', 'planning', or 'edit'
   const [selectedPeriod, setSelectedPeriod] = useState({ month: "APR-2024", revNo: "0" });
+  const [scheduleData, setScheduleData] = useState([]);
 
-  const scheduleData = [
-    { id: 1, monthYear: "MAY-2026", fromDate: "01/05/2026", toDate: "31/05/2026", revNo: "-", totalItem: 0,   workingDays: 25 },
-    { id: 2, monthYear: "APR-2026", fromDate: "01/04/2026", toDate: "30/04/2026", revNo: "0", totalItem: 224, workingDays: 26 },
-  ];
+  const fetchSchedules = async () => {
+    try {
+      const response = await fetch("https://erp-render.onrender.com/Settings/schedule-month/");
+      if (response.ok) {
+        const result = await response.json();
+        const rawData = Array.isArray(result) ? result : (result.data || result.results || []);
+        
+        const mappedData = rawData.map((item, index) => {
+          // Format "MAY 2026" to "MAY-2026" or similar
+          const monthYear = (item.month_name || "").replace(" ", "-");
+          
+          // Format YYYY-MM-DD to DD/MM/YYYY
+          const formatDt = (d) => {
+            if (!d) return "";
+            if (d.includes("/")) return d;
+            const [y, m, d1] = d.split("-");
+            return `${d1}/${m}/${y}`;
+          };
 
-  const itemData = [
-    { sr: 207, itemNo: "FG1012", itemCode: "B35KD01260", itemDesc: "PIVOT PIN FOR PRKG LEVER(S.P.)", schQty: 50000, disQty: 16000, balQty: 34000, daysComp: 8, curAvg: 2285.71, daysRem: 18, askRate: 1888.89, status: 32, revNos: "0," },
-    { sr: 208, itemNo: "FG1039", itemCode: "530DP00902", itemDesc: "EXTENSION (PULSAR)", schQty: 6000, disQty: 2000, balQty: 4000, daysComp: 8, curAvg: 285.71, daysRem: 18, askRate: 222.22, status: 33.33, revNos: "0," },
-    { sr: 209, itemNo: "FG1051", itemCode: "520DU00102", itemDesc: "FIX NUT", schQty: 90000, disQty: 30000, balQty: 60000, daysComp: 8, curAvg: 4285.71, daysRem: 18, askRate: 3333.33, status: 33.33, revNos: "0," },
-    { sr: 210, itemNo: "FG1234", itemCode: "52DP07202B", itemDesc: "EXTENSION K3 NEW", schQty: 30000, disQty: 10000, balQty: 20000, daysComp: 8, curAvg: 1428.57, daysRem: 18, askRate: 1111.11, status: 33.33, revNos: "0," },
-    { sr: 211, itemNo: "FG1427", itemCode: "F2DZ10302B", itemDesc: "FORK BOLT -H107", schQty: 3000, disQty: 1000, balQty: 2000, daysComp: 8, curAvg: 142.86, daysRem: 18, askRate: 111.11, status: 33.33, revNos: "0," },
-    { sr: 212, itemNo: "FG1347", itemCode: "B2RW015020", itemDesc: "PISTON ACTUATOR - HERO CBS", schQty: 54094, disQty: 19910, balQty: 34184, daysComp: 8, curAvg: 2844.29, daysRem: 18, askRate: 1899.11, status: 36.81, revNos: "0," },
-    { sr: 213, itemNo: "FG1037", itemCode: "520DP00602", itemDesc: "EXTENSION (20 X16)", schQty: 4000, disQty: 1500, balQty: 2500, daysComp: 8, curAvg: 214.29, daysRem: 18, askRate: 138.89, status: 37.5, revNos: "0," },
-  ];
+          return {
+            id: item.id || index,
+            monthYear: monthYear,
+            fromDate: formatDt(item.from_date),
+            toDate: formatDt(item.to_date),
+            revNo: item.rev_no || "0",
+            totalItem: item.total_item || 0,
+            workingDays: item.w_days || item.w_day || 0
+          };
+        });
+        setScheduleData(mappedData);
+      }
+    } catch (error) {
+      console.error("Error fetching schedules:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchSchedules();
+  }, []);
+
+  const [itemData, setItemData] = useState([]);
+  const [loadingItems, setLoadingItems] = useState(false);
+  const [customers, setCustomers] = useState([]);
+  const [itemList, setItemList] = useState([]);
+
+  const fetchCustomers = async () => {
+    try {
+      const token = localStorage.getItem("accessToken");
+      const response = await fetch("https://erp-render.onrender.com/Sales/items/customers-list/", {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const result = await response.json();
+        const data = result.data || result.results || result || [];
+        setCustomers(Array.isArray(data) ? data : []);
+      }
+    } catch (error) {
+      console.error("Error fetching customers:", error);
+    }
+  };
+
+  const fetchItems = async () => {
+    try {
+      const token = localStorage.getItem("accessToken");
+      const response = await fetch("https://erp-render.onrender.com/All_Masters/api/item/summary/", {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const result = await response.json();
+        const data = result.data || result.results || result || [];
+        setItemList(Array.isArray(data) ? data : []);
+      }
+    } catch (error) {
+      console.error("Error fetching items:", error);
+    }
+  };
+
+  const fetchScheduleItems = async (monthYear) => {
+    setLoadingItems(true);
+    try {
+      // Assuming the API filters by monthYear or similar parameter
+      const response = await fetch(`https://erp-render.onrender.com/Planning/production-schedule/?month=${monthYear}`);
+      if (response.ok) {
+        const result = await response.json();
+        const rawItems = Array.isArray(result) ? result : (result.data || result.results || []);
+        setItemData(rawItems);
+      }
+    } catch (error) {
+      console.error("Error fetching schedule items:", error);
+    } finally {
+      setLoadingItems(false);
+    }
+  };
 
   const toggleSideNav = () => setSideNavOpen((p) => !p);
 
@@ -32,13 +112,88 @@ const ProductionSchedule = () => {
     document.body.classList.toggle("side-nav-open", sideNavOpen);
   }, [sideNavOpen]);
 
+  useEffect(() => {
+    fetchSchedules();
+    fetchCustomers();
+    fetchItems();
+  }, []);
+
   const handleViewStatus = (row) => {
     setSelectedPeriod({ month: row.monthYear, revNo: row.revNo });
+    fetchScheduleItems(row.monthYear);
     setCurrentView("planning");
+  };
+
+  const [editFormData, setEditFormData] = useState({
+    customer_name: "",
+    po_no_date: "",
+    item_code: "",
+    sch_rec_on: "",
+    sch_qty: "",
+    buffer_qty: "",
+    next_month_sc: "0",
+    due_dispatch_date: ""
+  });
+
+  const handleEditInputChange = (e) => {
+    const { name, value } = e.target;
+    setEditFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleAddItem = async () => {
+    // Extract parts if the user selected from the datalist (formatted as "PartNo - PartCode - Description")
+    let itemParts = editFormData.item_code.split(" - ");
+    let finalItemNo = itemParts[0] || "";
+    let finalItemCode = itemParts[1] || itemParts[0] || "";
+    let finalItemDesc = itemParts[2] || "";
+
+    const payload = {
+      customer_name: editFormData.customer_name,
+      po_no_date: editFormData.po_no_date,
+      item_no: finalItemNo,
+      item_code: finalItemCode,
+      item_description: finalItemDesc,
+      sch_rec_on: editFormData.sch_rec_on,
+      sch_qty: editFormData.sch_qty,
+      buffer_qty: editFormData.buffer_qty,
+      next_month_sc: editFormData.next_month_sc,
+      due_dispatch_date: editFormData.due_dispatch_date,
+      month: selectedPeriod.month,
+      rev_no: selectedPeriod.revNo
+    };
+
+    try {
+      const response = await fetch("https://erp-render.onrender.com/Planning/production-schedule/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      if (response.ok) {
+        alert("Item added to schedule successfully!");
+        setEditFormData({
+          customer_name: "",
+          po_no_date: "ALL",
+          item_code: "",
+          sch_rec_on: "",
+          sch_qty: "",
+          buffer_qty: "",
+          next_month_sc: "0",
+          due_dispatch_date: ""
+        });
+        fetchScheduleItems(selectedPeriod.month); // Refresh the items table
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        alert(`Failed to add: ${JSON.stringify(errorData)}`);
+      }
+    } catch (error) {
+      console.error("Error adding schedule item:", error);
+    }
   };
 
   const handleEdit = (row) => {
     setSelectedPeriod({ month: row.monthYear, revNo: row.revNo });
+    fetchScheduleItems(row.monthYear);
     setCurrentView("edit");
   };
 
@@ -184,7 +339,7 @@ const ProductionSchedule = () => {
                       <table className="table table-bordered table-striped table-sm text-center">
                         <thead className="ps-table-header">
                           <tr>
-                            <th>Sr.</th><th>Item No</th><th>Item Code</th><th style={{width: '25%'}}>Item Desc</th>
+                            <th>Sr.</th><th>Item No / Code</th><th style={{width: '25%'}}>Item Desc</th>
                             <th>Sch.Qty</th><th>Dis.Qty</th><th>Bal.Qty</th><th>Days.Comp</th>
                             <th>Cur.Avg</th><th>Days.Rem.</th><th>Ask.Rate</th>
                             <th style={{width: '120px'}}>Status (%)</th><th>Rev Nos</th><th>View</th>
@@ -193,8 +348,8 @@ const ProductionSchedule = () => {
                         <tbody>
                           {itemData.map((item, idx) => (
                             <tr key={idx} className="align-middle">
-                              <td>{item.sr}</td><td>{item.itemNo}</td><td>{item.itemCode}</td>
-                              <td className="text-start ps-2">{item.itemDesc}</td>
+                              <td>{item.sr}</td><td>{(item.itemNo || item.item_no || "-") + " / " + (item.itemCode || item.item_code || "-")}</td>
+                              <td className="text-start ps-2">{item.itemDesc || item.item_description || "-"}</td>
                               <td>{item.schQty}</td><td>{item.disQty || 0}</td>
                               <td className="bg-danger text-white fw-bold">{item.balQty}</td>
                               <td>{item.daysComp}</td><td>{item.curAvg}</td><td>{item.daysRem}</td>
@@ -248,46 +403,80 @@ const ProductionSchedule = () => {
                           <div className="d-flex align-items-center gap-1" style={{width: '210px', flex: '0 0 auto'}}>
                              <label className="form-label mb-0 text-nowrap" style={{fontSize: '11px', fontWeight: '600'}}>Customer Name:</label>
                              <div className="input-group input-group-sm">
-                                <input type="text" className="form-control" placeholder="Enter Name.." />
+                                <input 
+                                  type="text" 
+                                  className="form-control" 
+                                  name="customer_name" 
+                                  list="customerList"
+                                  value={editFormData.customer_name} 
+                                  onChange={handleEditInputChange} 
+                                  placeholder="Enter Name.." 
+                                />
+                                <datalist id="customerList">
+                                  {editFormData.customer_name.length > 0 && customers.map((c, i) => (
+                                    <option key={i} value={c.Name || c.customer_name || c.CustomerName || c.party_name || c.name || (typeof c === 'string' ? c : "")} />
+                                  ))}
+                                </datalist>
                                 <button className="btn btn-outline-secondary"><FaSearch /></button>
                              </div>
                           </div>
-                          <div className="d-flex align-items-center gap-1" style={{width: '120px', flex: '0 0 auto'}}>
-                             <label className="form-label mb-0 text-nowrap" style={{fontSize: '11px', fontWeight: '600'}}>CustPO:</label>
-                             <select className="form-select form-select-sm"><option>ALL</option></select>
+                          <div className="d-flex align-items-center gap-1" style={{width: '180px', flex: '0 0 auto'}}>
+                             <label className="form-label mb-0 text-nowrap" style={{fontSize: '11px', fontWeight: '600'}}>PO Date:</label>
+                             <div className="input-group input-group-sm">
+                                <input type="date" className="form-control" name="po_no_date" value={editFormData.po_no_date} onChange={handleEditInputChange} id="input-po-date" />
+                                <button className="btn btn-outline-secondary p-1" onClick={() => document.getElementById('input-po-date').showPicker()}><FaCalendarAlt /></button>
+                             </div>
                           </div>
                           <div className="d-flex align-items-center gap-1" style={{width: '220px', flex: '0 0 auto'}}>
                              <label className="form-label mb-0 text-nowrap" style={{fontSize: '11px', fontWeight: '600'}}>Item Name <FaTable />:</label>
-                             <input type="text" className="form-control form-control-sm" placeholder="Enter Code No.." />
+                             <input 
+                               type="text" 
+                               className="form-control form-control-sm" 
+                               name="item_code" 
+                               list="itemList"
+                               value={editFormData.item_code} 
+                               onChange={handleEditInputChange} 
+                               placeholder="Enter Code No.." 
+                             />
+                             <datalist id="itemList">
+                                {editFormData.item_code.length > 0 && itemList.map((it, i) => {
+                                  const displayValue = `${it.part_no || ""} - ${it.Part_Code || ""} - ${it.Name_Description || it.item_description || ""}`;
+                                  return (
+                                    <option key={i} value={displayValue}>
+                                      {displayValue}
+                                    </option>
+                                  );
+                                })}
+                             </datalist>
                           </div>
                           <div className="d-flex align-items-center gap-1" style={{width: '180px', flex: '0 0 auto'}}>
                              <label className="form-label mb-0 text-nowrap" style={{fontSize: '11px', fontWeight: '600'}}>Rec.On:</label>
                              <div className="input-group input-group-sm">
-                                <input type="date" className="form-control" id="input-rec-date" />
+                                <input type="date" className="form-control" name="sch_rec_on" value={editFormData.sch_rec_on} onChange={handleEditInputChange} id="input-rec-date" />
                                 <button className="btn btn-outline-secondary p-1" onClick={() => document.getElementById('input-rec-date').showPicker()}><FaCalendarAlt /></button>
                              </div>
                           </div>
                           <div className="d-flex align-items-center gap-1" style={{width: '100px', flex: '0 0 auto'}}>
                              <label className="form-label mb-0 text-nowrap" style={{fontSize: '11px', fontWeight: '600'}}>Qty:</label>
-                             <input type="text" className="form-control form-control-sm" />
+                             <input type="text" className="form-control form-control-sm" name="sch_qty" value={editFormData.sch_qty} onChange={handleEditInputChange} />
                           </div>
                           <div className="d-flex align-items-center gap-1" style={{width: '110px', flex: '0 0 auto'}}>
                              <label className="form-label mb-0 text-nowrap" style={{fontSize: '11px', fontWeight: '600'}}>Buffer:</label>
-                             <input type="text" className="form-control form-control-sm" />
+                             <input type="text" className="form-control form-control-sm" name="buffer_qty" value={editFormData.buffer_qty} onChange={handleEditInputChange} />
                           </div>
                           <div className="d-flex align-items-center gap-1" style={{width: '100px', flex: '0 0 auto'}}>
                              <label className="form-label mb-0 text-nowrap" style={{fontSize: '11px', fontWeight: '600'}}>Next:</label>
-                             <input type="text" className="form-control form-control-sm" defaultValue="0" />
+                             <input type="text" className="form-control form-control-sm" name="next_month_sc" value={editFormData.next_month_sc} onChange={handleEditInputChange} />
                           </div>
                           <div className="d-flex align-items-center gap-1" style={{width: '240px', flex: '0 0 auto'}}>
                              <label className="form-label mb-0 text-nowrap" style={{fontSize: '11px', fontWeight: '600'}}>Due Date:</label>
                              <div className="input-group input-group-sm">
-                                <input type="date" className="form-control" id="input-due-date" />
+                                <input type="date" className="form-control" name="due_dispatch_date" value={editFormData.due_dispatch_date} onChange={handleEditInputChange} id="input-due-date" />
                                 <button className="btn btn-outline-secondary p-1" onClick={() => document.getElementById('input-due-date').showPicker()}><FaCalendarAlt /></button>
                              </div>
                           </div>
                           <div className="ms-auto">
-                             <button className="btn btn-outline-dark btn-sm fw-bold" style={{height: '32px'}}>Add>></button>
+                             <button className="btn btn-outline-dark btn-sm fw-bold" style={{height: '32px'}} onClick={handleAddItem}>Add>></button>
                           </div>
                        </div>
                     </div>
@@ -302,7 +491,7 @@ const ProductionSchedule = () => {
                                 <th>SO No</th>
                                 <th>PO No</th>
                                 <th rowSpan="2">Schedule No</th>
-                                <th>Item No</th>
+                                <th rowSpan="2">Item No / Code</th>
                                 <th rowSpan="2">Item Description</th>
                                 <th rowSpan="2">Schedule Qty</th>
                                 <th rowSpan="2">Cust/ sch Qty</th>
@@ -312,19 +501,40 @@ const ProductionSchedule = () => {
                                 <th rowSpan="2">Due / Dispatch Dt. <FaTable /></th>
                                 <th rowSpan="2">Del</th>
                                 <th rowSpan="2"><input type="checkbox" /> All</th>
-                                <th rowSpan="2">Create/Upda te By</th>
+                                <th rowSpan="2">Create/Update By</th>
                                 <th rowSpan="2">Hist</th>
                              </tr>
                              <tr>
                                 <th>/ Date</th>
                                 <th>/ Date</th>
-                                <th>/code</th>
                              </tr>
                           </thead>
                           <tbody>
-                             <tr style={{height: '200px'}}>
-                                <td colSpan="17" className="text-muted">No records added yet. Use the form above to add items.</td>
-                             </tr>
+                             {itemData.length > 0 ? itemData.map((item, idx) => (
+                               <tr key={idx}>
+                                 <td>{idx + 1}</td>
+                                 <td className="text-start">{item.customer_name}</td>
+                                 <td>{item.so_no_date || "-"}</td>
+                                 <td>{item.po_no_date || "-"}</td>
+                                 <td>{item.schedule_no || "-"}</td>
+                                 <td>{(item.item_no || "-") + " / " + (item.item_code || "-")}</td>
+                                 <td className="text-start">{item.itemDesc || item.item_description || item.Name_Description || "-"}</td>
+                                 <td>{item.sch_qty}</td>
+                                 <td>{item.cust_sch_qty || 0}</td>
+                                 <td>{item.buffer_qty}</td>
+                                 <td>{item.next_month_sc}</td>
+                                 <td>{item.sch_rec_on}</td>
+                                 <td>{item.due_dispatch_date}</td>
+                                 <td><FaTrash className="text-danger" style={{cursor: 'pointer'}} /></td>
+                                 <td><input type="checkbox" /></td>
+                                 <td>{item.user || "Admin"}</td>
+                                 <td><FaHistory /></td>
+                               </tr>
+                             )) : (
+                               <tr style={{height: '200px'}}>
+                                  <td colSpan="17" className="text-muted">No records added yet. Use the form above to add items.</td>
+                               </tr>
+                             )}
                           </tbody>
                        </table>
                     </div>

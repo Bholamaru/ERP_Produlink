@@ -553,6 +553,9 @@ const GSTJobworkInvoice = () => {
                     <div className="d-flex align-items-center gap-2 ms-3">
                         <label>Invoice No:</label>
                         <input type="text" placeholder="Invoice No" className="invoice-no-input bg-light" name="invoice_no" value={formData.invoice_no} onChange={handleChange} readOnly />
+                        <button type="button" className="btn btn-primary btn-sm ms-2" style={{ padding: '4px 12px', fontSize: '12px' }} onClick={() => navigate('/JobworkInvList')}>
+                          Jobwork Invoice List
+                        </button>
                     </div>
 
                     <div className="header-right-group">
