@@ -13,10 +13,55 @@
   }
   .Schedule-Main {
     background-color: #f8f9fa;
-    padding: 20px;
+    padding: 10px 15px;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     margin: 20px 0;
+  }
+
+  .schedule-compact-row {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 25px; /* Increased space between items */
+    align-items: flex-end;
+    overflow-x: auto;
+    padding-bottom: 5px;
+  }
+
+  .form-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+
+  .form-item label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #475569;
+    white-space: nowrap;
+    margin-bottom: 0;
+  }
+
+  .form-item .form-control {
+    height: 28px;
+    padding: 2px 8px;
+    font-size: 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+  }
+
+  .form-item-btn {
+    flex-shrink: 0;
+  }
+
+  .form-item-btn .btn {
+    height: 28px;
+    padding: 0 15px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   
   .Schedule-Main .form-control {

@@ -8,21 +8,21 @@
 .GSTJobworkInvoice-header {
     background-color: #fff;
     border-bottom: 2px solid #ddd;
-    padding: 6px 10px;
+    padding: 4px 6px;
     display: flex;
     align-items: center;
     flex-wrap: nowrap;
-    gap: 10px;
-    font-size: 12px;
+    gap: 5px;
+    font-size: 11px;
     white-space: nowrap;
 }
 
 .header-title {
     color: #007bff;
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 700;
     margin: 0;
-    margin-right: 8px;
+    margin-right: 4px;
     flex-shrink: 0;
 }
 
@@ -30,36 +30,36 @@
     font-weight: 600;
     margin: 0;
     color: #444;
-    font-size: 11.5px;
+    font-size: 11px;
 }
 
 .GSTJobworkInvoice-header select, 
 .GSTJobworkInvoice-header input {
-    font-size: 11.5px;
+    font-size: 11px;
     padding: 2px 4px;
     border: 1px solid #ced4da;
     border-radius: 4px;
     background: #fff;
-    height: 28px;
+    height: 26px;
 }
 
 .GSTJobworkInvoice-header select {
-    width: 125px; /* Default for others */
+    width: 105px; /* Default for others */
 }
 
 .header-plant-select {
-    width: 90px !important;
+    width: 80px !important;
 }
 
 .invoice-no-input {
     border: 1px solid #ced4da !important;
-    width: 90px !important;
+    width: 80px !important;
 }
 
 .header-right-group {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 4px;
     margin-left: auto;
     flex-shrink: 0;
 }
