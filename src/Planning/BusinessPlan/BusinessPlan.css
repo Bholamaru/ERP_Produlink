@@ -1,0 +1,130 @@
+/* BusinessPlan.css - Unified ERP Design */
+
+.BusinessPlanMaster {
+    background-color: #ffffff;
+    min-height: 100vh;
+}
+
+.BusinessPlan {
+    background-color: #ffffff;
+}
+
+/* Header Section */
+.BusinessPlan-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+    padding: 10px 15px;
+}
+
+.header-title {
+    color: blue;
+    font-size: 20px;
+    font-weight: bold;
+    margin: 0;
+}
+
+/* Buttons matching vndrbtn */
+.erp-btn-grey {
+    display: inline-block;
+    background-color: rgba(235, 233, 233, 0.685);
+    padding: 5px 10px;
+    margin-left: 5px;
+    text-decoration: none;
+    color: black;
+    border: none;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.erp-btn-grey:hover {
+    background-color: #16bfff;
+    color: white;
+}
+
+.erp-btn-grey-sm {
+    display: inline-block;
+    background-color: rgba(235, 233, 233, 0.685);
+    padding: 2px 8px;
+    margin-left: 2px;
+    font-size: 11px;
+    color: #000;
+    border: none;
+    cursor: pointer;
+}
+
+.erp-btn-grey-sm:hover {
+    background-color: #16bfff;
+    color: white;
+}
+
+/* Entry/Filter Bar */
+.BusinessPlan-Entry {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+    padding: 10px;
+}
+
+.filter-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 2px;
+}
+
+.form-control-xs, .form-select-xs {
+    font-size: 12px;
+    height: 30px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    border: 1px solid #ced4da;
+}
+
+/* ERP Table Styling */
+.erp-table thead th {
+    background-color: #16bfff;
+    color: white;
+    font-size: 12px;
+    padding: 5px 8px;
+    white-space: nowrap;
+    font-weight: 600;
+    border: 1px solid #dee2e6;
+    text-align: center;
+}
+
+.erp-table tbody td {
+    padding: 4px 8px;
+    vertical-align: middle;
+    font-size: 11px;
+    border: 1px solid #dee2e6;
+    text-align: center;
+}
+
+.erp-table tbody tr:hover {
+    background-color: rgba(22, 191, 255, 0.08);
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+/* Footer Section */
+.BusinessPlan-Footer {
+    background-color: #e9ecef;
+    padding: 6px 15px;
+    font-size: 12px;
+    font-weight: 600;
+    border-top: 2px solid #16bfff;
+}
+
+.footer-stat {
+    margin-right: 30px;
+}
+
+/* Layout */
+.main-content {
+    transition: all 0.3s;
+}
+
+.main-content.shifted {
+    margin-left: 250px;
+}

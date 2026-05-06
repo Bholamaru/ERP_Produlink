@@ -78,7 +78,7 @@ const NewInvoice = () => {
   useEffect(() => {
     const fetchItems = async () => {
       try {
-        const res = await fetch("http://127.0.0.1:8000/Sales/newsalesorder/");
+        const res = await fetch("https://erp-render.onrender.com/Sales/newsalesorder/");
         const data = await res.json();
 
         const flatItems = data.flatMap((order) =>
@@ -144,7 +144,7 @@ const NewInvoice = () => {
   useEffect(() => {
     const fetchTaxData = async () => {
       try {
-        const res = await fetch("http://127.0.0.1:8000/Sales/newsalesorder/");
+        const res = await fetch("https://erp-render.onrender.com/Sales/newsalesorder/");
         const data = await res.json();
 
         if (data.length > 0 && data[0].item && data[0].item.length > 0) {
@@ -224,7 +224,7 @@ const NewInvoice = () => {
       try {
         const hsnCode = selectedItemObj.HSN_SAC_Code;
 
-        const res = await fetch("http://127.0.0.1:8000/Sales/newsalesorder/");
+        const res = await fetch("https://erp-render.onrender.com/Sales/newsalesorder/");
         const data = await res.json();
 
         let foundItem = null;
@@ -273,8 +273,8 @@ const NewInvoice = () => {
       setItemSearchLoading(true);
 
       const [stockRes, itemFieldsRes] = await Promise.all([
-        fetch(`http://127.0.0.1:8000/Sales/wip/stock/get/?q=${lookupKey}`),
-        fetch(`http://127.0.0.1:8000/All_Masters/Fetch_Item_fields/?q=${encodeURIComponent(lookupKey)}`)
+        fetch(`https://erp-render.onrender.com/Sales/wip/stock/get/?q=${lookupKey}`),
+        fetch(`https://erp-render.onrender.com/All_Masters/Fetch_Item_fields/?q=${encodeURIComponent(lookupKey)}`)
       ]);
 
       const stockData = await stockRes.json();
@@ -380,7 +380,7 @@ const NewInvoice = () => {
     if (selectedSeries === "GST Invoice") {
       try {
         const response = await fetch(
-          "http://127.0.0.1:8000/Sales/create/invoice_no"
+          "https://erp-render.onrender.com/Sales/create/invoice_no"
         );
         if (response.ok) {
           const data = await response.json();
@@ -414,7 +414,7 @@ const NewInvoice = () => {
       "customer", "po_no", "date", "stock", "description",
       "rate", "dis", "po_qty", "bal_qty", "inv_qty",
       "pkg_qty", "type_of_packing", "hsn_code", "invoice",
-      "item_code"
+      "item_code", "part_code", "part_no", "item"
     ];
 
     const cleaned = {};
@@ -465,51 +465,57 @@ const NewInvoice = () => {
     }
 
     try {
-      // --- FIX 2: Map frontend fields to backend fields ---
+      // --- FIX 2: Map frontend fields to backend ---
       const mappedItems = tableData.map((row) => ({
         plant: formData.plant || row.plant || "ProduLink",
-        series: formData.series_type || "",           // ✅ from formData
+        series: formData.series_type || "",
         invoice_type: formData.invoice_type || "GST",
-        invoice_no: formData.invoice_no || "",         // ✅ from formData
+        invoice_no: formData.invoice_no || "",
         customer: row.customer || formData.bill_to || "",
-        po_no: row.cust_po || selectedPO || "",        // ✅ was missing
+        po_no: row.cust_po || selectedPO || "",
         date: row.plan_date || row.due_date || null,
         stock: String(row.stock ?? 0),
-        description: row.item_description || row.Name_Description || "", // ✅ was null
+        description: row.item_description || row.Name_Description || "",
         rate: String(row.rate || 0),
-        dis: row.desc_percent || row.discount_percent || 0,
+        dis: Number(row.desc_percent || row.discount_percent || 0), // ✅ Ensure Number
         po_qty: String(row.po_qty || row.qty || 0),
-        assessable_value: String(row.assessable_value || 0),  // ✅ po_qty * rate
+        assessable_value: String(row.assessable_value || 0),
         bal_qty: null,
-        inv_qty: String(row.inv_qty || row.qty || row.po_qty || 0), // ✅ Populated invoice qty
+        inv_qty: String(row.inv_qty || row.qty || row.po_qty || 0),
         pkg_qty: null,
         type_of_packing: "",
-        hsn_code: row.HSN_SAC_Code || row.hsn_code || "", // ✅ was null
-        item_code: row.item_code || "", // ✅ New field for formatted item string
+        hsn_code: row.HSN_SAC_Code || row.hsn_code || "",
+        item_code: row.item_code || "",
+        part_code: row.last_operation?.part_code || row.Part_Code || row.part_code || row.Item_Code || row.hsn_code || "1",
+        part_no: row.last_operation?.part_no || row.Part_No || row.part_no || row.part_no_short || row.item_code || "",
       }));
 
-      // Calculate total assessable value from all items (po_qty * rate)
+      // Calculate total assessable value
       const totalAssessableValue = tableData.reduce((sum, item) => {
         const value = parseFloat(item.assessable_value || 0);
         return sum + value;
       }, 0);
 
-      // --- FIX 3: Use GSTdetails key (match Django related_name) ---
       let invoicePayload = {
         ...formData,
-        items: mappedItems,           // ✅ use mapped items
-        GSTdetails: [{                // ✅ was: taxes — renamed to match related_name
-          base_value: taxData.base_value || "0.00",          // ✅ Save base value
-          disc_amt: taxData.disc_amt || "0.00",              // ✅ Save discount amount
-          assessble_value: totalAssessableValue.toFixed(2),  // ✅ auto-calculated from items (po_qty * rate)
-          cgst: taxData.cgst || 0,
-          sgst: taxData.sgst || 0,
-          igst: taxData.igst || 0,
-          utgst: taxData.utgst || 0,
-          cgst_amt: taxData.cgst_amt || "0.00",         // ✅ GST amount
-          sgst_amt: taxData.sgst_amt || "0.00",         // ✅ GST amount
-          igst_amt: taxData.igst_amt || "0.00",         // ✅ GST amount
-          utgst_amt: taxData.utgst_amt || "0.00",       // ✅ GST amount
+        items: mappedItems,
+        GSTdetails: [{
+          base_value: taxData.base_value || "0.00",
+          disc_amt: parseInt(taxData.disc_amt || 0),
+          assessble_value: totalAssessableValue.toFixed(2),
+          cgst: Number(taxData.cgst || 0),
+          sgst: Number(taxData.sgst || 0),
+          igst: Number(taxData.igst || 0),
+          utgst: Number(taxData.utgst || 0),
+          cgst_amt: Number(taxData.cgst_amt || 0),
+          sgst_amt: Number(taxData.sgst_amt || 0),
+          igst_amt: Number(taxData.igst_amt || 0),
+          utgst_amt: Number(taxData.utgst_amt || 0),
+          grand_total: Math.round(totalAssessableValue + 
+            Number(taxData.cgst_amt || 0) + 
+            Number(taxData.sgst_amt || 0) + 
+            Number(taxData.igst_amt || 0) + 
+            Number(taxData.utgst_amt || 0)),           // ✅ API requires integer
         }],
       };
 
@@ -519,7 +525,7 @@ const NewInvoice = () => {
       console.log("🔍 CLEANED PAYLOAD BEFORE SEND:");
       console.log(JSON.stringify(invoicePayload, null, 2));
 
-      const response = await fetch("http://127.0.0.1:8000/Sales/invoice/", {
+      const response = await fetch("https://erp-render.onrender.com/Sales/invoice/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(invoicePayload),
@@ -550,11 +556,13 @@ const NewInvoice = () => {
         const seriesSelect = document.getElementById("seriesSelect");
         if (seriesSelect) seriesSelect.value = "Select";
 
-        setTimeout(() => {
-          navigate("/InvoiceList");
-        }, 1500);
+        // setTimeout(() => {
+        //   navigate("/InvoiceList");
+        // }, 1500);
       } else {
-        toast.error("Failed to generate invoice");
+        const errorData = await response.json().catch(() => ({}));
+        console.error("Invoice Error Response:", errorData);
+        toast.error(`Failed: ${JSON.stringify(errorData)}`);
       }
     } catch (error) {
       console.error("API Error:", error);
@@ -591,7 +599,7 @@ const NewInvoice = () => {
         }
 
         const response = await fetch(
-          `http://127.0.0.1:8000/Sales/items/customers-list/?q=${customerSearchTerm}`
+          `https://erp-render.onrender.com/Sales/items/customers-list/?q=${customerSearchTerm}`
         );
 
         if (response.ok) {
@@ -617,7 +625,7 @@ const NewInvoice = () => {
     try {
       setPoSearchLoading(true);
       const response = await fetch(
-        `http://127.0.0.1:8000/Sales/customer/po/?customer=${encodeURIComponent(customerName)}`
+        `https://erp-render.onrender.com/Sales/customer/po/?customer=${encodeURIComponent(customerName)}`
       );
 
       if (response.ok) {

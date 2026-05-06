@@ -312,6 +312,9 @@ import MachineDefaultBook from "./ProductionMaster/Report/MachineDefaultIdle/Mac
 /////////////////////////////  Planning  ////////////////////////////////////
 
 import ProductionSchedule from "./Planning/ProductionSchedule/ProductionSchedule.jsx";
+import MinMaxPlanning from "./Planning/MinMaxPlanning/MinMaxPlanning.jsx";
+import DailyDispatchPlan from "./Planning/DailyDispatchPlan/DailyDispatchPlan.jsx";
+import BusinessPlan from "./Planning/BusinessPlan/BusinessPlan.jsx";
 
 
 ///////////////////////////////////////// Quality ////////////////////////////////////////////////
@@ -786,6 +789,9 @@ function App() {
         {/* ////////////////////////////////// Planning //////////////////////////////////////////// */}
 
         <Route path="/ProductionSchedule" element={<ProductionSchedule />} />
+        <Route path="/MinMaxPlanning" element={<MinMaxPlanning />} />
+        <Route path="/DailyDispatchPlan" element={<DailyDispatchPlan />} />
+        <Route path="/BusinessPlan" element={<BusinessPlan />} />
 
 
         {/* //////////////////////////////////  Quality Plan ///////////////////////////////////// */}
