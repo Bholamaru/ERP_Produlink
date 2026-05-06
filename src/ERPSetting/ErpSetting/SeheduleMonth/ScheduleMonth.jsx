@@ -25,7 +25,7 @@ const ScheduleMonth = () => {
 
   const fetchScheduleMonths = async () => {
     try {
-      const response = await fetch("https://erp-render.onrender.com/Settings/schedule-month/");
+      const response = await fetch("http://127.0.0.1:8000/Settings/schedule-month/");
       if (response.ok) {
         const data = await response.json();
         // Handle direct arrays, DRF paginated 'results', and nested 'data' wrappers
@@ -89,7 +89,7 @@ const ScheduleMonth = () => {
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this schedule month?")) return;
     try {
-      const response = await fetch(`https://erp-render.onrender.com/Settings/schedule-month/${id}/`, {
+      const response = await fetch(`http://127.0.0.1:8000/Settings/schedule-month/${id}/`, {
         method: "DELETE"
       });
       if (response.ok) {
@@ -129,8 +129,8 @@ const ScheduleMonth = () => {
     };
 
     const url = editingId 
-      ? `https://erp-render.onrender.com/Settings/schedule-month/${editingId}/`
-      : "https://erp-render.onrender.com/Settings/schedule-month/";
+      ? `http://127.0.0.1:8000/Settings/schedule-month/${editingId}/`
+      : "http://127.0.0.1:8000/Settings/schedule-month/";
     
     const method = editingId ? "PATCH" : "POST";
 

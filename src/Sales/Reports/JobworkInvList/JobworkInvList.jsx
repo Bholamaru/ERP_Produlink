@@ -25,7 +25,7 @@ const JobworkInvList = () => {
   const fetchInvoices = async () => {
     setLoading(true);
     try {
-      const response = await fetch("https://erp-render.onrender.com/Sales/gst-jobwork-invoice/");
+      const response = await fetch("http://127.0.0.1:8000/Sales/gst-jobwork-invoice/");
       if (response.ok) {
         const data = await response.json();
         setInvoiceData(data);
