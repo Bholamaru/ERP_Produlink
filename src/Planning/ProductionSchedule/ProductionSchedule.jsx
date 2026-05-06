@@ -14,7 +14,7 @@ const ProductionSchedule = () => {
 
   const fetchSchedules = async () => {
     try {
-      const response = await fetch("https://erp-render.onrender.com/Settings/schedule-month/");
+      const response = await fetch("http://127.0.0.1:8000/Settings/schedule-month/");
       if (response.ok) {
         const result = await response.json();
         const rawData = Array.isArray(result) ? result : (result.data || result.results || []);
@@ -73,7 +73,7 @@ const ProductionSchedule = () => {
   const fetchCustomers = async () => {
     try {
       const token = localStorage.getItem("accessToken");
-      const response = await fetch("https://erp-render.onrender.com/Sales/items/customers-list/", {
+      const response = await fetch("http://127.0.0.1:8000/Sales/items/customers-list/", {
         headers: { "Authorization": `Bearer ${token}` }
       });
       if (response.ok) {
@@ -89,7 +89,7 @@ const ProductionSchedule = () => {
   const fetchItems = async () => {
     try {
       const token = localStorage.getItem("accessToken");
-      const response = await fetch("https://erp-render.onrender.com/All_Masters/api/item/summary/", {
+      const response = await fetch("http://127.0.0.1:8000/All_Masters/api/item/summary/", {
         headers: { "Authorization": `Bearer ${token}` }
       });
       if (response.ok) {
@@ -105,7 +105,8 @@ const ProductionSchedule = () => {
   const fetchScheduleItems = async (scheduleMonthId) => {
     setLoadingItems(true);
     try {
-      const response = await fetch(`https://erp-render.onrender.com/Planning/production-schedule/`);
+      // Assuming the API filters by monthYear or similar parameter
+      const response = await fetch(`http://127.0.0.1:8000/Planning/production-schedule/?month=${monthYear}`);
       if (response.ok) {
         const result = await response.json();
         let rawItems = Array.isArray(result) ? result : (result.data || result.results || []);
@@ -182,7 +183,7 @@ const ProductionSchedule = () => {
     };
 
     try {
-      const response = await fetch("https://erp-render.onrender.com/Planning/production-schedule/", {
+      const response = await fetch("http://127.0.0.1:8000/Planning/production-schedule/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
