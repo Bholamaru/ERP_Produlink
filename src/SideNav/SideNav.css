@@ -330,6 +330,7 @@
 .blueside-Nav .dropdown-toggle span {
   word-wrap: break-word;
   overflow-wrap: break-word;
+  white-space: normal !important;
 }
 
 /* Removed transparent zero-width scrollbars to make scrolling visible */
