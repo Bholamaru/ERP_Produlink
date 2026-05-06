@@ -19,10 +19,23 @@ const ProductionSchedule = () => {
         const result = await response.json();
         const rawData = Array.isArray(result) ? result : (result.data || result.results || []);
         
-        const mappedData = rawData.map((item, index) => {
+        const mappedData = await Promise.all(rawData.map(async (item, index) => {
           // Format "MAY 2026" to "MAY-2026" or similar
           const monthYear = (item.month_name || "").replace(" ", "-");
           
+          // Fetch actual item count for this month
+          let totalItemCount = 0;
+          try {
+            const countRes = await fetch(`https://erp-render.onrender.com/Planning/production-schedule/?month=${monthYear}`);
+            if (countRes.ok) {
+              const countResult = await countRes.json();
+              const itemsArray = Array.isArray(countResult) ? countResult : (countResult.data || countResult.results || []);
+              totalItemCount = itemsArray.length;
+            }
+          } catch(e) {
+            console.error("Error fetching item count:", e);
+          }
+
           // Format YYYY-MM-DD to DD/MM/YYYY
           const formatDt = (d) => {
             if (!d) return "";
@@ -37,10 +50,10 @@ const ProductionSchedule = () => {
             fromDate: formatDt(item.from_date),
             toDate: formatDt(item.to_date),
             revNo: item.rev_no || "0",
-            totalItem: item.total_item || 0,
+            totalItem: totalItemCount,
             workingDays: item.w_days || item.w_day || 0
           };
-        });
+        }));
         setScheduleData(mappedData);
       }
     } catch (error) {
@@ -89,14 +102,19 @@ const ProductionSchedule = () => {
     }
   };
 
-  const fetchScheduleItems = async (monthYear) => {
+  const fetchScheduleItems = async (scheduleMonthId) => {
     setLoadingItems(true);
     try {
-      // Assuming the API filters by monthYear or similar parameter
-      const response = await fetch(`https://erp-render.onrender.com/Planning/production-schedule/?month=${monthYear}`);
+      const response = await fetch(`https://erp-render.onrender.com/Planning/production-schedule/`);
       if (response.ok) {
         const result = await response.json();
-        const rawItems = Array.isArray(result) ? result : (result.data || result.results || []);
+        let rawItems = Array.isArray(result) ? result : (result.data || result.results || []);
+        
+        // Filter properly using schedule_month ID
+        if (scheduleMonthId !== undefined && scheduleMonthId !== null) {
+           rawItems = rawItems.filter(item => item.schedule_month === scheduleMonthId);
+        }
+        
         setItemData(rawItems);
       }
     } catch (error) {
@@ -119,8 +137,8 @@ const ProductionSchedule = () => {
   }, []);
 
   const handleViewStatus = (row) => {
-    setSelectedPeriod({ month: row.monthYear, revNo: row.revNo });
-    fetchScheduleItems(row.monthYear);
+    setSelectedPeriod({ id: row.id, month: row.monthYear, revNo: row.revNo });
+    fetchScheduleItems(row.id);
     setCurrentView("planning");
   };
 
@@ -159,6 +177,7 @@ const ProductionSchedule = () => {
       next_month_sc: editFormData.next_month_sc,
       due_dispatch_date: editFormData.due_dispatch_date,
       month: selectedPeriod.month,
+      schedule_month: selectedPeriod.id,
       rev_no: selectedPeriod.revNo
     };
 
@@ -181,7 +200,7 @@ const ProductionSchedule = () => {
           next_month_sc: "0",
           due_dispatch_date: ""
         });
-        fetchScheduleItems(selectedPeriod.month); // Refresh the items table
+        fetchScheduleItems(selectedPeriod.id); // Refresh the items table
       } else {
         const errorData = await response.json().catch(() => ({}));
         alert(`Failed to add: ${JSON.stringify(errorData)}`);
@@ -192,8 +211,8 @@ const ProductionSchedule = () => {
   };
 
   const handleEdit = (row) => {
-    setSelectedPeriod({ month: row.monthYear, revNo: row.revNo });
-    fetchScheduleItems(row.monthYear);
+    setSelectedPeriod({ id: row.id, month: row.monthYear, revNo: row.revNo });
+    fetchScheduleItems(row.id);
     setCurrentView("edit");
   };
 
