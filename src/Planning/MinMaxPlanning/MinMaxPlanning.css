@@ -1,0 +1,97 @@
+/* MinMaxPlanning.css - Match exact screenshot layout for both views */
+
+.MinMaxPlanningMaster {
+    margin-top: 20px;
+    background-color: #ffffff;
+    min-height: 100vh;
+}
+
+.MinMaxPlanning, .WarehouseMaster {
+    background-color: #ffffff;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+}
+
+/* Header Section */
+.MinMaxPlanning-header, .WarehouseMaster-header {
+    background-color: #ffffff;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.header-title {
+    color: #007bff;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.btn-outline-dark {
+    border-color: #ced4da;
+    color: #333;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+.btn-outline-dark:hover {
+    background-color: #e9ecef;
+    color: #000;
+}
+
+/* Filter Bar Section */
+.MinMaxPlanning-Filters, .WarehouseMaster-Form {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+}
+
+label {
+    font-size: 12px;
+    font-weight: 500;
+    color: #333;
+}
+
+.form-select-sm, .form-control-sm {
+    border-radius: 4px;
+    border: 1px solid #ced4da;
+    padding: 2px 8px;
+    font-size: 12px;
+}
+
+.form-check-input {
+    width: 14px;
+    height: 14px;
+    cursor: pointer;
+}
+
+.btn-light {
+    background-color: #ffffff;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.btn-light:hover {
+    background-color: #e9ecef;
+}
+
+/* Content Area */
+.MinMaxPlanning-Content, .WarehouseMaster-Content {
+    background-color: #ffffff;
+}
+
+/* Footer Section */
+.MinMaxPlanning-Footer, .WarehouseMaster-Footer {
+    background-color: #e9ecef;
+    border-top: 1px solid #dee2e6;
+    color: #333;
+}
+
+.WarehouseMaster-Footer {
+    color: #007bff !important;
+}
+
+/* Responsive Overrides */
+@media (max-width: 991px) {
+    .MinMaxPlanning-Filters .gap-4, .WarehouseMaster-Form .gap-3 {
+        gap: 10px !important;
+    }
+}
