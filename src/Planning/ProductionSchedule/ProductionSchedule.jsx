@@ -8,9 +8,30 @@ import "./ProductionSchedule.css";
 
 const ProductionSchedule = () => {
   const [sideNavOpen, setSideNavOpen] = useState(false);
-  const [currentView, setCurrentView] = useState("list"); // 'list', 'planning', or 'edit'
-  const [selectedPeriod, setSelectedPeriod] = useState({ month: "APR-2024", revNo: "0" });
   const [scheduleData, setScheduleData] = useState([]);
+  const [selectedPeriod, setSelectedPeriod] = useState({ month: "APR-2024", revNo: "0" });
+  const [currentView, setCurrentView] = useState("list"); // 'list', 'planning', or 'edit'
+
+  // Handle browser back button to return to the list view instead of leaving the page
+  useEffect(() => {
+    const handlePopState = (event) => {
+      if (currentView !== "list") {
+        setCurrentView("list");
+      }
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [currentView]);
+
+  // Push state to history when changing view away from list
+  useEffect(() => {
+    if (currentView !== "list") {
+      // Check if we already pushed a state for this view to avoid duplicates
+      if (!window.history.state || window.history.state.view !== currentView) {
+        window.history.pushState({ view: currentView }, "");
+      }
+    }
+  }, [currentView]);
 
   const fetchSchedules = async () => {
     try {
@@ -19,22 +40,32 @@ const ProductionSchedule = () => {
         const result = await response.json();
         const rawData = Array.isArray(result) ? result : (result.data || result.results || []);
         
-        const mappedData = await Promise.all(rawData.map(async (item, index) => {
+        // Fetch ALL items once to count them for each schedule more efficiently
+        let allItems = [];
+        try {
+          const itemsRes = await fetch("https://erp-render.onrender.com/Planning/production-schedule/");
+          if (itemsRes.ok) {
+            const itemsResult = await itemsRes.json();
+            allItems = Array.isArray(itemsResult) ? itemsResult : (itemsResult.data || result.results || itemsResult.data || itemsResult.results || []);
+            // Support different API response structures
+            if (!Array.isArray(allItems)) {
+               allItems = itemsResult.data || itemsResult.results || [];
+            }
+          }
+        } catch (e) {
+          console.error("Error fetching all items for count:", e);
+        }
+
+        const mappedData = rawData.map((item, index) => {
           // Format "MAY 2026" to "MAY-2026" or similar
           const monthYear = (item.month_name || "").replace(" ", "-");
           
-          // Fetch actual item count for this month
-          let totalItemCount = 0;
-          try {
-            const countRes = await fetch(`https://erp-render.onrender.com/Planning/production-schedule/?month=${monthYear}`);
-            if (countRes.ok) {
-              const countResult = await countRes.json();
-              const itemsArray = Array.isArray(countResult) ? countResult : (countResult.data || countResult.results || []);
-              totalItemCount = itemsArray.length;
-            }
-          } catch(e) {
-            console.error("Error fetching item count:", e);
-          }
+          // Count items that belong to this schedule month ID
+          const totalItemCount = allItems.filter(i => 
+            i.schedule_month !== null && 
+            i.schedule_month !== undefined && 
+            Number(i.schedule_month) === Number(item.id)
+          ).length;
 
           // Format YYYY-MM-DD to DD/MM/YYYY
           const formatDt = (d) => {
@@ -53,7 +84,7 @@ const ProductionSchedule = () => {
             totalItem: totalItemCount,
             workingDays: item.w_days || item.w_day || 0
           };
-        }));
+        });
         setScheduleData(mappedData);
       }
     } catch (error) {
@@ -102,18 +133,21 @@ const ProductionSchedule = () => {
     }
   };
 
-  const fetchScheduleItems = async (scheduleMonthId) => {
+  const fetchScheduleItems = async (scheduleMonthId, monthYear) => {
     setLoadingItems(true);
     try {
-      // Assuming the API filters by monthYear or similar parameter
-      const response = await fetch(`http://127.0.0.1:8000/Planning/production-schedule/?month=${monthYear}`);
+      const formattedMonth = monthYear ? monthYear.replace("-", " ") : "";
+      const response = await fetch(`https://erp-render.onrender.com/Planning/schedule-month-filter/?month_name=${encodeURIComponent(formattedMonth)}`);
       if (response.ok) {
         const result = await response.json();
-        let rawItems = Array.isArray(result) ? result : (result.data || result.results || []);
+        let rawItems = [];
         
-        // Filter properly using schedule_month ID
-        if (scheduleMonthId !== undefined && scheduleMonthId !== null) {
-           rawItems = rawItems.filter(item => item.schedule_month === scheduleMonthId);
+        const dataArray = Array.isArray(result.data) ? result.data : [];
+        if (dataArray.length > 0) {
+           const scheduleData = dataArray[0];
+           if (Array.isArray(scheduleData.production_schedules)) {
+             rawItems = scheduleData.production_schedules;
+           }
         }
         
         setItemData(rawItems);
@@ -139,7 +173,7 @@ const ProductionSchedule = () => {
 
   const handleViewStatus = (row) => {
     setSelectedPeriod({ id: row.id, month: row.monthYear, revNo: row.revNo });
-    fetchScheduleItems(row.id);
+    fetchScheduleItems(row.id, row.monthYear);
     setCurrentView("planning");
   };
 
@@ -201,7 +235,7 @@ const ProductionSchedule = () => {
           next_month_sc: "0",
           due_dispatch_date: ""
         });
-        fetchScheduleItems(selectedPeriod.id); // Refresh the items table
+        fetchScheduleItems(selectedPeriod.id, selectedPeriod.month); // Refresh the items table
       } else {
         const errorData = await response.json().catch(() => ({}));
         alert(`Failed to add: ${JSON.stringify(errorData)}`);
@@ -213,7 +247,7 @@ const ProductionSchedule = () => {
 
   const handleEdit = (row) => {
     setSelectedPeriod({ id: row.id, month: row.monthYear, revNo: row.revNo });
-    fetchScheduleItems(row.id);
+    fetchScheduleItems(row.id, row.monthYear);
     setCurrentView("edit");
   };
 
@@ -229,7 +263,7 @@ const ProductionSchedule = () => {
                 
                 {/* --- CASE 1: SUMMARY LIST VIEW --- */}
                 {currentView === "list" && (
-                  <div className="ProductionSchedule mt-5">
+                  <div className="ProductionSchedule mt-2">
                     <div className="ProductionSchedule-header mb-4 text-start">
                       <div className="row align-items-center">
                         <div className="col-md-4">
@@ -304,7 +338,7 @@ const ProductionSchedule = () => {
 
                 {/* --- CASE 2: PLANNING STATUS VIEW --- */}
                 {currentView === "planning" && (
-                  <div className="ProductionScheduleStatus mt-5">
+                  <div className="ProductionScheduleStatus mt-2">
                     <div className="ProductionScheduleStatus-header mb-4 text-start">
                       <div className="d-flex justify-content-between align-items-center mb-0">
                         <div className="d-flex align-items-center gap-2">
@@ -368,19 +402,23 @@ const ProductionSchedule = () => {
                         <tbody>
                           {itemData.map((item, idx) => (
                             <tr key={idx} className="align-middle">
-                              <td>{item.sr}</td><td>{(item.itemNo || item.item_no || "-") + " / " + (item.itemCode || item.item_code || "-")}</td>
-                              <td className="text-start ps-2">{item.itemDesc || item.item_description || "-"}</td>
-                              <td>{item.schQty}</td><td>{item.disQty || 0}</td>
-                              <td className="bg-danger text-white fw-bold">{item.balQty}</td>
-                              <td>{item.daysComp}</td><td>{item.curAvg}</td><td>{item.daysRem}</td>
-                              <td>{item.askRate}</td>
+                              <td>{idx + 1}</td>
+                              <td>{(item.item_no || item.itemNo || "-") + " / " + (item.item_code || item.itemCode || "-")}</td>
+                              <td className="text-start ps-2">{item.item_description || item.itemDesc || item.item_desc || "-"}</td>
+                              <td>{item.sch_qty || item.schQty || 0}</td>
+                              <td>{item.dis_qty || item.disQty || 0}</td>
+                              <td className="bg-danger text-white fw-bold">{item.bal_qty || item.balQty || 0}</td>
+                              <td>{item.days_comp || item.daysComp || 0}</td>
+                              <td>{item.cur_avg || item.curAvg || 0}</td>
+                              <td>{item.days_rem || item.daysRem || 0}</td>
+                              <td>{item.ask_rate || item.askRate || 0}</td>
                               <td>
                                 <div className="progress">
-                                  <div className="progress-bar bg-danger" style={{width: `${item.status}%`}}></div>
-                                  <span className="progress-text">{item.status}%</span>
+                                  <div className="progress-bar bg-danger" style={{width: `${item.status || 0}%`}}></div>
+                                  <span className="progress-text">{item.status || 0}%</span>
                                 </div>
                               </td>
-                              <td className="text-primary">{item.revNos}</td>
+                              <td className="text-primary">{item.rev_no || item.revNos || "-"}</td>
                               <td><button className="btn btn-link p-0 text-dark" onClick={() => setCurrentView("edit")}><FaEye /></button></td>
                             </tr>
                           ))}
@@ -401,7 +439,7 @@ const ProductionSchedule = () => {
 
                 {/* --- CASE 3: ADD/EDIT VIEW --- */}
                 {currentView === "edit" && (
-                  <div className="ProductionScheduleEdit mt-5">
+                  <div className="ProductionScheduleEdit mt-2">
                     {/* Header */}
                     <div className="ProductionScheduleEdit-header mb-4 text-start">
                        <div className="d-flex justify-content-between align-items-center">
