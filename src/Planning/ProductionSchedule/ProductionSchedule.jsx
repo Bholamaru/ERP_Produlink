@@ -26,7 +26,7 @@ const ProductionSchedule = () => {
           // Fetch actual item count for this month
           let totalItemCount = 0;
           try {
-            const countRes = await fetch(`https://erp-render.onrender.com/Planning/production-schedule/?month=${monthYear}`);
+            const countRes = await fetch(`http://127.0.0.1:8000/Planning/production-schedule/?month=${monthYear}`);
             if (countRes.ok) {
               const countResult = await countRes.json();
               const itemsArray = Array.isArray(countResult) ? countResult : (countResult.data || countResult.results || []);
