@@ -81,19 +81,17 @@ const MinMaxPlanning = () => {
                 {currentView === "planning" && (
                   <div className="MinMaxPlanning mt-2">
                     {/* Header */}
-                    <div className="MinMaxPlanning-header d-flex justify-content-between align-items-center mb-0 p-2 border-bottom">
-                      <h5 className="header-title mb-0" style={{ color: '#007bff', fontSize: '16px', fontWeight: '600' }}>
-                        Update Itemwise Min-Max
-                      </h5>
+                    <div className="MinMaxPlanning-header d-flex justify-content-between align-items-center mb-0 p-2 bg-white border-bottom">
+                      <h6 className="header-title mb-0">Update Itemwise Min-Max</h6>
                       <div className="header-actions d-flex gap-2">
-                          <button className="btn btn-sm btn-outline-dark d-flex align-items-center gap-1" style={{ fontSize: '11px' }} onClick={() => setCurrentView("warehouse")}>
-                             <span style={{ width: '4px', height: '12px', background: 'red', display: 'inline-block' }}></span> Warehouse Item
+                          <button className="erp-btn-cyan d-flex align-items-center gap-1" onClick={() => setCurrentView("warehouse")}>
+                             Warehouse Item
                           </button>
-                          <button className="btn btn-sm btn-outline-dark d-flex align-items-center gap-1" style={{ fontSize: '11px' }} onClick={() => setCurrentView("movingDays")}>
-                             <FaFilter /> Update Moving Non Moving Days
+                          <button className="erp-btn-cyan d-flex align-items-center gap-1" onClick={() => setCurrentView("movingDays")}>
+                             Update Moving Non Moving Days
                           </button>
-                          <button className="btn btn-sm btn-outline-dark d-flex align-items-center gap-1" style={{ fontSize: '11px' }}>
-                             <FaFileExcel className="text-success" /> Export Report
+                          <button className="erp-btn-cyan d-flex align-items-center gap-1">
+                             Export Report
                           </button>
                       </div>
                     </div>
@@ -143,7 +141,7 @@ const MinMaxPlanning = () => {
                     </div>
 
                     {/* Footer */}
-                    <div className="MinMaxPlanning-Footer p-2 border bg-light mt-0" style={{ fontSize: '12px', fontWeight: '600' }}>
+                    <div className="MinMaxPlanning-Footer p-2 mt-0">
                       Total Record : 00
                     </div>
                   </div>

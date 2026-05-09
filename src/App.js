@@ -315,6 +315,8 @@ import ProductionSchedule from "./Planning/ProductionSchedule/ProductionSchedule
 import MinMaxPlanning from "./Planning/MinMaxPlanning/MinMaxPlanning.jsx";
 import DailyDispatchPlan from "./Planning/DailyDispatchPlan/DailyDispatchPlan.jsx";
 import BusinessPlan from "./Planning/BusinessPlan/BusinessPlan.jsx";
+import UpcomingDispatchList from "./Planning/UpcomingDispatchList/UpcomingDispatchList.jsx";
+import CapacityPlanning from "./Planning/CapacityPlanning/CapacityPlanning.jsx";
 
 
 ///////////////////////////////////////// Quality ////////////////////////////////////////////////
@@ -792,6 +794,8 @@ function App() {
         <Route path="/MinMaxPlanning" element={<MinMaxPlanning />} />
         <Route path="/DailyDispatchPlan" element={<DailyDispatchPlan />} />
         <Route path="/BusinessPlan" element={<BusinessPlan />} />
+        <Route path="/UpcomingDispatchList" element={<UpcomingDispatchList />} />
+        <Route path="/CapacityPlanning" element={<CapacityPlanning />} />
 
 
         {/* //////////////////////////////////  Quality Plan ///////////////////////////////////// */}

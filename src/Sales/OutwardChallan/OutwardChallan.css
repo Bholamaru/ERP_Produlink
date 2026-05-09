@@ -190,3 +190,22 @@ body {
     }
   }
   
+  /* Compact Table for Footer */
+  .compact-table td {
+    padding: 4px 6px !important;
+    font-size: 11px !important;
+    white-space: nowrap;
+    vertical-align: middle !important;
+  }
+  
+  .compact-table input, .compact-table select, .compact-table textarea {
+    padding: 2px 5px !important;
+    font-size: 11px !important;
+    height: auto !important;
+  }
+  
+  .vndrbtn {
+    font-size: 12px !important;
+    padding: 5px 15px !important;
+    font-weight: 600;
+  }

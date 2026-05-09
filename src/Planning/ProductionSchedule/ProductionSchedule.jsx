@@ -43,7 +43,7 @@ const ProductionSchedule = () => {
         // Fetch ALL items once to count them for each schedule more efficiently
         let allItems = [];
         try {
-          const itemsRes = await fetch("https://erp-render.onrender.com/Planning/production-schedule/");
+          const itemsRes = await fetch("http://127.0.0.1:8000/Planning/production-schedule/");
           if (itemsRes.ok) {
             const itemsResult = await itemsRes.json();
             allItems = Array.isArray(itemsResult) ? itemsResult : (itemsResult.data || result.results || itemsResult.data || itemsResult.results || []);
@@ -137,7 +137,7 @@ const ProductionSchedule = () => {
     setLoadingItems(true);
     try {
       const formattedMonth = monthYear ? monthYear.replace("-", " ") : "";
-      const response = await fetch(`https://erp-render.onrender.com/Planning/schedule-month-filter/?month_name=${encodeURIComponent(formattedMonth)}`);
+      const response = await fetch(`http://127.0.0.1:8000/Planning/schedule-month-filter/?month_name=${encodeURIComponent(formattedMonth)}`);
       if (response.ok) {
         const result = await response.json();
         let rawItems = [];
@@ -152,8 +152,76 @@ const ProductionSchedule = () => {
         
         setItemData(rawItems);
       }
+
+      // 2. Parse Month/Year for the Report API call
+      const monthMap = {
+        "JAN": 1, "JANUARY": 1, "FEB": 2, "FEBRUARY": 2, "MAR": 3, "MARCH": 3,
+        "APR": 4, "APRIL": 4, "MAY": 5, "JUN": 6, "JUNE": 6,
+        "JUL": 7, "JULY": 7, "AUG": 8, "AUGUST": 8, "SEP": 9, "SEPTEMBER": 9,
+        "OCT": 10, "OCTOBER": 10, "NOV": 11, "NOVEMBER": 11, "DEC": 12, "DECEMBER": 12
+      };
+      const parts = (monthYear || "").split("-");
+      const monthName = parts[0] ? parts[0].toUpperCase() : "";
+      const year = parts[1] || new Date().getFullYear();
+      const monthNum = monthMap[monthName] || (new Date().getMonth() + 1);
+
+      // 3. Fetch Data from the Month-Wise Invoice Report API
+      // Using the exact pattern: https://erp-render.onrender.com/Planning/month-wise-invoice-report/?month=5&year=2026
+      const rptResponse = await fetch(`https://erp-render.onrender.com/Planning/month-wise-invoice-report/?month=${monthNum}&year=${year}`);
+      let reportData = [];
+      if (rptResponse.ok) {
+        const rptResult = await rptResponse.json();
+        reportData = Array.isArray(rptResult) ? rptResult : (rptResult.data || rptResult.results || []);
+      }
+
+      // 4. Merge Data Item Wise
+      // We prioritize scheduledItems from the production-schedule API, 
+      // but enrich/overwrite with the latest status from the invoice report.
+      const mergedItems = scheduledItems.map((schItem) => {
+        const match = reportData.find((rpt) => {
+          const rptItemNo = String(rpt.item_no || "").trim().toLowerCase();
+          const rptItemCode = String(rpt.item_code || "").trim().toLowerCase();
+          const schItemNo = String(schItem.item_no || "").trim().toLowerCase();
+          const schItemCode = String(schItem.item_code || "").trim().toLowerCase();
+          return (
+            (rptItemNo && rptItemNo === schItemNo) ||
+            (rptItemCode && rptItemCode === schItemCode)
+          );
+        });
+
+        // API values item wise
+        // 1. Sch.Qty comes from report if available, else from schedule
+        const schQty = (match && match.sch_qty !== undefined) ? Number(match.sch_qty) : Number(schItem.sch_qty || 0);
+        // 2. Dis.Qty (Dispatched) comes from report's total_inv_qty
+        const disQty = Number(match?.total_inv_qty || 0);
+        // 3. Bal.Qty (Balance) is calculated from the report data
+        const balQty = (match && match.bal_qty !== undefined) ? Number(match.bal_qty) : (schQty - disQty);
+
+        return {
+          ...schItem,
+          // Update values from the Month-Wise Report API
+          sch_qty: schQty,
+          total_inv_qty: disQty,
+          bal_qty: balQty,
+          // Map additional status fields using EXACT TitleCase keys from API
+          days_comp: match?.Days_Comp || 0,
+          cur_avg: match?.Cur_Avg || 0,
+          days_rem: match?.Days_Rem || 0,
+          ask_rate: match?.Ask_Rate || 0,
+          // Calculate status percentage based on latest figures
+          status: schQty > 0 ? Math.round((disQty / schQty) * 100) : 0,
+          item_description:
+            schItem.item_description ||
+            schItem.item_desc ||
+            schItem.item_description ||
+            match?.item_description ||
+            "-",
+        };
+      });
+
+      setItemData(mergedItems);
     } catch (error) {
-      console.error("Error fetching schedule items:", error);
+      console.error("Error fetching/merging data:", error);
     } finally {
       setLoadingItems(false);
     }
@@ -172,7 +240,12 @@ const ProductionSchedule = () => {
   }, []);
 
   const handleViewStatus = (row) => {
-    setSelectedPeriod({ id: row.id, month: row.monthYear, revNo: row.revNo });
+    setSelectedPeriod({ 
+      id: row.id, 
+      month: row.monthYear, 
+      revNo: row.revNo, 
+      workingDays: row.workingDays 
+    });
     fetchScheduleItems(row.id, row.monthYear);
     setCurrentView("planning");
   };
@@ -246,7 +319,12 @@ const ProductionSchedule = () => {
   };
 
   const handleEdit = (row) => {
-    setSelectedPeriod({ id: row.id, month: row.monthYear, revNo: row.revNo });
+    setSelectedPeriod({ 
+      id: row.id, 
+      month: row.monthYear, 
+      revNo: row.revNo, 
+      workingDays: row.workingDays 
+    });
     fetchScheduleItems(row.id, row.monthYear);
     setCurrentView("edit");
   };
@@ -383,7 +461,9 @@ const ProductionSchedule = () => {
                             <select className="form-select form-select-sm"><option>ALL</option></select>
                           </div>
                           <div className="col-md-2">
-                            <button className="btn btn-primary btn-sm w-100" style={{height: '35px'}}><FaSearch /> Search</button>
+                            <button className="btn btn-primary btn-sm w-100" style={{height: '35px'}} onClick={() => fetchScheduleItems(selectedPeriod.id, selectedPeriod.month)}>
+                               <FaSearch /> Search
+                            </button>
                           </div>
                         </div>
                       </div>
@@ -403,12 +483,26 @@ const ProductionSchedule = () => {
                           {itemData.map((item, idx) => (
                             <tr key={idx} className="align-middle">
                               <td>{idx + 1}</td>
-                              <td>{(item.item_no || item.itemNo || "-") + " / " + (item.item_code || item.itemCode || "-")}</td>
-                              <td className="text-start ps-2">{item.item_description || item.itemDesc || item.item_desc || "-"}</td>
-                              <td>{item.sch_qty || item.schQty || 0}</td>
-                              <td>{item.dis_qty || item.disQty || 0}</td>
-                              <td className="bg-danger text-white fw-bold">{item.bal_qty || item.balQty || 0}</td>
-                              <td>{item.days_comp || item.daysComp || 0}</td>
+                              {/* Item No / Code */}
+                              <td>
+                                {(item.item_no || "-") + " / " + (item.item_code || "-")}
+                              </td>
+                              {/* Item Description */}
+                              <td className="text-start">
+                                {item.item_description ||
+                                  item.item_desc ||
+                                  item.Name_Description ||
+                                  "-"}
+                              </td>
+                              {/* Schedule Qty */}
+                              <td>{item.sch_qty || 0}</td>
+                              {/* Dis.Qty */}
+                              <td>{item.total_inv_qty || 0}</td>
+                              {/* Bal.Qty */}
+                              <td className="bg-danger text-white fw-bold">
+                                {item.bal_qty || 0}
+                              </td>
+                              <td>{item.days_comp || 0}</td>
                               <td>{item.cur_avg || item.curAvg || 0}</td>
                               <td>{item.days_rem || item.daysRem || 0}</td>
                               <td>{item.ask_rate || item.askRate || 0}</td>
@@ -425,11 +519,7 @@ const ProductionSchedule = () => {
                         </tbody>
                         <tfoot className="table-light fw-bold">
                           <tr>
-                            <td colSpan="4" className="text-start ps-2">Total Item : 224</td>
-                            <td colSpan="2" className="text-end pe-2">Sch.Qty : 13124665</td>
-                            <td colSpan="2" className="text-start ps-2">Dis.Qty : 1935214</td>
-                            <td colSpan="3" className="text-start ps-2">Bal.Qty: 11189451</td>
-                            <td colSpan="3" className="text-start ps-2">Per : 14.74 %</td>
+                            <td colSpan="13" className="text-start ps-2">Total Item : {itemData.length}</td>
                           </tr>
                         </tfoot>
                       </table>
