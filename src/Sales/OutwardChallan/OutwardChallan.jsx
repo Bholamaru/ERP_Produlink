@@ -354,23 +354,39 @@ const OutwardChallan = () => {
   }, [currentItem.type, selectedItemType, venderItems]);
 
   const handleAddItem = () => {
+    // Required fields check - handles both FG and RM logic
     if (
-      !currentItem.description ||
-      !currentItem.pkg ||
-      !currentItem.process ||
-      !currentItem.qtyKg ||
-      !currentItem.qtyNo ||
+      (!currentItem.type && !currentItem.description) ||
       !currentItem.store ||
-      !currentItem.stock ||
-      !currentItem.suppRefNo ||
-      !currentItem.type ||
-      !currentItem.wRate ||
-      !currentItem.wValue
+      !currentItem.qtyNo
     ) {
-      return toast.error("Please fill all the values to add the item.");
+      toast.error("Please select item, heat no and quantity");
+      return;
     }
-    setItems((prev) => [...prev, currentItem]);
+
+    const newItem = {
+      ...currentItem,
+
+      // Optional fields defaults
+      description: currentItem.description || "",
+      pkg: currentItem.pkg || "",
+      process: currentItem.process || "",
+      qtyKg: currentItem.qtyKg || "",
+      suppRefNo: currentItem.suppRefNo || "",
+      wRate: currentItem.wRate || 0,
+      wValue: currentItem.wValue || 0,
+    };
+
+    console.log("ADDING ITEM:", newItem);
+
+    // Add into table
+    setItems((prev) => [...prev, newItem]);
+
+    toast.success("Item Added Successfully");
+
+    // Reset form
     setCurrentItem({ ...initialItem });
+
     setHeatNoData([]);
     setShowHeatNoDropdown(false);
     setFgOperations([]);
@@ -420,70 +436,54 @@ const OutwardChallan = () => {
     if (!itemCode) return;
 
     try {
-      // API Call
-      const url = `http://127.0.0.1:8000/Sales/heatno/fg/?item=${encodeURIComponent(
+      // API Call - Updated to the new onrender.com URL as requested
+      const url = `https://erp-render.onrender.com/Production/item/op/heatqty/?item=${encodeURIComponent(
         itemCode
       )}`;
-      console.log("Fetching URL:", url);
+      console.log("API URL:", url);
 
       const res = await fetch(url);
       const resData = await res.json();
-      setFgFullResponse(resData); // Data save 
+      console.log("API RESPONSE:", resData);
 
       let finalStockData = [];
-
-      // --- LOGIC START ---
-      if (currentOpNo === 10) {
-
-        if (resData.heat_qty_summary && Array.isArray(resData.heat_qty_summary)) {
-          finalStockData = resData.heat_qty_summary.map((d) => ({
-            heat_no: d.HeatNo,
-            stock: d.Qty,
-          }));
+      // resData format:
+      // {
+      //   "10|PFFGFG1001": {
+      //      "SIR1": 7179.3,
+      //      "AB124": 4000
+      //   }
+      // }
+      Object.keys(resData).forEach((key) => {
+        const opNumber = key.split("|")[0];
+        // Match operation number
+        if (parseInt(opNumber) === parseInt(currentOpNo)) {
+          const heatObject = resData[key];
+          Object.entries(heatObject).forEach(([heatNo, stock]) => {
+            finalStockData.push({
+              heat_no: heatNo,
+              stock: stock,
+            });
+          });
         }
-      } else {
+      });
 
-        const requiredPrevOp = currentOpNo - 10;
+      console.log("FINAL HEAT DATA:", finalStockData);
 
-        if (resData.production_summary) {
-          const keys = Object.keys(resData.production_summary);
-
-          const matchingKey = keys.find((k) => k.startsWith(`${requiredPrevOp}|`));
-
-          if (matchingKey) {
-            const dataList = resData.production_summary[matchingKey];
-            finalStockData = dataList.map((d) => ({
-              heat_no: d.lot_no,
-              stock: d.prod_qty,
-            }));
-          }
-        }
-      }
-      // --- LOGIC END ---
-
-      // Dropdown Update
       if (finalStockData.length > 0) {
         setHeatNoData(finalStockData);
         setShowHeatNoDropdown(true);
 
-
-        if (finalStockData.length === 1) {
-          setCurrentItem((prev) => ({
-            ...prev,
-            store: finalStockData[0].heat_no,
-            stock: finalStockData[0].stock,
-          }));
-        }
-
-        toast.success(`Data Loaded: ${finalStockData.length} Records`);
+        toast.success(`Heat numbers loaded: ${finalStockData.length}`);
       } else {
         setHeatNoData([]);
         setShowHeatNoDropdown(false);
-        toast.warning("No stock found for this Operation");
+        toast.warning("No Heat No Found");
       }
     } catch (err) {
-      console.error("Error fetching FG data:", err);
+      console.error("Error fetching FG heat data:", err);
       setHeatNoData([]);
+      toast.error("Failed to fetch heat data");
     }
   };
 
@@ -524,44 +524,46 @@ const OutwardChallan = () => {
       }
       // --- FG LOGIC ---
       else if (selectedItemType === "FG") {
-        cleanCode = item.ItemName;
+        console.log("FULL ITEM DATA:", item);
+        let cleanCode = "";
+        let currentOpNo = 10;
 
-        if (item.ItemName && item.ItemName.includes("|")) {
-          const pipeParts = item.ItemName.split("|");
-          const firstSection = pipeParts[0];
-
-          if (firstSection.includes("-")) {
-            const dashParts = firstSection.split("-");
-            if (dashParts.length >= 2) {
-              cleanCode = dashParts[1].trim();
-            } else {
-              cleanCode = dashParts[0].trim();
-            }
-          } else {
-            cleanCode = pipeParts.length > 1 ? pipeParts[1].trim() : pipeParts[0].trim();
+        // ===== NEW PRIORITY: Find Numeric ID first =====
+        // ===== REGEX FALLBACK =====
+        if ((cleanCode === "" || cleanCode === null) && item) {
+          const fullText = JSON.stringify(item);
+          console.log("FULL STRING SEARCH:", fullText);
+          const match = fullText.match(/-\s*(\d+)\s*-/);
+          if (match) {
+            cleanCode = match[1];
           }
+        }
+        console.log("Found Numeric ID via Regex:", cleanCode);
 
-          const opPart = pipeParts.find((part) =>
-            part.trim().toUpperCase().startsWith("OP:")
-          );
-          if (opPart) {
-            const opNumberStr = opPart.split(":")[1];
-            currentOpNo = parseInt(opNumberStr);
+        // ===== FALLBACK: Direct fields =====
+        if (!cleanCode) {
+          if (item.id !== undefined && item.id !== null) cleanCode = item.id;
+          else if (item.item !== undefined && item.item !== null) cleanCode = item.item;
+          else if (item.Item_ID !== undefined && item.Item_ID !== null) cleanCode = item.Item_ID;
+        }
+
+        // ===== OP NUMBER =====
+        if (item.ItemName && item.ItemName.includes("OP:")) {
+          const opMatch = item.ItemName.match(/OP:(\d+)/);
+          if (opMatch) {
+            currentOpNo = parseInt(opMatch[1]);
           }
         }
 
-        console.log("FG Clean Code:", cleanCode, "Operation:", currentOpNo);
+        console.log("FINAL ITEM ID FOR API:", cleanCode);
 
-        // State Update
         setCurrentItem((prev) => ({
           ...prev,
-         
-          
-           type: ` (${item.ItemName}${item.ItemDescription})`,
-           description: item.ItemDescription,
+          type: item.ItemName || item.item_code || "",
+          description: item.ItemDescription || item.description || item.ItemName || "",
           item_code: cleanCode,
           qtyNo: item.Qty || "",
-          wRate: item.Rate || "",
+          wRate: item.Rate || item.rate || "",
           process: `OP ${currentOpNo}`,
           store: "",
           stock: ""
@@ -569,8 +571,14 @@ const OutwardChallan = () => {
 
         setShowFilterDropDown(false);
 
-
-        await fetchAndMapFGData(cleanCode, currentOpNo);
+        // ===== API CALL =====
+        if (cleanCode !== "" && cleanCode !== null && cleanCode !== undefined) {
+          console.log("FINAL ITEM ID FOR API:", cleanCode);
+          await fetchAndMapFGData(cleanCode, currentOpNo);
+        } else {
+          console.log("ID extraction failed");
+          toast.error("Unable to fetch item id");
+        }
       }
       // --- ITEM MASTER LOGIC ---
       else {
@@ -596,6 +604,24 @@ const OutwardChallan = () => {
     setVenderItems({ all_details: [] });
     setCurrentItem(initialItem);
     fetchItemsForVendor(vendor.Name);
+  };
+
+  const handleHeatChange = (e) => {
+    const heatNo = e.target.value;
+    const selectedData = heatNoData.find((item) => item.heat_no === heatNo);
+    if (selectedData) {
+      setCurrentItem((prev) => ({
+        ...prev,
+        store: selectedData.heat_no,
+        stock: selectedData.stock,
+      }));
+    } else {
+      setCurrentItem((prev) => ({
+        ...prev,
+        store: "",
+        stock: "",
+      }));
+    }
   };
 
   const handleSelectHeatNo = (item) => {
@@ -830,24 +856,38 @@ const OutwardChallan = () => {
                             <ul
                               className="dropdown-menu show"
                               style={{
-                                width: "100%",
-                                maxHeight: "180px",
+                                width: "250px",
+                                maxHeight: "250px",
                                 overflowY: "auto",
-                                border: "1px solid #ccc",
-                                zIndex: 1000,
+                                border: "1px solid #ced4da",
+                                borderRadius: "8px",
+                                boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                                zIndex: 1050,
+                                position: "absolute",
+                                top: "100%",
+                                left: "0",
+                                padding: "4px 0",
+                                backgroundColor: "#fff"
                               }}
                             >
                               {venders.map((item) => (
                                 <li
-                                  key={item.id}
-                                  className="dropdown-item"
+                                  key={item.id || item.Number}
+                                  className="dropdown-item d-flex justify-content-between align-items-center"
                                   onClick={() => handleSelectVendor(item)}
                                   style={{
-                                    padding: "4px 8px",
+                                    padding: "10px 15px",
                                     cursor: "pointer",
+                                    fontSize: "13px",
+                                    borderBottom: "1px solid #f8f9fa",
+                                    transition: "background-color 0.2s"
                                   }}
+                                  onMouseOver={(e) => (e.currentTarget.style.backgroundColor = "#f0f7ff")}
+                                  onMouseOut={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
                                 >
-                                  {item.Name} ({item.Number})
+                                  <div>
+                                    <div style={{ fontWeight: "600", color: "#333" }}>{item.Name}</div>
+                                  </div>
                                 </li>
                               ))}
                             </ul>
@@ -1041,144 +1081,51 @@ const OutwardChallan = () => {
                                 </td>
 
                                 <td className="position-relative">
-                                  {selectedItemType === "RM" ? (
-                                    <div>
-                                      <input
-                                        type="text"
-                                        name="store"
-                                        className="form-control form-control-sm mb-1"
-                                        placeholder="Heat No | Stock"
-                                        value={currentItem.store}
-                                        onChange={handleItemChange}
-                                        onClick={handleStoreFieldClick}
-                                        autoComplete="off"
-                                      />
-                                      <input
-                                        type="text"
-                                        name="stock"
-                                        className="form-control form-control-sm mb-1"
-                                        placeholder="Stock"
-                                        value={currentItem.stock}
-                                        readOnly
-                                      />
-                                      {showHeatNoDropdown &&
-                                        heatNoData.length > 0 && (
-                                          <ul
-                                            className="dropdown-menu show position-absolute"
-                                            style={{
-                                              maxHeight: "200px",
-                                              overflowY: "auto",
-                                              zIndex: 1000,
-                                            }}
-                                          >
-                                            {heatNoData.map((item, index) => (
-                                              <li
-                                                key={index}
-                                                className="dropdown-item"
-                                                onClick={() =>
-                                                  handleSelectHeatNo(item)
-                                                }
-                                              >
-                                                <strong>Heat No:</strong>{" "}
-                                                {item.heat_no} |{" "}
-                                                <strong>Stock:</strong>{" "}
-                                                {item.stock}
-                                              </li>
-                                            ))}
-                                          </ul>
-                                        )}
-                                    </div>
-                                  ) : selectedItemType === "FG" ? (
-                                    // --- NEW FIXED FG BLOCK ---
-                                    <div className="position-relative">
-                                      <input
-                                        type="text"
-                                        name="store"
-                                        className="form-control form-control-sm mb-1"
-                                        placeholder="Heat No"
-                                        value={currentItem.store}
-                                        onChange={handleItemChange}
-                                        onClick={() => {
-                                          if (heatNoData.length > 0)
-                                            setShowHeatNoDropdown(true);
-                                        }}
-                                        autoComplete="off"
-                                      />
-                                      <input
-                                        type="text"
-                                        name="stock"
-                                        className="form-control form-control-sm mb-1"
-                                        placeholder="Stock"
-                                        value={currentItem.stock}
-                                        readOnly
-                                      />
-
-                                      {showHeatNoDropdown &&
-                                        heatNoData.length > 0 && (
-                                          <ul
-                                            className="dropdown-menu show position-absolute"
-                                            style={{
-                                              maxHeight: "200px",
-                                              overflowY: "auto",
-                                              zIndex: 1000,
-                                              width: "100%",
-                                              top: "100%",
-                                              border: "1px solid #ccc",
-                                              boxShadow:
-                                                "0 4px 8px rgba(0,0,0,0.1)",
-                                            }}
-                                          >
-                                            {heatNoData.map((item, index) => (
-                                              <li
-                                                key={index}
-                                                className="dropdown-item"
-                                                onClick={() =>
-                                                  handleSelectHeatNo(item)
-                                                }
-                                                style={{
-                                                  padding: "8px",
-                                                  cursor: "pointer",
-                                                  borderBottom:
-                                                    "1px solid #f0f0f0",
-                                                }}
-                                              >
-                                                <div className="d-flex justify-content-between">
-                                                  <span>
-                                                    <strong>Heat:</strong>{" "}
-                                                    {item.heat_no}
-                                                  </span>
-                                                  <span>
-                                                    <strong>Qty:</strong>{" "}
-                                                    {item.stock}
-                                                  </span>
-                                                </div>
-                                              </li>
-                                            ))}
-                                          </ul>
-                                        )}
-                                    </div>
-                                  ) : (
-                                    <div>
-                                      <input
-                                        type="text"
-                                        name="store"
-                                        className="form-control form-control-sm mb-1"
-                                        placeholder="Store/Code"
-                                        value={currentItem.store}
-                                        onChange={handleItemChange}
-                                      />
-                                      <input
-                                        type="text"
-                                        name="stock"
-                                        className="form-control form-control-sm mb-1"
-                                        placeholder="Stock"
-                                        value={currentItem.stock}
-                                        onChange={handleItemChange}
-                                      />
-                                    </div>
-                                  )}
-
-                                  <div>
+                                   {(selectedItemType === "RM" || selectedItemType === "FG") ? (
+                                     <div>
+                                       <select
+                                         name="store"
+                                         className="form-control form-control-sm mb-1"
+                                         value={currentItem.store}
+                                         onChange={handleHeatChange}
+                                       >
+                                         <option value="">Select Heat No</option>
+                                         {heatNoData.map((item, index) => (
+                                           <option key={index} value={item.heat_no}>
+                                             {item.heat_no} (Stock: {item.stock})
+                                           </option>
+                                         ))}
+                                       </select>
+                                       <input
+                                         type="text"
+                                         name="stock"
+                                         className="form-control form-control-sm mb-1"
+                                         placeholder="Stock"
+                                         value={currentItem.stock}
+                                         readOnly
+                                       />
+                                     </div>
+                                   ) : (
+                                     <div>
+                                       <input
+                                         type="text"
+                                         name="store"
+                                         className="form-control form-control-sm mb-1"
+                                         placeholder="Store/Code"
+                                         value={currentItem.store}
+                                         onChange={handleItemChange}
+                                       />
+                                       <input
+                                         type="text"
+                                         name="stock"
+                                         className="form-control form-control-sm mb-1"
+                                         placeholder="Stock"
+                                         value={currentItem.stock}
+                                         onChange={handleItemChange}
+                                       />
+                                     </div>
+                                   )}
+                                  <div className="mt-2">
                                     <label>Supp. Ref. No:</label>
                                     <input
                                       type="text"
@@ -1264,7 +1211,7 @@ const OutwardChallan = () => {
                         </div>
 
                         <div className="table-responsive">
-                          <table className="table table-bordered">
+                          <table className="table table-bordered compact-table">
                             <thead>
                               <tr>
                                 <th>Sr.</th>
@@ -1284,9 +1231,9 @@ const OutwardChallan = () => {
                               {items.map((it, idx) => (
                                 <tr key={idx}>
                                   <td>{idx + 1}</td>
-                                  <td>{it.type}</td>
-                                  <td>
-                                    <br />
+                                  <td>{it.item_code}</td>
+                                  <td style={{ maxWidth: "300px", wordBreak: "break-all", whiteSpace: "normal" }}>
+                                    {it.type} <br />
                                     {it.description}
                                   </td>
                                   <td className="text-start">
@@ -1354,8 +1301,14 @@ const OutwardChallan = () => {
                       <div className="row">
                         <div className="col-md-12">
                           <div className="table-responsive">
-                            <table className="table table-bordered">
-                              <tbody>
+                            <table 
+                              className="table table-bordered mb-0 compact-table" 
+                              style={{ 
+                                tableLayout: "auto", 
+                                width: "100%" 
+                              }}
+                            >
+                              <tbody style={{ verticalAlign: "middle" }}>
                                 <tr>
                                   <td>Challan No:</td>
                                   <td>

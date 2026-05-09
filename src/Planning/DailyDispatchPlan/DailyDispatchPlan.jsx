@@ -33,11 +33,11 @@ const DailyDispatchPlan = () => {
                   <div className="DailyDispatchPlan-header d-flex justify-content-between align-items-center mb-0 p-1 bg-white border-bottom">
                     <h6 className="header-title mb-0">Dispatch Plan List</h6>
                     <div className="header-actions d-flex gap-2">
-                        <button className="erp-btn-grey d-flex align-items-center gap-1">
-                           <FaPlus size={12} /> New Dispatch Plan
+                        <button className="erp-btn-cyan d-flex align-items-center gap-1">
+                           New Dispatch Plan
                         </button>
-                        <button className="erp-btn-grey d-flex align-items-center gap-1">
-                           <FaPrint size={12} /> Dispatch Plan : Report
+                        <button className="erp-btn-cyan d-flex align-items-center gap-1">
+                           Dispatch Plan : Report
                         </button>
                     </div>
                   </div>

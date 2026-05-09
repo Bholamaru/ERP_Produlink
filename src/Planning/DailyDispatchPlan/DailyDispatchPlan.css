@@ -1,7 +1,7 @@
 /* DailyDispatchPlan.css - Unified ERP Design */
 
 .DailyDispatchPlanMaster {
-    background-color: #ffffff;
+    background-color: #f0f0f0;
     min-height: 100vh;
 }
 
@@ -57,6 +57,26 @@
     color: white;
 }
 
+/* Solid cyan buttons matching Production Schedule */
+.erp-btn-cyan {
+    display: inline-block;
+    background-color: #16bfff;
+    padding: 6px 16px;
+    margin-left: 5px;
+    text-decoration: none;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    border-radius: 4px;
+}
+
+.erp-btn-cyan:hover {
+    background-color: #0ea8e6;
+    color: white;
+}
+
 /* Filter Bar Section */
 .DailyDispatchPlan-Filters {
     background-color: #f8f9fa;
@@ -79,8 +99,8 @@
     border: 1px solid #ced4da;
 }
 
-/* ERP Table Styling */
-.erp-table thead th {
+/* ERP Table Styling - Scoped to DailyDispatchPlan */
+.DailyDispatchPlan .erp-table thead th {
     background-color: #16bfff;
     color: white;
     font-size: 12px;
@@ -103,9 +123,9 @@
     background-color: rgba(22, 191, 255, 0.08);
 }
 
-/* Hide scrollbars for the table container */
-.table-responsive {
-    overflow: hidden !important;
+/* Hide scrollbars for the table container if needed locally */
+.DailyDispatchPlan .table-responsive {
+    overflow: hidden;
 }
 
 /* Footer Section */

@@ -27,7 +27,6 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
         "Manufacturing Order",
         "Production Schedule",
         "Min Max Planning",
-        "Dispatch Plan Setup",
         "Daily Dispatch Plan",
         "Business Plan",
         "Upcoming Dispatch List",
@@ -1273,11 +1272,7 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
                   </Link>
                 )}
 
-                {permissions.Planning.includes("Dispatch Plan Setup") && (
-                  <Link className="dropdown-item" to="/DispatchPlanSetup">
-                    Dispatch Plan Setup
-                  </Link>
-                )}
+
 
                 {permissions.Planning.includes("Daily Dispatch Plan") && (
                   <Link className="dropdown-item" to="/DailyDispatchPlan">
@@ -1310,9 +1305,26 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
                 )}
 
                 {permissions.Planning.includes("Vendor Schedule") && (
-                  <Link className="dropdown-item" to="/VendorSchedule">
-                    Vendor Schedule
-                  </Link>
+                  <div className="nested-dropdown">
+                    <div
+                      className="dropdown-item nested-toggle"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleDropdownToggle("vendorSchedule")
+                      }}
+                    >
+                      Vendor Schedule
+                      <span className={`arrow ${isDropdownOpen("vendorSchedule") ? "open" : ""}`}> ▶</span>
+                    </div>
+                    <div className={`nested-dropdown-menu ${isDropdownOpen("vendorSchedule") ? "show" : ""}`}>
+                      <Link className="dropdown-item" to="/ScheduleSetup">
+                        Schedule Setup
+                      </Link>
+                      <Link className="dropdown-item" to="/ScheduleStatusGenerate">
+                        Schedule Status/Generate
+                      </Link>
+                    </div>
+                  </div>
                 )}
               </div>
             </li>

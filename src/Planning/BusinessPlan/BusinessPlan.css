@@ -1,12 +1,13 @@
 /* BusinessPlan.css - Unified ERP Design */
 
 .BusinessPlanMaster {
-    background-color: #ffffff;
+    background-color: #f0f0f0;
     min-height: 100vh;
 }
 
 .BusinessPlan {
     background-color: #ffffff;
+    border-radius: 8px;
 }
 
 /* Header Section */
@@ -57,6 +58,26 @@
     color: white;
 }
 
+/* Solid cyan buttons matching Production Schedule */
+.erp-btn-cyan {
+    display: inline-block;
+    background-color: #16bfff;
+    padding: 6px 16px;
+    margin-left: 5px;
+    text-decoration: none;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    border-radius: 4px;
+}
+
+.erp-btn-cyan:hover {
+    background-color: #0ea8e6;
+    color: white;
+}
+
 /* Entry/Filter Bar */
 .BusinessPlan-Entry {
     background-color: #f8f9fa;
@@ -79,8 +100,8 @@
     border: 1px solid #ced4da;
 }
 
-/* ERP Table Styling */
-.erp-table thead th {
+/* ERP Table Styling - Scoped to BusinessPlan */
+.BusinessPlan .erp-table thead th {
     background-color: #16bfff;
     color: white;
     font-size: 12px;
@@ -127,4 +148,28 @@
 
 .main-content.shifted {
     margin-left: 250px;
+}
+
+/* Annual Report Specifics */
+.BusinessAnnualReport {
+    background-color: #ffffff;
+    border-radius: 8px;
+}
+
+.BusinessAnnualReport .erp-table thead th {
+    background-color: #16bfff !important;
+}
+
+.BusinessAnnualReport .table-responsive {
+    overflow: hidden;
+}
+
+.BusinessAnnualReport .BusinessPlan-Footer span {
+    border-right: 1px solid #ced4da;
+    padding-right: 12px;
+    color: #444;
+}
+
+.BusinessAnnualReport .BusinessPlan-Footer span:last-child {
+    border-right: none;
 }
