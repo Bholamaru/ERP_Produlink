@@ -43,7 +43,7 @@ const ProductionSchedule = () => {
         // Fetch ALL items once to count them for each schedule more efficiently
         let allItems = [];
         try {
-          const itemsRes = await fetch("https://erp-render.onrender.com/Planning/production-schedule/");
+          const itemsRes = await fetch("http://127.0.0.1:8000/Planning/production-schedule/");
           if (itemsRes.ok) {
             const itemsResult = await itemsRes.json();
             allItems = Array.isArray(itemsResult) ? itemsResult : (itemsResult.data || result.results || itemsResult.data || itemsResult.results || []);
@@ -136,18 +136,21 @@ const ProductionSchedule = () => {
   const fetchScheduleItems = async (scheduleMonthId, monthYear) => {
     setLoadingItems(true);
     try {
-      // 1. Fetch Scheduled Items from the main schedule API (to match list view count)
-      const schResponse = await fetch("https://erp-render.onrender.com/Planning/production-schedule/");
-      let scheduledItems = [];
-      if (schResponse.ok) {
-        const schResult = await schResponse.json();
-        const allItems = Array.isArray(schResult) ? schResult : (schResult.data || schResult.results || []);
-        // Filter by the selected schedule month ID
-        scheduledItems = allItems.filter(i => 
-          i.schedule_month !== null && 
-          i.schedule_month !== undefined && 
-          Number(i.schedule_month) === Number(scheduleMonthId)
-        );
+      const formattedMonth = monthYear ? monthYear.replace("-", " ") : "";
+      const response = await fetch(`http://127.0.0.1:8000/Planning/schedule-month-filter/?month_name=${encodeURIComponent(formattedMonth)}`);
+      if (response.ok) {
+        const result = await response.json();
+        let rawItems = [];
+        
+        const dataArray = Array.isArray(result.data) ? result.data : [];
+        if (dataArray.length > 0) {
+           const scheduleData = dataArray[0];
+           if (Array.isArray(scheduleData.production_schedules)) {
+             rawItems = scheduleData.production_schedules;
+           }
+        }
+        
+        setItemData(rawItems);
       }
 
       // 2. Parse Month/Year for the Report API call
