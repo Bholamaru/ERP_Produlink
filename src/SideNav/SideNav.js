@@ -636,19 +636,19 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
                     <span className={`arrow ${isDropdownOpen("acRegister") ? "open" : ""}`}> ▶</span>
                   </div>
                   <div className={`nested-dropdown-menu ${isDropdownOpen("acRegister") ? "show" : ""}`}>
-                    <Link className="dropdown-item" to="/TaxInvoiceList">
+                    <Link className="dropdown-item" to="/tax-invoice-list">
                       Tax Invoice List
                     </Link>
-                    <Link className="dropdown-item" to="/JobworkInvList">
+                    <Link className="dropdown-item" to="/jobwork-invoice-list">
                       Jobwork Invoice List
                     </Link>
-                    <Link className="dropdown-item" to="/DebitNoteList">
+                    <Link className="dropdown-item" to="/debit-note-list">
                       Debit Note List
                     </Link>
-                    <Link className="dropdown-item" to="/CreditListNote">
+                    <Link className="dropdown-item" to="/credit-note-list">
                       Credit Note List
                     </Link>
-                    <Link className="dropdown-item" to="/GSTSalesReturnList">
+                    <Link className="dropdown-item" to="/gst-sales-return-list">
                       GST Sales Return List
                     </Link>
                     <Link className="dropdown-item" to="/purchase-register">
@@ -1769,7 +1769,7 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
                         </Link>
                       )}
                       {permissions.Sales.includes("Tax Invoice List") && (
-                        <Link className="dropdown-item" to="/TaxInvoiceList">
+                        <Link className="dropdown-item" to="/tax-invoice-list">
                           Tax Invoice List
                         </Link>
                       )}
@@ -1794,17 +1794,17 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
                         </Link>
                       )}
                       {permissions.Sales.includes("Debit Note List") && (
-                        <Link className="dropdown-item" to="/DabitNoteList">
+                        <Link className="dropdown-item" to="/debit-note-list">
                           Debit Note List
                         </Link>
                       )}
                       {permissions.Sales.includes("Credit Note List") && (
-                        <Link className="dropdown-item" to="/CreditNoteList">
+                        <Link className="dropdown-item" to="/credit-note-list">
                           Credit Note List
                         </Link>
                       )}
                       {permissions.Sales.includes("GST Sales Return List") && (
-                        <Link className="dropdown-item" to="/GSTSalesReturnList">
+                        <Link className="dropdown-item" to="/gst-sales-return-list">
                           GST Sales Return List
                         </Link>
                       )}

@@ -4,7 +4,7 @@ import "bootstrap/dist/js/bootstrap.bundle.min";
 import NavBar from "../../NavBar/NavBar.js";
 import SideNav from "../../SideNav/SideNav.js";
 import "./MachinePreventiveReport.css";
-import { FaChartBar, FaTrash } from "react-icons/fa";
+import { FaChartBar, FaSearch, FaTrash } from "react-icons/fa";
 
 const MachinePreventiveReport = () => {
   const [sideNavOpen, setSideNavOpen] = useState(false);
@@ -22,7 +22,7 @@ const MachinePreventiveReport = () => {
   }, [sideNavOpen]);
 
   return (
-    <div className="machinepreventivereport">
+    <div className="machine-preventive-report">
       <div className="container-fluid">
         <div className="row">
           <div className="col-md-12">
@@ -31,107 +31,93 @@ const MachinePreventiveReport = () => {
               <SideNav sideNavOpen={sideNavOpen} toggleSideNav={toggleSideNav} />
               <main className={`main-content ${sideNavOpen ? "shifted" : ""}`}>
                 <div className="user-management">
+                  {/* Header - Synchronized with ToolManagement standard */}
                   <div className="WorkOrderEntry-header mb-4">
                     <div className="row align-items-center">
-                      <div className="col-md-3">
+                      <div className="col-md-6">
                         <h5 className="header-title text-start mb-0">
-                          Repair List
+                          Machine Preventive Report
                         </h5>
                       </div>
-                      <div className="col-md-9 text-end">
-                        <button className="btn d-inline-flex align-items-center gap-2">
-                          <FaChartBar /> Repair Report
+                      <div className="col-md-6 text-end">
+                        <button className="btn d-inline-flex align-items-center gap-2 border">
+                          <FaChartBar /> Preventive Report Detail
                         </button>
                       </div>
                     </div>
                   </div>
 
+                  {/* Filter Section - Synchronized Search and Gaps */}
                   <div className="header-section mb-4">
-                    <div className="row mt-2 mb-3">
-                      <div className="col-xl-3 col-lg-4 col-md-6 col-12 mb-2">
-                        <div className="d-flex align-items-center gap-2 w-100">
-                          <label className="form-label mb-0 text-nowrap">From:</label>
-                          <input type="date" className="form-control flex-grow-1" />
+                    <div className="row align-items-end g-3 mt-1 mb-2">
+                      <div className="col-md-2">
+                        <label className="form-label mb-1 fw-bold">From Date:</label>
+                        <input type="date" className="form-control form-control-sm" />
+                      </div>
+
+                      <div className="col-md-2">
+                        <label className="form-label mb-1 fw-bold">To Date:</label>
+                        <input type="date" className="form-control form-control-sm" />
+                      </div>
+
+                      <div className="col-md-3">
+                        <label className="form-label mb-1 fw-bold">Machine Item:</label>
+                        <div className="d-flex align-items-center gap-1 flex-nowrap">
+                           <input type="checkbox" className="form-check-input mt-0" id="itemCheck" />
+                           <label className="form-check-label mb-0 text-nowrap me-1" htmlFor="itemCheck">Item:</label>
+                           <input type="text" className="form-control form-control-sm" placeholder="Enter Item Name..." />
                         </div>
                       </div>
 
-                      <div className="col-xl-3 col-lg-4 col-md-6 col-12 mb-2">
-                        <div className="d-flex align-items-center gap-2 w-100">
-                          <label className="form-label mb-0 text-nowrap">To:</label>
-                          <input type="date" className="form-control flex-grow-1" />
-                        </div>
-                      </div>
-
-                      <div className="col-xl-3 col-lg-4 col-md-6 col-12 mb-2">
-                        <div className="d-flex align-items-center gap-2 w-100">
-                          <div className="form-check mb-0 d-flex align-items-center gap-1">
-                            <input className="form-check-input mt-0" type="checkbox" id="itemCheck" />
-                            <label className="form-check-label mb-0 text-nowrap" htmlFor="itemCheck">Item:</label>
-                          </div>
-                          <input type="text" className="form-control flex-grow-1" />
-                        </div>
-                      </div>
-
-                      <div className="col-xl-3 col-lg-4 col-md-6 col-12 mb-2">
-                        <div className="d-flex align-items-center gap-2 w-100">
-                          <label className="form-label mb-0 text-nowrap">Frequency:</label>
-                          <select className="form-select flex-grow-1">
-                            <option value="">All</option>
+                      <div className="col-md-3">
+                        <label className="form-label mb-1 fw-bold">Frequency :</label>
+                        <div className="d-flex align-items-center gap-1 flex-nowrap">
+                          <select className="form-select form-select-sm">
+                            <option value="">All Frequency</option>
                           </select>
-                          <button className="btn text-nowrap">Search</button>
+                          <button className="btn btn-sm d-inline-flex align-items-center gap-1 border" style={{ whiteSpace: "nowrap" }}>
+                            <FaSearch size={10} /> Search
+                          </button>
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  {/* Total Records - Moved to Top */}
-                  <div className="mb-2 text-start">
-                    <span className="fw-bold" style={{ fontSize: "14px" }}>Total Records: 00</span>
-                  </div>
-
+                  {/* Table Section */}
                   <div className="table-responsive">
                     <table className="table table-bordered table-hover user-list-table">
                       <thead>
                         <tr>
-                          <th>Sr</th>
+                          <th style={{ width: "50px" }}>Sr.</th>
                           <th>Trn No</th>
-                          <th>TrnDate</th>
-                          <th>MachineName</th>
-                          <th>MType</th>
+                          <th>Trn Date</th>
+                          <th>Machine Name</th>
+                          <th>M. Type</th>
                           <th>Part Name</th>
-                          <th>MParameter</th>
-                          <th>MethodName</th>
+                          <th>M. Parameter</th>
+                          <th>Method Name</th>
                           <th>Specification</th>
                           <th>Frequency</th>
-                          <th>ReactionPlan</th>
-                          <th>ActionTaken</th>
+                          <th>Reaction Plan</th>
+                          <th>Action Taken</th>
                           <th>Doc</th>
-                          <th>Del</th>
+                          <th style={{ width: "60px" }}>Del</th>
                         </tr>
                       </thead>
                       <tbody>
                         <tr>
-                          <td>1</td>
-                          <td>TRN-001</td>
-                          <td>2023-10-01</td>
-                          <td>Machine A</td>
-                          <td>Preventive</td>
-                          <td>Gearbox</td>
-                          <td>Oil Level</td>
-                          <td>Visual</td>
-                          <td>Full</td>
-                          <td>Monthly</td>
-                          <td>Refill</td>
-                          <td>Refilled</td>
-                          <td>Doc-1</td>
-                          <td>
-                            <button className="btn d-inline-flex align-items-center justify-content-center p-1">
-                              <FaTrash size={12} />
-                            </button>
+                          <td colSpan="14" className="text-center py-5 text-muted fw-bold">
+                            No Preventive Records Found...!!!
                           </td>
                         </tr>
                       </tbody>
                     </table>
+                  </div>
+
+                  {/* Footer - Moved Total Records here to match Standard */}
+                  <div className="d-flex justify-content-between align-items-center mt-3 p-2 bg-light border shadow-sm">
+                    <div style={{ fontSize: "13px" }}>Total Records : <b>00</b></div>
+                    <div style={{ fontSize: "13px" }}><b>Report Generated Successfully</b></div>
                   </div>
                 </div>
               </main>

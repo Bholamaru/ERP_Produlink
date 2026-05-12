@@ -1,0 +1,99 @@
+/* TDSRegister.css - Standardized with ToolManagement UI */
+
+.tds-register {
+  padding: 1rem;
+}
+
+.tds-register .main-content {
+  padding: 20px;
+  transition: margin-left 0.3s ease;
+}
+
+.tds-register .Main-NavBar {
+  display: flex;
+  margin-left: -20px;
+}
+
+.tds-register .shifted {
+  margin-left: 250px;
+}
+
+/* User Management Section */
+.tds-register .WorkOrderEntry-header {
+  background-color: #f8f9fa;
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #dee2e6;
+}
+
+.tds-register .header-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #1fb5ff; /* Branded Blue */
+}
+
+.tds-register .header-section {
+  background-color: #fff;
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+.tds-register .header-section .form-check-label {
+  display: flex;
+  align-items: center;
+}
+
+.tds-register .header-section .form-control,
+.tds-register .header-section .form-select,
+.tds-register .header-section .btn {
+  margin-bottom: 0.5rem;
+}
+
+.tds-register .user-list-table {
+  width: 100%;
+  margin-top: 20px;
+}
+
+.tds-register .user-list-table th {
+  background-color: #1fb5ff !important;
+  /* Branded Blue */
+  color: #ffffff !important;
+  font-weight: 600;
+  padding: 12px;
+  border: 1px solid #dee2e6;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.tds-register .user-list-table td {
+  text-align: center;
+  vertical-align: middle;
+  padding: 8px;
+  border: 1px solid #dee2e6;
+  font-size: 14px;
+}
+
+.tds-register .table {
+  background-color: #fff;
+}
+
+.tds-register .btn {
+  margin-left: 5px;
+  font-size: 14px;
+}
+
+.tds-register .btn-sm {
+  font-size: 0.8rem;
+}
+
+/* Footer Summary Section */
+.tds-register .footer-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 15px;
+  padding: 10px 15px;
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+}

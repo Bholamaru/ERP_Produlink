@@ -303,7 +303,7 @@ import QueryMasterProdEL from "./ProductionMaster/ProductionEntry/ProductionEntr
 import QueryScrap from "./ProductionMaster/ScrapRejection/ScrapRejectionReport/ScrapRejQuery/QueryScrap.jsx";
 import QueryMasterScrap from "./ProductionMaster/ScrapRejection/ScrapRejectionReport/ScrapRejQuery/QueryMasterScrap.jsx";
 import RejectionReport from "./ProductionMaster/ScrapRejection/ScrapRejectionReport/RejectionReport.jsx";
-import ItemWiseCR from "./ProductionMaster/ContractorReport/ContractorList/ItemWIseCR.jsx";
+// import ItemWiseCR from "./ProductionMaster/ContractorReport/ContractorList/ItemWIseCR.jsx";
 import OperationRejectionSummary from "./ProductionMaster/Report/OperationRejectionSummary.jsx";
 import QueryReportPro from "./ProductionMaster/Report/QueryReportPro.jsx";
 import MachineDefaultBook from "./ProductionMaster/Report/MachineDefaultIdle/MachineDefaultBook.jsx";
@@ -379,19 +379,20 @@ import NewDabitNote from "./Sales/CraditDabitNote/SalesDabitNote/NewDabitNote.js
 import JobWorkRateDiff from "./Sales/CraditDabitNote/JobWorkRateDiffDebitNote/JobWorkRateDiff.jsx";
 import CreditNotie from "./Sales/CraditDabitNote/CreditNotie/CreditNotie.jsx";
 import Creditnoteto from "./Sales/CraditDabitNote/CreditNotie/Creditnoteto/Creditnoteto.jsx";
-import CreditNoteList from "./Sales/CraditDabitNote/CreditNotie/CreditNoteList/CreditNoteList.jsx";
+import CreditNoteList from "./Accounts/ACRegister/CreditNoteList/CreditNoteList.jsx";
 import GSTSalesReturn from "./Sales/GSTSalesReturn/GSTSalesReturn.jsx";
-import GSTSalesReturnList from "./Sales/GSTSalesReturn/GSTSalesReturnList/GSTSalesReturnList.jsx";
+import GSTSalesReturnList from "./Accounts/ACRegister/GSTSalesReturnList/GSTSalesReturnList.jsx";
 import MaterialGatepassNew from "./Sales/MaterialGatepass/MaterialGatepassNew/MaterialGatepassNew.jsx";
 import PendingMaterialGatepassList from "./Sales/MaterialGatepass/PendingMaterialGatepassList/PendingMaterialGatepassList.jsx";
 import MaterialGatepassList from "./Sales/MaterialGatepass/MaterialGatepassList/MaterialGatepassList.jsx";
 import CustSalesOrderList from "./Sales/Reports/CustSalesOrderList/CustSalesOrderList.jsx";
-import TaxInvoiceList from "./Sales/Reports/TaxInvoiceList/TaxInvoiceList.jsx";
+import TaxInvoiceList from "./Accounts/ACRegister/TaxInvoiceList/TaxInvoiceList.jsx";
+import JobworkInvoiceList from "./Accounts/ACRegister/JobworkInvoiceList/JobworkInvoiceList.jsx";
 import BajajTaxInvoiceList from "./Sales/Reports/BajajTaxInvoiceList/BajajTaxInvoiceList.jsx";
 import JobworkInvList from "./Sales/Reports/JobworkInvList/JobworkInvList.jsx";
 import JobworkDCList from "./Sales/Reports/JobworkDCList/JobworkDCList.jsx";
 import OutwardChallanList from "./Sales/Reports/OutwardChallanList/OutwardChallanList.jsx";
-import DebitNoteList from "./Sales/Reports/DebitNoteList/DebitNoteList.jsx";
+import DebitNoteList from "./Accounts/ACRegister/DebitNoteList/DebitNoteList.jsx";
 import CreditListNote from "./Sales/Reports/CreditNoteList/CreditListNote.jsx";
 import RG1Register from "./Sales/Reports/RG1Register/RG1Register.jsx";
 import TransportList from "./Sales/Reports/TransportList/TransportList.jsx";
@@ -810,8 +811,9 @@ function App() {
         <Route path="/QueryMasterProdEL" element={<QueryMasterProdEL />} />
         <Route path="/QueryScrap" element={<QueryScrap />} />
         <Route path="/QueryMasterScrap" element={<QueryMasterScrap />} />
-        <Route path="/RejectionReport" element={<RejectionReport />} />
-        <Route path="/ItemWiseCR" element={<ItemWiseCR />} />
+        {console.log("RejectionReport type:", typeof RejectionReport, RejectionReport)}
+        <Route path="/RejectionReport" element={RejectionReport ? <RejectionReport /> : <div>RejectionReport missing</div>} />
+        {/* <Route path="/ItemWiseCR" element={<ItemWiseCR />} /> */}
         <Route path="/OperationRejectionSummary" element={<OperationRejectionSummary />} />
         <Route path="/QueryReportPro" element={<QueryReportPro />} />
         <Route path="/MachineDefaultBook" element={<MachineDefaultBook />} />
@@ -892,20 +894,22 @@ function App() {
         <Route path="JobWorkRateDiff" element={<JobWorkRateDiff />} />
         <Route path="CreditNotie" element={<CreditNotie />} />
         <Route path="Creditnoteto" element={<Creditnoteto />} />
-        <Route path="CreditNoteList" element={<CreditNoteList />} />
         <Route path="GSTSalesReturn1" element={<GSTSalesReturn />} />
-        <Route path="GSTSalesReturnList" element={<GSTSalesReturnList />} />
+        <Route path="/gst-sales-return-list" element={<GSTSalesReturnList />} />
+        <Route path="/GSTSalesReturnList" element={<GSTSalesReturnList />} /> {/* Alias */}
         <Route path="MaterialGatepassNew" element={<MaterialGatepassNew />} />
         <Route path="PendingMaterialGatepassList" element={<PendingMaterialGatepassList />} />
         <Route path="MaterialGatepassList" element={<MaterialGatepassList />} />
         <Route path="CustSalesOrderList" element={<CustSalesOrderList />} />
-        <Route path="TaxInvoiceList" element={<TaxInvoiceList />} />
+        <Route path="/tax-invoice-list" element={<TaxInvoiceList />} />
+        <Route path="/TaxInvoiceList" element={<TaxInvoiceList />} /> {/* Alias for backward compatibility */}
+        <Route path="/jobwork-invoice-list" element={<JobworkInvoiceList />} />
         <Route path="BajajTaxInvoiceList" element={<BajajTaxInvoiceList />} />
         <Route path="JobworkInvList" element={<JobworkInvList />} />
         <Route path="JobworkDCList" element={<JobworkDCList />} />
         <Route path="OutwardChallanList" element={<OutwardChallanList />} />
-        <Route path="DebitNoteList" element={<DebitNoteList />} />
-        <Route path="CreditListNote" element={<CreditListNote />} />
+        <Route path="/debit-note-list" element={<DebitNoteList />} />
+        <Route path="/credit-note-list" element={<CreditNoteList />} />
         <Route path="RG1Register" element={<RG1Register />} />
         <Route path="TransportList" element={<TransportList />} />
 
