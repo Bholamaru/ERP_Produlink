@@ -69,7 +69,7 @@ const DailyDispatchPlan = () => {
         status_remark: formData.statusRemark
       };
 
-      const response = await fetch("https://erp-render.onrender.com/Planning/dispatch-plan/", {
+      const response = await fetch("http://127.0.0.1:8000/Planning/dispatch-plan/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -131,7 +131,7 @@ const DailyDispatchPlan = () => {
       const itemParts = formData.item.split(" | ");
       const itemNoParam = itemParts[0].trim();
 
-      const url = `https://erp-render.onrender.com/Planning/salesorder-po-search/?customer=${encodeURIComponent(custParam)}&item_no=${encodeURIComponent(itemNoParam)}`;
+      const url = `http://127.0.0.1:8000/Planning/salesorder-po-search/?customer=${encodeURIComponent(custParam)}&item_no=${encodeURIComponent(itemNoParam)}`;
       
       const response = await fetch(url, {
         headers: { "Authorization": `Bearer ${token}` }
@@ -164,7 +164,7 @@ const DailyDispatchPlan = () => {
       const itemParts = formData.item.split(" | ");
       const itemNoParam = itemParts[0].trim();
 
-      const url = `https://erp-render.onrender.com/Planning/dispatch-stock-wip/?q=${encodeURIComponent(itemNoParam)}`;
+      const url = `http://127.0.0.1:8000/Planning/dispatch-stock-wip/?q=${encodeURIComponent(itemNoParam)}`;
       
       const response = await fetch(url, {
         headers: { "Authorization": `Bearer ${token}` }
@@ -218,7 +218,7 @@ const DailyDispatchPlan = () => {
   const fetchCustomers = async () => {
     try {
       const token = localStorage.getItem("accessToken");
-      const response = await fetch("https://erp-render.onrender.com/Planning/customer/list/", {
+      const response = await fetch("http://127.0.0.1:8000/Planning/customer/list/", {
         headers: { "Authorization": `Bearer ${token}` }
       });
       if (response.ok) {

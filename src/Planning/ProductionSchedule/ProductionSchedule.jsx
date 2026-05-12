@@ -166,8 +166,8 @@ const ProductionSchedule = () => {
       const monthNum = monthMap[monthName] || (new Date().getMonth() + 1);
 
       // 3. Fetch Data from the Month-Wise Invoice Report API
-      // Using the exact pattern: https://erp-render.onrender.com/Planning/month-wise-invoice-report/?month=5&year=2026
-      const rptResponse = await fetch(`https://erp-render.onrender.com/Planning/month-wise-invoice-report/?month=${monthNum}&year=${year}`);
+      // Using the exact pattern: http://127.0.0.1:8000/Planning/month-wise-invoice-report/?month=5&year=2026
+      const rptResponse = await fetch(`http://127.0.0.1:8000/Planning/month-wise-invoice-report/?month=${monthNum}&year=${year}`);
       let reportData = [];
       if (rptResponse.ok) {
         const rptResult = await rptResponse.json();

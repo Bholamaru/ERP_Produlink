@@ -149,7 +149,7 @@ const MinMaxPlanning = () => {
       // Overwrite the specific field being updated
       payload[backendField] = updatedValue;
 
-      const response = await fetch("https://erp-render.onrender.com/Planning/update-item-wise-min-max/", {
+      const response = await fetch("http://127.0.0.1:8000/Planning/update-item-wise-min-max/", {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",

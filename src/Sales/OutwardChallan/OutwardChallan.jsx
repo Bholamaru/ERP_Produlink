@@ -437,7 +437,7 @@ const OutwardChallan = () => {
 
     try {
       // API Call - Updated to the new onrender.com URL as requested
-      const url = `https://erp-render.onrender.com/Production/item/op/heatqty/?item=${encodeURIComponent(
+      const url = `http://127.0.0.1:8000/Production/item/op/heatqty/?item=${encodeURIComponent(
         itemCode
       )}`;
       console.log("API URL:", url);
