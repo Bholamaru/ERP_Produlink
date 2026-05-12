@@ -1,0 +1,90 @@
+/* GL Master Layout */
+.gl-master {
+  padding: 1rem;
+}
+
+.gl-master .main-content {
+  padding: 20px;
+  transition: margin-left 0.3s ease;
+}
+
+.gl-master .Main-NavBar {
+  display: flex;
+  margin-left: -20px;
+  /* Ensure that the navbar and sidenav are flex items */
+}
+
+.gl-master .shifted {
+  margin-left: 250px;
+  /* Adjust based on the size of your SideNav */
+}
+
+/* User Management Section */
+.gl-master .WorkOrderEntry-header {
+  background-color: #f8f9fa;
+  padding: 10px;
+  border-radius: 5px;
+}
+
+.gl-master .header-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.gl-master .header-section {
+  background-color: #fff;
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+.gl-master .header-section .form-control,
+.gl-master .header-section .form-select,
+.gl-master .header-section .btn {
+  margin-bottom: 0.5rem;
+}
+
+.gl-master .table-responsive {
+  max-height: 450px;
+  /* Approximately 8 rows + header */
+  overflow-y: auto;
+  margin-top: 20px;
+  border: 1px solid #dee2e6;
+}
+
+.gl-master .user-list-table {
+  width: 100%;
+  margin-top: 0px;
+  /* Reset margin since it's on container */
+}
+
+.gl-master .user-list-table th {
+  background-color: #1fb5ff !important;
+  color: #ffffff !important;
+  font-weight: 600;
+  padding: 12px;
+  border: 1px solid #dee2e6;
+  text-align: center;
+  vertical-align: middle;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.gl-master .user-list-table td {
+  text-align: center;
+  vertical-align: middle;
+}
+
+.gl-master .table {
+  background-color: #fff;
+}
+
+.gl-master .btn {
+  margin-left: 5px;
+  font-size: 14px;
+}
+
+.gl-master .btn-sm {
+  font-size: 0.8rem;
+}

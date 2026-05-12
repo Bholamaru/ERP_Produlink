@@ -1,0 +1,80 @@
+/* Global Layout */
+.machinepreventivereport {
+  padding: 1rem;
+}
+
+.machinepreventivereport .main-content {
+  padding: 20px;
+  transition: margin-left 0.3s ease;
+}
+
+.machinepreventivereport .Main-NavBar {
+  display: flex;
+  margin-left: -20px;
+}
+
+.machinepreventivereport .shifted {
+  margin-left: 250px;
+}
+
+/* User Management Section */
+.machinepreventivereport .WorkOrderEntry-header {
+  background-color: #f8f9fa;
+  padding: 10px;
+  border-radius: 5px;
+}
+
+.machinepreventivereport .header-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #000;
+}
+
+.machinepreventivereport .header-section {
+  background-color: #fff;
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+.machinepreventivereport .header-section .form-label,
+.machinepreventivereport .header-section .form-check-label {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.machinepreventivereport .header-section .form-control,
+.machinepreventivereport .header-section .form-select,
+.machinepreventivereport .header-section .btn {
+  font-size: 14px;
+}
+
+/* Branded Button Theme - Synchronized with Entry Standard */
+.machinepreventivereport .btn {
+  margin-left: 5px;
+  font-size: 14px;
+}
+
+.machinepreventivereport .user-list-table th {
+  background-color: #f8f9fa !important;
+  color: #333333 !important;
+  font-weight: 600;
+  padding: 10px;
+  border: 1px solid #dee2e6;
+  text-align: center;
+}
+
+.machinepreventivereport .user-list-table {
+  width: 100%;
+  margin-top: 20px;
+}
+
+.machinepreventivereport .user-list-table th,
+.machinepreventivereport .user-list-table td {
+  text-align: center;
+  vertical-align: middle;
+}
+
+.machinepreventivereport .table {
+  background-color: #fff;
+}

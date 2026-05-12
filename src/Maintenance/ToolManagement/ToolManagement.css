@@ -1,0 +1,93 @@
+/* Global Layout */
+.toolmanagement {
+  padding: 1rem;
+}
+
+.toolmanagement .main-content {
+  padding: 20px;
+  transition: margin-left 0.3s ease;
+}
+
+.toolmanagement .Main-NavBar {
+  display: flex;
+  margin-left: -20px;
+  /* Ensure that the navbar and sidenav are flex items */
+}
+
+.toolmanagement .shifted {
+  margin-left: 250px;
+  /* Adjust based on the size of your SideNav */
+}
+
+/* User Management Section */
+.toolmanagement .WorkOrderEntry-header {
+  background-color: #f8f9fa;
+  padding: 10px;
+  border-radius: 5px;
+}
+
+.toolmanagement .header-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.toolmanagement .header-section {
+  background-color: #fff;
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+.toolmanagement .header-section .form-check-label {
+  display: flex;
+  align-items: center;
+}
+
+.toolmanagement .header-section .form-control,
+.toolmanagement .header-section .form-select,
+.toolmanagement .header-section .btn {
+  margin-bottom: 0.5rem;
+}
+
+.toolmanagement .user-list-table {
+  width: 100%;
+  margin-top: 20px;
+}
+
+.toolmanagement .user-list-table th {
+  background-color: #1fb5ff !important;
+  /* Branded Blue as in image */
+  color: #ffffff !important;
+  font-weight: 600;
+  padding: 12px;
+  border: 1px solid #dee2e6;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.toolmanagement .user-list-table td {
+  text-align: center;
+  vertical-align: middle;
+}
+
+.toolmanagement .user-list-table input[type="password"] {
+  max-width: 120px;
+  display: inline-block;
+}
+
+.toolmanagement .user-list-table .btn {
+  margin-top: 5px;
+}
+
+.toolmanagement .table {
+  background-color: #fff;
+}
+
+.toolmanagement .btn {
+  margin-left: 5px;
+  font-size: 14px;
+}
+
+.toolmanagement .btn-sm {
+  font-size: 0.8rem;
+}

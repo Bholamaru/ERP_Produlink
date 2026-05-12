@@ -1,0 +1,155 @@
+/* Purchase Register Layout */
+.purchase-register {
+  padding: 1rem;
+  background-color: #f4f7f6;
+  min-height: 100vh;
+}
+
+.purchase-register .main-content {
+  padding: 20px;
+  transition: margin-left 0.3s ease;
+}
+
+.purchase-register .Main-NavBar {
+  display: flex;
+  margin-left: -20px;
+}
+
+.purchase-register .shifted {
+  margin-left: 250px;
+}
+
+/* Scroll Container for ~8 rows */
+.table-scroll-container {
+  max-height: 400px;
+  /* Approximately 8 rows + header */
+  overflow-y: auto;
+}
+
+/* Header Section (Standardised with GLMaster/DirectBill) */
+.register-container .WorkOrderEntry-header {
+  background-color: #f8f9fa;
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #dee2e6;
+}
+
+.register-container .header-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.register-container .form-label {
+  font-size: 0.85rem;
+  color: #555;
+}
+
+.register-container .form-control-sm,
+.register-container .form-select-sm {
+  font-size: 0.8rem;
+  border-color: #ced4da;
+}
+
+/* Table Styling */
+.custom-register-table {
+  font-size: 0.75rem;
+  /* Smaller font for many columns */
+}
+
+.custom-register-table thead th {
+  background-color: #1fb5ff !important;
+  color: #ffffff !important;
+  font-weight: 600;
+  padding: 8px 4px;
+  border: 1px solid #dee2e6;
+  text-align: center;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.custom-register-table tbody td {
+  padding: 6px 4px;
+  vertical-align: middle;
+  border: 1px solid #dee2e6;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.custom-register-table tbody tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.custom-register-table tbody tr:hover {
+  background-color: #f1f1f1;
+}
+
+/* Footer Styling */
+.register-footer {
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  color: #333;
+}
+
+/* Button Refinements */
+.btn-primary {
+  background-color: #1fb5ff;
+  border-color: #1fb5ff;
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  background-color: #0096e6;
+  border-color: #0096e6;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn-success {
+  transition: all 0.3s ease;
+}
+
+.btn-success:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn-light.border {
+  transition: all 0.2s ease;
+  background-color: #f8f9fa;
+  color: #333;
+}
+
+.btn-light.border:hover {
+  background-color: #1fb5ff !important;
+  border-color: #1fb5ff !important;
+  color: #fff !important;
+}
+
+.btn-light.border:hover i,
+.btn-light.border:hover svg {
+  color: #fff !important;
+}
+
+/* Action Icons */
+.purchase-register .badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+}
+
+.purchase-register .cursor-pointer {
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.purchase-register .cursor-pointer:hover {
+  transform: scale(1.2);
+}
+
+.purchase-register .btn-sm {
+  padding: 4px 8px;
+}

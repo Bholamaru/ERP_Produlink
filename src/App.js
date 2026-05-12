@@ -428,7 +428,39 @@ import QueryMasterJobwork from "./Sales/Reports/JobworkInvList/QueryJobwork/Quer
 import QueryOutwardClln from "./Sales/Reports/OutwardChallanList/QueryOutward/QueryOutwardClln.jsx";
 import QueryMasterOutwardClln from "./Sales/Reports/OutwardChallanList/QueryOutward/QueryMasterOutwardClln.jsx";
 import NewTransportEntry from "./Sales/Reports/TransportList/Transport/NewTransportEntry.jsx";
-import TransportReport from "./Sales/Reports/TransportList/Transport/TransportReport.jsx";
+import TransportReport from "./Sales/Reports/TransportList/Transport/TransportReport.jsx"
+
+/////////////////////////////// Accounts ///////////////////////////////////
+
+import PurchaseBill from "./Accounts/BillPassing/PurchaseBill.jsx";
+import JobworkBill from "./Accounts/BillPassing/JobworkBill.jsx";
+import DirectBill from "./Accounts/BillPassing/DirectBill.jsx";
+import GLMaster from "./Accounts/GLMaster/GLMaster.jsx";
+import GSTR1 from "./Accounts/GSTReport/GSTR1.jsx";
+import HSNSACSummary from "./Accounts/GSTReport/HSNSACSummary.jsx";
+import GSTR2 from "./Accounts/GSTReport/GSTR2.jsx";
+import GSTR3B from "./Accounts/GSTReport/GSTR3B.jsx";
+import GSTITC04 from "./Accounts/GSTReport/GSTITC04.jsx";
+import PurchaseRegister from "./Accounts/PurchaseRegister/PurchaseRegister.jsx";
+import TDSRegister from "./Accounts/TDSRegister/TDSRegister.jsx";
+import TCSRegister from "./Accounts/TCSRegister/TCSRegister.jsx";
+import GLLedger from "./Accounts/GLLedger/GLLedger.jsx";
+
+/////////////////////////////// Maintenance ////////////////////////////////
+
+import AssetList from "./Maintenance/AssetList/AssetList.jsx";
+import ItemAssetMaster from "./Maintenance/ItemAssetMaster/ItemAssetMaster.jsx";
+import BreakdownList from "./Maintenance/MachineBreakdown/BreakdownList.jsx";
+import BreakdownAuthorisation from "./Maintenance/MachineBreakdown/BreakdownAuthorisation.jsx";
+import BreakdownReport from "./Maintenance/MachineBreakdown/BreakdownReport.jsx";
+import BreakdownSlip from "./Maintenance/MachineBreakdown/BreakdownSlip.jsx";
+import RepairEntry from "./Maintenance/MachineBreakdown/RepairEntry.jsx";
+import RepairList from "./Maintenance/MachineBreakdown/RepairList.jsx";
+import MachinePreventiveEntry from "./Maintenance/MachinePreventive/MachinePreventiveEntry.jsx";
+import MachinePreventiveReport from "./Maintenance/MachinePreventive/MachinePreventiveReport.jsx";
+import MachinePreventiveSchedule from "./Maintenance/MachinePreventive/MachinePreventiveSchedule.jsx";
+import MachinePreventiveSetUp from "./Maintenance/MachinePreventive/MachinePreventiveSetUp.jsx";
+import ToolManagement from "./Maintenance/ToolManagement/ToolManagement.jsx";
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -917,6 +949,38 @@ function App() {
         <Route path="QueryMasterOutwardClln" element={<QueryMasterOutwardClln />} />
         <Route path="NewTransportEntry" element={<NewTransportEntry />} />
         <Route path="TransportReport" element={<TransportReport />} />
+
+        {/* ////////////////////////////////// Accounts /////////////////////////////////// */}
+
+        <Route path="/purchase-bill" element={<PurchaseBill />} />
+        <Route path="/jobwork-bill" element={<JobworkBill />} />
+        <Route path="/direct-bill" element={<DirectBill />} />
+        <Route path="/gl-master" element={<GLMaster />} />
+        <Route path="/gst-report" element={<GSTR1 />} />
+        <Route path="/hsn-sac-summary" element={<HSNSACSummary />} />
+        <Route path="/gstr-2" element={<GSTR2 />} />
+        <Route path="/gstr-3b" element={<GSTR3B />} />
+        <Route path="/gst-itc-04" element={<GSTITC04 />} />
+        <Route path="/purchase-register" element={<PurchaseRegister />} />
+        <Route path="/tds-register" element={<TDSRegister />} />
+        <Route path="/tcs-register" element={<TCSRegister />} />
+        <Route path="/gl-ledger" element={<GLLedger />} />
+
+        {/* ////////////////////////////////// Maintenance /////////////////////////////////// */}
+
+        <Route path="/asset-list" element={<AssetList />} />
+        <Route path="/item-asset-master" element={<ItemAssetMaster />} />
+        <Route path="/breakdown-list" element={<BreakdownList />} />
+        <Route path="/breakdown-authorisation" element={<BreakdownAuthorisation />} />
+        <Route path="/breakdown-report" element={<BreakdownReport />} />
+        <Route path="/breakdown-slip" element={<BreakdownSlip />} />
+        <Route path="/repair-entry" element={<RepairEntry />} />
+        <Route path="/repair-list" element={<RepairList />} />
+        <Route path="/machine-preventive-entry" element={<MachinePreventiveEntry />} />
+        <Route path="/machine-preventive-report" element={<MachinePreventiveReport />} />
+        <Route path="/machine-preventive-schedule" element={<MachinePreventiveSchedule />} />
+        <Route path="/machine-preventive-setup" element={<MachinePreventiveSetUp />} />
+        <Route path="/tool-management" element={<ToolManagement />} />
 
 
 
