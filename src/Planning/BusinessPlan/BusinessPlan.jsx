@@ -229,20 +229,6 @@ const BusinessPlan = () => {
                     <div className="BusinessPlan-Content" style={{ minHeight: '400px', backgroundColor: '#fff' }}>
                       <div className="table-responsive">
                         <table className="table table-bordered erp-table text-center mb-0">
-                          <thead className="bg-primary text-white">
-                            <tr>
-                              <th>Sr.</th>
-                              <th>Customer Name</th>
-                              <th>Item Name / Description</th>
-                              <th>Plan Qty</th>
-                              <th>Annual BDG Qty</th>
-                              <th>ANL QTY+25%</th>
-                              <th>ANNUAL TONNAGE</th>
-                              <th>A+25% TONNAGE</th>
-                              <th>ANNUAL AMT</th>
-                              <th>A+25% AMT</th>
-                            </tr>
-                          </thead>
                           <tbody>
                             <tr style={{ height: '300px' }}>
                                <td colSpan="10" className="text-muted py-5">No Data Found !!</td>
