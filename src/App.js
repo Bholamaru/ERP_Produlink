@@ -314,9 +314,15 @@ import MachineDefaultBook from "./ProductionMaster/Report/MachineDefaultIdle/Mac
 import ProductionSchedule from "./Planning/ProductionSchedule/ProductionSchedule.jsx";
 import MinMaxPlanning from "./Planning/MinMaxPlanning/MinMaxPlanning.jsx";
 import DailyDispatchPlan from "./Planning/DailyDispatchPlan/DailyDispatchPlan.jsx";
+import DispatchPlanSetup from "./Planning/DispatchPlanSetup/DispatchPlanSetup.jsx";
+import ManufacturingOrder from "./Planning/ManufacturingOrder/ManufacturingOrder.jsx";
 import BusinessPlan from "./Planning/BusinessPlan/BusinessPlan.jsx";
 import UpcomingDispatchList from "./Planning/UpcomingDispatchList/UpcomingDispatchList.jsx";
+import ScheduleSetup from "./Planning/VendorSchedule/ScheduleSetup.jsx";
+import ScheduleStatusGenerate from "./Planning/VendorSchedule/ScheduleStatusGenerate.jsx";
 import CapacityPlanning from "./Planning/CapacityPlanning/CapacityPlanning.jsx";
+import CostingList from "./Planning/CostingList/CostingList.jsx";
+
 
 
 ///////////////////////////////////////// Quality ////////////////////////////////////////////////
@@ -791,11 +797,17 @@ function App() {
         {/* ////////////////////////////////// Planning //////////////////////////////////////////// */}
 
         <Route path="/ProductionSchedule" element={<ProductionSchedule />} />
+        <Route path="/ManufacturingOrder" element={<ManufacturingOrder />} />
         <Route path="/MinMaxPlanning" element={<MinMaxPlanning />} />
         <Route path="/DailyDispatchPlan" element={<DailyDispatchPlan />} />
+        <Route path="/DispatchPlanSetup" element={<DispatchPlanSetup />} />
         <Route path="/BusinessPlan" element={<BusinessPlan />} />
         <Route path="/UpcomingDispatchList" element={<UpcomingDispatchList />} />
         <Route path="/CapacityPlanning" element={<CapacityPlanning />} />
+        <Route path="/ScheduleSetup" element={<ScheduleSetup />} />
+        <Route path="/ScheduleStatusGenerate" element={<ScheduleStatusGenerate />} />
+        <Route path="/Costing" element={<CostingList />} />
+
 
 
         {/* //////////////////////////////////  Quality Plan ///////////////////////////////////// */}

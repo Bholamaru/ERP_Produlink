@@ -17,7 +17,7 @@
 }
 
 .header-title {
-    color: #16bfff;
+    color: blue;
     font-size: 18px;
     font-weight: bold;
     margin: 0;
@@ -67,7 +67,7 @@
 
 /* Table Styling */
 .CapacityPlanning .erp-table thead th {
-    background-color: #16bfff;
+    background-color: #007bff;
     color: white;
     font-size: 11px;
     padding: 6px 4px;
@@ -142,12 +142,13 @@
 }
 
 .CapacityPlanning-Modal-Header {
-    background-color: #16bfff;
+    background-color: #007bff !important;
     color: white;
     padding: 8px 15px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    position: relative;
 }
 
 .CapacityPlanning-Modal-Header h6 {
@@ -157,11 +158,26 @@
 }
 
 .CapacityPlanning-Modal-Header .close-btn {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
     cursor: pointer;
-    font-size: 18px;
+    font-size: 20px;
+    font-weight: bold;
     background: none;
     border: none;
-    color: white;
+    color: #ffffff !important;
+    line-height: 1;
+    padding: 0 5px;
+    margin: 0;
+    font-family: Arial, sans-serif;
+    transition: transform 0.1s;
+    z-index: 100;
+}
+
+.CapacityPlanning-Modal-Header .close-btn:hover {
+    transform: translateY(-50%) scale(1.2);
 }
 
 .CapacityPlanning-Modal-Body {
@@ -206,4 +222,86 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+}
+
+/* Setting View Specifics */
+.setting-view-content {
+    background: white;
+    min-height: 500px;
+}
+
+.setting-flex-container {
+    display: flex;
+    gap: 40px;
+    margin-top: 20px;
+}
+
+.setting-left-pane {
+    flex: 0 0 280px;
+    display: flex;
+    flex-direction: column;
+}
+
+.setting-selection-box {
+    border: 1px solid #ccc;
+    height: 400px;
+    padding: 5px;
+    background: white;
+}
+
+.setting-right-pane {
+    flex: 0 0 600px;
+}
+
+.setting-table-container {
+    overflow: visible;
+}
+
+.setting-table thead th {
+    background-color: #007bff !important;
+    color: white !important;
+    font-size: 11px;
+    padding: 8px 5px;
+    text-transform: uppercase;
+    font-weight: bold;
+    border: 1px solid #dee2e6;
+}
+
+.setting-table tbody td {
+    padding: 6px 8px;
+    font-size: 11px;
+    border: 1px solid #dee2e6;
+}
+
+.del-btn {
+    color: #333;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+
+.del-btn:hover {
+    color: #ff4d4f;
+}
+
+.erp-btn-save {
+    background-color: #f8f9fa;
+    border: 1px solid #ccc;
+    padding: 2px 12px;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    border-radius: 2px;
+    width: fit-content;
+    margin-top: 15px;
+}
+
+.erp-btn-save:hover {
+    background-color: #e9ecef;
 }

@@ -1272,6 +1272,10 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
                   </Link>
                 )}
 
+                <Link className="dropdown-item" to="/DispatchPlanSetup">
+                  Dispatch Plan Setup
+                </Link>
+
 
 
                 {permissions.Planning.includes("Daily Dispatch Plan") && (

@@ -3,52 +3,173 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import NavBar from "../../NavBar/NavBar.js";
 import SideNav from "../../SideNav/SideNav.js";
 import { FaSearch, FaFileExcel, FaFilter, FaArrowLeft, FaPlus } from "react-icons/fa";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import "./MinMaxPlanning.css";
 
 const MinMaxPlanning = () => {
   const [sideNavOpen, setSideNavOpen] = useState(false);
   const [currentView, setCurrentView] = useState("planning"); // 'planning' or 'warehouse'
-  const [planningData, setPlanningData] = useState([
-    {
-      id: 1,
-      itemCode: "RM-STL-001",
-      itemName: "Steel Sheet 2mm",
-      unit: "KG",
-      minLevel: 500,
-      maxLevel: 2000,
-      currentStock: 350,
-      reorderQty: 1650,
-      status: "Low"
-    },
-    {
-      id: 2,
-      itemCode: "COMP-BRG-12",
-      itemName: "Ball Bearing 12mm",
-      unit: "PCS",
-      minLevel: 100,
-      maxLevel: 500,
-      currentStock: 450,
-      reorderQty: 0,
-      status: "Normal"
-    },
-    {
-      id: 3,
-      itemCode: "CHM-OIL-VG46",
-      itemName: "Hydraulic Oil VG46",
-      unit: "LTR",
-      minLevel: 200,
-      maxLevel: 1000,
-      currentStock: 150,
-      reorderQty: 850,
-      status: "Low"
-    }
-  ]);
+  const [loading, setLoading] = useState(false);
+  const [planningData, setPlanningData] = useState([]);
+  const [itemSummary, setItemSummary] = useState([]);
+  const [mainGroups, setMainGroups] = useState([]);
+  const [hasSearched, setHasSearched] = useState(false);
+  const [allItems, setAllItems] = useState([]);
+  const [searchFilters, setSearchFilters] = useState({
+    mainGroup: "ALL",
+    itemGroup: "ALL",
+    itemCode: "",
+    grnTol: true
+  });
 
   const toggleSideNav = () => setSideNavOpen((p) => !p);
 
   useEffect(() => {
     document.body.classList.toggle("side-nav-open", sideNavOpen);
   }, [sideNavOpen]);
+
+  // Fetch Item Summary for autocomplete
+  useEffect(() => {
+    const fetchItemSummary = async () => {
+      try {
+        const token = localStorage.getItem("accessToken");
+        const response = await fetch("http://127.0.0.1:8000/All_Masters/api/item/summary/", {
+          headers: { "Authorization": `Bearer ${token}` }
+        });
+        if (response.ok) {
+          const result = await response.json();
+          const data = result?.data || result?.results || result || [];
+          const itemsArray = Array.isArray(data) ? data : [];
+          setItemSummary(itemsArray);
+          setAllItems(itemsArray); // Store for local filtering
+        }
+      } catch (error) {
+        console.error("Error fetching item summary:", error);
+      }
+    };
+    fetchItemSummary();
+
+    const fetchMainGroupsData = async () => {
+      try {
+        const token = localStorage.getItem("accessToken");
+        const response = await fetch("http://127.0.0.1:8000/All_Masters/api/maingroup/", {
+          headers: { "Authorization": `Bearer ${token}` }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setMainGroups(Array.isArray(data) ? data : []);
+        }
+      } catch (error) {
+        console.error("Error fetching main groups:", error);
+      }
+    };
+    fetchMainGroupsData();
+  }, []);
+
+  const handleFilterChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setSearchFilters(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
+  };
+
+  const handleSearch = () => {
+    setLoading(true);
+    setHasSearched(true);
+
+    const filtered = allItems.filter(item => {
+      const matchesMainGroup = searchFilters.mainGroup === "ALL" || (item.main_group || item.subgroup_name) === searchFilters.mainGroup;
+      const matchesItemGroup = searchFilters.itemGroup === "ALL" || (item.item_group || item.group_name) === searchFilters.itemGroup;
+      const matchesItemCode = !searchFilters.itemCode || 
+        (item.part_no || item.item_code || item.Part_Code || "").toLowerCase().includes(searchFilters.itemCode.toLowerCase());
+      
+      return matchesMainGroup && matchesItemGroup && matchesItemCode;
+    });
+
+    setPlanningData(filtered);
+    setLoading(false);
+  };
+
+  const [initialValue, setInitialValue] = useState(null);
+
+  const handleFocus = (value) => {
+    setInitialValue(value);
+  };
+
+  const handleUpdate = async (item, field, value) => {
+    // Prevent saving if the value hasn't changed
+    if (value === initialValue) return;
+
+    const updatedValue = field.includes('grn') ? value : Number(value);
+    
+    // Map frontend field names to backend keys provided by user
+    const fieldMapping = {
+      'MinLevel': 'min_level',
+      'ReOrderLevel': 're_order_level',
+      'MaxLevel': 'max_level',
+      'MinOrder': 'min_order',
+      'MaxOrder': 'max_order',
+      'GRN_Tol_Neg': 'grn_tol_sub',
+      'GRN_Tol_Pos': 'grn_tol_add'
+    };
+
+    const backendField = fieldMapping[field] || field;
+
+    // Local update for immediate feedback
+    setPlanningData(prev => prev.map(row => {
+      const isMatch = row.id === item.id || (row.part_no && row.part_no === item.part_no);
+      return isMatch ? { ...row, [field]: updatedValue } : row;
+    }));
+
+    try {
+      const token = localStorage.getItem("accessToken");
+      
+      // Construct the FULL payload with all fields to prevent null overwrites in backend
+      const payload = {
+        id: item.id,
+        item_no: item.part_no || item.itemCode || item.item_code,
+        item_code: item.Part_Code || item.item_code || "",
+        description: item.Name_Description || item.itemName || "",
+        item_groups: item.item_group || item.group_name || "",
+        main_groups: item.main_group || item.subgroup_name || "",
+        unit: item.Unit_Code || item.unit || "",
+        tariff_no: item.HSN_SAC_Code || item.TariffNo || "",
+        min_level: item.min_level || item.MinLevel || 0,
+        re_order_level: item.re_order_level || item.ReOrderLevel || 0,
+        max_level: item.max_level || item.MaxLevel || 0,
+        min_order: item.min_order || item.MinOrder || 0,
+        max_order: item.max_order || item.MaxOrder || 0,
+        grn_tol_sub: item.grn_tol_neg || item.GRN_Tol_Neg || 0,
+        grn_tol_add: item.grn_tol_pos || item.GRN_Tol_Pos || 0,
+        user: item.User || ""
+      };
+
+      // Overwrite the specific field being updated
+      payload[backendField] = updatedValue;
+
+      const response = await fetch("https://erp-render.onrender.com/Planning/update-item-wise-min-max/", {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Failed to update item level:", errorText);
+        toast.error("Failed to save data!");
+      } else {
+        toast.success("Saved successfully!");
+      }
+    } catch (error) {
+      console.error("Error updating item level:", error);
+      toast.error("Network error while saving!");
+    }
+  };
 
   // Handle browser back button
   useEffect(() => {
@@ -69,6 +190,7 @@ const MinMaxPlanning = () => {
 
   return (
     <div className="MinMaxPlanningMaster">
+      <ToastContainer position="top-right" autoClose={2000} />
       <div className="container-fluid">
         <div className="row">
           <div className="col-md-12">
@@ -101,49 +223,192 @@ const MinMaxPlanning = () => {
                       <div className="d-flex align-items-center gap-4 flex-wrap" style={{ fontSize: '12px' }}>
                         <div className="d-flex align-items-center gap-2">
                           <label className="mb-0 text-nowrap">Main Group :</label>
-                          <select className="form-select form-select-sm" style={{ width: '130px', height: '28px', fontSize: '11px' }}>
-                            <option>ALL</option>
+                          <select 
+                            className="form-select form-select-sm" 
+                            style={{ width: '130px', height: '28px', fontSize: '11px' }}
+                            name="mainGroup"
+                            value={searchFilters.mainGroup}
+                            onChange={handleFilterChange}
+                          >
+                            <option value="ALL">ALL</option>
+                            {mainGroups.map((group, idx) => (
+                              <option key={idx} value={group.subgroup_name}>
+                                {group.subgroup_name}
+                              </option>
+                            ))}
                           </select>
                         </div>
                         <div className="d-flex align-items-center gap-2">
                           <label className="mb-0 text-nowrap">Item Group :</label>
-                          <select className="form-select form-select-sm" style={{ width: '130px', height: '28px', fontSize: '11px' }}>
+                          <select 
+                            className="form-select form-select-sm" 
+                            style={{ width: '130px', height: '28px', fontSize: '11px' }}
+                            name="itemGroup"
+                            value={searchFilters.itemGroup}
+                            onChange={handleFilterChange}
+                          >
                             <option>ALL</option>
                           </select>
                         </div>
                         <div className="d-flex align-items-center gap-1">
                            <input type="checkbox" className="form-check-input mt-0" defaultChecked />
                            <label className="mb-0">ItemCode</label>
-                           <input type="text" className="form-control form-control-sm" style={{ width: '180px', height: '28px' }} />
+                           <input 
+                             type="text" 
+                             className="form-control form-control-sm" 
+                             style={{ width: '180px', height: '28px' }} 
+                             name="itemCode"
+                             list={searchFilters.itemCode.length > 0 ? "itemSummaryList" : ""}
+                             value={searchFilters.itemCode}
+                             onChange={handleFilterChange}
+                           />
+                           <datalist id="itemSummaryList">
+                              {itemSummary
+                                .filter(it => (it.part_no || it.item_code || it.itemCode || "").toLowerCase().includes(searchFilters.itemCode.toLowerCase()))
+                                .map((it, i) => (
+                                  <option key={i} value={it.part_no || it.item_code || it.itemCode} />
+                                ))
+                              }
+                           </datalist>
                         </div>
                         <div className="d-flex align-items-center gap-1">
-                           <input type="checkbox" className="form-check-input mt-0" />
+                           <input 
+                             type="checkbox" 
+                             className="form-check-input mt-0" 
+                             name="grnTol"
+                             checked={searchFilters.grnTol}
+                             onChange={handleFilterChange}
+                           />
                            <label className="mb-0">GRN% Tol. {'>'} 0</label>
                         </div>
-                        <button className="btn btn-sm btn-light border d-flex align-items-center gap-1" style={{ height: '28px', fontSize: '11px', fontWeight: '600' }}>
-                           <FaSearch /> Search
+                        <button 
+                          className="btn btn-sm btn-light border d-flex align-items-center gap-1" 
+                          style={{ height: '28px', fontSize: '11px', fontWeight: '600' }}
+                          onClick={handleSearch}
+                          disabled={loading}
+                        >
+                           <FaSearch /> {loading ? "Searching..." : "Search"}
                         </button>
                       </div>
                     </div>
 
-                    {/* Table Area - Kept empty as per screenshot */}
-                    <div className="MinMaxPlanning-Content border" style={{ minHeight: '400px', backgroundColor: '#fff' }}>
-                      <div className="table-responsive">
-                        <table className="table table-bordered table-sm text-center">
-                          <thead style={{ backgroundColor: '#f8f9fa', fontSize: '11px' }}>
-                            {/* Headers will appear here after search */}
-                          </thead>
-                          <tbody style={{ fontSize: '12px' }}>
-                            {/* Data rows will appear here after search */}
-                          </tbody>
-                        </table>
+                    {/* Table Area */}
+                    {hasSearched && (
+                      <div className="MinMaxPlanning-Content border" style={{ minHeight: '400px', backgroundColor: '#fff' }}>
+                        <div className="table-responsive">
+                          <table className="table table-bordered table-sm text-center">
+                            <thead style={{ backgroundColor: '#f8f9fa', fontSize: '11px' }}>
+                              <tr className="bg-primary text-white">
+                                <th className="text-nowrap">Sr.</th>
+                                <th className="text-nowrap">Item No</th>
+                                <th className="text-nowrap">Item Code</th>
+                                <th className="text-nowrap">Desc.</th>
+                                <th className="text-nowrap">Item Group</th>
+                                <th className="text-nowrap">Main Group</th>
+                                <th className="text-nowrap">Unit</th>
+                                <th className="text-nowrap">TariffNo</th>
+                                <th className="text-nowrap">MinLevel</th>
+                                <th className="text-nowrap">ReOrderLevel</th>
+                                <th className="text-nowrap">MaxLevel</th>
+                                <th className="text-nowrap">MinOrder</th>
+                                <th className="text-nowrap">MaxOrder</th>
+                                <th className="text-nowrap">GRN (%) Tol (-)</th>
+                                <th className="text-nowrap">GRN (%) Tol (+)</th>
+                                <th className="text-nowrap">User</th>
+                              </tr>
+                            </thead>
+                            <tbody style={{ fontSize: '12px' }}>
+                              {planningData.length > 0 ? planningData.map((row, index) => {
+                                return (
+                                  <tr key={row.id || index}>
+                                    <td>{index + 1}</td>
+                                    <td>{row.part_no || row.itemCode || row.item_code}</td>
+                                    <td>{row.Part_Code || ""}</td>
+                                    <td className="text-start">{row.Name_Description || row.itemName || row.item_name || row.item_description}</td>
+                                    <td>{row.item_group || row.group_name}</td>
+                                    <td>{row.main_group || row.subgroup_name}</td>
+                                    <td>{row.Unit_Code || row.unit}</td>
+                                    <td>{row.HSN_SAC_Code || row.TariffNo || ""}</td>
+                                    <td style={{ width: '70px' }}>
+                                      <input 
+                                        type="text" 
+                                        className="form-control form-control-sm text-center px-1" 
+                                        defaultValue={row.min_level || row.MinLevel || 0}
+                                        onFocus={(e) => handleFocus(e.target.value)}
+                                        onBlur={(e) => handleUpdate(row, 'MinLevel', e.target.value)}
+                                      />
+                                    </td>
+                                    <td style={{ width: '70px' }}>
+                                      <input 
+                                        type="text" 
+                                        className="form-control form-control-sm text-center px-1" 
+                                        defaultValue={row.reorder_level || row.ReOrderLevel || 0}
+                                        onFocus={(e) => handleFocus(e.target.value)}
+                                        onBlur={(e) => handleUpdate(row, 'ReOrderLevel', e.target.value)}
+                                      />
+                                    </td>
+                                    <td style={{ width: '70px' }}>
+                                      <input 
+                                        type="text" 
+                                        className="form-control form-control-sm text-center px-1" 
+                                        defaultValue={row.max_level || row.MaxLevel || 0}
+                                        onFocus={(e) => handleFocus(e.target.value)}
+                                        onBlur={(e) => handleUpdate(row, 'MaxLevel', e.target.value)}
+                                      />
+                                    </td>
+                                    <td style={{ width: '70px' }}>
+                                      <input 
+                                        type="text" 
+                                        className="form-control form-control-sm text-center px-1" 
+                                        defaultValue={row.min_order || row.MinOrder || ""}
+                                        onFocus={(e) => handleFocus(e.target.value)}
+                                        onBlur={(e) => handleUpdate(row, 'MinOrder', e.target.value)}
+                                      />
+                                    </td>
+                                    <td style={{ width: '70px' }}>
+                                      <input 
+                                        type="text" 
+                                        className="form-control form-control-sm text-center px-1" 
+                                        defaultValue={row.max_order || row.MaxOrder || ""}
+                                        onFocus={(e) => handleFocus(e.target.value)}
+                                        onBlur={(e) => handleUpdate(row, 'MaxOrder', e.target.value)}
+                                      />
+                                    </td>
+                                    <td style={{ width: '70px' }}>
+                                      <input 
+                                        type="text" 
+                                        className="form-control form-control-sm text-center px-1" 
+                                        defaultValue={row.grn_tol_neg || row.GRN_Tol_Neg || 0}
+                                        onFocus={(e) => handleFocus(e.target.value)}
+                                        onBlur={(e) => handleUpdate(row, 'GRN_Tol_Neg', e.target.value)}
+                                      />
+                                    </td>
+                                    <td style={{ width: '70px' }}>
+                                      <input 
+                                        type="text" 
+                                        className="form-control form-control-sm text-center px-1" 
+                                        defaultValue={row.grn_tol_pos || row.GRN_Tol_Pos || 0}
+                                        onFocus={(e) => handleFocus(e.target.value)}
+                                        onBlur={(e) => handleUpdate(row, 'GRN_Tol_Pos', e.target.value)}
+                                      />
+                                    </td>
+                                    <td>{row.User || ""}</td>
+                                  </tr>
+                                );
+                              }) : (
+                                <tr>
+                                  <td colSpan="16" className="p-4 text-muted">No records found for the selected filters.</td>
+                                </tr>
+                              )}
+                            </tbody>
+                          </table>
+                        </div>
+                        {/* Footer */}
+                        <div className="MinMaxPlanning-Footer p-2 mt-0 border-top">
+                          Total Record : {String(planningData?.length || 0).padStart(2, '0')}
+                        </div>
                       </div>
-                    </div>
-
-                    {/* Footer */}
-                    <div className="MinMaxPlanning-Footer p-2 mt-0">
-                      Total Record : 00
-                    </div>
+                    )}
                   </div>
                 )}
 
