@@ -1,0 +1,128 @@
+/* Direct Bill Layout */
+.direct-bill {
+  padding: 1rem;
+  background-color: #f4f7f6;
+  min-height: 100vh;
+}
+
+.direct-bill .main-content {
+  padding: 20px;
+  transition: margin-left 0.3s ease;
+}
+
+.direct-bill .Main-NavBar {
+  display: flex;
+  margin-left: -20px;
+}
+
+.direct-bill .shifted {
+  margin-left: 250px;
+}
+
+/* Header Section (Standardised with GLMaster) */
+.WorkOrderEntry-header {
+  background-color: #f8f9fa;
+  padding: 10px;
+  border-radius: 5px;
+}
+
+.header-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.header-section {
+  background-color: #fff;
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+.form-label {
+  font-size: 0.85rem;
+}
+
+.form-control,
+.form-select {
+  font-size: 0.8rem;
+  height: 32px;
+}
+
+/* Table Styling */
+.custom-bill-table {
+  font-size: 0.85rem;
+}
+
+.custom-bill-table thead th {
+  background-color: #1fb5ff !important;
+  color: #ffffff !important;
+  font-weight: 600;
+  padding: 10px 5px;
+  border: 1px solid #dee2e6;
+  text-align: center;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.custom-bill-table tbody td {
+  padding: 5px;
+  vertical-align: middle;
+  border: 1px solid #dee2e6;
+}
+
+.custom-bill-table .form-control-sm,
+.custom-bill-table .form-select-sm {
+  padding: 2px 5px;
+  height: 28px;
+  font-size: 0.8rem;
+}
+
+/* Totals Bar (Orange Theme) */
+.totals-bar {
+  background-color: #ff9800;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Footer Section */
+.footer-section {
+  border: 1px solid #e0e0e0 !important;
+}
+
+.footer-section label {
+  font-weight: 600;
+  color: #444;
+}
+
+.footer-section .form-control-sm,
+.footer-section .form-select-sm {
+  border-radius: 2px;
+  border-color: #ced4da;
+}
+
+.footer-section .border-end {
+  border-right: 1px solid #dee2e6 !important;
+}
+
+/* Confirm Button Styling */
+.btn-dark {
+  background-color: #343a40;
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.btn-dark:hover {
+  background-color: #23272b;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Scrollbar refinement - removed custom colors to use default */
+.table-responsive {
+  scrollbar-width: auto;
+}
+
+/* Checkbox alignment */
+.form-check-input {
+  margin-top: 0.3rem;
+}

@@ -1,0 +1,97 @@
+/* BreakdownAuthorisation.css - Exact clone of MachinePreventiveSchedule.css theme */
+
+.breakdown-authorisation {
+  padding: 1rem;
+}
+
+.breakdown-authorisation .user-list-table th {
+  background-color: #f8f9fa !important;
+  color: #333333 !important;
+  font-weight: 600;
+  padding: 10px;
+  border: 1px solid #dee2e6;
+  text-align: center;
+}
+
+.breakdown-authorisation .main-content {
+  padding: 20px;
+  transition: margin-left 0.3s ease;
+}
+
+.breakdown-authorisation .Main-NavBar {
+  display: flex;
+  margin-left: -20px;
+}
+
+.breakdown-authorisation .shifted {
+  margin-left: 250px;
+}
+
+/* Header Section Styling */
+.breakdown-authorisation .WorkOrderEntry-header {
+  background-color: #f8f9fa;
+  padding: 10px;
+  border-radius: 5px;
+  border: none;
+}
+
+.breakdown-authorisation .header-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #007bff;
+  /* Kept requested blue color for heading */
+}
+
+/* Filter Section Styling */
+.breakdown-authorisation .header-section {
+  background-color: #fff;
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+.breakdown-authorisation .header-section .form-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.breakdown-authorisation .header-section .form-control,
+.breakdown-authorisation .header-section .form-select,
+.breakdown-authorisation .header-section .btn {
+  font-size: 14px;
+  height: 32px;
+  padding: 4px 8px;
+}
+
+/* Action Buttons Styling */
+.breakdown-authorisation .btn {
+  margin-left: 5px;
+  font-size: 14px;
+}
+
+/* Table Area / Data Container */
+.breakdown-authorisation .table-area {
+  min-height: 400px;
+  padding: 15px 0;
+  margin-top: 20px;
+}
+
+.breakdown-authorisation .no-data-msg {
+  color: #666;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Record Count / Footer */
+.breakdown-authorisation .total-records {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+@media (max-width: 768px) {
+  .breakdown-authorisation .main-content {
+    margin-left: 0 !important;
+  }
+}
