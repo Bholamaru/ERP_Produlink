@@ -25,7 +25,7 @@ const BreakdownAuthorisation = () => {
   }, [sideNavOpen]);
 
   return (
-    <div className="breakdown-authorisation">
+    <div className="breakdown-auth-page">
       <div className="container-fluid">
         <div className="row">
           <div className="col-md-12">
@@ -33,76 +33,98 @@ const BreakdownAuthorisation = () => {
               <NavBar toggleSideNav={toggleSideNav} />
               <SideNav sideNavOpen={sideNavOpen} toggleSideNav={toggleSideNav} />
               <main className={`main-content ${sideNavOpen ? "shifted" : ""}`}>
-                <div className="user-management">
-                  {/* Header Synchronized with BreakdownList */}
-                  <div className="WorkOrderEntry-header mb-4">
+                <div className="register-container">
+                  
+                  {/* Header Section */}
+                  <div className="WorkOrderEntry-header mb-3">
                     <div className="row align-items-center">
                       <div className="col-md-6">
                         <h5 className="header-title text-start mb-0">
                           Maintenance : Breakdown Log List
                         </h5>
                       </div>
-                      <div className="col-md-6 text-end">
-                        <button className="btn d-inline-flex align-items-center gap-2">
-                          <FaFileExcel className="text-success" /> Export To Excel
+                      <div className="col-md-6 text-end d-flex justify-content-end gap-2">
+                        <button className="btn d-inline-flex align-items-center gap-1">
+                          <FaFileExcel className="excel-icon" /> Export To Excel
                         </button>
                       </div>
                     </div>
                   </div>
 
-                  {/* Filter Section Synchronized with BreakdownList */}
-                  <div className="header-section mb-4">
-                    <div className="row align-items-center g-3 mt-2 mb-3">
-
-                      <div className="col-auto d-flex align-items-center gap-2">
-                        <label className="form-label mb-0 fw-bold">Plant :</label>
-                        <select className="form-select" style={{ width: "120px" }}>
+                  {/* Filter Section */}
+                  <div className="header-section mb-3">
+                    <div className="d-flex align-items-center flex-wrap gap-3 text-start">
+                      <div className="d-flex align-items-center gap-2">
+                        <label className="form-label fw-bold">Plant :</label>
+                        <select className="form-select form-select-sm" style={{ width: "120px" }}>
                           <option>SHARP</option>
                         </select>
                       </div>
 
-                      <div className="col-auto d-flex align-items-center gap-2">
-                        <label className="form-label mb-0 fw-bold">From :</label>
-                        <input type="date" className="form-control" style={{ width: "150px" }} defaultValue="2026-04-07" />
+                      <div className="d-flex align-items-center gap-2">
+                        <label className="form-label fw-bold">From :</label>
+                        <input type="date" className="form-control form-control-sm" style={{ width: "135px" }} defaultValue="2026-04-07" />
                       </div>
 
-                      <div className="col-auto d-flex align-items-center gap-2">
-                        <label className="form-label mb-0 fw-bold">To Date :</label>
-                        <input type="date" className="form-control" style={{ width: "150px" }} defaultValue="2026-05-08" />
+                      <div className="d-flex align-items-center gap-2">
+                        <label className="form-label fw-bold">To Date :</label>
+                        <input type="date" className="form-control form-control-sm" style={{ width: "135px" }} defaultValue="2026-05-08" />
                       </div>
 
-                      <div className="col-auto d-flex align-items-center gap-2">
-                        <label className="form-label mb-0 fw-bold">Category :</label>
-                        <select className="form-select" style={{ width: "120px" }}>
+                      <div className="d-flex align-items-center gap-2">
+                        <label className="form-label fw-bold">Category :</label>
+                        <select className="form-select form-select-sm" style={{ width: "120px" }}>
                           <option>ALL</option>
                         </select>
                       </div>
 
-                      <div className="col-auto d-flex align-items-center gap-2">
-                        <label className="form-label mb-0 fw-bold">Status :</label>
-                        <select className="form-select" style={{ width: "120px" }}>
+                      <div className="d-flex align-items-center gap-2">
+                        <label className="form-label fw-bold">Status :</label>
+                        <select className="form-select form-select-sm" style={{ width: "120px" }}>
                           <option>ALL</option>
                         </select>
                       </div>
 
-                      <div className="col-auto">
-                        <button className="btn d-flex align-items-center gap-2">
-                          <FaSearch /> Search
-                        </button>
-                      </div>
+                      <button className="btn d-flex align-items-center gap-1">
+                        <FaSearch className="search-icon" /> Search
+                      </button>
                     </div>
                   </div>
 
-                  {/* Total Records - Moved to Top */}
-                  <div className="mb-2 text-start">
-                    <span className="total-records">
-                      Total Records : 00
-                    </span>
-                  </div>
-
-                  {/* Table Area - Transparent BG */}
-                  <div className="table-area">
-                    <div className="no-data-msg">No Data Found !!</div>
+                  {/* Table Section */}
+                  <div className="table-container">
+                    <div className="table-responsive">
+                      <table className="custom-table table-bordered">
+                        <thead>
+                          <tr>
+                            <th>Sr.</th>
+                            <th>Plant</th>
+                            <th>Year</th>
+                            <th>BreakDown No</th>
+                            <th>Date</th>
+                            <th>Code</th>
+                            <th>Tool/Machine</th>
+                            <th>Department</th>
+                            <th>Category</th>
+                            <th>Priority</th>
+                            <th>Auth</th>
+                            <th>User</th>
+                            <th>Status</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td colSpan="13" className="text-center py-5 text-muted fw-bold bg-white">
+                              No Records Found...!!!
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                    {/* Footer Summary */}
+                    <div className="footer-summary">
+                      Total Records : 0
+                    </div>
                   </div>
 
                 </div>

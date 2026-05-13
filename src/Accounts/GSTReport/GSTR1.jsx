@@ -224,7 +224,7 @@ const GSTR1 = () => {
               <NavBar toggleSideNav={toggleSideNav} />
               <SideNav sideNavOpen={sideNavOpen} toggleSideNav={toggleSideNav} />
               <main className={`main-content ${sideNavOpen ? "shifted" : ""}`}>
-                
+
                 {/* Header Section */}
                 <div className="WorkOrderEntry-header d-flex justify-content-between align-items-center mb-3">
                   <h5 className="header-title">GSTR - 1</h5>
@@ -234,44 +234,38 @@ const GSTR1 = () => {
                 <div className="header-section mb-4 py-2">
                   <div className="d-flex align-items-center justify-content-start gap-3 flex-wrap px-2">
                     <div className="d-flex align-items-center gap-2">
-                      <label className="form-label mb-0 fw-bold text-nowrap">From :</label>
+                      <label className="form-label mb-0 fw-bold">From:</label>
                       <input
                         type="date"
-                        className="form-control form-control-sm"
-                        style={{ width: "135px" }}
+                        className="form-control form-control-sm filter-date-input"
                         value={fromDate}
                         onChange={(e) => setFromDate(e.target.value)}
                       />
                     </div>
                     <div className="d-flex align-items-center gap-2">
-                      <label className="form-label mb-0 fw-bold text-nowrap">To :</label>
+                      <label className="form-label mb-0 fw-bold">To:</label>
                       <input
                         type="date"
-                        className="form-control form-control-sm"
-                        style={{ width: "135px" }}
+                        className="form-control form-control-sm filter-date-input"
                         value={toDate}
                         onChange={(e) => setToDate(e.target.value)}
                       />
                     </div>
                     <div className="d-flex align-items-center gap-2">
-                      <label className="form-label mb-0 fw-bold text-nowrap">Sales Type :</label>
-                      <select className="form-select form-select-sm" style={{ width: "150px" }}>
+                      <label className="form-label mb-0 fw-bold">Sales Type:</label>
+                      <select className="form-select form-select-sm filter-select">
                         <option value="GST_Invoice">GST_Invoice</option>
                       </select>
                     </div>
                     <div className="d-flex align-items-center gap-2">
-                      <label className="form-label mb-0 fw-bold text-nowrap">Type :</label>
-                      <select className="form-select form-select-sm" style={{ width: "150px" }}>
+                      <label className="form-label mb-0 fw-bold">Type:</label>
+                      <select className="form-select form-select-sm filter-select">
                         <option value="Invoice_Wise">Invoice_Wise</option>
                       </select>
                     </div>
                     <div className="d-flex gap-2 ms-auto">
-                      <button className="btn btn-sm btn-light border px-3 d-inline-flex align-items-center gap-2" style={{ height: "32px" }}>
-                        <FaSearch className="search-icon" /> Search
-                      </button>
-                      <button className="btn btn-sm btn-light border px-3 d-inline-flex align-items-center gap-2" style={{ height: "32px" }}>
-                        <FaFileExcel className="excel-icon" /> Export Report
-                      </button>
+                      <button className="btn filter-btn">Search</button>
+                      <button className="btn filter-btn">Export To Excel</button>
                     </div>
                   </div>
                 </div>

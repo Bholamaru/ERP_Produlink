@@ -43,8 +43,8 @@ const GLLedger = () => {
                 {/* Header Section */}
                 <div className="WorkOrderEntry-header d-flex justify-content-between align-items-center mb-3">
                   <h5 className="header-title mb-0">GL Ledger</h5>
-                  <button className="btn btn-sm btn-light border d-inline-flex align-items-center gap-1">
-                    <FaFileExcel className="excel-icon" /> Excel
+                  <button className="btn">
+                    <FaFileExcel className="excel-icon me-1" /> Excel
                   </button>
                 </div>
 
@@ -81,14 +81,14 @@ const GLLedger = () => {
                       />
                     </div>
                     <div className="col-md-auto d-flex gap-2">
-                      <button className="btn btn-sm btn-light border d-inline-flex align-items-center gap-1">
-                        <FaSearch className="search-icon" /> Search
+                      <button className="btn">
+                        <FaSearch className="search-icon me-1" /> Search
                       </button>
-                      <button className="btn btn-sm btn-light border d-inline-flex align-items-center gap-1">
-                        <FaFileExcel className="excel-icon" /> Export To Excel
+                      <button className="btn">
+                        <FaFileExcel className="excel-icon me-1" /> Export To Excel
                       </button>
-                      <button className="btn btn-sm btn-light border d-inline-flex align-items-center gap-1">
-                        <FaFilePdf className="pdf-icon" /> Export To PDF (Summary)
+                      <button className="btn">
+                        <FaFilePdf className="pdf-icon me-1" /> Export To PDF (Summary)
                       </button>
                     </div>
                   </div>

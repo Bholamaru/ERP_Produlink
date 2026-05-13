@@ -89,24 +89,10 @@
   background-color: #f1f8ff;
 }
 
-/* Button Refinements - Light to Blue Hover */
-.btn-light.border {
-  transition: all 0.2s ease;
-  background-color: #f8f9fa;
-  color: #333;
-  font-size: 0.85rem;
-  font-weight: 500;
-}
-
-.btn-light.border:hover {
-  background-color: #1fb5ff !important;
-  border-color: #1fb5ff !important;
-  color: #fff !important;
-}
-
-.btn-light.border:hover i,
-.btn-light.border:hover svg {
-  color: #fff !important;
+/* Button Styling - Simplified */
+.gl-ledger-page .btn {
+  margin-left: 5px;
+  font-size: 14px;
 }
 
 /* Icon Colors (Normal State) */

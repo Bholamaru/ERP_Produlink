@@ -1,93 +1,157 @@
-/* Global Layout */
+/* ToolManagement.css - Optimized Responsive 5-Row Sync */
+
 .toolmanagement {
-  padding: 1rem;
+  padding: 0.5rem;
+  background-color: #f4f7f6;
+  min-height: 100vh;
 }
 
 .toolmanagement .main-content {
-  padding: 20px;
+  padding: 10px;
   transition: margin-left 0.3s ease;
 }
 
 .toolmanagement .Main-NavBar {
   display: flex;
   margin-left: -20px;
-  /* Ensure that the navbar and sidenav are flex items */
 }
 
 .toolmanagement .shifted {
   margin-left: 250px;
-  /* Adjust based on the size of your SideNav */
 }
 
-/* User Management Section */
+/* Header Section */
 .toolmanagement .WorkOrderEntry-header {
   background-color: #f8f9fa;
-  padding: 10px;
+  padding: 8px 15px;
   border-radius: 5px;
+  border: 1px solid #dee2e6;
 }
 
 .toolmanagement .header-title {
-  font-size: 1.2rem;
-  font-weight: 600;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1fb5ff;
+  margin: 0;
 }
 
+/* Filter Section - Optimized Flex */
 .toolmanagement .header-section {
   background-color: #fff;
-  padding: 15px;
-  border: 1px solid #ddd;
+  padding: 12px;
+  border: 1px solid #dee2e6;
   border-radius: 5px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
-.toolmanagement .header-section .form-check-label {
-  display: flex;
-  align-items: center;
+.toolmanagement .form-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #444;
+  margin-bottom: 0;
 }
 
-.toolmanagement .header-section .form-control,
-.toolmanagement .header-section .form-select,
-.toolmanagement .header-section .btn {
-  margin-bottom: 0.5rem;
+.toolmanagement .form-control,
+.toolmanagement .form-select {
+  font-size: 0.78rem;
+  height: 30px;
+}
+
+/* Table Container - RESPONSIVE 7 ROW LOCK */
+.toolmanagement .table-responsive {
+  max-height: 320px !important; /* EXACTLY 7 ROWS + HEADER */
+  overflow-y: auto !important;
+  overflow-x: hidden !important; 
+  width: 100% !important;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  background: #fff;
 }
 
 .toolmanagement .user-list-table {
-  width: 100%;
-  margin-top: 20px;
+  width: 100% !important;
+  table-layout: fixed !important;
+  border-collapse: collapse;
+  font-size: 0.7rem;
+  margin-top: 0 !important;
 }
 
-.toolmanagement .user-list-table th {
+.toolmanagement .user-list-table thead th {
   background-color: #1fb5ff !important;
-  /* Branded Blue as in image */
   color: #ffffff !important;
-  font-weight: 600;
-  padding: 12px;
+  font-weight: 700;
+  padding: 8px 2px;
   border: 1px solid #dee2e6;
   text-align: center;
   vertical-align: middle;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  white-space: normal;
+  word-wrap: break-word;
 }
 
-.toolmanagement .user-list-table td {
+.toolmanagement .user-list-table tbody td {
+  padding: 6px 2px;
+  border: 1px solid #dee2e6;
   text-align: center;
   vertical-align: middle;
+  white-space: normal;
+  word-wrap: break-word;
+  min-width: 0 !important;
 }
 
-.toolmanagement .user-list-table input[type="password"] {
-  max-width: 120px;
-  display: inline-block;
+.toolmanagement .user-list-table tbody tr:nth-child(even) {
+  background-color: #f9f9f9;
 }
 
-.toolmanagement .user-list-table .btn {
-  margin-top: 5px;
+.toolmanagement .user-list-table tbody tr:hover {
+  background-color: #f1f8ff;
 }
 
-.toolmanagement .table {
-  background-color: #fff;
+/* Responsive Column Widths (12 Columns) */
+.toolmanagement .user-list-table th:nth-child(1) { width: 3%; }
+.toolmanagement .user-list-table th:nth-child(2) { width: 8%; }
+.toolmanagement .user-list-table th:nth-child(3) { width: 14%; }
+.toolmanagement .user-list-table th:nth-child(4) { width: 9%; }
+.toolmanagement .user-list-table th:nth-child(5) { width: 8%; }
+.toolmanagement .user-list-table th:nth-child(6) { width: 14%; }
+.toolmanagement .user-list-table th:nth-child(7) { width: 7%; }
+.toolmanagement .user-list-table th:nth-child(8) { width: 9%; }
+.toolmanagement .user-list-table th:nth-child(9) { width: 9%; }
+.toolmanagement .user-list-table th:nth-child(10) { width: 8%; }
+.toolmanagement .user-list-table th:nth-child(11) { width: 8%; }
+.toolmanagement .user-list-table th:nth-child(12) { width: 4%; }
+
+/* Custom Scrollbar - 8px Static Gray */
+.toolmanagement .table-responsive::-webkit-scrollbar {
+  width: 8px;
 }
 
-.toolmanagement .btn {
-  margin-left: 5px;
-  font-size: 14px;
+.toolmanagement .table-responsive::-webkit-scrollbar-track {
+  background: #f1f1f1;
 }
 
-.toolmanagement .btn-sm {
-  font-size: 0.8rem;
+.toolmanagement .table-responsive::-webkit-scrollbar-thumb {
+  background: #ccc !important;
+  border-radius: 4px;
+}
+
+.toolmanagement .table-responsive:horizontal {
+  display: none !important;
+}
+
+/* RESPONSIVITY MEDIA QUERIES */
+@media (max-width: 1400px) {
+  .toolmanagement .user-list-table { font-size: 0.65rem; }
+}
+
+@media (max-width: 1200px) {
+  .toolmanagement .user-list-table { font-size: 0.6rem; }
+  .toolmanagement .header-section .d-flex { gap: 10px !important; }
+}
+
+@media (max-width: 768px) {
+  .toolmanagement .table-responsive { overflow-x: auto !important; } /* Allow horizontal scroll ONLY on very small screens if necessary */
+  .toolmanagement .user-list-table { table-layout: auto !important; }
 }

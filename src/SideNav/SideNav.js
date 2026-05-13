@@ -651,7 +651,7 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
                     <Link className="dropdown-item" to="/gst-sales-return-list">
                       GST Sales Return List
                     </Link>
-                    <Link className="dropdown-item" to="/purchase-register">
+                    <Link className="dropdown-item" to="/ac-purchase-register">
                       Purchase Register
                     </Link>
                   </div>

@@ -440,6 +440,7 @@ import PurchaseRegister from "./Accounts/PurchaseRegister/PurchaseRegister.jsx";
 import TDSRegister from "./Accounts/TDSRegister/TDSRegister.jsx";
 import TCSRegister from "./Accounts/TCSRegister/TCSRegister.jsx";
 import GLLedger from "./Accounts/GLLedger/GLLedger.jsx";
+import ACPurchaseRegister from "./Accounts/ACRegister/ACPurchaseRegister.jsx";
 
 /////////////////////////////// Maintenance ////////////////////////////////
 
@@ -957,6 +958,7 @@ function App() {
         <Route path="/tds-register" element={<TDSRegister />} />
         <Route path="/tcs-register" element={<TCSRegister />} />
         <Route path="/gl-ledger" element={<GLLedger />} />
+        <Route path="/ac-purchase-register" element={<ACPurchaseRegister />} />
 
         {/* ////////////////////////////////// Maintenance /////////////////////////////////// */}
 
