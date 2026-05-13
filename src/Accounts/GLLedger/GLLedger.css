@@ -1,0 +1,151 @@
+/* GLLedger.css - Enterprise Styling */
+
+.gl-ledger-page {
+  padding: 1rem;
+  background-color: #f4f7f6;
+  min-height: 100vh;
+}
+
+.gl-ledger-page .main-content {
+  padding: 20px;
+  transition: margin-left 0.3s ease;
+}
+
+.gl-ledger-page .Main-NavBar {
+  display: flex;
+  margin-left: -20px;
+}
+
+.gl-ledger-page .shifted {
+  margin-left: 250px;
+}
+
+/* Header Styling */
+.gl-ledger-page .WorkOrderEntry-header {
+  background-color: #f8f9fa;
+  padding: 10px 20px;
+  border-radius: 5px;
+  border: 1px solid #dee2e6;
+}
+
+.gl-ledger-page .header-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #1fb5ff;
+  /* Branded Blue */
+}
+
+/* Filter Card Styling */
+.gl-ledger-page .filter-card {
+  background-color: #fff;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.gl-ledger-page .form-label {
+  color: #555;
+  margin-bottom: 4px;
+}
+
+.gl-ledger-page .form-control-sm {
+  border-color: #ced4da;
+  font-size: 0.85rem;
+}
+
+/* Table Styling */
+.custom-ledger-table {
+  font-size: 0.85rem;
+  width: 100%;
+  min-width: 900px;
+  /* Ensures responsiveness without squishing */
+}
+
+.custom-ledger-table thead th {
+  background-color: #1fb5ff !important;
+  color: #ffffff !important;
+  font-weight: 600;
+  padding: 12px 8px;
+  border: 1px solid #dee2e6;
+  text-align: center;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.custom-ledger-table tbody td {
+  padding: 8px 12px;
+  vertical-align: middle;
+  border: 1px solid #dee2e6;
+  white-space: nowrap;
+  color: #333;
+  font-size: 14px;
+}
+
+.custom-ledger-table tbody tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.custom-ledger-table tbody tr:hover {
+  background-color: #f1f8ff;
+}
+
+/* Button Refinements - Light to Blue Hover */
+.btn-light.border {
+  transition: all 0.2s ease;
+  background-color: #f8f9fa;
+  color: #333;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.btn-light.border:hover {
+  background-color: #1fb5ff !important;
+  border-color: #1fb5ff !important;
+  color: #fff !important;
+}
+
+.btn-light.border:hover i,
+.btn-light.border:hover svg {
+  color: #fff !important;
+}
+
+/* Icon Colors (Normal State) */
+.excel-icon {
+  color: #28a745;
+}
+
+.pdf-icon {
+  color: #dc3545;
+}
+
+.search-icon {
+  color: #1fb5ff;
+}
+
+/* Custom Scrollbar for responsive table */
+.table-responsive::-webkit-scrollbar {
+  height: 6px;
+}
+
+.table-responsive::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 10px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb:hover {
+  background: #1fb5ff;
+}
+
+@media (max-width: 768px) {
+  .gl-ledger-page .main-content {
+    padding: 10px;
+  }
+
+  .gl-ledger-page .header-title {
+    font-size: 1rem;
+  }
+}
