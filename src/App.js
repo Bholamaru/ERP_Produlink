@@ -358,6 +358,16 @@ import TestMasterList from "./Quality/TestMaster/TestMasterList/TestMasterList.j
 import SubconJobworkInwardQC from "./Quality/SubconJobwork/PaddingQCInward/SubconJobworkInwardQC/SubconJobworkInwardQC.jsx";
 
 
+import ContractorWorkOrderList from "./ProductionV2/ContractorWorkOrder/ContractorWorkOrderList/ContractorWorkOrderList.jsx";
+import ContractorWorkOrder from "./ProductionV2/ContractorWorkOrder/ContractorWorkOrder.jsx";
+import WorkOrderEntryV2 from "./ProductionV2/WorkOrderEntryV2/WorkOrderEntryV2.jsx";
+import WorkOrderReportV2 from "./ProductionV2/WorkOrderReportV2/WorkOrderReportV2.jsx";
+
+import PunchingLaserSchedule from "./ProductionV2/PunchingLaserSchedule/PunchingLaserSchedule.jsx";
+import PunchingProgram from "./ProductionV2/PunchingProgram/PunchingProgram.jsx";
+import PunchingLaserScheduleNew from "./ProductionV2/PunchingLaserSchedule/PunchingLaserScheduleNew.jsx";
+import WorkOrderStatusEntry from "./ProductionV2/WorkOrderStatusEntry/WorkOrderStatusEntry.jsx";
+
 /////////////////////////////////////     Sales       ////////////////////////////////////
 
 import GSTsales1 from "./Sales/EInvoicing/GSTsales/GSTsales1.jsx";
@@ -791,6 +801,14 @@ function App() {
         <Route path="/JobworkList" element={<JobworkList />} />
         <Route path="/BreakdownTimeEntry" element={<BreakdownTimeEntry />} />
         <Route path="/BreakdownTimeReport" element={<BreakdownTimeReport />} />
+        <Route path="/WorkOrderReportV2" element={<WorkOrderReportV2 />} />
+        <Route path="/WorkOrderEntryV2" element={<WorkOrderEntryV2 />} />
+        <Route path="/WorkOrderStatusEntry" element={<WorkOrderStatusEntry />} />
+        <Route path="/PunchingLaserSchedule" element={<PunchingLaserSchedule />} />
+        <Route path="/PunchingLaserScheduleNew" element={<PunchingLaserScheduleNew />} />
+        <Route path="/PunchingProgram" element={<PunchingProgram />} />
+        <Route path="/ContractorWorkOrder" element={<ContractorWorkOrder />} />
+        <Route path="/ContractorWorkOrderList" element={<ContractorWorkOrderList />} />
         <Route path="/ContractorReport" element={<ContractorReport />} />
         <Route path="/ContractirList" element={<ContractirList />} />
         <Route path="/ProReport" element={<ProReport />} />
