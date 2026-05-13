@@ -36,6 +36,16 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
         "Costing",
         "Vendor Schedule",
       ],
+      ProductionV2: [
+        "Production V2",
+        "Work Order Entry V2",
+        "Work Order Report V2",
+        "Contractor Work Order",
+        "Work Order Status Entry",
+        "Punching And Laser Schedule",
+        "Punching Program",
+        "Power Press",
+      ],
     }
     localStorage.setItem("permissions", JSON.stringify(permissions))
   }
@@ -1242,6 +1252,61 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
               </div>
             </li>
           )}
+
+          {/* //////////////////////////////     Production V2   /////////////////////////// */}
+          <li className="dropdown-container">
+            <div className="dropdown-toggle" onClick={() => handleDropdownToggle("productionV2")}>
+              <MdOutlineProductionQuantityLimits />
+              <span>Production V2</span>
+              <span className={`dropdown-arrow ${isDropdownOpen("productionV2") ? "open" : ""}`}>  </span>
+            </div>
+            <div className={`custom-dropdown-menu ${isDropdownOpen("productionV2") ? "show" : ""}`}>
+              <Link className="dropdown-item" to="/WorkOrderEntryV2">
+                Work Order Entry V2
+              </Link>
+
+              <Link className="dropdown-item" to="/WorkOrderReportV2">
+                Work Order Report V2
+              </Link>
+
+              <div className="nested-dropdown">
+                <div
+                  className="dropdown-item nested-toggle"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleDropdownToggle("contractorWorkOrder")
+                  }}
+                >
+                  Contractor Work Order
+                  <span className={`arrow ${isDropdownOpen("contractorWorkOrder") ? "open" : ""}`}> ▶</span>
+                </div>
+                <div className={`nested-dropdown-menu ${isDropdownOpen("contractorWorkOrder") ? "show" : ""}`}>
+                  <Link className="dropdown-item" to="/ContractorWorkOrder">
+                    Contractor Work Order Entry
+                  </Link>
+                  <Link className="dropdown-item" to="/ContractorWorkOrderList">
+                    Contractor Work Order List
+                  </Link>
+                </div>
+              </div>
+
+              <Link className="dropdown-item" to="/WorkOrderStatusEntry">
+                Work Order Status Entry
+              </Link>
+
+              <Link className="dropdown-item" to="/PunchingLaserSchedule">
+                Punching And Laser Schedule
+              </Link>
+
+              <Link className="dropdown-item" to="/PunchingProgram">
+                Punching Program
+              </Link>
+
+              <Link className="dropdown-item" to="/PowerPress">
+                Power Press
+              </Link>
+            </div>
+          </li>
 
           {/* //////////////////////////////     Quality       /////////////////////////// */}
           {permissions?.Quality?.length > 0 && (
