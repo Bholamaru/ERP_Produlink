@@ -54,8 +54,8 @@
 
 .gl-master .user-list-table {
   width: 100%;
-  margin-top: 0px;
-  /* Reset margin since it's on container */
+  min-width: 800px; /* Standard for Master tables */
+  margin-top: 0;
 }
 
 .gl-master .user-list-table th {
@@ -69,11 +69,13 @@
   position: sticky;
   top: 0;
   z-index: 10;
+  white-space: nowrap;
 }
 
 .gl-master .user-list-table td {
   text-align: center;
   vertical-align: middle;
+  white-space: nowrap;
 }
 
 .gl-master .table {

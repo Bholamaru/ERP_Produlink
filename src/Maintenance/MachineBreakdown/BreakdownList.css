@@ -79,6 +79,7 @@
 /* Main Results Table */
 .breakdown-list .user-list-table {
   width: 100%;
+  min-width: 1200px; /* Increased for dense report data */
   margin-top: 20px;
 }
 
@@ -88,11 +89,13 @@
   vertical-align: middle;
   padding: 8px;
   border: 1px solid #dee2e6;
+  white-space: nowrap; /* Prevents wrapping in dense maintenance columns */
 }
 
 .breakdown-list .user-list-table th {
   font-weight: 600;
   font-size: 13px;
+  background-color: #f8f9fa;
 }
 
 .breakdown-list .user-list-table td {

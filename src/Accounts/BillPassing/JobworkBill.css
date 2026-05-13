@@ -75,6 +75,7 @@
 
 .jobwork-bill .user-list-table {
   width: 100%;
+  min-width: 1000px;
   margin-top: 0;
   font-size: 0.85rem;
 }
@@ -98,6 +99,7 @@
   vertical-align: middle;
   padding: 8px 5px;
   border: 1px solid #dee2e6;
+  white-space: nowrap;
 }
 
 .jobwork-bill .cursor-pointer {
