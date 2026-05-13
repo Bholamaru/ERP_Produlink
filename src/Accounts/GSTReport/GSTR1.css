@@ -41,7 +41,7 @@
   padding: 15px;
   border: 1px solid #dee2e6;
   border-radius: 5px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .gstr-1 .form-label {
@@ -60,22 +60,18 @@
 }
 
 /* Button Styling - Flat Blue Hover */
-.gstr-1 .btn-light.border {
-  background-color: #f8f9fa;
-  color: #333;
-  font-size: 0.85rem;
-  font-weight: 500;
+.gstr-1 .btn {
+  margin-left: 5px;
+  font-size: 14px;
+}
+
+.gstr-1 .filter-btn {
   height: 32px;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  transition: all 0.2s ease;
-}
-
-.gstr-1 .btn-light.border:hover {
-  background-color: #1fb5ff !important;
-  border-color: #1fb5ff !important;
-  color: #fff !important;
+  gap: 8px;
+  padding: 0 15px !important;
+  margin-bottom: 0 !important;
 }
 
 .gstr-1 .btn-light.border:hover .search-icon,
@@ -84,13 +80,21 @@
 }
 
 .gstr-1 .search-icon {
-  color: #555;
+  color: #16bfff;
   font-size: 14px;
 }
 
 .gstr-1 .excel-icon {
   color: #217346;
   font-size: 16px;
+}
+
+.gstr-1 .filter-date-input {
+  width: 135px !important;
+}
+
+.gstr-1 .filter-select {
+  width: 150px !important;
 }
 
 /* Table Container */
@@ -103,7 +107,8 @@
 }
 
 .gstr-1 .table-responsive {
-  max-height: 400px; /* Limit to approx 8 rows */
+  max-height: 340px;
+  /* Exactly 8 rows + header at standard density */
   overflow-y: auto;
   overflow-x: auto;
 }
@@ -112,7 +117,8 @@
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
-  font-size: 0.75rem; /* High density font */
+  font-size: 0.75rem;
+  /* High density font */
 }
 
 .gstr-1 .custom-table thead th {
@@ -127,7 +133,8 @@
   top: 0;
   z-index: 10;
   white-space: nowrap;
-  min-width: 110px; /* Adjusted to fit approx 8 columns horizontally */
+  min-width: 110px;
+  /* Adjusted to fit approx 8 columns horizontally */
 }
 
 .gstr-1 .custom-table tbody td {
@@ -142,12 +149,14 @@
 /* Specific widths for larger columns */
 .gstr-1 .custom-table th:first-child,
 .gstr-1 .custom-table td:first-child {
-  min-width: 180px; /* CustName */
+  min-width: 180px;
+  /* CustName */
 }
 
 .gstr-1 .custom-table th:nth-child(9),
 .gstr-1 .custom-table td:nth-child(9) {
-  min-width: 220px; /* Goods/Service description */
+  min-width: 220px;
+  /* Goods/Service description */
 }
 
 .gstr-1 .custom-table tbody tr:nth-child(even) {
@@ -172,12 +181,13 @@
   background-color: #f8f9fa;
   border: 1px solid #dee2e6;
   border-top: none;
-  padding: 6px 15px;
+  padding: 8px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.85rem;
+  font-size: 14px;
   font-weight: 600;
+  color: #333;
 }
 
 .gstr-1 .total-label {
@@ -188,7 +198,7 @@
   color: #000;
 }
 
-/* Custom horizontal scrollbar */
+/* Custom scrollbar - Size 8px, No Hover Change */
 .gstr-1 .table-responsive::-webkit-scrollbar {
   height: 8px;
   width: 8px;
@@ -199,10 +209,11 @@
 }
 
 .gstr-1 .table-responsive::-webkit-scrollbar-thumb {
-  background: #ccc;
+  background: #ccc !important;
   border-radius: 4px;
 }
 
-.gstr-1 .table-responsive::-webkit-scrollbar-thumb:hover {
-  background: #bbb;
+.gstr-1 .table-responsive::-webkit-scrollbar-thumb:hover,
+.gstr-1 .table-responsive::-webkit-scrollbar-thumb:active {
+  background: #ccc !important;
 }

@@ -1,97 +1,169 @@
-/* BreakdownAuthorisation.css - Exact clone of MachinePreventiveSchedule.css theme */
+/* BreakdownAuthorisation.css - Standardized Report UI */
 
-.breakdown-authorisation {
+.breakdown-auth-page {
   padding: 1rem;
+  background-color: #f4f7f6;
+  min-height: 100vh;
 }
 
-.breakdown-authorisation .user-list-table th {
-  background-color: #f8f9fa !important;
-  color: #333333 !important;
-  font-weight: 600;
-  padding: 10px;
-  border: 1px solid #dee2e6;
-  text-align: center;
-}
-
-.breakdown-authorisation .main-content {
+.breakdown-auth-page .main-content {
   padding: 20px;
   transition: margin-left 0.3s ease;
 }
 
-.breakdown-authorisation .Main-NavBar {
+.breakdown-auth-page .Main-NavBar {
   display: flex;
   margin-left: -20px;
 }
 
-.breakdown-authorisation .shifted {
+.breakdown-auth-page .shifted {
   margin-left: 250px;
 }
 
-/* Header Section Styling */
-.breakdown-authorisation .WorkOrderEntry-header {
+/* Header Section */
+.breakdown-auth-page .WorkOrderEntry-header {
   background-color: #f8f9fa;
-  padding: 10px;
+  padding: 10px 15px;
   border-radius: 5px;
-  border: none;
+  border: 1px solid #dee2e6;
 }
 
-.breakdown-authorisation .header-title {
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: #007bff;
-  /* Kept requested blue color for heading */
+.breakdown-auth-page .header-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1fb5ff;
+  margin: 0;
 }
 
-/* Filter Section Styling */
-.breakdown-authorisation .header-section {
+/* Filter Section */
+.breakdown-auth-page .header-section {
   background-color: #fff;
   padding: 15px;
-  border: 1px solid #ddd;
+  border: 1px solid #dee2e6;
   border-radius: 5px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
-.breakdown-authorisation .header-section .form-label {
-  font-size: 14px;
+.breakdown-auth-page .form-label {
+  font-size: 0.85rem;
   font-weight: 600;
-  color: #333;
+  color: #444;
+  margin-bottom: 0;
+  white-space: nowrap;
 }
 
-.breakdown-authorisation .header-section .form-control,
-.breakdown-authorisation .header-section .form-select,
-.breakdown-authorisation .header-section .btn {
-  font-size: 14px;
+.breakdown-auth-page .form-control-sm,
+.breakdown-auth-page .form-select-sm {
+  font-size: 0.8rem;
+  border-color: #ced4da;
   height: 32px;
-  padding: 4px 8px;
 }
 
-/* Action Buttons Styling */
-.breakdown-authorisation .btn {
+/* Button Styling */
+.breakdown-auth-page .btn {
   margin-left: 5px;
   font-size: 14px;
 }
 
-/* Table Area / Data Container */
-.breakdown-authorisation .table-area {
-  min-height: 400px;
-  padding: 15px 0;
-  margin-top: 20px;
+.breakdown-auth-page .excel-icon {
+  color: #217346;
+  font-size: 16px;
 }
 
-.breakdown-authorisation .no-data-msg {
-  color: #666;
+.breakdown-auth-page .search-icon {
+  color: #16bfff;
   font-size: 14px;
-  font-weight: 500;
 }
 
-/* Record Count / Footer */
-.breakdown-authorisation .total-records {
-  font-size: 14px;
+/* Table Container */
+.breakdown-auth-page .table-container {
+  background-color: #fff;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  margin-top: 15px;
+  overflow: hidden;
+}
+
+.breakdown-auth-page .table-responsive {
+  max-height: 340px; /* Exactly 8 rows + header */
+  overflow-y: auto;
+  overflow-x: auto;
+}
+
+.breakdown-auth-page .custom-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.72rem;
+}
+
+.breakdown-auth-page .custom-table thead th {
+  background-color: #1fb5ff !important;
+  color: #ffffff !important;
   font-weight: 600;
+  padding: 10px 8px;
+  border: 1px solid #dee2e6;
+  text-align: center;
+  vertical-align: middle;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  white-space: nowrap;
+}
+
+.breakdown-auth-page .custom-table tbody td {
+  padding: 8px 8px;
+  border: 1px solid #dee2e6;
+  vertical-align: middle;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.breakdown-auth-page .custom-table tbody tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.breakdown-auth-page .custom-table tbody tr:hover {
+  background-color: #f1f8ff;
+}
+
+/* Footer Totals */
+.breakdown-auth-page .footer-summary {
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-top: none;
+  padding: 10px 15px;
+  font-size: 13px;
+  font-weight: 700;
   color: #333;
+  text-align: left;
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 4px;
+}
+
+/* Custom scrollbar - Size 8px, No Hover Change */
+.breakdown-auth-page .table-responsive::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+
+.breakdown-auth-page .table-responsive::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.breakdown-auth-page .table-responsive::-webkit-scrollbar-thumb {
+  background: #ccc !important;
+  border-radius: 4px;
+}
+
+.breakdown-auth-page .table-responsive::-webkit-scrollbar-thumb:hover {
+  background: #ccc !important;
 }
 
 @media (max-width: 768px) {
-  .breakdown-authorisation .main-content {
-    margin-left: 0 !important;
+  .breakdown-auth-page .header-section .d-flex {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 15px !important;
   }
 }

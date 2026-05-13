@@ -49,29 +49,28 @@ const PurchaseRegister = () => {
               <SideNav sideNavOpen={sideNavOpen} toggleSideNav={toggleSideNav} />
               <main className={`main-content ${sideNavOpen ? "shifted" : ""}`}>
                 <div className="register-container">
+
                   {/* Header Section */}
                   <div className="WorkOrderEntry-header mb-3">
                     <div className="row align-items-center">
                       <div className="col-md-4">
-                        <h5 className="header-title text-start mb-0">
-                          Purchase Register
-                        </h5>
+                        <h5 className="header-title text-start mb-0">Purchase Register</h5>
                       </div>
                       <div className="col-md-8 text-end d-flex justify-content-end gap-2">
                         <button 
-                          className="btn btn-sm btn-light border d-inline-flex align-items-center gap-1"
+                          className="btn d-inline-flex align-items-center gap-1"
                           onClick={() => setShowQueryModal(true)}
                         >
-                          <i className="fa fa-search-plus"></i> Purchase Register Query
+                          <i className="fa fa-search-plus text-primary"></i> Purchase Register Query
                         </button>
                         <button 
-                          className="btn btn-sm btn-light border d-inline-flex align-items-center gap-1"
+                          className="btn d-inline-flex align-items-center gap-1"
                           onClick={() => setShowDetailsModal(true)}
                         >
-                          <i className="fa fa-list"></i> Purchase Register Details
+                          <i className="fa fa-list text-primary"></i> Purchase Register Details
                         </button>
-                        <button className="btn btn-sm btn-light border d-inline-flex align-items-center gap-1">
-                          <FaFileExcel /> Export To Excel
+                        <button className="btn d-inline-flex align-items-center gap-1">
+                          <FaFileExcel className="excel-icon text-success" /> Export To Excel
                         </button>
                       </div>
                     </div>
@@ -79,53 +78,48 @@ const PurchaseRegister = () => {
 
                   {/* Filter Section */}
                   <div className="header-section mb-3">
-                    <div className="d-flex align-items-end gap-3 flex-wrap text-start">
-                      <div style={{ minWidth: '100px' }}>
-                        <label className="form-label mb-1 small fw-bold">From Date:</label>
-                        <input type="date" className="form-control form-control-sm" defaultValue="2026-04-08" />
+                    <div className="d-flex align-items-center flex-wrap gap-3 text-start">
+                      <div className="d-flex align-items-center gap-2">
+                        <label className="form-label fw-bold">From Date:</label>
+                        <input type="date" className="form-control form-control-sm" defaultValue="2026-04-08" style={{ width: "135px" }} />
                       </div>
-                      <div style={{ minWidth: '100px' }}>
-                        <label className="form-label mb-1 small fw-bold">To Date:</label>
-                        <input type="date" className="form-control form-control-sm" defaultValue="2026-05-09" />
+                      <div className="d-flex align-items-center gap-2">
+                        <label className="form-label fw-bold">To Date:</label>
+                        <input type="date" className="form-control form-control-sm" defaultValue="2026-05-09" style={{ width: "135px" }} />
                       </div>
-                      <div style={{ minWidth: '100px' }}>
-                        <label className="form-label mb-1 small fw-bold">Bill Type :</label>
-                        <select className="form-select form-select-sm">
+                      <div className="d-flex align-items-center gap-2">
+                        <label className="form-label fw-bold">Bill Type :</label>
+                        <select className="form-select form-select-sm" style={{ width: "110px" }}>
                           <option>ALL</option>
                         </select>
                       </div>
-                      <div style={{ minWidth: '100px' }}>
-                        <label className="form-label mb-1 small fw-bold">Type :</label>
-                        <select className="form-select form-select-sm">
+                      <div className="d-flex align-items-center gap-2">
+                        <label className="form-label fw-bold">Type :</label>
+                        <select className="form-select form-select-sm" style={{ width: "110px" }}>
                           <option>ALL</option>
                         </select>
                       </div>
-                      <div style={{ minWidth: '100px' }}>
-                        <label className="form-label mb-1 small fw-bold">Item Type :</label>
-                        <select className="form-select form-select-sm">
+                      <div className="d-flex align-items-center gap-2">
+                        <label className="form-label fw-bold">Item Type :</label>
+                        <select className="form-select form-select-sm" style={{ width: "110px" }}>
                           <option>ALL</option>
                         </select>
                       </div>
-                      <div style={{ minWidth: '120px' }}>
-                        <label className="form-label mb-1 small fw-bold">Item Group :</label>
-                        <select className="form-select form-select-sm">
+                      <div className="d-flex align-items-center gap-2">
+                        <label className="form-label fw-bold">Item Group :</label>
+                        <select className="form-select form-select-sm" style={{ width: "110px" }}>
                           <option>ALL</option>
                         </select>
                       </div>
-                      <div style={{ minWidth: '100px' }}>
-                        <label className="form-label mb-1 small fw-bold">GST :</label>
-                        <select className="form-select form-select-sm">
+                      <div className="d-flex align-items-center gap-2">
+                        <label className="form-label fw-bold">GST :</label>
+                        <select className="form-select form-select-sm" style={{ width: "90px" }}>
                           <option>ALL</option>
                         </select>
                       </div>
-                      <div className="d-flex gap-1 align-items-end">
-                        <button className="btn btn-info btn-sm text-white d-flex align-items-center gap-1 px-3" style={{ height: '32px', backgroundColor: '#0dcaf0', borderColor: '#0dcaf0' }}>
-                          <FaSearch size={10} /> Search
-                        </button>
-                        <button className="btn btn-primary btn-sm d-flex align-items-center gap-1 px-3 text-nowrap" style={{ height: '32px' }}>
-                          <FaSearch size={10} /> Search Option
-                        </button>
-                      </div>
+                      <button className="btn d-flex align-items-center gap-1">
+                        <FaSearch className="search-icon text-primary" /> Search
+                      </button>
                     </div>
                   </div>
 
@@ -235,8 +229,8 @@ const PurchaseRegister = () => {
                   <input className="form-check-input" type="checkbox" id="companyHeader" defaultChecked />
                   <label className="form-check-label small fw-bold" htmlFor="companyHeader" style={{ fontSize: '11px', color: '#0056b3' }}>With Company Header</label>
                 </div>
-                <button 
-                  className="btn btn-sm btn-light border d-flex align-items-center gap-1 px-2 py-1" 
+                <button
+                  className="btn btn-sm btn-light border d-flex align-items-center gap-1 px-2 py-1"
                   style={{ fontSize: '11px' }}
                   onClick={() => setShowMasterModal(true)}
                 >
@@ -245,8 +239,8 @@ const PurchaseRegister = () => {
                 <button className="btn btn-sm btn-light border d-flex align-items-center gap-1 px-2 py-1" style={{ fontSize: '11px' }}>
                   <FaFileExcel className="text-success" /> Export Report
                 </button>
-                <button 
-                  className="btn border-0 p-0 ms-2" 
+                <button
+                  className="btn border-0 p-0 ms-2"
                   onClick={() => setShowQueryModal(false)}
                   style={{ color: '#000', fontSize: '18px', display: 'flex', alignItems: 'center' }}
                 >
@@ -256,13 +250,13 @@ const PurchaseRegister = () => {
             </div>
 
             <div className="query-modal-tabs d-flex">
-              <button 
+              <button
                 className={`tab-btn ${activeTab === "Query" ? "active" : ""}`}
                 onClick={() => setActiveTab("Query")}
               >
                 Query
               </button>
-              <button 
+              <button
                 className={`tab-btn ${activeTab === "Result" ? "active" : ""}`}
                 onClick={() => setActiveTab("Result")}
               >
@@ -387,8 +381,8 @@ const PurchaseRegister = () => {
           <div className="query-modal-content shadow-lg animate-fade-in" style={{ maxWidth: '600px' }}>
             <div className="query-modal-header d-flex justify-content-between align-items-center p-2">
               <span className="modal-title fw-bold ms-2" style={{ color: '#007bff' }}>Sales Query Master</span>
-              <button 
-                className="btn border-0 p-0 me-1" 
+              <button
+                className="btn border-0 p-0 me-1"
                 onClick={() => setShowMasterModal(false)}
                 style={{ color: '#000', fontSize: '18px' }}
               >
@@ -397,13 +391,13 @@ const PurchaseRegister = () => {
             </div>
 
             <div className="query-modal-tabs d-flex">
-              <button 
+              <button
                 className={`tab-btn ${masterTab === "Query Master" ? "active" : ""}`}
                 onClick={() => setMasterTab("Query Master")}
               >
                 Query Master
               </button>
-              <button 
+              <button
                 className={`tab-btn ${masterTab === "Query Designer" ? "active" : ""}`}
                 onClick={() => setMasterTab("Query Designer")}
               >
@@ -491,8 +485,8 @@ const PurchaseRegister = () => {
                 <button className="btn btn-sm btn-light border d-flex align-items-center gap-1 px-2 py-1" style={{ fontSize: '11px' }}>
                   <FaFileExcel className="text-success" /> Export to Excel
                 </button>
-                <button 
-                  className="btn border-0 p-0 ms-2" 
+                <button
+                  className="btn border-0 p-0 ms-2"
                   onClick={() => setShowDetailsModal(false)}
                   style={{ color: '#000', fontSize: '18px' }}
                 >
@@ -502,13 +496,13 @@ const PurchaseRegister = () => {
             </div>
 
             <div className="query-modal-tabs d-flex">
-              <button 
+              <button
                 className={`tab-btn ${detailsTab === "Query" ? "active" : ""}`}
                 onClick={() => setDetailsTab("Query")}
               >
                 Query
               </button>
-              <button 
+              <button
                 className={`tab-btn ${detailsTab === "Result" ? "active" : ""}`}
                 onClick={() => setDetailsTab("Result")}
               >
