@@ -48,6 +48,12 @@ const DirectBill = () => {
     roundOffAmt: 0,
     roundOffType: "+",
     billNo: "",
+    packCharges: 0,
+    transCharges: 0,
+    insCharges: 0,
+    instCharges: 0,
+    otherCharges: 0,
+    tdsPer: 0,
   });
 
   const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -93,24 +99,41 @@ const DirectBill = () => {
         chalNo: inv.challanNo || "",
         poNo: inv.poNo || "",
         itemCode: inv.description || "",
-        hsnCode: inv.hsn || "",
+        hsnCode: inv.hsnCode || "",
         rate: inv.qty > 0 ? parseFloat(inv.taxableValue || 0) / parseFloat(inv.qty) : 0,
         grnQty: parseFloat(inv.qty || 0),
-        dis: 0,
+        dis: parseFloat(inv.dis || 0),
         total: parseFloat(inv.total || 0),
-        cgst: parseFloat(inv.cgstPer || 0),
-        sgst: parseFloat(inv.sgstPer || 0),
-        igst: parseFloat(inv.igstPer || 0),
+        cgst: parseFloat(inv.cgst || 0),
+        sgst: parseFloat(inv.sgst || 0),
+        igst: parseFloat(inv.igst || 0),
         glId: "",
         remark: "",
       }));
       setRows(mappedRows);
 
       if (incomingInvoices.length > 0) {
+        const first = incomingInvoices[0];
         setNewRow((prev) => ({
           ...prev,
-          supplierName: incomingInvoices[0].supplier || "",
-          supplierCode: incomingInvoices[0].supplierCode || "",
+          supplierName: first.supplier || "",
+          supplierCode: first.supplierCode || "",
+        }));
+
+        setFooterData((prev) => ({
+          ...prev,
+          invChallanDate: first.challanDate || prev.invChallanDate,
+          invChallanNo: first.challanNo || prev.invChallanNo,
+          paymentTermDays: first.paymentTerms || prev.paymentTermDays,
+          paymentDate: first.poDate || prev.paymentDate,
+          // Mapping TOC charges if available
+          otherAmount: first.otherCharges || prev.otherAmount,
+          packCharges: first.packCharges || 0,
+          transCharges: first.transCharges || 0,
+          insCharges: first.insCharges || 0,
+          instCharges: first.instCharges || 0,
+          otherCharges: first.otherCharges || 0,
+          tdsPer: first.tdsPer || 0,
         }));
       }
     }
@@ -146,6 +169,14 @@ const DirectBill = () => {
         net_total: Number(totals.finalAmount),
         remark: footerData.remark,
         no: footerData.billNo,
+        
+        // Master TOC Fields
+        TOC_PackCharges: Number(footerData.packCharges) || 0,
+        TOC_TransportCost: Number(footerData.transCharges) || 0,
+        TOC_Insurance: Number(footerData.insCharges) || 0,
+        TOC_InstallationCharges: Number(footerData.instCharges) || 0,
+        TOC_TDS: Number(footerData.tdsPer) || 0,
+        
         items: rows.map(row => ({
           grn_no: row.grNo,
           chall_no: row.chalNo,
@@ -283,7 +314,15 @@ const DirectBill = () => {
     let sgstTotal = rows.reduce((acc, row) => acc + (row.total * (row.sgst / 100)), 0);
     let igstTotal = rows.reduce((acc, row) => acc + (row.total * (row.igst / 100)), 0);
     let taxTotal = cgstTotal + sgstTotal + igstTotal;
-    let finalAmount = basicTotal + taxTotal + parseFloat(footerData.otherAmount || 0);
+    
+    // Sum of all TOC charges
+    let totalOtherCharges = parseFloat(footerData.packCharges || 0) + 
+                            parseFloat(footerData.transCharges || 0) + 
+                            parseFloat(footerData.insCharges || 0) + 
+                            parseFloat(footerData.instCharges || 0) + 
+                            parseFloat(footerData.otherCharges || 0);
+
+    let finalAmount = basicTotal + taxTotal + totalOtherCharges;
 
     if (footerData.roundOffType === "+") finalAmount += parseFloat(footerData.roundOffAmt || 0);
     else finalAmount -= parseFloat(footerData.roundOffAmt || 0);
@@ -436,31 +475,91 @@ const DirectBill = () => {
                             <td><input type="text" className="form-control form-control-sm text-center" value={row.hsnCode} onChange={(e) => handleRowChange(row.id, 'hsnCode', e.target.value)} /></td>
                             <td><input type="number" className="form-control form-control-sm text-center" value={row.rate} onChange={(e) => handleRowChange(row.id, 'rate', e.target.value)} /></td>
                             <td><input type="number" className="form-control form-control-sm text-center" value={row.grnQty} onChange={(e) => handleRowChange(row.id, 'grnQty', e.target.value)} /></td>
-                            <td>
-                              <div className="d-flex align-items-center justify-content-center">
-                                <input type="number" className="form-control form-control-sm text-center" style={{ width: '60px' }} value={row.dis} onChange={(e) => handleRowChange(row.id, 'dis', e.target.value)} />
-                                <span className="ms-1 small">%</span>
-                              </div>
-                            </td>
+                             <td>
+                               <div className="d-flex flex-column align-items-center">
+                                 <div className="d-flex align-items-center justify-content-center mb-1">
+                                   <input 
+                                     type="number" 
+                                     className="form-control form-control-sm text-center" 
+                                     style={{ width: '55px', height: '22px', fontSize: '10px' }} 
+                                     value={row.dis} 
+                                     onChange={(e) => handleRowChange(row.id, 'dis', e.target.value)} 
+                                   />
+                                   <span className="ms-1 small">%</span>
+                                 </div>
+                                 <input 
+                                   type="text" 
+                                   className="form-control form-control-sm text-center border-0 bg-light py-0" 
+                                   style={{ width: '70px', height: '18px', fontSize: '10px' }} 
+                                   value={((row.rate * row.grnQty) * (row.dis / 100)).toFixed(2)} 
+                                   readOnly 
+                                 />
+                               </div>
+                             </td>
                             <td><input type="number" className="form-control form-control-sm text-end border-0 bg-transparent fw-bold" readOnly value={row.total.toFixed(2)} /></td>
                             <td>
-                              <div className="d-flex align-items-center justify-content-center">
-                                <input type="number" className="form-control form-control-sm text-center" style={{ width: '60px' }} value={row.cgst} onChange={(e) => handleRowChange(row.id, 'cgst', e.target.value)} />
-                                <span className="ms-1 small">%</span>
-                              </div>
-                            </td>
-                            <td>
-                              <div className="d-flex align-items-center justify-content-center">
-                                <input type="number" className="form-control form-control-sm text-center" style={{ width: '60px' }} value={row.sgst} onChange={(e) => handleRowChange(row.id, 'sgst', e.target.value)} />
-                                <span className="ms-1 small">%</span>
-                              </div>
-                            </td>
-                            <td>
-                              <div className="d-flex align-items-center justify-content-center">
-                                <input type="number" className="form-control form-control-sm text-center" style={{ width: '60px' }} value={row.igst} onChange={(e) => handleRowChange(row.id, 'igst', e.target.value)} />
-                                <span className="ms-1 small">%</span>
-                              </div>
-                            </td>
+                               <div className="d-flex flex-column align-items-center">
+                                 <div className="d-flex align-items-center justify-content-center mb-1">
+                                   <input 
+                                     type="number" 
+                                     className="form-control form-control-sm text-center" 
+                                     style={{ width: '55px', height: '22px', fontSize: '10px' }} 
+                                     value={row.cgst} 
+                                     onChange={(e) => handleRowChange(row.id, 'cgst', e.target.value)} 
+                                   />
+                                   <span className="ms-1 small">%</span>
+                                 </div>
+                                 <input 
+                                   type="text" 
+                                   className="form-control form-control-sm text-center border-0 bg-light py-0" 
+                                   style={{ width: '70px', height: '18px', fontSize: '10px' }} 
+                                   value={(row.total * (row.cgst / 100)).toFixed(2)} 
+                                   readOnly 
+                                 />
+                               </div>
+                             </td>
+                             <td>
+                               <div className="d-flex flex-column align-items-center">
+                                 <div className="d-flex align-items-center justify-content-center mb-1">
+                                   <input 
+                                     type="number" 
+                                     className="form-control form-control-sm text-center" 
+                                     style={{ width: '55px', height: '22px', fontSize: '10px' }} 
+                                     value={row.sgst} 
+                                     onChange={(e) => handleRowChange(row.id, 'sgst', e.target.value)} 
+                                   />
+                                   <span className="ms-1 small">%</span>
+                                 </div>
+                                 <input 
+                                   type="text" 
+                                   className="form-control form-control-sm text-center border-0 bg-light py-0" 
+                                   style={{ width: '70px', height: '18px', fontSize: '10px' }} 
+                                   value={(row.total * (row.sgst / 100)).toFixed(2)} 
+                                   readOnly 
+                                 />
+                               </div>
+                             </td>
+                             <td>
+                               <div className="d-flex flex-column align-items-center">
+                                 <div className="d-flex align-items-center justify-content-center mb-1">
+                                   <input 
+                                     type="number" 
+                                     className="form-control form-control-sm text-center" 
+                                     style={{ width: '55px', height: '22px', fontSize: '10px' }} 
+                                     value={row.igst} 
+                                     onChange={(e) => handleRowChange(row.id, 'igst', e.target.value)} 
+                                   />
+                                   <span className="ms-1 small">%</span>
+                                 </div>
+                                 <input 
+                                   type="text" 
+                                   className="form-control form-control-sm text-center border-0 bg-light py-0" 
+                                   style={{ width: '70px', height: '18px', fontSize: '10px' }} 
+                                   value={(row.total * (row.igst / 100)).toFixed(2)} 
+                                   readOnly 
+                                 />
+                               </div>
+                             </td>
                             <td>
                               <select className="form-select form-select-sm" value={row.glId} onChange={(e) => handleRowChange(row.id, 'glId', e.target.value)}>
                                 <option value="">Select an ...</option>
@@ -510,7 +609,13 @@ const DirectBill = () => {
                     </div>
                     <div className="text-center">
                       <div className="fw-bold">Other Charges :</div>
-                      <div style={{ height: '14px' }}>{footerData.otherAmount}</div>
+                      <div style={{ height: '14px' }}>
+                        {(parseFloat(footerData.packCharges || 0) + 
+                          parseFloat(footerData.transCharges || 0) + 
+                          parseFloat(footerData.insCharges || 0) + 
+                          parseFloat(footerData.instCharges || 0) + 
+                          parseFloat(footerData.otherCharges || 0)).toFixed(2)}
+                      </div>
                     </div>
                     <div className="text-center">
                       <div className="fw-bold">Final Amount :</div>
@@ -524,17 +629,23 @@ const DirectBill = () => {
                       {/* TOC Column */}
                       <div className="col-md-3 border-end pe-2">
                         {[
-                          { label: 'Pack. & Fwrd Charges :', key: 'pack' },
-                          { label: 'Transport Charges :', key: 'trans' },
-                          { label: 'Insurance :', key: 'ins' },
-                          { label: 'Installation Charges :', key: 'inst' },
-                          { label: 'Other Charges :', key: 'oth' }
+                          { label: 'Pack. & Fwrd Charges :', key: 'packCharges' },
+                          { label: 'Transport Charges :', key: 'transCharges' },
+                          { label: 'Insurance :', key: 'insCharges' },
+                          { label: 'Installation Charges :', key: 'instCharges' },
+                          { label: 'Other Charges :', key: 'otherCharges' }
                         ].map((item, idx) => (
                           <div className="d-flex align-items-center mb-1" key={idx}>
                             <span className="me-1 text-muted" style={{ fontSize: '11px' }}>(TOC)</span>
                             <input type="checkbox" className="form-check-input me-1 mt-0" style={{ width: '12px', height: '12px' }} />
                             <label className="mb-0 flex-grow-1" style={{ fontSize: '11px' }}>{item.label}</label>
-                            <input type="text" className="form-control form-control-sm py-0" style={{ width: '75px', height: '22px', fontSize: '11px' }} />
+                            <input 
+                              type="text" 
+                              className="form-control form-control-sm py-0" 
+                              style={{ width: '75px', height: '22px', fontSize: '11px' }} 
+                              value={footerData[item.key]}
+                              onChange={(e) => setFooterData({ ...footerData, [item.key]: e.target.value })}
+                            />
                           </div>
                         ))}
                       </div>
@@ -553,7 +664,13 @@ const DirectBill = () => {
                           <div className="d-flex align-items-center gap-1" style={{ width: '180px' }}>
                             <input type="checkbox" className="form-check-input mt-0" style={{ width: '12px', height: '12px' }} />
                             <label className="mb-0" style={{ fontSize: '10px' }}>TDS :</label>
-                            <input type="text" className="form-control form-control-sm py-0" style={{ width: '35px', height: '20px', fontSize: '10px' }} defaultValue="0" />
+                            <input 
+                              type="text" 
+                              className="form-control form-control-sm py-0" 
+                              style={{ width: '35px', height: '20px', fontSize: '10px' }} 
+                              value={footerData.tdsPer}
+                              onChange={(e) => setFooterData({ ...footerData, tdsPer: e.target.value })}
+                            />
                             <select className="form-select form-select-sm py-0" style={{ width: '70px', height: '20px', fontSize: '10px' }}>
                               <option>Select</option>
                             </select>

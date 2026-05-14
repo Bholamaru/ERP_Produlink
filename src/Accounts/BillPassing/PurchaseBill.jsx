@@ -10,8 +10,8 @@ import { FaEye, FaCheck, FaExclamationTriangle, FaFileExcel, FaSearch, FaCogs } 
 
 const PurchaseBill = () => {
   const [sideNavOpen, setSideNavOpen] = useState(false);
-  const [fromDate, setFromDate] = useState("");
-  const [toDate, setToDate] = useState("");
+  const [fromDate, setFromDate] = useState(new Date().toISOString().split('T')[0]);
+  const [toDate, setToDate] = useState(new Date().toISOString().split('T')[0]);
   const [reportData, setReportData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedIds, setSelectedIds] = useState([]);
@@ -39,31 +39,41 @@ const PurchaseBill = () => {
     }
     setLoading(true);
     try {
+      const token = localStorage.getItem("accessToken");
       const response = await axios.get(`https://erp-render.onrender.com/Account/purchase-po-date-filter/`, {
         params: {
           from_date: fromDate,
           to_date: toDate,
         },
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
       });
+
+      console.log("Purchase Bill API Response:", response.data);
 
       if (response.data && Array.isArray(response.data.data)) {
         const mappedData = response.data.data.flatMap((item) => {
           const items = Array.isArray(item.item_details) ? item.item_details : [];
           const gstDetails = Array.isArray(item.gst_details) ? item.gst_details : [];
 
+          console.log(`Mapping item ${item.PoNo || item.id}`, { items, gstDetails });
+
+          // If no items, return at least one row for the master data
           if (items.length === 0) {
             return [{
               id: item.id,
-              year: item.Series || "",
-              grnNo: item.PoNo || "",
-              grnDate: item.PoDate || "",
-              challanNo: item.PoNo || "",
-              challanDate: item.PoDate || "",
-              invoiceNo: item.PoNo || "",
-              invoiceDate: item.PoDate || "",
-              supplier: item.Supplier || "",
+              year: item.Series || item.Series_No || "",
+              grnNo: item.PoNo || item.no || "",
+              grnDate: item.PoDate || item.challan_date || "",
+              challanNo: item.PoNo || item.challan_no || "",
+              challanDate: item.PoDate || item.challan_date || "",
+              invoiceNo: item.PoNo || item.invoice_no || "",
+              invoiceDate: item.PoDate || item.invoice_Date || "",
+              supplier: item.Supplier || item.supplier_name || "",
+              supplierCode: item.CodeNo || "",
               poNo: item.PoNo || "",
-              total: item.GR_Total || "0",
+              total: item.GR_Total || item.net_total || item.total || "0",
               user: item.created_by_username || "",
               description: "",
               hsn: "",
@@ -77,32 +87,50 @@ const PurchaseBill = () => {
 
           return items.map((detail, idx) => {
             const gst = gstDetails[idx] || gstDetails[0] || {};
-            const rate = parseFloat(detail.Rate || 0);
-            const qty = parseFloat(detail.Qty || 0);
-            return {
+            const rate = parseFloat(detail.Rate || detail.rate || gst.Rate || 0);
+            const qty = parseFloat(detail.Qty || detail.grn_qty || gst.Qty || 0);
+            
+            const mappedItem = {
               id: `${item.id}-${idx}`,
-              year: item.Series || "",
-              grnNo: item.PoNo || "",
-              grnDate: item.PoDate || "",
-              challanNo: item.PoNo || "",
-              challanDate: item.PoDate || "",
-              invoiceNo: item.PoNo || "",
-              invoiceDate: item.PoDate || "",
-              supplier: item.Supplier || "",
+              year: item.Series || item.Series_No || "",
+              grnNo: item.PoNo || item.no || "",
+              grnDate: item.PoDate || item.challan_date || "",
+              challanNo: item.PoNo || item.challan_no || "",
+              challanDate: item.PoDate || item.challan_date || "",
+              invoiceNo: item.PoNo || item.invoice_no || "",
+              invoiceDate: item.PoDate || item.invoice_Date || "",
+              supplier: item.Supplier || item.supplier_name || "",
               supplierCode: item.CodeNo || "",
               poNo: item.PoNo || "",
-              total: item.GR_Total || (rate * qty).toString(),
+              total: item.GR_Total || item.net_total || item.total || (rate * qty).toFixed(2),
               user: item.created_by_username || "",
-              description: detail.Item && detail.ItemDescription 
-                ? `${detail.Item} - ${detail.ItemDescription}` 
-                : detail.Item || detail.ItemDescription || "",
-              hsn: detail.HSNCode || "",
+              description: (detail.Item || detail.item_code || gst.ItemCode) && (detail.ItemDescription || detail.item_description)
+                ? `${detail.Item || detail.item_code || gst.ItemCode} - ${detail.ItemDescription || detail.item_description}` 
+                : (detail.Item || detail.item_code || gst.ItemCode || detail.ItemDescription || detail.item_description || ""),
+              hsnCode: gst.HSN || detail.HSN || detail.HSNCode || detail.hsn_code || detail.HSN_SAC_Code || "",
+              dis: parseFloat(detail.Disc || detail.disc || gst.Discount || detail.Discount || detail.discount || 0),
               qty: qty,
-              taxableValue: rate * qty,
-              cgstPer: parseFloat(gst.cgst_per || 0),
-              sgstPer: parseFloat(gst.sgst_per || 0),
-              igstPer: parseFloat(gst.igst_per || 0),
+              taxableValue: parseFloat(gst.AssValue || (rate * qty)),
+              cgst: parseFloat(gst.CGST || gst.cgst_per || gst.cgst || detail.CGST || detail.cgst_per || detail.cgst || 0),
+              sgst: parseFloat(gst.SGST || gst.sgst_per || gst.sgst || detail.SGST || detail.sgst_per || detail.sgst || 0),
+              igst: parseFloat(gst.IGST || gst.igst_per || gst.igst || detail.IGST || detail.igst_per || detail.igst || 0),
+              total: gst.Total || item.GR_Total || item.net_total || item.total || (rate * qty).toFixed(2),
+              
+              // Master Level Data (Footer/Header)
+              paymentTerms: item.PaymentTerms || "",
+              poDate: item.PoDate || "",
+              challanNo: item.PoNo || item.no || "",
+              challanDate: item.PoDate || item.challan_date || "",
+              packCharges: parseFloat(item.TOC_PackCharges || 0),
+              transCharges: parseFloat(item.TOC_TransportCost || 0),
+              insCharges: parseFloat(item.TOC_Insurance || 0),
+              instCharges: parseFloat(item.TOC_InstallationCharges || 0),
+              otherCharges: parseFloat(item.TOC_OtherCharges || 0),
+              tdsPer: parseFloat(item.TOC_TDS || 0),
             };
+
+            console.log(`Mapped Item Row for DirectBill:`, mappedItem);
+            return mappedItem;
           });
         });
         setReportData(mappedData);
@@ -128,6 +156,10 @@ const PurchaseBill = () => {
       document.body.classList.remove("side-nav-open");
     }
   }, [sideNavOpen]);
+
+  useEffect(() => {
+    handleSearch();
+  }, []);
 
 
 
