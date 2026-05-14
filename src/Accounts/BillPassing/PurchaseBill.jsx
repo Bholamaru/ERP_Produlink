@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min";
 import NavBar from "../../NavBar/NavBar.js";
@@ -8,6 +10,112 @@ import { FaEye, FaCheck, FaExclamationTriangle, FaFileExcel, FaSearch, FaCogs } 
 
 const PurchaseBill = () => {
   const [sideNavOpen, setSideNavOpen] = useState(false);
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+  const [reportData, setReportData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [selectedIds, setSelectedIds] = useState([]);
+  const navigate = useNavigate();
+
+  const handleCheckboxChange = (id) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
+    );
+  };
+
+  const handleConfirmToGstBill = () => {
+    if (selectedIds.length === 0) {
+      alert("Please select at least one entry.");
+      return;
+    }
+    const selectedData = reportData.filter((item) => selectedIds.includes(item.id));
+    navigate("/direct-bill", { state: { selectedInvoices: selectedData } });
+  };
+
+  const handleSearch = async () => {
+    if (!fromDate || !toDate) {
+      alert("Please select both From and To dates.");
+      return;
+    }
+    setLoading(true);
+    try {
+      const response = await axios.get(`https://erp-render.onrender.com/Account/purchase-po-date-filter/`, {
+        params: {
+          from_date: fromDate,
+          to_date: toDate,
+        },
+      });
+
+      if (response.data && Array.isArray(response.data.data)) {
+        const mappedData = response.data.data.flatMap((item) => {
+          const items = Array.isArray(item.item_details) ? item.item_details : [];
+          const gstDetails = Array.isArray(item.gst_details) ? item.gst_details : [];
+
+          if (items.length === 0) {
+            return [{
+              id: item.id,
+              year: item.Series || "",
+              grnNo: item.PoNo || "",
+              grnDate: item.PoDate || "",
+              challanNo: item.PoNo || "",
+              challanDate: item.PoDate || "",
+              invoiceNo: item.PoNo || "",
+              invoiceDate: item.PoDate || "",
+              supplier: item.Supplier || "",
+              poNo: item.PoNo || "",
+              total: item.GR_Total || "0",
+              user: item.created_by_username || "",
+              description: "",
+              hsn: "",
+              qty: 0,
+              taxableValue: 0,
+              cgstPer: 0,
+              sgstPer: 0,
+              igstPer: 0,
+            }];
+          }
+
+          return items.map((detail, idx) => {
+            const gst = gstDetails[idx] || gstDetails[0] || {};
+            const rate = parseFloat(detail.Rate || 0);
+            const qty = parseFloat(detail.Qty || 0);
+            return {
+              id: `${item.id}-${idx}`,
+              year: item.Series || "",
+              grnNo: item.PoNo || "",
+              grnDate: item.PoDate || "",
+              challanNo: item.PoNo || "",
+              challanDate: item.PoDate || "",
+              invoiceNo: item.PoNo || "",
+              invoiceDate: item.PoDate || "",
+              supplier: item.Supplier || "",
+              supplierCode: item.CodeNo || "",
+              poNo: item.PoNo || "",
+              total: item.GR_Total || (rate * qty).toString(),
+              user: item.created_by_username || "",
+              description: detail.Item && detail.ItemDescription 
+                ? `${detail.Item} - ${detail.ItemDescription}` 
+                : detail.Item || detail.ItemDescription || "",
+              hsn: detail.HSNCode || "",
+              qty: qty,
+              taxableValue: rate * qty,
+              cgstPer: parseFloat(gst.cgst_per || 0),
+              sgstPer: parseFloat(gst.sgst_per || 0),
+              igstPer: parseFloat(gst.igst_per || 0),
+            };
+          });
+        });
+        setReportData(mappedData);
+      } else {
+        setReportData([]);
+      }
+    } catch (error) {
+      console.error("Error fetching Purchase Bill report:", error);
+      setReportData([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const toggleSideNav = () => {
     setSideNavOpen((prevState) => !prevState);
@@ -21,20 +129,7 @@ const PurchaseBill = () => {
     }
   }, [sideNavOpen]);
 
-  // Mock Data from image
-  const mockData = [
-    { id: 1, year: "26-27", grnNo: "GRN 262700758", grnDate: "09/05/2026", challanNo: "262700415", challanDate: "09/05/2026", invoiceNo: "262700415", invoiceDate: "09/05/2026", supplier: "SHAKAMBHARI ENTERPRISES", poNo: "262700002", total: "21024", user: "prakash" },
-    { id: 2, year: "26-27", grnNo: "GRN 262700757", grnDate: "09/05/2026", challanNo: "190", challanDate: "09/05/2026", invoiceNo: "190", invoiceDate: "09/05/2026", supplier: "Ayush Enterprises (C-242)", poNo: "262700003", total: "9193", user: "Togre" },
-    { id: 3, year: "26-27", grnNo: "GRN 262700756", grnDate: "09/05/2026", challanNo: "3048010010691", challanDate: "09/05/2026", invoiceNo: "3048010010691", invoiceDate: "09/05/2026", supplier: "TUBE INVESTMENT OF INDIA LTD", poNo: "262700004", total: "211741.96", user: "prakash" },
-    { id: 4, year: "26-27", grnNo: "GRN 262700755", grnDate: "08/05/2026", challanNo: "189", challanDate: "08/05/2026", invoiceNo: "189", invoiceDate: "08/05/2026", supplier: "Ayush Enterprises (C-242)", poNo: "262700003", total: "117373.8", user: "Togre" },
-    { id: 5, year: "26-27", grnNo: "GRN 262700754", grnDate: "08/05/2026", challanNo: "262700414", challanDate: "08/05/2026", invoiceNo: "262700414", invoiceDate: "08/05/2026", supplier: "SHAKAMBHARI ENTERPRISES", poNo: "262700002", total: "187240.8", user: "prakash" },
-    { id: 6, year: "26-27", grnNo: "GRN 262700753", grnDate: "08/05/2026", challanNo: "3048010010634", challanDate: "08/05/2026", invoiceNo: "3048010010634", invoiceDate: "08/05/2026", supplier: "TUBE INVESTMENT OF INDIA LTD", poNo: "262700004", total: "372489.6", user: "prakash" },
-    { id: 7, year: "26-27", grnNo: "GRN 262700752", grnDate: "08/05/2026", challanNo: "3048010010633", challanDate: "08/05/2026", invoiceNo: "3048010010633", invoiceDate: "08/05/2026", supplier: "TUBE INVESTMENT OF INDIA LTD", poNo: "262700004", total: "240019.07", user: "prakash" },
-    { id: 8, year: "26-27", grnNo: "GRN 262700751", grnDate: "08/05/2026", challanNo: "262700412", challanDate: "08/05/2026", invoiceNo: "262700412", invoiceDate: "08/05/2026", supplier: "SHAKAMBHARI ENTERPRISES", poNo: "262700002", total: "21432", user: "Togre" },
-    { id: 9, year: "26-27", grnNo: "GRN 262700750", grnDate: "08/05/2026", challanNo: "262700413", challanDate: "08/05/2026", invoiceNo: "262700413", invoiceDate: "08/05/2026", supplier: "SHAKAMBHARI ENTERPRISES", poNo: "262700002", total: "73179.3", user: "Togre" },
-    { id: 10, year: "26-27", grnNo: "GRN 262700749", grnDate: "08/05/2026", challanNo: "3048010010630", challanDate: "08/05/2026", invoiceNo: "3048010010630", invoiceDate: "08/05/2026", supplier: "TUBE INVESTMENT OF INDIA LTD", poNo: "262700004", total: "239544.94", user: "prakash" },
-    { id: 11, year: "26-27", grnNo: "GRN 262700748", grnDate: "08/05/2026", challanNo: "3048010010631", challanDate: "08/05/2026", invoiceNo: "3048010010631", invoiceDate: "08/05/2026", supplier: "TUBE INVESTMENT OF INDIA LTD", poNo: "262700004", total: "172655.35", user: "prakash" },
-  ];
+
 
   return (
     <div className="purchase-bill">
@@ -94,21 +189,21 @@ const PurchaseBill = () => {
                       <div className="col-md-2">
                         <div className="d-flex align-items-center gap-2">
                             <label className="form-label mb-0 small fw-bold">From:</label>
-                            <input type="date" className="form-control form-control-sm" defaultValue="2026-04-08" />
+                             <input type="date" className="form-control form-control-sm" value={fromDate} onChange={(e) => setFromDate(e.target.value)} />
                         </div>
                       </div>
 
                       <div className="col-md-2">
                         <div className="d-flex align-items-center gap-2">
                             <label className="form-label mb-0 small fw-bold">To:</label>
-                            <input type="date" className="form-control form-control-sm" defaultValue="2026-05-09" />
+                             <input type="date" className="form-control form-control-sm" value={toDate} onChange={(e) => setToDate(e.target.value)} />
                         </div>
                       </div>
 
                       <div className="col-auto d-flex gap-2">
-                        <button className="btn btn-primary d-inline-flex align-items-center gap-2 py-1 px-3">
-                            <FaSearch /> Search
-                        </button>
+                         <button className="btn btn-primary d-inline-flex align-items-center gap-2 py-1 px-3" onClick={handleSearch} disabled={loading}>
+                             <FaSearch /> {loading ? "Searching..." : "Search"}
+                         </button>
                         <button className="btn btn-secondary d-inline-flex align-items-center gap-2 py-1 px-3">
                             <FaCogs /> Search Option
                         </button>
@@ -140,7 +235,7 @@ const PurchaseBill = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {mockData.map((data, index) => (
+                         {Array.isArray(reportData) && reportData.map((data, index) => (
                           <tr key={data.id}>
                             <td>{index + 1}</td>
                             <td>{data.year}</td>
@@ -163,7 +258,13 @@ const PurchaseBill = () => {
                                     <div className="badge bg-warning p-1"><FaExclamationTriangle /></div>
                                 }
                             </td>
-                            <td><input type="checkbox" /></td>
+                            <td>
+                              <input 
+                                type="checkbox" 
+                                checked={selectedIds.includes(data.id)}
+                                onChange={() => handleCheckboxChange(data.id)}
+                              />
+                            </td>
                           </tr>
                         ))}
                       </tbody>
@@ -171,7 +272,10 @@ const PurchaseBill = () => {
                   </div>
 
                   <div className="footer-actions mt-3 text-end">
-                    <button className="btn btn-success d-inline-flex align-items-center gap-2">
+                    <button 
+                      className="btn btn-success d-inline-flex align-items-center gap-2"
+                      onClick={handleConfirmToGstBill}
+                    >
                         <FaCheck /> Confirm To GST Bill
                     </button>
                   </div>

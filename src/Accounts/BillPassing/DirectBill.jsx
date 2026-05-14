@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
+import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min";
 import NavBar from "../../NavBar/NavBar.js";
@@ -7,6 +9,7 @@ import "./DirectBill.css";
 import { FaPlus, FaTrash, FaSearch, FaCheck, FaFileExcel } from "react-icons/fa";
 
 const DirectBill = () => {
+  const location = useLocation();
   const [sideNavOpen, setSideNavOpen] = useState(false);
   const [rows, setRows] = useState([
     {
@@ -44,7 +47,10 @@ const DirectBill = () => {
     remark: "",
     roundOffAmt: 0,
     roundOffType: "+",
+    billNo: "",
   });
+
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   const toggleSideNav = () => {
     setSideNavOpen((prevState) => !prevState);
@@ -57,6 +63,174 @@ const DirectBill = () => {
       document.body.classList.remove("side-nav-open");
     }
   }, [sideNavOpen]);
+
+  const fetchNextBillNo = async () => {
+    try {
+      const token = localStorage.getItem("accessToken");
+      const response = await axios.get("https://erp-render.onrender.com/Account/generate-bill-no/", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      console.log("Bill No Response:", response.data);
+      const nextNo = response.data.next_bill_no || response.data.bill_no || response.data.no;
+      if (nextNo) {
+        setFooterData(prev => ({ ...prev, billNo: nextNo }));
+      }
+    } catch (error) {
+      console.error("Error fetching bill no:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchNextBillNo();
+  }, []);
+
+  useEffect(() => {
+    if (location.state && location.state.selectedInvoices) {
+      const incomingInvoices = location.state.selectedInvoices;
+      const mappedRows = incomingInvoices.map((inv, idx) => ({
+        id: inv.id || idx + 1,
+        grNo: inv.grnNo || "",
+        chalNo: inv.challanNo || "",
+        poNo: inv.poNo || "",
+        itemCode: inv.description || "",
+        hsnCode: inv.hsn || "",
+        rate: inv.qty > 0 ? parseFloat(inv.taxableValue || 0) / parseFloat(inv.qty) : 0,
+        grnQty: parseFloat(inv.qty || 0),
+        dis: 0,
+        total: parseFloat(inv.total || 0),
+        cgst: parseFloat(inv.cgstPer || 0),
+        sgst: parseFloat(inv.sgstPer || 0),
+        igst: parseFloat(inv.igstPer || 0),
+        glId: "",
+        remark: "",
+      }));
+      setRows(mappedRows);
+
+      if (incomingInvoices.length > 0) {
+        setNewRow((prev) => ({
+          ...prev,
+          supplierName: incomingInvoices[0].supplier || "",
+          supplierCode: incomingInvoices[0].supplierCode || "",
+        }));
+      }
+    }
+  }, [location.state]);
+
+  const handleSaveBill = async () => {
+    try {
+      const token = localStorage.getItem("accessToken");
+      const payload = {
+        plant: "SHARP",
+        bill_type: "PO-GRN-BILL",
+        series_no: "", // Can be filled if series state is added later
+        no: footerData.invChallanNo,
+        supplier_name: newRow.supplierName,
+        item_name: rows[0]?.itemCode?.split(' - ')[0] || "",
+        rate: Number(rows[0]?.rate) || 0,
+        qty: Number(rows[0]?.grnQty) || 0,
+        fwd_charges: 0,
+        transport_charged: 0,
+        insurence: 0,
+        installation_charges: 0,
+        other_charges: Number(footerData.otherAmount) || 0,
+        challan_date: footerData.invChallanDate,
+        payment_days_terms: Number(footerData.paymentTermDays) || 0,
+        tds: 0,
+        sub_total: Number(totals.basicTotal),
+        challan_no: footerData.invChallanNo,
+        payment_date: footerData.paymentDate,
+        other_amt: Number(footerData.otherAmount) || 0,
+        assable_value: Number(totals.basicTotal),
+        posting_date: footerData.postingDate,
+        round_of_amt: Number(footerData.roundOffAmt) || 0,
+        net_total: Number(totals.finalAmount),
+        remark: footerData.remark,
+        no: footerData.billNo,
+        items: rows.map(row => ({
+          grn_no: row.grNo,
+          chall_no: row.chalNo,
+          po_no: row.poNo,
+          item_code: row.itemCode?.split(' - ')[0] || "",
+          item_no: "", // Internal ID if needed
+          item_description: row.itemCode?.split(' - ')[1] || row.itemCode || "",
+          hsn_code: row.hsnCode,
+          rate: Number(row.rate),
+          grn_qty: Number(row.grnQty),
+          discount: Number(row.dis) || 0,
+          cgst: Number(row.cgst) || 0,
+          sgst: Number(row.sgst) || 0,
+          igst: Number(row.igst) || 0,
+          cgst_amt: Number((row.total * (row.cgst / 100)).toFixed(2)),
+          sgst_amt: Number((row.total * (row.sgst / 100)).toFixed(2)),
+          igst_amt: Number((row.total * (row.igst / 100)).toFixed(2)),
+          total: Number(row.total.toFixed(2)),
+          glid: row.glId,
+          remark: row.remark
+        }))
+      };
+
+      const response = await axios.post("https://erp-render.onrender.com/Account/bill-register/", payload, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      });
+
+      if (response.data.stat || response.status === 200 || response.status === 201) {
+        alert("Bill Registered Successfully!");
+        setShowConfirmModal(false);
+        fetchNextBillNo();
+        
+        // Reset Page State (Clear all data)
+        setRows([
+          {
+            id: 1,
+            grNo: '',
+            chalNo: '',
+            poNo: '',
+            itemCode: '',
+            hsnCode: '',
+            rate: 0,
+            grnQty: 0,
+            dis: 0,
+            total: 0,
+            cgst: 0,
+            sgst: 0,
+            igst: 0,
+            glId: '',
+            remark: ''
+          }
+        ]);
+        setNewRow({
+          supplierName: "",
+          itemName: "",
+          rate: "",
+          qty: "",
+          supplierCode: ""
+        });
+        setFooterData({
+          invChallanDate: new Date().toISOString().split('T')[0],
+          invChallanNo: "",
+          paymentTermDays: "",
+          paymentDate: new Date().toISOString().split('T')[0],
+          postingDate: new Date().toISOString().split('T')[0],
+          otherAmount: 0,
+          remark: "",
+          roundOffAmt: 0,
+          roundOffType: "+",
+          billNo: "", // Temporarily clear, will be refilled by next call
+        });
+        fetchNextBillNo(); // Fetch AFTER reset to avoid overwrite
+      } else {
+        const errorMsg = response.data.message || response.data.error || "Failed to register bill";
+        alert("Error: " + errorMsg);
+      }
+    } catch (error) {
+      console.error("Save Bill Error:", error);
+      const errorMsg = error.response?.data?.message || error.response?.data?.error || JSON.stringify(error.response?.data) || error.message || "Failed to register bill. Please try again.";
+      alert("Save Failed: " + errorMsg);
+    }
+  };
 
   const handleAddRow = () => {
     if (!newRow.itemName) return;
@@ -167,7 +341,7 @@ const DirectBill = () => {
 
                         <div className="d-flex align-items-center gap-2">
                           <label className="form-label mb-0 text-nowrap small fw-bold">No :</label>
-                          <input type="text" className="form-control form-control-sm" style={{ width: '90px', height: '28px' }} />
+                          <input type="text" className="form-control form-control-sm" value={footerData.billNo} readOnly style={{ width: '90px', height: '28px' }} />
                         </div>
                       </div>
                     </div>
@@ -369,11 +543,11 @@ const DirectBill = () => {
                       <div className="col-md-3 border-end px-2">
                         <div className="d-flex align-items-center mb-1">
                           <label className="mb-0" style={{ width: '100px' }}>Inv./Challan Date :</label>
-                          <input type="date" className="form-control form-control-sm py-0 ms-auto" defaultValue="2026-05-09" style={{ width: '110px', height: '20px', fontSize: '10px' }} />
+                          <input type="date" className="form-control form-control-sm py-0 ms-auto" value={footerData.invChallanDate} onChange={(e) => setFooterData({ ...footerData, invChallanDate: e.target.value })} style={{ width: '110px', height: '20px', fontSize: '10px' }} />
                         </div>
                         <div className="d-flex align-items-center mb-1">
                           <label className="mb-0" style={{ width: '100px' }}>Payment TermDays :</label>
-                          <input type="text" className="form-control form-control-sm py-0 ms-auto" style={{ width: '110px', height: '20px', fontSize: '10px' }} />
+                          <input type="text" className="form-control form-control-sm py-0 ms-auto" value={footerData.paymentTermDays} onChange={(e) => setFooterData({ ...footerData, paymentTermDays: e.target.value })} style={{ width: '110px', height: '20px', fontSize: '10px' }} />
                         </div>
                         <div className="d-flex align-items-center mb-1">
                           <div className="d-flex align-items-center gap-1" style={{ width: '180px' }}>
@@ -394,13 +568,13 @@ const DirectBill = () => {
 
                       {/* Invoice & Other Column */}
                       <div className="col-md-3 border-end px-2">
-                        <div className="d-flex align-items-center mb-1">
+                          <div className="d-flex align-items-center mb-1">
                           <label className="mb-0" style={{ width: '100px' }}>Inv./Challan No :</label>
-                          <input type="text" className="form-control form-control-sm py-0" style={{ width: '110px', height: '20px', fontSize: '10px' }} />
+                          <input type="text" className="form-control form-control-sm py-0" value={footerData.invChallanNo} onChange={(e) => setFooterData({ ...footerData, invChallanNo: e.target.value })} style={{ width: '110px', height: '20px', fontSize: '10px' }} />
                         </div>
                         <div className="d-flex align-items-center mb-1">
                           <label className="mb-0" style={{ width: '100px' }}>Payment Date :</label>
-                          <input type="date" className="form-control form-control-sm py-0" defaultValue="2026-05-09" style={{ width: '110px', height: '20px', fontSize: '10px' }} />
+                          <input type="date" className="form-control form-control-sm py-0" value={footerData.paymentDate} onChange={(e) => setFooterData({ ...footerData, paymentDate: e.target.value })} style={{ width: '110px', height: '20px', fontSize: '10px' }} />
                         </div>
                         <div className="d-flex align-items-center mb-1">
                           <label className="mb-0" style={{ width: '100px' }}>Other Amount :</label>
@@ -438,21 +612,110 @@ const DirectBill = () => {
                           <label className="mb-0" style={{ width: '100px' }}>Net TOTAL :</label>
                           <input type="text" className="form-control form-control-sm py-0 fw-bold" style={{ width: '110px', height: '20px', fontSize: '10px' }} value={totals.finalAmount} readOnly />
                         </div>
-                        <div className="d-flex justify-content-end mt-2">
-                          <button className="btn btn-sm btn-light border d-flex align-items-center gap-2 shadow-sm px-4 py-2" style={{ fontSize: '12px', fontWeight: 'bold' }}>
+                         <div className="d-flex justify-content-end mt-2">
+                          <button 
+                            className="btn btn-sm btn-light border d-flex align-items-center gap-2 shadow-sm px-4 py-2" 
+                            style={{ fontSize: '12px', fontWeight: 'bold' }}
+                            onClick={() => setShowConfirmModal(true)}
+                          >
                             <span className="text-success fw-bold">✔</span> Confirm To Save
                           </button>
                         </div>
                       </div>
                     </div>
 
+                    {/* Confirmation Modal */}
+                    {showConfirmModal && (
+                      <div className="custom-modal-overlay">
+                        <div className="custom-modal-content">
+                          <div className="custom-modal-header d-flex justify-content-between align-items-center">
+                            <span>Message</span>
+                            <button className="btn-close" onClick={() => setShowConfirmModal(false)}></button>
+                          </div>
+                          <div className="custom-modal-body p-3">
+                            <div className="row mb-3 border-bottom pb-2">
+                              <div className="col-md-5">
+                                <div className="d-flex mb-1">
+                                  <span className="fw-bold me-2" style={{ width: '100px' }}>Supp Name :</span>
+                                  <span>{newRow.supplierName}</span>
+                                </div>
+                                <div className="d-flex">
+                                  <span className="fw-bold me-2" style={{ width: '100px' }}>Bill No :</span>
+                                  <span>{footerData.invChallanNo || "262700105"}</span>
+                                </div>
+                              </div>
+                              <div className="col-md-7 text-end">
+                                <div className="d-flex justify-content-end">
+                                  <span className="fw-bold me-2">Bill Date :</span>
+                                  <span>{new Date().toLocaleDateString('en-GB')}</span>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="table-responsive mb-3">
+                              <table className="table table-bordered table-sm modal-summary-table">
+                                <thead className="bg-light">
+                                  <tr>
+                                    <th>No.</th>
+                                    <th>ItemCode</th>
+                                    <th>ItemDesc</th>
+                                    <th>HSN Code</th>
+                                    <th>Total</th>
+                                    <th>CGSTAmt</th>
+                                    <th>SGSTAmt</th>
+                                    <th>IGSTAmt</th>
+                                    <th>GLName</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {rows.map((row, idx) => (
+                                    <tr key={idx}>
+                                      <td>{idx + 1}</td>
+                                      <td>{row.itemCode}</td>
+                                      <td>{row.itemCode}</td>
+                                      <td>{row.hsnCode}</td>
+                                      <td>{row.total.toFixed(2)}</td>
+                                      <td>{(row.total * (row.cgst / 100)).toFixed(2)}</td>
+                                      <td>{(row.total * (row.sgst / 100)).toFixed(2)}</td>
+                                      <td>{(row.total * (row.igst / 100)).toFixed(2)}</td>
+                                      <td>{row.glId || "Purchase Rm"}</td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+
+                            <div className="modal-summary-footer p-2 border rounded">
+                              <div className="row g-2 text-center" style={{ fontSize: '11px' }}>
+                                <div className="col"><div className="fw-bold border-bottom mb-1">Basic Tot :</div>{totals.basicTotal}</div>
+                                <div className="col"><div className="fw-bold border-bottom mb-1">CGST Amt :</div>{totals.cgstTotal}</div>
+                                <div className="col"><div className="fw-bold border-bottom mb-1">SGST Amt :</div>{totals.sgstTotal}</div>
+                                <div className="col"><div className="fw-bold border-bottom mb-1">IGST Amt :</div>{totals.igstTotal}</div>
+                                <div className="col"><div className="fw-bold border-bottom mb-1">Bill Amt :</div>{totals.finalAmount}</div>
+                                <div className="col"><div className="fw-bold border-bottom mb-1">TDS :</div>0</div>
+                                <div className="col"><div className="fw-bold border-bottom mb-1">Other :</div>0</div>
+                                <div className="col bg-primary text-white py-1 rounded">
+                                  <div className="fw-bold mb-1">Final Total :</div>
+                                  <div className="h6 mb-0">{totals.finalAmount}</div>
+                                </div>
+                                <div className="col-auto d-flex align-items-center gap-2">
+                                  <button className="btn btn-sm btn-light border fw-bold" onClick={handleSaveBill}>Save BILL</button>
+                                  <button className="btn btn-sm btn-light border fw-bold" onClick={() => setShowConfirmModal(false)}>Cancel</button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
                     {/* Remark Row */}
                     <div className="row g-0 align-items-center mt-1 pt-2 border-top">
                       <div className="col-auto me-2">
                         <label className="fw-bold" style={{ fontSize: '11px' }}>Remark :</label>
                       </div>
-                      <div className="col-md-6">
-                        <textarea className="form-control form-control-sm" rows="2" style={{ resize: 'none', height: '40px', fontSize: '11px' }} placeholder="Enter any additional remarks..."></textarea>
+                       <div className="col-md-6">
+                        <textarea className="form-control form-control-sm" rows="2" style={{ resize: 'none', height: '40px', fontSize: '11px' }} placeholder="Enter any additional remarks..." value={footerData.remark} onChange={(e) => setFooterData({ ...footerData, remark: e.target.value })}></textarea>
                       </div>
                     </div>
                   </div>

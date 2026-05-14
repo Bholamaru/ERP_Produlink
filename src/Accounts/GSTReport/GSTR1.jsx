@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min";
 import NavBar from "../../NavBar/NavBar.js";
@@ -8,8 +9,71 @@ import { FaSearch, FaFileExcel } from "react-icons/fa";
 
 const GSTR1 = () => {
   const [sideNavOpen, setSideNavOpen] = useState(false);
-  const [fromDate, setFromDate] = useState("2026-05-01");
-  const [toDate, setToDate] = useState("2026-05-12");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+  const [reportData, setReportData] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const handleSearch = async () => {
+    if (!fromDate || !toDate) {
+      alert("Please select both From and To dates.");
+      return;
+    }
+    setLoading(true);
+    try {
+      const response = await axios.get(`https://erp-render.onrender.com/Account/invoice/date-filter/`, {
+        params: {
+          from_date: fromDate,
+          to_date: toDate,
+        },
+      });
+
+      if (response.data && response.data.status && Array.isArray(response.data.data)) {
+        const flattenedData = response.data.data.flatMap((invoice) => {
+          const gst = invoice.GSTdetails?.[0] || {};
+          return (invoice.items || []).map((item) => ({
+            custName: item.customer || invoice.bill_to || "",
+            gstin: "", // GSTIN not directly provided in this API endpoint
+            stateCode: invoice.place_of_supply || "",
+            pos: invoice.place_of_supply || "",
+            invoiceNo: invoice.invoice_no || "",
+            invoiceDate: invoice.invoice_Date || "",
+            invoiceValue: gst.grand_total || "0",
+            hsn: item.hsn_code || "",
+            description: item.description || "",
+            taxableValue: gst.assessble_value || "0",
+            qty: item.inv_qty || "0",
+            unitCode: "NOS",
+            cgstPer: gst.cgst || "0",
+            cgstAmt: gst.cgst_amt || "0",
+            sgstPer: gst.sgst || "0",
+            sgstAmt: gst.sgst_amt || "0",
+            igstPer: gst.igst || "0",
+            igstAmt: gst.igst_amt || "0",
+            cess: "0",
+            cessAmt: "0",
+            tcsPer: "0",
+            tcsAmt: "0",
+            transport: gst.transport_crg || "0",
+            freight: gst.freight_crg || "0",
+            other: gst.other_crg || "0",
+            pack: gst.pack_fwrd || "0",
+            cancel: "N",
+          }));
+        });
+        setReportData(flattenedData);
+      } else {
+        setReportData([]);
+      }
+    } catch (error) {
+      console.error("Error fetching GSTR-1 report:", error);
+      setReportData([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
 
   const toggleSideNav = () => {
     setSideNavOpen((prevState) => !prevState);
@@ -23,197 +87,7 @@ const GSTR1 = () => {
     }
   }, [sideNavOpen]);
 
-  const mockData = [
-    {
-      id: 1,
-      custName: "ENDURANCE TECHNOLOGIES LTD (I)",
-      gstin: "27AAACE7066P1Z3",
-      stateCode: "MAHARASHTRA",
-      pos: "27",
-      invoiceNo: "262702431",
-      invoiceDate: "01/05/2026",
-      invoiceValue: "9915.97",
-      hsn: "87141090",
-      description: "S2CW03311B D NUT",
-      taxableValue: "8403.37",
-      qty: "340",
-      unitCode: "NOS",
-      cgstPer: "9",
-      cgstAmt: "756.3",
-      sgstPer: "9",
-      sgstAmt: "756.3",
-      igstPer: "0",
-      igstAmt: "0",
-      cess: "0",
-      cessAmt: "0",
-      tcsPer: "0",
-      tcsAmt: "0",
-      transport: "0",
-      freight: "0",
-      other: "0",
-      pack: "0",
-      cancel: "N"
-    },
-    {
-      id: 2,
-      custName: "ENDURANCE TECHNOLOGIES LTD (I)",
-      gstin: "27AAACE7066P1Z3",
-      stateCode: "MAHARASHTRA",
-      pos: "27",
-      invoiceNo: "262702432",
-      invoiceDate: "02/05/2026",
-      invoiceValue: "13218.85",
-      hsn: "87141090",
-      description: "S2CW03311B D NUT",
-      taxableValue: "11202.41",
-      qty: "530",
-      unitCode: "NOS",
-      cgstPer: "9",
-      cgstAmt: "1008.22",
-      sgstPer: "9",
-      sgstAmt: "1008.22",
-      igstPer: "0",
-      igstAmt: "0",
-      cess: "0",
-      cessAmt: "0",
-      tcsPer: "0",
-      tcsAmt: "0",
-      transport: "0",
-      freight: "0",
-      other: "0",
-      pack: "0",
-      cancel: "N"
-    },
-    {
-      id: 3,
-      custName: "ENDURANCE TECHNOLOGIES LTD (I)",
-      gstin: "27AAACE7066P1Z3",
-      stateCode: "MAHARASHTRA",
-      pos: "27",
-      invoiceNo: "262702433",
-      invoiceDate: "02/05/2026",
-      invoiceValue: "51871.74",
-      hsn: "87141090",
-      description: "530PA00502 TUBE RING",
-      taxableValue: "43959.1",
-      qty: "4000",
-      unitCode: "NOS",
-      cgstPer: "9",
-      cgstAmt: "3956.32",
-      sgstPer: "9",
-      sgstAmt: "3956.32",
-      igstPer: "0",
-      igstAmt: "0",
-      cess: "0",
-      cessAmt: "0",
-      tcsPer: "0",
-      tcsAmt: "0",
-      transport: "0",
-      freight: "0",
-      other: "0",
-      pack: "0",
-      cancel: "N"
-    },
-    {
-      id: 4,
-      custName: "ENDURANCE TECHNOLOGIES LTD (I)",
-      gstin: "27AAACE7066P1Z3",
-      stateCode: "MAHARASHTRA",
-      pos: "27",
-      invoiceNo: "262702434",
-      invoiceDate: "02/05/2026",
-      invoiceValue: "9345.84",
-      hsn: "87141090",
-      description: "520PA01402 TUBE RING",
-      taxableValue: "7920.2",
-      qty: "2000",
-      unitCode: "NOS",
-      cgstPer: "9",
-      cgstAmt: "712.82",
-      sgstPer: "9",
-      sgstAmt: "712.82",
-      igstPer: "0",
-      igstAmt: "0",
-      cess: "0",
-      cessAmt: "0",
-      tcsPer: "0",
-      tcsAmt: "0",
-      transport: "0",
-      freight: "0",
-      other: "0",
-      pack: "0",
-      cancel: "N"
-    },
-    {
-      id: 5,
-      custName: "ENDURANCE TECHNOLOGIES LTD (F)",
-      gstin: "27AAACE7066P1Z3",
-      stateCode: "MAHARASHTRA",
-      pos: "27",
-      invoiceNo: "262702435",
-      invoiceDate: "02/05/2026",
-      invoiceValue: "10359.78",
-      hsn: "87141090",
-      description: "550BZ04302 CAP OIL LOCK (DT)",
-      taxableValue: "8779.48",
-      qty: "540",
-      unitCode: "NOS",
-      cgstPer: "9",
-      cgstAmt: "790.15",
-      sgstPer: "9",
-      sgstAmt: "790.15",
-      igstPer: "0",
-      igstAmt: "0",
-      cess: "0",
-      cessAmt: "0",
-      tcsPer: "0",
-      tcsAmt: "0",
-      transport: "0",
-      freight: "0",
-      other: "0",
-      pack: "0",
-      cancel: "N"
-    },
-    {
-      id: 6,
-      custName: "ENDURANCE TECHNOLOGIES LTD (F)",
-      gstin: "27AAACE7066P1Z3",
-      stateCode: "MAHARASHTRA",
-      pos: "27",
-      invoiceNo: "262702436",
-      invoiceDate: "02/05/2026",
-      invoiceValue: "9112.89",
-      hsn: "87141090",
-      description: "520BZ00102 CAP OIL LOCK-LML",
-      taxableValue: "7222.79",
-      qty: "990",
-      unitCode: "NOS",
-      cgstPer: "9",
-      cgstAmt: "695.05",
-      sgstPer: "9",
-      sgstAmt: "695.05",
-      igstPer: "0",
-      igstAmt: "0",
-      cess: "0",
-      cessAmt: "0",
-      tcsPer: "0",
-      tcsAmt: "0",
-      transport: "0",
-      freight: "0",
-      other: "0",
-      pack: "0",
-      cancel: "N"
-    },
-    { id: 7, custName: "VARROC ENGINEERING LTD", gstin: "27AAACV1234A1Z1", stateCode: "MAHARASHTRA", pos: "27", invoiceNo: "262702437", invoiceDate: "03/05/2026", invoiceValue: "15000.00", hsn: "87141090", description: "BUSHING REAR", taxableValue: "12711.86", qty: "100", unitCode: "NOS", cgstPer: "9", cgstAmt: "1144.07", sgstPer: "9", sgstAmt: "1144.07", igstPer: "0", igstAmt: "0", cess: "0", cessAmt: "0", tcsPer: "0", tcsAmt: "0", transport: "0", freight: "0", other: "0", pack: "0", cancel: "N" },
-    { id: 8, custName: "GABRIEL INDIA LTD", gstin: "27AAACG5678B1Z2", stateCode: "MAHARASHTRA", pos: "27", invoiceNo: "262702438", invoiceDate: "03/05/2026", invoiceValue: "25000.00", hsn: "87141090", description: "FRONT FORK ASSY", taxableValue: "21186.44", qty: "50", unitCode: "NOS", cgstPer: "9", cgstAmt: "1906.78", sgstPer: "9", sgstAmt: "1906.78", igstPer: "0", igstAmt: "0", cess: "0", cessAmt: "0", tcsPer: "0", tcsAmt: "0", transport: "0", freight: "0", other: "0", pack: "0", cancel: "N" },
-    { id: 9, custName: "BADVE ENGINEERING LTD", gstin: "27AAACB9012C1Z3", stateCode: "MAHARASHTRA", pos: "27", invoiceNo: "262702439", invoiceDate: "04/05/2026", invoiceValue: "45000.00", hsn: "87141090", description: "CHASSIS FRAME", taxableValue: "38135.59", qty: "20", unitCode: "NOS", cgstPer: "9", cgstAmt: "3432.20", sgstPer: "9", sgstAmt: "3432.20", igstPer: "0", igstAmt: "0", cess: "0", cessAmt: "0", tcsPer: "0", tcsAmt: "0", transport: "0", freight: "0", other: "0", pack: "0", cancel: "N" },
-    { id: 10, custName: "RICHA INDUSTRIES LTD", gstin: "27AAACR3456D1Z4", stateCode: "MAHARASHTRA", pos: "27", invoiceNo: "262702440", invoiceDate: "04/05/2026", invoiceValue: "12000.00", hsn: "87141090", description: "PIVOT PIN", taxableValue: "10169.49", qty: "500", unitCode: "NOS", cgstPer: "9", cgstAmt: "915.25", sgstPer: "9", sgstAmt: "915.25", igstPer: "0", igstAmt: "0", cess: "0", cessAmt: "0", tcsPer: "0", tcsAmt: "0", transport: "0", freight: "0", other: "0", pack: "0", cancel: "N" },
-    { id: 11, custName: "MINDARIKA PVT LTD", gstin: "27AAACM7890E1Z5", stateCode: "MAHARASHTRA", pos: "27", invoiceNo: "262702441", invoiceDate: "05/05/2026", invoiceValue: "8000.00", hsn: "87141090", description: "SWITCH ASSY", taxableValue: "6779.66", qty: "200", unitCode: "NOS", cgstPer: "9", cgstAmt: "610.17", sgstPer: "9", sgstAmt: "610.17", igstPer: "0", igstAmt: "0", cess: "0", cessAmt: "0", tcsPer: "0", tcsAmt: "0", transport: "0", freight: "0", other: "0", pack: "0", cancel: "N" },
-    { id: 12, custName: "AUTOPLAST PVT LTD", gstin: "27AAACA1234F1Z6", stateCode: "MAHARASHTRA", pos: "27", invoiceNo: "262702442", invoiceDate: "05/05/2026", invoiceValue: "3200.00", hsn: "87141090", description: "PLASTIC COVER", taxableValue: "2711.86", qty: "150", unitCode: "NOS", cgstPer: "9", cgstAmt: "244.07", sgstPer: "9", sgstAmt: "244.07", igstPer: "0", igstAmt: "0", cess: "0", cessAmt: "0", tcsPer: "0", tcsAmt: "0", transport: "0", freight: "0", other: "0", pack: "0", cancel: "N" },
-    { id: 13, custName: "PRECISION CAMSHAFTS LTD", gstin: "27AAACP5678G1Z7", stateCode: "MAHARASHTRA", pos: "27", invoiceNo: "262702443", invoiceDate: "06/05/2026", invoiceValue: "60000.00", hsn: "87141090", description: "CAMSHAFT MACHINED", taxableValue: "50847.46", qty: "40", unitCode: "NOS", cgstPer: "9", cgstAmt: "4576.27", sgstPer: "9", sgstAmt: "4576.27", igstPer: "0", igstAmt: "0", cess: "0", cessAmt: "0", tcsPer: "0", tcsAmt: "0", transport: "0", freight: "0", other: "0", pack: "0", cancel: "N" },
-    { id: 14, custName: "BHARAT FORGE LTD", gstin: "27AAACB9012H1Z8", stateCode: "MAHARASHTRA", pos: "27", invoiceNo: "262702444", invoiceDate: "06/05/2026", invoiceValue: "95000.00", hsn: "87141090", description: "CRANKSHAFT FORGING", taxableValue: "80508.47", qty: "10", unitCode: "NOS", cgstPer: "9", cgstAmt: "7245.76", sgstPer: "9", sgstAmt: "7245.76", igstPer: "0", igstAmt: "0", cess: "0", cessAmt: "0", tcsPer: "0", tcsAmt: "0", transport: "0", freight: "0", other: "0", pack: "0", cancel: "N" },
-    { id: 15, custName: "SUPRAJIT ENGINEERING LTD", gstin: "27AAACS3456I1Z9", stateCode: "MAHARASHTRA", pos: "27", invoiceNo: "262702445", invoiceDate: "07/05/2026", invoiceValue: "1800.00", hsn: "87141090", description: "CONTROL CABLE", taxableValue: "1525.42", qty: "300", unitCode: "NOS", cgstPer: "9", cgstAmt: "137.29", sgstPer: "9", sgstAmt: "137.29", igstPer: "0", igstAmt: "0", cess: "0", cessAmt: "0", tcsPer: "0", tcsAmt: "0", transport: "0", freight: "0", other: "0", pack: "0", cancel: "N" }
-  ];
+
 
   return (
     <div className="gstr-1">
@@ -266,8 +140,13 @@ const GSTR1 = () => {
                       </select>
                     </div>
                     <div className="d-flex gap-2 ms-auto">
-                      <button className="btn btn-sm btn-light border px-3 d-inline-flex align-items-center gap-2" style={{ height: "32px" }}>
-                        <FaSearch className="search-icon" /> Search
+                      <button 
+                        className="btn btn-sm btn-light border px-3 d-inline-flex align-items-center gap-2" 
+                        style={{ height: "32px" }}
+                        onClick={handleSearch}
+                        disabled={loading}
+                      >
+                        <FaSearch className="search-icon" /> {loading ? "Searching..." : "Search"}
                       </button>
                       <button className="btn btn-sm btn-light border px-3 d-inline-flex align-items-center gap-2" style={{ height: "32px" }}>
                         <FaFileExcel className="excel-icon" /> Export Report
@@ -312,8 +191,8 @@ const GSTR1 = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {mockData.map((row) => (
-                          <tr key={row.id}>
+                         {Array.isArray(reportData) && reportData.map((row, index) => (
+                          <tr key={index}>
                             <td>{row.custName}</td>
                             <td className="text-center">{row.gstin}</td>
                             <td>{row.stateCode}</td>
@@ -347,7 +226,7 @@ const GSTR1 = () => {
                     </table>
                   </div>
                   <div className="footer-totals-bar">
-                    <span className="total-label">Total Records: : <span className="total-value">864</span></span>
+                     <span className="total-label">Total Records: : <span className="total-value">{reportData.length}</span></span>
                   </div>
                 </div>
               </main>
