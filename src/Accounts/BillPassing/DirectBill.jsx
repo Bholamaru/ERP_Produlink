@@ -67,7 +67,7 @@ const DirectBill = () => {
   const fetchNextBillNo = async () => {
     try {
       const token = localStorage.getItem("accessToken");
-      const response = await axios.get("https://erp-render.onrender.com/Account/generate-bill-no/", {
+      const response = await axios.get("http://127.0.0.1:8000/Account/generate-bill-no/", {
         headers: { Authorization: `Bearer ${token}` }
       });
       console.log("Bill No Response:", response.data);
@@ -169,7 +169,7 @@ const DirectBill = () => {
         }))
       };
 
-      const response = await axios.post("https://erp-render.onrender.com/Account/bill-register/", payload, {
+      const response = await axios.post("http://127.0.0.1:8000/Account/bill-register/", payload, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json"
