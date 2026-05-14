@@ -126,3 +126,67 @@
 .form-check-input {
   margin-top: 0.3rem;
 }
+
+/* Custom Modal Styling */
+.custom-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.custom-modal-content {
+  background: white;
+  width: 85%;
+  max-width: 1000px;
+  border-radius: 4px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.custom-modal-header {
+  background-color: #ced4da;
+  color: #333;
+  padding: 5px 15px;
+  font-weight: bold;
+  border-bottom: 1px solid #adb5bd;
+}
+
+.modal-summary-table thead th {
+  background-color: rgb(31, 181, 255) !important;
+  color: white !important;
+  font-size: 11px;
+  padding: 4px;
+  text-align: center;
+}
+
+.modal-summary-table tbody td {
+  font-size: 11px;
+  padding: 4px;
+  text-align: center;
+}
+
+.modal-summary-footer {
+  background-color: #fff;
+  border: 1px solid #dee2e6;
+}
+
+.modal-summary-footer .col {
+  border-right: 1px solid #eee;
+}
+
+.modal-summary-footer .col:last-child {
+  border-right: none;
+}
