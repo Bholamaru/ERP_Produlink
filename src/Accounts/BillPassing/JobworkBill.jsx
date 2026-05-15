@@ -35,15 +35,94 @@ const JobworkBill = () => {
     return dateStr;
   };
 
-  const handleAddGrn = (grn) => {
-    if (!selectedGrns.some(item => item.id === grn.id)) {
-      setSelectedGrns([...selectedGrns, grn]);
+  const handleSearch = async (type = 'date') => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("accessToken");
+      let url = `https://erp-render.onrender.com/Account/inwardchllan-date-fillter/`;
+      let params = {};
+
+      if (type === 'supplier') {
+        params = { supplier_name: vendorName };
+      } else {
+        if (!fromDate || !toDate) {
+          alert("Please select both From and To dates.");
+          setLoading(false);
+          return;
+        }
+        params = { from_date: fromDate, to_date: toDate };
+      }
+
+      const response = await axios.get(url, {
+        params,
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (response.data && Array.isArray(response.data.data)) {
+        const mappedData = response.data.data.flatMap((item) => {
+          const nestedItems = item.InwardChallanTable || item.item_details || [item];
+          
+          return nestedItems.map((detail, idx) => ({
+            id: `${item.id}-${idx}`,
+            year: item.Series || item.series || item.Year || item.Series_No || "",
+            grnNo: item.InwardF4No || item.no || item.Inward_no || item.No || item.PoNo || "",
+            grnDate: item.InwardDate || item.challan_date || item.Date || item.PoDate || "",
+            type: item.Series || item.bill_type || "Our_F4",
+            vendChNo: item.ChallanNo || item.challan_no || item.Invoice_No || item.invoice_no || "",
+            chDate: formatDateToISO(item.ChallanDate || item.challan_no_date || item.challan_date || item.Date || ""),
+            code: item.CodeNo || item.SupplierCode || item.supplier_code || item.Code || item.Supp_Code || "",
+            vendor: item.SupplierName || item.supplier_name || item.Supplier || item.vendor_name || "",
+            f4Out: item.OutwardChallan || item.OutwardChallanNo || item.f4_out_no || item.Outward_no || "",
+            qtyDesc: (() => {
+              const qty = detail.InQtyNOS || detail.InQtyKg || item.TotalQtyNo || "0";
+              const desc = detail.ItemDescription || detail.description || "";
+              const cleanDesc = desc.split('| Qty:')[0].trim();
+              return `Qty: ${qty} | ${cleanDesc}`;
+            })(),
+            qty: detail.InQtyNOS || detail.InQtyKg || item.TotalQtyNo || 0,
+            itemNo: (() => {
+              const base = detail.ItemNo || detail.item_no || detail.PartNo || "";
+              if (base) return base;
+              const desc = detail.ItemDescription || detail.description || detail.ItemName || "";
+              const partMatch = desc.match(/Part:\s*[^-\|]+-\s*([^-\|]+)/i);
+              if (partMatch) return partMatch[1].trim();
+              return "1";
+            })(),
+            itemCode: (() => {
+              const base = detail.ItemCode || detail.item_code || detail.Code || "";
+              if (base) return base;
+              const desc = detail.ItemDescription || detail.description || detail.ItemName || "";
+              const partMatch = desc.match(/Part:\s*([^-\|]+)/i);
+              if (partMatch) return partMatch[1].trim();
+              const wordMatch = desc.match(/^([A-Z0-9]+)/i);
+              return wordMatch ? wordMatch[1].trim() : "";
+            })(),
+            itemDesc: detail.ItemDescription || detail.description || detail.ItemName || "",
+            hsnCode: detail.HSNCode || detail.hsn_code || "998898",
+            rate: detail.Rate || detail.rate || 0,
+            poNo: item.PoNo || detail.PoNo || item.PO_No || item.Po_No || "",
+            poDate: item.PoDate || detail.PoDate || "",
+            cgst: detail.CGST_P || detail.cgst || 0,
+            sgst: detail.SGST_P || detail.sgst || 0,
+            igst: detail.IGST_P || detail.igst || 0,
+            user: item.PreparedBy || item.created_by_username || item.User || "Admin"
+          }));
+        });
+        setReportData(mappedData);
+      } else {
+        setReportData([]);
+      }
+    } catch (error) {
+      console.error("Error fetching Inward Challan data:", error);
+      setReportData([]);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleRemoveGrn = (id) => {
-    setSelectedGrns(selectedGrns.filter(item => item.id !== id));
-  };
+  useEffect(() => {
+    // handleSearch() removed to avoid automatic selection/search on load
+  }, []);
 
   useEffect(() => {
     if (sideNavOpen) {
@@ -52,6 +131,15 @@ const JobworkBill = () => {
       document.body.classList.remove("side-nav-open");
     }
   }, [sideNavOpen]);
+
+  const handleAddGrn = (grn) => {
+    // Only allow a single entry to be added (replace previous selection)
+    setSelectedGrns([grn]);
+  };
+
+  const handleRemoveGrn = (grnId) => {
+    setSelectedGrns(selectedGrns.filter(item => item.id !== grnId));
+  };
 
   const fetchSuppliers = async (search) => {
     if (!search) {
@@ -78,98 +166,6 @@ const JobworkBill = () => {
     fetchSuppliers(value);
   };
 
-  const handleSearch = async (type = 'date') => {
-    setLoading(true);
-    try {
-      const token = localStorage.getItem("accessToken");
-      let url = `https://erp-render.onrender.com/Account/inwardchllan-date-fillter/`;
-      let params = {};
-
-      if (type === 'supplier') {
-        params = { supplier_name: vendorName };
-      } else {
-        if (!fromDate || !toDate) {
-          alert("Please select both From and To dates.");
-          setLoading(false);
-          return;
-        }
-        params = { from_date: fromDate, to_date: toDate };
-      }
-
-      const response = await axios.get(url, {
-        params,
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
-      console.log("Inward Challan API Response:", response.data);
-
-      if (response.data && Array.isArray(response.data.data)) {
-        const mappedData = response.data.data.flatMap((item) => {
-          // Handle potential nested items (like in InwardChallanTable or item_details)
-          const nestedItems = item.InwardChallanTable || item.item_details || [item];
-          
-          return nestedItems.map((detail, idx) => ({
-            id: `${item.id}-${idx}`,
-            year: item.Series || item.series || item.Year || item.Series_No || "",
-            grnNo: item.InwardF4No || item.no || item.Inward_no || item.No || item.PoNo || "",
-            grnDate: item.InwardDate || item.challan_date || item.Date || item.PoDate || "",
-            type: item.Series || item.bill_type || "Our_F4",
-            vendChNo: item.ChallanNo || item.challan_no || item.Invoice_No || item.invoice_no || "",
-            chDate: formatDateToISO(item.ChallanDate || item.challan_no_date || item.challan_date || item.Date || ""),
-            code: item.CodeNo || item.SupplierCode || item.supplier_code || item.Code || item.Supp_Code || "",
-            vendor: item.SupplierName || item.supplier_name || item.Supplier || item.vendor_name || "",
-            f4Out: item.OutwardChallan || item.OutwardChallanNo || item.f4_out_no || item.Outward_no || "",
-            qtyDesc: (() => {
-              const qty = detail.InQtyNOS || detail.InQtyKg || item.TotalQtyNo || "0";
-              const desc = detail.ItemDescription || detail.description || "";
-              const cleanDesc = desc.split('| Qty:')[0].trim();
-              return `Qty: ${qty} | ${cleanDesc}`;
-            })(),
-            qty: detail.InQtyNOS || detail.InQtyKg || item.TotalQtyNo || 0,
-            itemNo: (() => {
-              const base = detail.ItemNo || detail.item_no || detail.PartNo || "";
-              if (base) return base;
-              const desc = detail.ItemDescription || detail.description || detail.ItemName || "";
-              // Match "Part: CODE - NO" or just "gr1..." / "FG..." at start
-              const partMatch = desc.match(/Part:\s*[^-\|]+-\s*([^-\|]+)/i);
-              if (partMatch) return partMatch[1].trim();
-              return "1";
-            })(),
-            itemCode: (() => {
-              const base = detail.ItemCode || detail.item_code || detail.Code || "";
-              if (base) return base;
-              const desc = detail.ItemDescription || detail.description || detail.ItemName || "";
-              const partMatch = desc.match(/Part:\s*([^-\|]+)/i);
-              if (partMatch) return partMatch[1].trim();
-              // Try to extract first word if it looks like a code
-              const wordMatch = desc.match(/^([A-Z0-9]+)/i);
-              return wordMatch ? wordMatch[1].trim() : "";
-            })(),
-            itemDesc: detail.ItemDescription || detail.description || detail.ItemName || "",
-            hsnCode: detail.HSNCode || detail.hsn_code || "998898",
-            rate: detail.Rate || detail.rate || 0,
-            poNo: item.PoNo || detail.PoNo || item.PO_No || item.Po_No || "",
-            poDate: item.PoDate || detail.PoDate || "",
-            cgst: detail.CGST_P || detail.cgst || 0,
-            sgst: detail.SGST_P || detail.sgst || 0,
-            igst: detail.IGST_P || detail.igst || 0,
-            user: item.PreparedBy || item.created_by_username || item.User || "Admin"
-          }));
-        });
-        console.log("Mapped Jobwork Report Data:", mappedData);
-        setReportData(mappedData);
-      } else {
-        setReportData([]);
-      }
-    } catch (error) {
-      console.error("Error fetching Inward Challan data:", error);
-      setReportData([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-
   return (
     <div className="jobwork-bill">
       <div className="container-fluid">
@@ -180,13 +176,10 @@ const JobworkBill = () => {
               <SideNav sideNavOpen={sideNavOpen} toggleSideNav={toggleSideNav} />
               <main className={`main-content ${sideNavOpen ? "shifted" : ""}`}>
                 <div className="user-management">
-                  {/* Header Section */}
                   <div className="WorkOrderEntry-header mb-3">
                     <div className="row align-items-center">
                       <div className="col-md-4">
-                        <h5 className="header-title text-start">
-                          Pending Bill Inward Challan List
-                        </h5>
+                        <h5 className="header-title text-start">Pending Bill Inward Challan List</h5>
                       </div>
                       <div className="col-md-8 text-end d-flex justify-content-end gap-2 align-items-center">
                         <div className="stats-box d-inline-flex border rounded px-2 py-1 align-items-center bg-white">
@@ -204,7 +197,6 @@ const JobworkBill = () => {
                     </div>
                   </div>
 
-                  {/* Filter Section */}
                   <div className="header-section mb-3">
                     <div className="row align-items-end g-3 mb-2">
                       <div className="col-md-1">
@@ -270,7 +262,6 @@ const JobworkBill = () => {
                     </div>
                   </div>
 
-                  {/* Main Table */}
                   <div className="table-responsive top-table-container">
                     <table className="table table-bordered table-hover user-list-table">
                       <thead>
@@ -334,7 +325,6 @@ const JobworkBill = () => {
                     </table>
                   </div>
 
-                  {/* Sub Table Section */}
                   <div className="sub-table-header mt-4 mb-2">
                     <h6 className="fw-bold mb-0">List Of GRN for Bill :</h6>
                   </div>
@@ -383,7 +373,6 @@ const JobworkBill = () => {
                     </table>
                   </div>
 
-                  {/* Footer Actions */}
                   <div className="footer-actions mt-3 text-end">
                     <button 
                       className="btn btn-success d-inline-flex align-items-center gap-2"

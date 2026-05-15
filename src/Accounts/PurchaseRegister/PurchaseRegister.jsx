@@ -5,6 +5,7 @@ import NavBar from "../../NavBar/NavBar.js";
 import SideNav from "../../SideNav/SideNav.js";
 import "./PurchaseRegister.css";
 import { FaFileExcel, FaSearch, FaEye, FaEdit, FaTrash, FaFileAlt, FaExclamationTriangle, FaCheck, FaTimes } from "react-icons/fa";
+import axios from "axios";
 
 const PurchaseRegister = () => {
   const [sideNavOpen, setSideNavOpen] = useState(false);
@@ -14,22 +15,56 @@ const PurchaseRegister = () => {
   const [activeTab, setActiveTab] = useState("Query");
   const [masterTab, setMasterTab] = useState("Query Master");
   const [detailsTab, setDetailsTab] = useState("Query");
-  const [data, setData] = useState([
-    { sr: 1, year: "26-27", billNo: "PUR262700104", billDate: "06/05/2026", type: "Purchase", billType: "PO-GRN-BILL", challanNo: "262700361", challanDate: "04/05/2026", poNo: "262700002", grnNo: "GRN 262700697", code: "54", supplier: "SHAKAMBHARI ENTERPRISES", assAmt: "1,942,725.72", totalAmt: "2,292,416.34", user: "more" },
-    { sr: 2, year: "26-27", billNo: "PUR262700103", billDate: "04/05/2026", type: "Purchase", billType: "PO-GRN-BILL", challanNo: "262700354", challanDate: "03/05/2026", poNo: "262700002", grnNo: "GRN 262700641", code: "54", supplier: "SHAKAMBHARI ENTERPRISES", assAmt: "529,926.26", totalAmt: "625,313.00", user: "more" },
-    { sr: 3, year: "26-27", billNo: "PUR262700102", billDate: "04/05/2026", type: "Purchase", billType: "PO-GRN-BILL", challanNo: "278", challanDate: "02/05/2026", poNo: "262700001", grnNo: "GRN 262700623", code: "S0053", supplier: "VISHWA SAMRUDHI INDUSTRIES", assAmt: "124,815.00", totalAmt: "147,871.70", user: "more" },
-    { sr: 4, year: "26-27", billNo: "PUR262700101", billDate: "04/05/2026", type: "Purchase", billType: "PO-GRN-BILL", challanNo: "3048010010490", challanDate: "25/04/2026", poNo: "262700004", grnNo: "GRN 262700452", code: "S0052", supplier: "TUBE INVESTMENT OF INDIA LTD", assAmt: "185,802.79", totalAmt: "219,247.29", user: "more" },
-    { sr: 5, year: "26-27", billNo: "PUR262700100", billDate: "04/05/2026", type: "Purchase", billType: "PO-GRN-BILL", challanNo: "3048010010423", challanDate: "21/04/2026", poNo: "262700004", grnNo: "GRN 262700356", code: "S0052", supplier: "TUBE INVESTMENT OF INDIA LTD", assAmt: "433,529.19", totalAmt: "511,564.45", user: "more" },
-    { sr: 6, year: "26-27", billNo: "PUR262700099", billDate: "04/05/2026", type: "Purchase", billType: "PO-GRN-BILL", challanNo: "skf/26-27/00122", challanDate: "03/05/2026", poNo: "262700006", grnNo: "GRN 262700635", code: "S0051", supplier: "S K FASTENERS", assAmt: "29,300.00", totalAmt: "34,574.00", user: "more" },
-    { sr: 7, year: "26-27", billNo: "PUR262700098", billDate: "04/05/2026", type: "Purchase", billType: "PO-GRN-BILL", challanNo: "26-27/0229", challanDate: "03/05/2026", poNo: "262700001", grnNo: "GRN 262700627", code: "S0053", supplier: "VISHWA SAMRUDHI INDUSTRIES", assAmt: "731,185.00", totalAmt: "866,102.30", user: "more" },
-    { sr: 8, year: "26-27", billNo: "PUR262700097", billDate: "04/05/2026", type: "Purchase", billType: "PO-GRN-BILL", challanNo: "3048010010208", challanDate: "09/04/2026", poNo: "262700004", grnNo: "GRN 262700150", code: "S0052", supplier: "TUBE INVESTMENT OF INDIA LTD", assAmt: "382,132.42", totalAmt: "450,916.26", user: "more" },
-    { sr: 9, year: "26-27", billNo: "PUR262700096", billDate: "04/05/2026", type: "Purchase", billType: "PO-GRN-BILL", challanNo: "26-27/0212", challanDate: "30/03/2026", poNo: "262700001", grnNo: "GRN 262700540", code: "S0053", supplier: "VISHWA SAMRUDHI INDUSTRIES", assAmt: "20,430.00", totalAmt: "24,107.40", user: "more" },
-    { sr: 10, year: "26-27", billNo: "PUR262700095", billDate: "04/05/2026", type: "Purchase", billType: "PO-GRN-BILL", challanNo: "26-27/0198", challanDate: "28/03/2026", poNo: "262700001", grnNo: "GRN 262700420", code: "S0053", supplier: "VISHWA SAMRUDHI INDUSTRIES", assAmt: "15,200.00", totalAmt: "17,936.00", user: "more" },
-  ]);
+  
+  const [fromDate, setFromDate] = useState("2026-04-01");
+  const [toDate, setToDate] = useState(new Date().toISOString().split('T')[0]);
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const toggleSideNav = () => {
     setSideNavOpen((prevState) => !prevState);
   };
+
+  const handleSearch = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("accessToken");
+      const response = await axios.get(`https://erp-render.onrender.com/Account/jobwork-bill-register/?from_date=${fromDate}&to_date=${toDate}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      const rawData = Array.isArray(response.data) ? response.data : 
+                      (response.data.data ? response.data.data : []);
+      
+      const mappedData = rawData.map((item, index) => ({
+        sr: index + 1,
+        year: item.series_no || "26-27",
+        billNo: item.bill_no || "",
+        billDate: item.posting_date || "",
+        type: "Purchase",
+        billType: item.bill_type || "JOBWORK-BILL",
+        challanNo: item.inv_challan_no || "",
+        challanDate: item.inv_challan_date || "",
+        poNo: item.items?.[0]?.po_no || "",
+        grnNo: item.items?.[0]?.grn_no || "",
+        code: item.supplier_code || "",
+        supplier: item.supplier || "",
+        assAmt: item.assable_value || "0.00",
+        totalAmt: item.grand_total || "0.00",
+        user: item.prepared_by || "more"
+      }));
+
+      setData(mappedData);
+    } catch (error) {
+      console.error("Error fetching purchase register:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    handleSearch();
+  }, []);
 
   useEffect(() => {
     if (sideNavOpen) {
@@ -81,11 +116,23 @@ const PurchaseRegister = () => {
                     <div className="d-flex align-items-center flex-wrap gap-3 text-start">
                       <div className="d-flex align-items-center gap-2">
                         <label className="form-label fw-bold">From Date:</label>
-                        <input type="date" className="form-control form-control-sm" defaultValue="2026-04-08" style={{ width: "135px" }} />
+                        <input 
+                          type="date" 
+                          className="form-control form-control-sm" 
+                          value={fromDate} 
+                          onChange={(e) => setFromDate(e.target.value)} 
+                          style={{ width: "135px" }} 
+                        />
                       </div>
                       <div className="d-flex align-items-center gap-2">
                         <label className="form-label fw-bold">To Date:</label>
-                        <input type="date" className="form-control form-control-sm" defaultValue="2026-05-09" style={{ width: "135px" }} />
+                        <input 
+                          type="date" 
+                          className="form-control form-control-sm" 
+                          value={toDate} 
+                          onChange={(e) => setToDate(e.target.value)} 
+                          style={{ width: "135px" }} 
+                        />
                       </div>
                       <div className="d-flex align-items-center gap-2">
                         <label className="form-label fw-bold">Bill Type :</label>
@@ -117,8 +164,12 @@ const PurchaseRegister = () => {
                           <option>ALL</option>
                         </select>
                       </div>
-                      <button className="btn d-flex align-items-center gap-1">
-                        <FaSearch className="search-icon text-primary" /> Search
+                      <button 
+                        className="btn d-flex align-items-center gap-1"
+                        onClick={handleSearch}
+                        disabled={loading}
+                      >
+                        <FaSearch className="search-icon text-primary" /> {loading ? "Searching..." : "Search"}
                       </button>
                     </div>
                   </div>
