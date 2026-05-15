@@ -1,18 +1,26 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min";
-import "@fortawesome/fontawesome-free/css/all.min.css";
 import NavBar from "../../NavBar/NavBar";
 import SideNav from "../../SideNav/SideNav";
 import "./MasterReport.css";
+
 const MasterReport = () => {
   const [sideNavOpen, setSideNavOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("itemReport");
 
   const toggleSideNav = () => {
     setSideNavOpen(!sideNavOpen);
   };
 
-  const [activeTab, setActiveTab] = useState("itemReport");
+  useEffect(() => {
+    if (sideNavOpen) {
+      document.body.classList.add("side-nav-open");
+    } else {
+      document.body.classList.remove("side-nav-open");
+    }
+  }, [sideNavOpen]);
+
   return (
     <div className="Report">
       <div className="container-fluid">
@@ -20,28 +28,30 @@ const MasterReport = () => {
           <div className="col-md-12">
             <div className="Main-NavBar">
               <NavBar toggleSideNav={toggleSideNav} />
-              <SideNav
-                sideNavOpen={sideNavOpen}
-                toggleSideNav={toggleSideNav}
-              />
+              <SideNav sideNavOpen={sideNavOpen} toggleSideNav={toggleSideNav} />
               <main className={`main-content ${sideNavOpen ? "shifted" : ""}`}>
                 <div className="Reportrmaster">
-                <div className="Report1-header mb-4 text-start mt-5">
-                    <div className="row align-items-center">
-                      <div className="col-md-4">
-                        <h5 className="header-title">Master Report</h5>
-                        </div>
+                  
+                  {/* Header Section - Matching Reference */}
+                  <div className="WorkOrderEntry-header mb-4">
+                    <div className="row">
+                      <div className="col-md-6">
+                        <h5 className="header-title text-start">
+                          Master Report
+                        </h5>
+                      </div>
+                      <div className="col-md-6 text-end">
                       </div>
                     </div>
+                  </div>
                   
-                  <div className="ReportMain mt-5">
-                    <div className="container-fluid">
-                      <ul className="nav nav-tabs">
+                  {/* Unified Tab & Input Section - Matching Reference UI */}
+                  <div className="header-section mb-4 p-0 border-0">
+                    <div className="tabs-wrapper border-0">
+                      <ul className="nav nav-tabs custom-nav-tabs border-0 p-2">
                         <li className="nav-item">
                           <button
-                            className={`nav-link ${
-                              activeTab === "itemReport" ? "active" : ""
-                            }`}
+                            className={`nav-link ${activeTab === "itemReport" ? "active" : ""}`}
                             onClick={() => setActiveTab("itemReport")}
                           >
                             Item Report
@@ -49,241 +59,140 @@ const MasterReport = () => {
                         </li>
                         <li className="nav-item">
                           <button
-                            className={`nav-link ${
-                              activeTab === "customerSupplierReport"
-                                ? "active"
-                                : ""
-                            }`}
-                            onClick={() =>
-                              setActiveTab("customerSupplierReport")
-                            }
+                            className={`nav-link ${activeTab === "customerSupplierReport" ? "active" : ""}`}
+                            onClick={() => setActiveTab("customerSupplierReport")}
                           >
                             Customer/Supplier Report
                           </button>
                         </li>
                       </ul>
-                      <div className="tab-content mt-3">
-                        {activeTab === "itemReport" && (
-                          <div className="tab-pane active">
-                            <div className="ReportMain1">
-                              <div className="row text-start Reportselect1">
-                                <div className="col-md-2 col-sm-3 mb-3 mb-sm-0">
-                                  <label
-                                    htmlFor="selectPlant"
-                                    className="col-form-label"
-                                  >
-                                    Select Report Name:
-                                  </label>
-                                </div>
-                                <div className="col-md-2 col-sm-9 mb-3 mb-sm-0">
-                                  <select
-                                    id="selectPlant"
-                                    className="form-select"
-                                    aria-label="Default select example"
-                                  >
-                                    <option selected>Produlink</option>
-                                    <option value="1">One</option>
-                                    <option value="2">Two</option>
-                                    <option value="3">Three</option>
-                                  </select>
-                                </div>
-                                <div className="col-md-2 col-sm-3 mb-3 mb-sm-0">
-                                  <label
-                                    htmlFor="machineType"
-                                    className="col-form-label"
-                                  >
-                                    Main Group:
-                                  </label>
-                                </div>
-                                <div className="col-md-2 col-sm-9 mb-3 mb-sm-0">
-                                  <select
-                                    id="machineType"
-                                    className="form-select"
-                                    aria-label="Default select example"
-                                  >
-                                    <option selected>ALL</option>
-                                    <option value="1">
-                                      CENTERLESS GRINDING
-                                    </option>
-                                    <option value="2">CNC</option>
-                                    <option value="3">DRILLING</option>
-                                    <option value="1">GRINDER</option>
-                                    <option value="2">INDUCTION</option>
-                                    <option value="3">LATHE</option>
-                                    <option value="1">MANUAL</option>
-                                    <option value="2">MILLING</option>
-                                    <option value="3">PRESS</option>
-                                    <option value="1">SECOND OPERATION</option>
-                                    <option value="2">SPM</option>
-                                    <option value="3">TAPPING</option>
-                                    <option value="1">THREAD ROLLING</option>
-                                    <option value="2">TROUB</option>
-                                    <option value="3">VMC</option>
-                                  </select>
-                                </div>
-                                <div className="col-md-1 col-sm-12 text-sm-start text-md-end">
-                                  <button className="btn">
-                                     Search
-                                  </button>
-                                </div>
-                                <div className="col-md-2 col-sm-12 text-sm-start text-md-end">
-                                  <button className="btn">
-                                     Export Report
-                                  </button>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="ReportTable1">
-                              <div className="row">
-                                <div className="col-md-12">
-                                  <table className="table">
-                                    <thead className="table-primary">
-                                      <tr>
-                                        <th scope="col">Sr</th>
-                                        <th scope="col">Item No</th>
-                                        <th scope="col">Item Code</th>
-                                        <th scope="col">Item Desc</th>
-                                        <th scope="col"></th>
-                                        <th scope="col">Group</th>
-                                        <th scope="col">Grade</th>
-                                        <th scope="col">Size</th>
-                                        <th scope="col">HSN Code</th>
-                                        <th scope="col">Item Id</th>
-                                      </tr>
-                                    </thead>
-                                    <tbody>
-                                      <tr>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                      </tr>
-                                    </tbody>
-                                  </table>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="Reportbotton1">
-                              <div className="col-md-12 text-start">
-                                <p>Total Record :00</p>
-                              </div>
-                            </div>
+                    </div>
+
+                    <div className="filter-inputs-container">
+                      {activeTab === "itemReport" ? (
+                        <div className="row align-items-end mt-2 mb-3 px-2">
+                          <div className="col-md-4">
+                            <label htmlFor="selectReport1" className="form-label mb-1">Select Report Name :</label>
+                            <select id="selectReport1" className="form-select">
+                              <option defaultValue="Produlink">Produlink</option>
+                              <option value="1">One</option>
+                              <option value="2">Two</option>
+                              <option value="3">Three</option>
+                            </select>
                           </div>
-                        )}
-                        {activeTab === "customerSupplierReport" && (
-                          <div className="tab-pane active">
-                            <div className="ReportMain2">
-                              <div className="row text-start Reportselect2">
-                                <div className="col-md-2 col-sm-3 mb-3 mb-sm-0">
-                                  <label
-                                    htmlFor="selectPlant"
-                                    className="col-form-label"
-                                  >
-                                    Select Report Name:
-                                  </label>
-                                </div>
-                                <div className="col-md-2 col-sm-9 mb-3 mb-sm-0">
-                                  <select
-                                    id="selectPlant"
-                                    className="form-select"
-                                    aria-label="Default select example"
-                                  >
-                                    <option selected>Produlink</option>
-                                    <option value="1">One</option>
-                                    <option value="2">Two</option>
-                                    <option value="3">Three</option>
-                                  </select>
-                                </div>
-                                <div className="col-md-2 col-sm-3 mb-3 mb-sm-0">
-                                  <label
-                                    htmlFor="machineType"
-                                    className="col-form-label"
-                                  >
-                                    Type:
-                                  </label>
-                                </div>
-                                <div className="col-md-2 col-sm-9 mb-3 mb-sm-0">
-                                  <select
-                                    id="machineType"
-                                    className="form-select"
-                                    aria-label="Default select example"
-                                  >
-                                    <option selected>ALL</option>
-                                    <option value="1">
-                                      CENTERLESS GRINDING
-                                    </option>
-                                    <option value="2">CNC</option>
-                                    <option value="3">DRILLING</option>
-                                    <option value="1">GRINDER</option>
-                                    <option value="2">INDUCTION</option>
-                                    <option value="3">LATHE</option>
-                                    <option value="1">MANUAL</option>
-                                    <option value="2">MILLING</option>
-                                    <option value="3">PRESS</option>
-                                    <option value="1">SECOND OPERATION</option>
-                                    <option value="2">SPM</option>
-                                    <option value="3">TAPPING</option>
-                                    <option value="1">THREAD ROLLING</option>
-                                    <option value="2">TROUB</option>
-                                    <option value="3">VMC</option>
-                                  </select>
-                                </div>
-                                <div className="col-md-1 col-sm-12 text-sm-start text-md-end">
-                                  <button className="btn">
-                                     Search
-                                  </button>
-                                </div>
-                                <div className="col-md-2 col-sm-12 text-sm-start text-md-end">
-                                  <button className="btn">
-                                     Export Report
-                                  </button>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="ReportTable2">
-                              <div className="row">
-                                <div className="col-md-12">
-                                  <table className="table">
-                                    <thead className="table-primary">
-                                      <tr>
-                                        <th scope="col">Sr</th>
-                                        <th scope="col">Cust Code</th>
-                                        <th scope="col">Cust Name</th>
-                                        <th scope="col">Code Address</th>
-                                        <th scope="col">Gst No</th>
-                                        <th scope="col">Cust Id</th>
-                                      </tr>
-                                    </thead>
-                                    <tbody>
-                                      <tr>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                        <td></td>
-                                      </tr>
-                                    </tbody>
-                                  </table>
-                                </div>
-                              </div>
-                            </div>
-                            <div className="Reportbotton2">
-                              <div className="col-md-12 text-start">
-                                <p>Total Record :00</p>
-                              </div>
-                            </div>
+                          
+                          <div className="col-md-4">
+                            <label htmlFor="mainGroup" className="form-label mb-1">Main Group :</label>
+                            <select id="mainGroup" className="form-select">
+                              <option defaultValue="ALL">ALL</option>
+                              <option value="1">CENTERLESS GRINDING</option>
+                              <option value="2">CNC</option>
+                              <option value="3">DRILLING</option>
+                              <option value="4">GRINDER</option>
+                              <option value="5">INDUCTION</option>
+                              <option value="6">LATHE</option>
+                              <option value="7">MANUAL</option>
+                              <option value="8">MILLING</option>
+                              <option value="9">PRESS</option>
+                              <option value="10">SECOND OPERATION</option>
+                              <option value="11">SPM</option>
+                              <option value="12">TAPPING</option>
+                              <option value="13">THREAD ROLLING</option>
+                              <option value="14">TROUB</option>
+                              <option value="15">VMC</option>
+                            </select>
                           </div>
-                        )}
-                      </div>
+
+                          <div className="col-md-4 d-flex gap-2 justify-content-end">
+                            <button className="btn filter-btn">Search</button>
+                            <button className="btn filter-btn">Export Report</button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="row align-items-end mt-2 mb-3 px-2">
+                          <div className="col-md-4">
+                            <label htmlFor="selectReport2" className="form-label mb-1">Select Report Name :</label>
+                            <select id="selectReport2" className="form-select">
+                              <option defaultValue="Produlink">Produlink</option>
+                              <option value="1">One</option>
+                              <option value="2">Two</option>
+                              <option value="3">Three</option>
+                            </select>
+                          </div>
+                          
+                          <div className="col-md-4">
+                            <label htmlFor="reportType" className="form-label mb-1">Type :</label>
+                            <select id="reportType" className="form-select">
+                              <option defaultValue="ALL">ALL</option>
+                              <option value="1">CENTERLESS GRINDING</option>
+                              <option value="2">CNC</option>
+                              <option value="3">DRILLING</option>
+                              <option value="4">GRINDER</option>
+                              <option value="5">INDUCTION</option>
+                              <option value="6">LATHE</option>
+                              <option value="7">MANUAL</option>
+                              <option value="8">MILLING</option>
+                              <option value="9">PRESS</option>
+                              <option value="10">SECOND OPERATION</option>
+                              <option value="11">SPM</option>
+                              <option value="12">TAPPING</option>
+                              <option value="13">THREAD ROLLING</option>
+                              <option value="14">TROUB</option>
+                              <option value="15">VMC</option>
+                            </select>
+                          </div>
+
+                          <div className="col-md-4 d-flex gap-2 justify-content-end">
+                            <button className="btn filter-btn">Search</button>
+                            <button className="btn filter-btn">Export Report</button>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
+
+                  {/* Table Section */}
+                  <div className="table-container border-0">
+                    <div className="table-responsive">
+                      <table className="custom-table table-hover">
+                        <thead>
+                          {activeTab === "itemReport" ? (
+                            <tr>
+                              <th style={{ width: "50px" }}>Sr</th>
+                              <th>Item No</th>
+                              <th>Item Code</th>
+                              <th>Item Desc</th>
+                              <th>Group</th>
+                              <th>Grade</th>
+                              <th>Size</th>
+                              <th>HSN Code</th>
+                              <th>Item Id</th>
+                            </tr>
+                          ) : (
+                            <tr>
+                              <th style={{ width: "50px" }}>Sr</th>
+                              <th>Cust Code</th>
+                              <th>Cust Name</th>
+                              <th>Code Address</th>
+                              <th>Gst No</th>
+                              <th>Cust Id</th>
+                            </tr>
+                          )}
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td colSpan={activeTab === "itemReport" ? "9" : "6"} className="text-center py-4 text-muted">
+                              No data found...!!!
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                    <div className="footer-totals-bar">
+                      <span className="total-label">Total Record : <span className="total-value">0</span></span>
+                    </div>
+                  </div>
+
                 </div>
               </main>
             </div>

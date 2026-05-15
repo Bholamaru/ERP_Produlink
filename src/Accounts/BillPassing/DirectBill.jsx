@@ -142,7 +142,7 @@ const DirectBill = () => {
                       <h5 className="header-title mb-0 text-nowrap">
                         Bill Register
                       </h5>
-                      
+
                       <div className="d-flex align-items-center gap-3 flex-grow-1">
                         <div className="d-flex align-items-center gap-2">
                           <label className="form-label mb-0 text-nowrap small fw-bold">Plant :</label>

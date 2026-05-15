@@ -21,8 +21,8 @@ import ItemMasterGernal from "./components/ItemMasterr/ItemMasterGernal/ItemMast
 // import ItemMasterQuery from "./components/ItemMasterr/ItemMasterQuery/ItemMasterQuery.jsx";
 import WorkCenterMaster from "./components/WorkCenterMaster/WorkCenterMaster";
 import BusinessPartner from "./components/BusinessPartner/BusinessPartner";
-import CustomerItemWise from "./components/CustomerItemWise/CustomerItemWise";
-import CustomerSupplierLink from "./components/CustomerSupplierLink/CustomerSupplierLink";
+import CustomerItemWise from "./components/CustomerItemWise/CustomerItemWise.jsx";
+import CustomerSupplierLink from "./components/CustomerSupplierLink/CustomerSupplierLink.jsx";
 import ItemCrossReference from "./components/ItemCrossReference.js/ItemCrossReference";
 import GstMaster from "./components/GstMaster/GstMaster";
 import CustomerItemGst from "./components/GstMaster/CustomerItem/CustomerItem";
@@ -431,6 +431,7 @@ import PurchaseBill from "./Accounts/BillPassing/PurchaseBill.jsx";
 import JobworkBill from "./Accounts/BillPassing/JobworkBill.jsx";
 import DirectBill from "./Accounts/BillPassing/DirectBill.jsx";
 import GLMaster from "./Accounts/GLMaster/GLMaster.jsx";
+import ConfirmGSTBill from "./Accounts/BillPassing/ConfirmGSTBill.jsx";
 import GSTR1 from "./Accounts/GSTReport/GSTR1.jsx";
 import HSNSACSummary from "./Accounts/GSTReport/HSNSACSummary.jsx";
 import GSTR2 from "./Accounts/GSTReport/GSTR2.jsx";
@@ -948,6 +949,7 @@ function App() {
         <Route path="/purchase-bill" element={<PurchaseBill />} />
         <Route path="/jobwork-bill" element={<JobworkBill />} />
         <Route path="/direct-bill" element={<DirectBill />} />
+        <Route path="/accounts/bill-passing/confirm-gst-bill" element={<ConfirmGSTBill />} />
         <Route path="/gl-master" element={<GLMaster />} />
         <Route path="/gst-report" element={<GSTR1 />} />
         <Route path="/hsn-sac-summary" element={<HSNSACSummary />} />

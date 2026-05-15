@@ -1,162 +1,177 @@
-* {
-  box-sizing: border-box;
-  margin: 0px;
-  padding: 0px;
+/* Master Report Styles - Mirroring CustomerSupplierLink.css */
+.Report {
+  background-color: #ffffff;
+  min-height: 100vh;
 }
 
-.Report1-header {
-  background-color: #f8f9fa; /* Light background for header */
-  border-bottom: 1px solid #dee2e6; /* Border for header */
-  padding: 10px 15px; /* Padding around header */
-  border-radius: 5px;
+.Report .main-content {
+  padding: 20px;
+  transition: all 0.3s ease;
 }
 
-.Report1-header .header-title {
-  font-size: 20px;
-  font-weight: bold;
+.Report .main-content.shifted {
+  margin-left: 250px;
+}
+
+/* Header Section */
+.Report .WorkOrderEntry-header {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #dee2e6;
+  padding: 10px 15px;
+  border-radius: 4px;
+}
+
+.Report .header-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1fb5ff; /* Branded Blue */
   margin: 0;
 }
 
-
-
-
-
-
-@media (max-width: 767.98px) {
-  .ReportMain {
-    padding: 10px;
-  }
-
-  .Reportselect1 {
-    padding: 10px;
-  }
+/* Tab & Filter Section */
+.Report .header-section {
+  background-color: #f8f9fa;
+  border: none;
+  border-radius: 4px;
+  overflow: hidden;
 }
 
-.ReportTable1 {
-  background-color: #f8f9fa; /* Light background for header */
-  border-bottom: 1px solid #dee2e6; /* Border for header */
-  padding: 10px 15px; /* Padding around header */
-  border-radius: 5px;
-
+.Report .tabs-wrapper {
+  background-color: #f8f9fa; /* Match reference */
+  padding: 10px 10px 0 10px; /* Added padding for tabs container */
 }
 
-.ReportTable1 .table-responsive {
-  width: 100%;
-  overflow-x: auto;
+.Report .custom-nav-tabs {
+  gap: 10px;
 }
 
-.ReportTable1 .table {
-  width: 100%;
+.Report .custom-nav-tabs .nav-link {
+  border: none;
+  background-color: #e9ecef; /* Match reference box style */
+  color: #495057;
+  font-weight: 700;
+  font-size: 12px;
+  padding: 8px 20px;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.Report .custom-nav-tabs .nav-link.active {
+  background-color: #1fb5ff !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 4px rgba(31, 181, 255, 0.2);
+}
+
+/* Filter Controls - Box behind inputs */
+.Report .filter-inputs-container {
+  background-color: #fff;
+  padding: 15px;
+  border-radius: 0 0 4px 4px;
+}
+
+.Report .filter-btn {
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 15px;
+  font-size: 14px;
+  font-weight: normal;
+  background-color: #f8f9fa;
+  color: #333;
+  border: 1px solid #ced4da;
+  transition: all 0.2s ease-in-out;
+  border-radius: 4px;
   white-space: nowrap;
 }
 
+.Report .filter-btn:hover {
+  background-color: #1fb5ff !important;
+  color: #fff !important;
+  border-color: #1fb5ff;
+}
 
-
-.ReportTable1 .table .btn-tableww {
-  padding: 0.25rem 0.5rem;
-  align-items: center;
+/* Table Styles */
+.Report .table-container {
+  background-color: #fff;
   border: none;
-
-  padding: 10px;
-  border-radius: 10px;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: 20px;
 }
 
-.ReportTable1 .recordbottom1 {
-  margin-top: 10px;
-  text-align: right;
-}
-
-@media (max-width: 767.98px) {
-  .ReportTable1 {
-    padding: 10px;
-  }
-
-  .ReportTable1 .table-responsive {
-    overflow-x: auto;
-  }
-}
-.ReportMain {
-  padding: 20px;
-}
-
-.Report .nav-tabs .nav-item .nav-link {
-  cursor: pointer;
-  border: none;
-}
-
-.Report .nav-tabs .nav-item .nav-link.active {
-  background-color: #007bff;
-  color: white;
-}
-
-.Report .tab-content {
-  border: none;
-}
-
-
-
-.Reportselect2 .btnReportkk2 {
-  border: none;
-  background-color: rgba(235, 233, 233, 0.685);
-  color: black;
-  padding: 10px;
-  border-radius: 10px;
-  cursor: pointer;
-}
-
-.Reportselect2 .btn i {
-  margin-right: 5px;
-}
-
-@media (max-width: 767.98px) {
-  .ReportMain {
-    padding: 10px;
-  }
-
-  .Reportselect2 {
-    padding: 10px;
-  }
-}
-
-.ReportTable2 {
-  background-color: #f8f9fa; /* Light background for header */
-  border-bottom: 1px solid #dee2e6; /* Border for header */
-  padding: 10px 15px; /* Padding around header */
-  border-radius: 5px;
-}
-
-.ReportTable2 .table-responsive {
+.Report .table-responsive {
   width: 100%;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
-.ReportTable2 .table {
+.Report .custom-table {
   width: 100%;
+  margin-bottom: 0;
+  font-size: 14px;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.Report .custom-table thead th {
+  background-color: #1fb5ff;
+  color: #fff;
+  font-weight: 600;
+  padding: 10px;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.2);
   white-space: nowrap;
 }
 
-
-
-.ReportTable2 .table .btn-tableww {
-  padding: 0.25rem 0.5rem;
-  align-items: center;
-  border: none;
-
-  padding: 10px;
-  border-radius: 10px;
+.Report .custom-table tbody td {
+  padding: 8px 10px;
+  vertical-align: middle;
+  border: 1px solid #dee2e6;
+  white-space: nowrap;
 }
 
-.ReportTable2 .recordbottom1 {
-  margin-top: 10px;
-  text-align: right;
+.Report .custom-table tbody tr:hover {
+  background-color: #f1f9ff;
 }
 
-@media (max-width: 767.98px) {
-  .ReportTable2 {
-    padding: 10px;
+/* Footer Totals */
+.Report .footer-totals-bar {
+  background-color: #f8f9fa;
+  padding: 8px 15px;
+  border-top: 1px solid #dee2e6;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.Report .total-value {
+  color: #1fb5ff;
+}
+
+/* Form Controls */
+.Report .form-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #444;
+}
+
+.Report .form-select {
+  height: 32px;
+  font-size: 14px;
+  padding: 0 10px;
+  border: 1px solid #ced4da;
+}
+
+/* Responsiveness */
+@media (max-width: 991.98px) {
+  .Report .col-md-4 {
+    width: 100%;
+    margin-bottom: 15px;
   }
-
-  .ReportTable2 .table-responsive {
-    overflow-x: auto;
+  
+  .Report .justify-content-end {
+    justify-content: flex-start !important;
   }
 }
