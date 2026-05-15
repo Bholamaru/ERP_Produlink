@@ -4,10 +4,17 @@ import "bootstrap/dist/js/bootstrap.bundle.min";
 import NavBar from "../../NavBar/NavBar.js";
 import SideNav from "../../SideNav/SideNav.js";
 import "./JobworkBill.css";
+import axios from "axios";
 import { FaEye, FaCheck, FaPlus, FaTrash, FaFileExcel, FaSearch, FaTimes, FaExclamationTriangle } from "react-icons/fa";
 
 const JobworkBill = () => {
   const [sideNavOpen, setSideNavOpen] = useState(false);
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
+  const [vendorName, setVendorName] = useState("");
+  const [supplierList, setSupplierList] = useState([]);
+  const [reportData, setReportData] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const toggleSideNav = () => {
     setSideNavOpen((prevState) => !prevState);
@@ -21,13 +28,94 @@ const JobworkBill = () => {
     }
   }, [sideNavOpen]);
 
-  // Mock Data for Top Table
-  const topTableData = [
-    { id: 1, year: "26-27", grnNo: "262701696", grnDate: "09/05/2026", type: "Our_F4", vendChNo: "3104", chDate: "09/05/2026", code: "00111", vendor: "VENTURE ENTERPRISES", f4Out: "262700231, 262700040", qtyDesc: "Total Item : 2 ..", user: "Togre" },
-    { id: 2, year: "26-27", grnNo: "262701695", grnDate: "09/05/2026", type: "Our_F4", vendChNo: "w91/26-27/243", chDate: "09/05/2026", code: "J/W0064", vendor: "PRANAV COATING", f4Out: "262700978", qtyDesc: "Qty : 2183 | FG1305 | PLFG 1305 END CONNECTOR 50-55\" BL ACK ABS00010", user: "Togre" },
-    { id: 3, year: "26-27", grnNo: "262701694", grnDate: "09/05/2026", type: "Our_F4", vendChNo: "086", chDate: "09/05/2026", code: "0000102", vendor: "SHANTAI INDUSTRIES", f4Out: "262700296", qtyDesc: "Qty : 1927 | FG1147 | GR1F G1147 PUSH ROD M/Cyl 2WH Rear", user: "Togre" },
-    { id: 4, year: "26-27", grnNo: "262701693", grnDate: "09/05/2026", type: "Our_F4", vendChNo: "041", chDate: "09/05/2026", code: "000097", vendor: "MATOSHRI ENTERPRISES", f4Out: "262701097", qtyDesc: "Qty : 7463 | FG1021 | CNC 1FG1021 WEEL CYLSLOTTED PISTON-", user: "Togre" },
-  ];
+  const fetchSuppliers = async (search) => {
+    if (!search) {
+      setSupplierList([]);
+      return;
+    }
+    try {
+      const response = await axios.get(`https://erp-render.onrender.com/Purchase/Fetch_Supplier_Code/`, {
+        params: { search }
+      });
+      console.log("Supplier Suggestion API Response:", response.data);
+      const data = Array.isArray(response.data) ? response.data : (response.data.data || []);
+      if (Array.isArray(data)) {
+        setSupplierList(data);
+      }
+    } catch (error) {
+      console.error("Error fetching suppliers:", error);
+    }
+  };
+
+  const handleVendorChange = (e) => {
+    const value = e.target.value;
+    setVendorName(value);
+    fetchSuppliers(value);
+  };
+
+  const handleSearch = async (type = 'date') => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("accessToken");
+      let url = `https://erp-render.onrender.com/Account/inwardchllan-date-fillter/`;
+      let params = {};
+
+      if (type === 'supplier') {
+        params = { supplier_name: vendorName };
+      } else {
+        if (!fromDate || !toDate) {
+          alert("Please select both From and To dates.");
+          setLoading(false);
+          return;
+        }
+        params = { from_date: fromDate, to_date: toDate };
+      }
+
+      const response = await axios.get(url, {
+        params,
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      console.log("Inward Challan API Response:", response.data);
+
+      if (response.data && Array.isArray(response.data.data)) {
+        const mappedData = response.data.data.flatMap((item) => {
+          // Handle potential nested items (like in InwardChallanTable or item_details)
+          const nestedItems = item.InwardChallanTable || item.item_details || [item];
+          
+          return nestedItems.map((detail, idx) => ({
+            id: `${item.id}-${idx}`,
+            year: item.Series || item.series || item.Year || item.Series_No || "",
+            grnNo: item.InwardF4No || item.no || item.Inward_no || item.No || item.PoNo || "",
+            grnDate: item.InwardDate || item.challan_date || item.Date || item.PoDate || "",
+            type: item.Series || item.bill_type || "Our_F4",
+            vendChNo: item.ChallanNo || item.challan_no || item.Invoice_No || item.invoice_no || "",
+            chDate: item.ChallanDate || item.challan_date || item.Date || "",
+            code: item.CodeNo || item.SupplierCode || item.supplier_code || item.Code || item.Supp_Code || "",
+            vendor: item.SupplierName || item.supplier_name || item.Supplier || item.vendor_name || "",
+            f4Out: item.OutwardChallan || item.OutwardChallanNo || item.f4_out_no || item.Outward_no || "",
+            qtyDesc: (() => {
+              const qty = detail.InQtyNOS || detail.InQtyKg || item.TotalQtyNo || "0";
+              const desc = detail.ItemDescription || detail.description || "";
+              const cleanDesc = desc.split('| Qty:')[0].trim();
+              return `Qty: ${qty} | ${cleanDesc}`;
+            })(),
+            user: item.PreparedBy || item.created_by_username || item.User || "Admin"
+          }));
+        });
+        console.log("Mapped Jobwork Report Data:", mappedData);
+        setReportData(mappedData);
+      } else {
+        setReportData([]);
+      }
+    } catch (error) {
+      console.error("Error fetching Inward Challan data:", error);
+      setReportData([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
 
   return (
     <div className="jobwork-bill">
@@ -74,16 +162,16 @@ const JobworkBill = () => {
                       </div>
                       <div className="col-md-2">
                         <label className="form-label mb-1 small fw-bold">From Date :</label>
-                        <input type="date" className="form-control form-control-sm" defaultValue="2026-05-08" />
+                        <input type="date" className="form-control form-control-sm" value={fromDate} onChange={(e) => setFromDate(e.target.value)} />
                       </div>
-                      <div className="col-md-2">
+                      <div className="col-md-2 me-4">
                         <div className="d-flex align-items-end gap-1">
                           <div className="flex-grow-1">
                             <label className="form-label mb-1 small fw-bold">To Date :</label>
-                            <input type="date" className="form-control form-control-sm" defaultValue="2026-05-09" />
+                            <input type="date" className="form-control form-control-sm" value={toDate} onChange={(e) => setToDate(e.target.value)} />
                           </div>
-                          <button className="btn btn-primary btn-sm d-flex align-items-center justify-content-center px-2 gap-1 mb-0">
-                            <FaSearch size={10} /> Search
+                          <button className="btn btn-primary btn-sm d-flex align-items-center justify-content-center px-2 gap-1 mb-0" onClick={() => handleSearch('date')} disabled={loading}>
+                            <FaSearch size={10} /> {loading ? "..." : "Search"}
                           </button>
                         </div>
                       </div>
@@ -91,10 +179,25 @@ const JobworkBill = () => {
                         <div className="d-flex align-items-end gap-1">
                           <div className="flex-grow-1">
                             <label className="form-label mb-1 small fw-bold">Vendor Name :</label>
-                            <input type="text" className="form-control form-control-sm" placeholder="Enter Name ..." />
+                            <input 
+                              type="text" 
+                              className="form-control form-control-sm" 
+                              placeholder="Enter Name ..." 
+                              value={vendorName} 
+                              onChange={handleVendorChange} 
+                              list="vendor-suggestions"
+                            />
+                            <datalist id="vendor-suggestions">
+                              {supplierList.map((sup, idx) => (
+                                <option 
+                                  key={idx} 
+                                  value={typeof sup === 'string' ? sup : (sup.Name || sup.supplier_name || sup.Supplier || sup.supplier || "")} 
+                                />
+                              ))}
+                            </datalist>
                           </div>
-                          <button className="btn btn-primary btn-sm d-flex align-items-center justify-content-center px-2 gap-1 mb-0">
-                            <FaSearch size={10} /> Search
+                          <button className="btn btn-primary btn-sm d-flex align-items-center justify-content-center px-2 gap-1 mb-0" onClick={() => handleSearch('supplier')} disabled={loading}>
+                            <FaSearch size={10} /> {loading ? "..." : "Search"}
                           </button>
                         </div>
                       </div>
@@ -139,7 +242,7 @@ const JobworkBill = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {topTableData.map((data, index) => (
+                        {reportData.map((data, index) => (
                           <tr key={data.id}>
                             <td>{index + 1}</td>
                             <td>{data.year}</td>
