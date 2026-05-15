@@ -5,72 +5,25 @@ import NavBar from "../../NavBar/NavBar.js";
 import SideNav from "../../SideNav/SideNav.js";
 import "./ConfirmGSTBill.css";
 import { FaPlus, FaTrash, FaCheck, FaFileAlt, FaSyncAlt } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+
+import axios from "axios";
 
 const ConfirmGSTBill = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [sideNavOpen, setSideNavOpen] = useState(false);
-  const [rows, setRows] = useState([
-    {
-      id: 1,
-      grnNo: "262701968",
-      grnDate: "15/05/2026",
-      chalNo: "ay/284",
-      chalDate: "15/05/2026",
-      poNo: "262700031",
-      poDate: "01/04/2026",
-      itemCode: "FG1013 B3HF005020",
-      itemDesc: "TPFG1013 PRIMARY PISTON -ALFA CNC2FG1013-TPFG1013",
-      hsnCode: "998898",
-      rate: 0.5,
-      grnQty: 200,
-      challanQty: 200,
-      disc: 0,
-      discAmt: 0,
-      total: 100,
-      cgst: 0,
-      cgstAmt: 0,
-      sgst: 0,
-      sgstAmt: 0,
-      igst: 18,
-      igstAmt: 18,
-      glId: "Services Purcha",
-      tds: false
-    },
-    {
-      id: 2,
-      grnNo: "262701968",
-      grnDate: "15/05/2026",
-      chalNo: "ay/284",
-      chalDate: "15/05/2026",
-      poNo: "262700031",
-      poDate: "01/04/2026",
-      itemCode: "FG1013 B3HF005020",
-      itemDesc: "TPFG1013 PRIMARY PISTON -ALFA CNC2FG1013-TPFG1013",
-      hsnCode: "998898",
-      rate: 0.5,
-      grnQty: 260,
-      challanQty: 260,
-      disc: 0,
-      discAmt: 0,
-      total: 130,
-      cgst: 0,
-      cgstAmt: 0,
-      sgst: 0,
-      sgstAmt: 0,
-      igst: 18,
-      igstAmt: 23.4,
-      glId: "Services Purcha",
-      tds: true
-    }
-  ]);
+  const [rows, setRows] = useState([]);
+  const [billPNo, setBillPNo] = useState("");
+  const [selectedSeries, setSelectedSeries] = useState("Select");
+  const [loading, setLoading] = useState(false);
 
   const [footerData, setFooterData] = useState({
-    invChallanNo: "ay/284",
-    invChallanDate: "2026-05-15",
+    invChallanNo: "",
+    invChallanDate: "",
     paymentTermDays: "60",
-    paymentDate: "2026-07-14",
-    postingDate: "2026-05-15",
+    paymentDate: "",
+    postingDate: new Date().toISOString().split('T')[0],
     remark: "",
     otherAmount: 0,
     roundOffAmt: 0,
@@ -88,14 +41,205 @@ const ConfirmGSTBill = () => {
     insApplied: false, insAmt: 0,
     instApplied: false, instAmt: 0,
     othApplied: false, othAmt: 0,
-    subTotal: "230.00",
-    basicTot: "230.00",
-    finalAmt: "271.40"
+    subTotal: "0.00",
+    basicTot: "0.00",
+    finalAmt: "0.00",
+    supplier: ""
   });
+
+  const fetchNextBillNo = async () => {
+    try {
+      const response = await axios.get("https://erp-render.onrender.com/Account/genrate-jobwork-bill-no/");
+      const nextNo = response.data.next_bill_no || response.data.bill_no || response.data.no;
+      if (nextNo) {
+        setBillPNo(nextNo);
+      }
+    } catch (error) {
+      console.error("Error fetching bill no:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchNextBillNo();
+  }, []);
+
+  useEffect(() => {
+    if (location.state && location.state.selectedInvoices) {
+      const invoices = location.state.selectedInvoices;
+      const mappedRows = invoices.map((inv, idx) => {
+        const qty = parseFloat(inv.qty || 0);
+        const rate = parseFloat(inv.rate || 0);
+        const total = qty * rate;
+        const igst = parseFloat(inv.igst || 0);
+        const cgst = parseFloat(inv.cgst || 0);
+        const sgst = parseFloat(inv.sgst || 0);
+        
+        return {
+          id: idx + 1,
+          grnNo: inv.grnNo,
+          grnDate: inv.grnDate,
+          chalNo: inv.vendChNo,
+          chalDate: inv.chDate,
+          poNo: inv.poNo,
+          poDate: inv.poDate,
+          itemNo: inv.itemNo,
+          itemCode: inv.itemCode,
+          itemDesc: inv.itemDesc,
+          hsnCode: inv.hsnCode,
+          rate: rate,
+          grnQty: qty,
+          challanQty: qty,
+          disc: 0,
+          discAmt: 0,
+          total: total,
+          cgst: cgst,
+          cgstAmt: (total * cgst) / 100,
+          sgst: sgst,
+          sgstAmt: (total * sgst) / 100,
+          igst: igst,
+          igstAmt: (total * igst) / 100,
+          glId: "Services Purcha",
+          tds: false
+        };
+      });
+      setRows(mappedRows);
+
+      if (invoices.length > 0) {
+        const first = invoices[0];
+        setFooterData(prev => ({
+          ...prev,
+          supplier: first.vendor,
+          invChallanNo: first.vendChNo,
+          invChallanDate: formatDateToISO(first.chDate),
+          paymentDate: formatDateToISO(first.chDate),
+          postingDate: new Date().toISOString().split('T')[0]
+        }));
+      }
+    }
+  }, [location.state]);
+
+  const formatDateToISO = (dateStr) => {
+    if (!dateStr) return "";
+    // If already YYYY-MM-DD
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
+    // If DD/MM/YYYY or DD-MM-YYYY
+    const parts = dateStr.split(/[/-]/);
+    if (parts.length === 3) {
+      // Handle YYYY-MM-DD or DD-MM-YYYY
+      if (parts[0].length === 4) return `${parts[0]}-${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}`;
+      return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+    }
+    return dateStr;
+  };
+
+  const handleSave = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("accessToken");
+      const totals = calculateTotals();
+      
+      const payload = {
+        plant: "SHARP",
+        bill_type: "JOBWORK-BILL",
+        series_no: selectedSeries === "Select" ? "" : selectedSeries,
+        bill_no: billPNo,
+        supplier: footerData.supplier,
+        inv_challan_no: footerData.invChallanNo,
+        inv_challan_date: formatDateToISO(footerData.invChallanDate),
+        payment_terms_days: Number(footerData.paymentTermDays) || 0,
+        payment_date: formatDateToISO(footerData.paymentDate) || formatDateToISO(footerData.invChallanDate),
+        posting_date: formatDateToISO(footerData.postingDate),
+        remark: footerData.remark,
+        
+        // Totals
+        total_qty: Number(totals.totalQty) || 0,
+        sub_total: Number(totals.subTotal) || 0,
+        assable_value: Number(totals.basicTot) || 0,
+        basic_total: Number(totals.basicTot) || 0,
+        cgst_total: rows.reduce((acc, r) => acc + (parseFloat(r.cgstAmt) || 0), 0),
+        sgst_total: rows.reduce((acc, r) => acc + (parseFloat(r.sgstAmt) || 0), 0),
+        igst_total: Number(totals.igstTotal) || 0,
+        total_tax: Number(totals.taxTotal) || 0,
+        bill_amount: Number(totals.billAmt) || 0,
+        final_amount: Number(totals.finalAmt) || 0,
+        grand_total: Number(totals.finalAmt) || 0,
+        
+        // Charges
+        round_of_amt: Number(footerData.roundOffAmt) || 0,
+        round_off_type: footerData.roundOffType,
+        tds_amt: Number(footerData.tdsAmt) || 0,
+        tcs_amt: Number(footerData.tcsAmt) || 0,
+        pack_forward_charge: footerData.packApplied ? Number(footerData.packAmt) : 0,
+        transport_charge: footerData.transApplied ? Number(footerData.transAmt) : 0,
+        insurance: footerData.insApplied ? Number(footerData.insAmt) : 0,
+        installation_charge: footerData.instApplied ? Number(footerData.instAmt) : 0,
+        ohter_amount: footerData.othApplied ? Number(footerData.othAmt) : 0,
+
+        items: rows.map(row => ({
+          grn_no: row.grnNo,
+          chal_no: row.chalNo,
+          po_no: row.poNo,
+          item_no: row.itemNo,
+          item_code: row.itemCode,
+          item_description: row.itemDesc,
+          hsn_code: row.hsnCode,
+          rate: Number(row.rate) || 0,
+          grn_qty: Number(row.grnQty) || 0,
+          challan_qty: Number(row.challanQty) || 0,
+          dis: Number(row.disc) || 0,
+          dis_amt: Number(row.discAmt) || 0,
+          total: Number(row.total) || 0,
+          cgst: Number(row.cgst) || 0,
+          cgst_amt: Number(row.cgstAmt) || 0,
+          sgst: Number(row.sgst) || 0,
+          sgst_amt: Number(row.sgstAmt) || 0,
+          igst: Number(row.igst) || 0,
+          igst_amt: Number(row.igstAmt) || 0,
+          glid: row.glId,
+          tds: row.tds
+        }))
+      };
+
+      console.log("Saving Jobwork Bill Payload:", JSON.stringify(payload, null, 2));
+
+      const response = await axios.post("https://erp-render.onrender.com/Account/jobwork-bill-register/", payload, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      });
+      
+      if (response.status === 200 || response.status === 201 || response.data.stat) {
+        alert("Jobwork Bill Saved Successfully!");
+        navigate("/jobwork-bill");
+      }
+    } catch (error) {
+      console.error("Error saving jobwork bill:", error);
+      if (error.response) {
+        console.error("Error Response Data:", error.response.data);
+        alert(`Failed to save: ${JSON.stringify(error.response.data)}`);
+      } else {
+        alert("Failed to save bill. Please check your connection.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleRowChange = (index, field, value) => {
     const updatedRows = [...rows];
     updatedRows[index][field] = value;
+    
+    // Recalculate totals for this row
+    if (['rate', 'grnQty', 'disc', 'cgst', 'sgst', 'igst'].includes(field)) {
+      const r = updatedRows[index];
+      const sub = parseFloat(r.grnQty || 0) * parseFloat(r.rate || 0);
+      r.total = sub - parseFloat(r.discAmt || 0);
+      r.cgstAmt = (r.total * parseFloat(r.cgst || 0)) / 100;
+      r.sgstAmt = (r.total * parseFloat(r.sgst || 0)) / 100;
+      r.igstAmt = (r.total * parseFloat(r.igst || 0)) / 100;
+    }
+    
     setRows(updatedRows);
   };
 
@@ -173,14 +317,15 @@ const ConfirmGSTBill = () => {
 
                       <div className="d-flex align-items-center gap-2">
                         <label className="form-label mb-0 text-nowrap small fw-bold">Series No :</label>
-                        <select className="form-select form-select-sm" style={{ width: '100px', height: '28px' }}>
-                          <option>Select</option>
+                        <select className="form-select form-select-sm" style={{ width: '100px', height: '28px' }} value={selectedSeries} onChange={(e) => setSelectedSeries(e.target.value)}>
+                          <option value="Select">Select</option>
+                          <option value="JW">JW</option>
                         </select>
                       </div>
 
                       <div className="d-flex align-items-center gap-2">
                         <label className="form-label mb-0 text-nowrap small fw-bold">Bill (P) No:</label>
-                        <input type="text" className="form-control form-control-sm" style={{ width: '80px', height: '28px' }} />
+                        <input type="text" className="form-control form-control-sm" style={{ width: '100px', height: '28px' }} value={billPNo} readOnly />
                       </div>
 
                       <button title="Refresh" className="btn btn-secondary btn-sm" style={{ width: '32px', height: '32px', padding: 0 }}>
@@ -188,7 +333,7 @@ const ConfirmGSTBill = () => {
                       </button>
 
                       <div className="ms-2">
-                        <span className="text-black fw-bold" style={{ fontSize: '13px' }}>Supplier : Ayush Enterprises</span>
+                        <span className="text-black fw-bold" style={{ fontSize: '13px' }}>Supplier : {footerData.supplier || "Select Supplier"}</span>
                       </div>
 
                       <div className="info-badge ms-2">
@@ -198,7 +343,7 @@ const ConfirmGSTBill = () => {
                       <div className="ms-auto">
                         <button
                           className="btn btn-secondary btn-sm px-3"
-                          onClick={() => navigate("/jobwork-bill")}
+                          onClick={() => navigate("/accounts/bill-passing/jobwork-bill", { state: { selectedGrns: location.state?.selectedInvoices || [] } })}
                         >
                           Pending Labour Bill List
                         </button>
@@ -556,7 +701,7 @@ const ConfirmGSTBill = () => {
                           <textarea className="form-control form-control-sm" rows="3" placeholder="Enter remarks here..."></textarea>
                         </div>
                         <div className="d-flex justify-content-end">
-                          <button className="btn btn-secondary px-5 py-2">
+                          <button className="btn btn-secondary px-5 py-2" onClick={handleSave}>
                             Confirm To Save
                           </button>
                         </div>

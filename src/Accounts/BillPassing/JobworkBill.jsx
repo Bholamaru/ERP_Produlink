@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min";
 import NavBar from "../../NavBar/NavBar.js";
@@ -10,16 +10,39 @@ import { FaEye, FaCheck, FaPlus, FaTrash, FaFileExcel, FaSearch, FaTimes, FaExcl
 
 const JobworkBill = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [sideNavOpen, setSideNavOpen] = useState(false);
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const [vendorName, setVendorName] = useState("");
   const [supplierList, setSupplierList] = useState([]);
   const [reportData, setReportData] = useState([]);
+  const [selectedGrns, setSelectedGrns] = useState(location.state?.selectedGrns || []);
   const [loading, setLoading] = useState(false);
 
   const toggleSideNav = () => {
     setSideNavOpen((prevState) => !prevState);
+  };
+
+  const formatDateToISO = (dateStr) => {
+    if (!dateStr) return "";
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
+    const parts = dateStr.split(/[/-]/);
+    if (parts.length === 3) {
+      if (parts[0].length === 4) return `${parts[0]}-${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}`;
+      return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+    }
+    return dateStr;
+  };
+
+  const handleAddGrn = (grn) => {
+    if (!selectedGrns.some(item => item.id === grn.id)) {
+      setSelectedGrns([...selectedGrns, grn]);
+    }
+  };
+
+  const handleRemoveGrn = (id) => {
+    setSelectedGrns(selectedGrns.filter(item => item.id !== id));
   };
 
   useEffect(() => {
@@ -92,7 +115,7 @@ const JobworkBill = () => {
             grnDate: item.InwardDate || item.challan_date || item.Date || item.PoDate || "",
             type: item.Series || item.bill_type || "Our_F4",
             vendChNo: item.ChallanNo || item.challan_no || item.Invoice_No || item.invoice_no || "",
-            chDate: item.ChallanDate || item.challan_date || item.Date || "",
+            chDate: formatDateToISO(item.ChallanDate || item.challan_no_date || item.challan_date || item.Date || ""),
             code: item.CodeNo || item.SupplierCode || item.supplier_code || item.Code || item.Supp_Code || "",
             vendor: item.SupplierName || item.supplier_name || item.Supplier || item.vendor_name || "",
             f4Out: item.OutwardChallan || item.OutwardChallanNo || item.f4_out_no || item.Outward_no || "",
@@ -102,6 +125,34 @@ const JobworkBill = () => {
               const cleanDesc = desc.split('| Qty:')[0].trim();
               return `Qty: ${qty} | ${cleanDesc}`;
             })(),
+            qty: detail.InQtyNOS || detail.InQtyKg || item.TotalQtyNo || 0,
+            itemNo: (() => {
+              const base = detail.ItemNo || detail.item_no || detail.PartNo || "";
+              if (base) return base;
+              const desc = detail.ItemDescription || detail.description || detail.ItemName || "";
+              // Match "Part: CODE - NO" or just "gr1..." / "FG..." at start
+              const partMatch = desc.match(/Part:\s*[^-\|]+-\s*([^-\|]+)/i);
+              if (partMatch) return partMatch[1].trim();
+              return "1";
+            })(),
+            itemCode: (() => {
+              const base = detail.ItemCode || detail.item_code || detail.Code || "";
+              if (base) return base;
+              const desc = detail.ItemDescription || detail.description || detail.ItemName || "";
+              const partMatch = desc.match(/Part:\s*([^-\|]+)/i);
+              if (partMatch) return partMatch[1].trim();
+              // Try to extract first word if it looks like a code
+              const wordMatch = desc.match(/^([A-Z0-9]+)/i);
+              return wordMatch ? wordMatch[1].trim() : "";
+            })(),
+            itemDesc: detail.ItemDescription || detail.description || detail.ItemName || "",
+            hsnCode: detail.HSNCode || detail.hsn_code || "998898",
+            rate: detail.Rate || detail.rate || 0,
+            poNo: item.PoNo || detail.PoNo || item.PO_No || item.Po_No || "",
+            poDate: item.PoDate || detail.PoDate || "",
+            cgst: detail.CGST_P || detail.cgst || 0,
+            sgst: detail.SGST_P || detail.sgst || 0,
+            igst: detail.IGST_P || detail.igst || 0,
             user: item.PreparedBy || item.created_by_username || item.User || "Admin"
           }));
         });
@@ -273,7 +324,7 @@ const JobworkBill = () => {
                             </td>
                             <td><FaEye className="text-primary cursor-pointer" /></td>
                             <td>
-                              <button className="btn btn-sm">
+                              <button className="btn btn-sm" onClick={() => handleAddGrn(data)}>
                                 <FaPlus />
                               </button>
                             </td>
@@ -307,25 +358,27 @@ const JobworkBill = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        <tr>
-                          <td>1</td>
-                          <td></td>
-                          <td></td>
-                          <td></td>
-                          <td></td>
-                          <td></td>
-                          <td></td>
-                          <td></td>
-                          <td></td>
-                          <td></td>
-                          <td></td>
-                          <td><input type="checkbox" disabled /></td>
-                          <td>
-                            <button className="btn btn-sm">
-                              <FaTrash />
-                            </button>
-                          </td>
-                        </tr>
+                        {selectedGrns.map((data, index) => (
+                          <tr key={data.id}>
+                            <td>{index + 1}</td>
+                            <td>{data.grnNo}</td>
+                            <td>{data.grnDate}</td>
+                            <td>{data.type}</td>
+                            <td>{data.vendChNo}</td>
+                            <td>{data.chDate}</td>
+                            <td>{data.code}</td>
+                            <td>{data.vendor}</td>
+                            <td>{data.f4Out}</td>
+                            <td className="text-start small">{data.qtyDesc}</td>
+                            <td>{data.user}</td>
+                            <td><input type="checkbox" checked readOnly /></td>
+                            <td>
+                              <button className="btn btn-sm text-danger" onClick={() => handleRemoveGrn(data.id)}>
+                                <FaTrash />
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
                       </tbody>
                     </table>
                   </div>
@@ -334,7 +387,13 @@ const JobworkBill = () => {
                   <div className="footer-actions mt-3 text-end">
                     <button 
                       className="btn btn-success d-inline-flex align-items-center gap-2"
-                      onClick={() => navigate("/accounts/bill-passing/confirm-gst-bill")}
+                      onClick={() => {
+                        if (selectedGrns.length === 0) {
+                          alert("Please select at least one GRN.");
+                          return;
+                        }
+                        navigate("/accounts/bill-passing/confirm-gst-bill", { state: { selectedInvoices: selectedGrns } });
+                      }}
                     >
                       <FaCheck /> Confirm To GST Bill
                     </button>
