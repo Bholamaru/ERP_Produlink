@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min";
 import NavBar from "../../NavBar/NavBar.js";
@@ -7,6 +8,7 @@ import "./JobworkBill.css";
 import { FaEye, FaCheck, FaPlus, FaTrash, FaFileExcel, FaSearch, FaTimes, FaExclamationTriangle } from "react-icons/fa";
 
 const JobworkBill = () => {
+  const navigate = useNavigate();
   const [sideNavOpen, setSideNavOpen] = useState(false);
 
   const toggleSideNav = () => {
@@ -227,7 +229,10 @@ const JobworkBill = () => {
 
                   {/* Footer Actions */}
                   <div className="footer-actions mt-3 text-end">
-                    <button className="btn btn-success d-inline-flex align-items-center gap-2">
+                    <button 
+                      className="btn btn-success d-inline-flex align-items-center gap-2"
+                      onClick={() => navigate("/accounts/bill-passing/confirm-gst-bill")}
+                    >
                       <FaCheck /> Confirm To GST Bill
                     </button>
                   </div>
