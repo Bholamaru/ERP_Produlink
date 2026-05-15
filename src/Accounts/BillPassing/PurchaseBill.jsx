@@ -40,7 +40,7 @@ const PurchaseBill = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem("accessToken");
-      const response = await axios.get(`https://erp-render.onrender.com/Account/purchase-po-date-filter/`, {
+      const response = await axios.get(`http://127.0.0.1:8000/Account/purchase-po-date-filter/`, {
         params: {
           from_date: fromDate,
           to_date: toDate,
