@@ -212,7 +212,7 @@ const JobWorkitemdetail = ({
   // RM items search API call
   const fetchRmItemsSearch = async (searchQuery) => {
     try {
-      const url = `http://127.0.0.1:8000/Purchase/jobwork/RM/items/?q=${encodeURIComponent(
+      const url = `https://erp-render.onrender.com/Purchase/jobwork/RM/items/?q=${encodeURIComponent(
         searchQuery
       )}`;
       const res = await axios.get(url);

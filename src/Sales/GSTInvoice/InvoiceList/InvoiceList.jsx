@@ -53,7 +53,7 @@ const InvoiceList = () => {
   const fetchInvoices = async () => {
     try {
       setLoading(true);
-      const response = await fetch("http://127.0.0.1:8000/Sales/invoice/");
+      const response = await fetch("https://erp-render.onrender.com/Sales/invoice/");
       if (!response.ok) {
         throw new Error(`API error: ${response.status}`);
       }
@@ -473,7 +473,7 @@ const InvoiceList = () => {
                                 <td>{inv.user || inv.created_by || "sandeep"}</td>
                                 <td>
                                   <a 
-                                    href={`http://127.0.0.1:8000/Sales/invoice-pdf/${inv.id}/`} 
+                                    href={`https://erp-render.onrender.com/Sales/invoice-pdf/${inv.id}/`} 
                                     target="_blank" 
                                     rel="noopener noreferrer" 
                                     style={{ cursor: "pointer", color: "#0d6efd", textDecoration: "underline" }}

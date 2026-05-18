@@ -30,7 +30,7 @@ const PendingIndent = () => {
   const fetchPendingAuthIndents = async () => {
     try {
       const res = await fetch(
-        "http://127.0.0.1:8000/Purchase/pending-indents/"
+        "https://erp-render.onrender.com/Purchase/pending-indents/"
       );
       const { data } = await res.json();
       setIndentList(data);
@@ -43,7 +43,7 @@ const PendingIndent = () => {
   const handleTakeAction = async (id, action) => {
     try {
       await fetch(
-        "http://127.0.0.1:8000/Purchase/indent-auth-update/",
+        "https://erp-render.onrender.com/Purchase/indent-auth-update/",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

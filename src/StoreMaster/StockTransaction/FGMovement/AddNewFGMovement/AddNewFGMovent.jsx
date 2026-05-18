@@ -51,7 +51,7 @@ const AddNewFGMovent = () => {
 
   const fetchItems = async () => {
     const res = await fetch(
-      "http://127.0.0.1:8000/All_Masters/api/item/summary/",
+      "https://erp-render.onrender.com/All_Masters/api/item/summary/",
       {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
@@ -67,7 +67,7 @@ const AddNewFGMovent = () => {
   const fetchHeatNumbers = async (code) => {
     try {
       const res = await fetch(
-        `http://127.0.0.1:8000/Store/grn/heat-numbers/?item_code=${code}`
+        `https://erp-render.onrender.com/Store/grn/heat-numbers/?item_code=${code}`
       );
       const resData = await res.json();
       setHeatNumbers(resData.heat_numbers);

@@ -226,7 +226,7 @@ const PoList = () => {
                             <td>{order.User}</td>
                               <td>
                                       <a
-  href={`http://127.0.0.1:8000/${order.View}`}
+  href={`https://erp-render.onrender.com/${order.View}`}
   target="_blank"
   rel="noopener noreferrer"
   className="btn btn-sm btn-primary"

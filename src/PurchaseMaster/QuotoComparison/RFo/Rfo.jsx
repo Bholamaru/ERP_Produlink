@@ -39,7 +39,7 @@ const Rfo = () => {
   const fetchRfqData = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://127.0.0.1:8000/Purchase/RFQ/');
+      const response = await fetch('https://erp-render.onrender.com/Purchase/RFQ/');
       if (!response.ok) {
         throw new Error('Failed to fetch RFQ data');
       }

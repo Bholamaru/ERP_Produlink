@@ -112,7 +112,7 @@ const CustPOAmend = () => {
     console.log("Submitting Payload:", payload);
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/Sales/customer-po-amendment/", {
+      const response = await fetch("https://erp-render.onrender.com/Sales/customer-po-amendment/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -139,7 +139,7 @@ const CustPOAmend = () => {
 
   const fetchAmdNo = async () => {
     try {
-      const response = await fetch("http://127.0.0.1:8000/Sales/customer-po-amd-no/");
+      const response = await fetch("https://erp-render.onrender.com/Sales/customer-po-amd-no/");
       if (response.ok) {
         const data = await response.json();
         setAmdNo(data.amd_no);
@@ -151,7 +151,7 @@ const CustPOAmend = () => {
 
   const fetchCustomers = async () => {
     try {
-      const response = await fetch("http://127.0.0.1:8000/Sales/items/customers-list/");
+      const response = await fetch("https://erp-render.onrender.com/Sales/items/customers-list/");
       if (response.ok) {
         const data = await response.json();
         setCustomerList(data.data || []);
@@ -163,7 +163,7 @@ const CustPOAmend = () => {
 
   const fetchPOList = async () => {
     try {
-      const response = await fetch("http://127.0.0.1:8000/Sales/newsalesorder/");
+      const response = await fetch("https://erp-render.onrender.com/Sales/newsalesorder/");
       if (response.ok) {
         const data = await response.json();
         setPoList(data || []);

@@ -4,7 +4,7 @@ import axios from "axios";
 
 
 // Define base URLs
-const BASE_URL = "http://127.0.0.1:8000/All_Masters/";
+const BASE_URL = "https://erp-render.onrender.com/All_Masters/";
 // const BASE_URL = "api/All_Masters/";
 const TAX_CODE_URL = `${BASE_URL}Tax_Code/`;
 const GST_MASTER_URL = `${BASE_URL}GST_Master/`;
@@ -15,7 +15,7 @@ const UPLOAD_URL = `${BASE_URL}upload/`;
 // Home
 
 
-const BASE_URL1 = "http://127.0.0.1:8000/";
+const BASE_URL1 = "https://erp-render.onrender.com/";
 // const BASE_URL1 = "api";
 
 
@@ -3106,7 +3106,7 @@ export const fetchPartCodeDropdownData = async (itemId) => {
 
 export const deleteSupplier = async (id) => {
   try {
-    const response = await fetch(`http://127.0.0.1:8000/All_Masters/supplier/delete/${id}`, {
+    const response = await fetch(`https://erp-render.onrender.com/All_Masters/supplier/delete/${id}`, {
       method: "DELETE",
     });
 
@@ -3121,7 +3121,7 @@ export const deleteSupplier = async (id) => {
 
 export const deleteItemMaster = async (id) => {
   try {
-    const response = await fetch(`http://127.0.0.1:8000/All_Masters/item/delete/${id}`, {
+    const response = await fetch(`https://erp-render.onrender.com/All_Masters/item/delete/${id}`, {
       method: "DELETE",
     });
 
@@ -3134,7 +3134,7 @@ export const deleteItemMaster = async (id) => {
 
 // Subcon Jobwork Inward QC - V3
 export const forceSaveSubconQC = async (data) => {
-  const url = `http://127.0.0.1:8000/Quality/subcon-jobwork-qc/`;
+  const url = `https://erp-render.onrender.com/Quality/subcon-jobwork-qc/`;
   console.log("!!! FORCING API CALL TO:", url);
   try {
     const token = localStorage.getItem("accessToken");
@@ -3177,7 +3177,7 @@ export const forceSaveSubconQC = async (data) => {
 
 // Inward Test QC Number
 export const fetchInwardTestQcNumber = async () => {
-  const url = `http://127.0.0.1:8000/Quality/inwardtest-qc-number/`;
+  const url = `https://erp-render.onrender.com/Quality/inwardtest-qc-number/`;
   try {
     const response = await fetch(url);
     if (!response.ok) {
@@ -3191,7 +3191,7 @@ export const fetchInwardTestQcNumber = async () => {
 };
 // Save QC Info
 export const saveQCInfo = async (data) => {
-  const url = `http://127.0.0.1:8000/Quality/api/qcinfo/`;
+  const url = `https://erp-render.onrender.com/Quality/api/qcinfo/`;
   try {
     const token = localStorage.getItem("accessToken");
     const headers = {

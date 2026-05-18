@@ -229,7 +229,7 @@ const JobworkBill = () => {
 
                   {/* Footer Actions */}
                   <div className="footer-actions mt-3 text-end">
-                    <button 
+                    <button
                       className="btn btn-success d-inline-flex align-items-center gap-2"
                       onClick={() => navigate("/accounts/bill-passing/confirm-gst-bill")}
                     >

@@ -222,6 +222,17 @@ const BillMaterial = () => {
   const [editId2, setEditId2] = useState(null)
   const [bomList, setBomList] = useState([])
 
+  // Tool Management Modal states
+  const [cardToolModal, setCardToolModal] = useState(false)
+  const [toolFormData, setToolFormData] = useState({
+    toolItem: "",
+    toolDieLife: "",
+    resharpeningLife: "",
+    totalLife: "",
+  })
+  const [toolsList, setToolsList] = useState([])
+  const [activeBOMItem, setActiveBOMItem] = useState(null)
+
   // Part Code dropdown state
   const [partCodeDropdownData, setPartCodeDropdownData] = useState([])
   const [bomOptions, setBomOptions] = useState([])
@@ -393,6 +404,59 @@ const BillMaterial = () => {
       setTableData([])
       setAllTableData([])
     }
+  }
+
+  // Tool Management Modal Handlers
+  const handleOpenToolModal = (item) => {
+    setActiveBOMItem(item)
+    setCardToolModal(true)
+    setToolsList(item.tools || [])
+    setToolFormData({
+      toolItem: "",
+      toolDieLife: "",
+      resharpeningLife: "",
+      totalLife: "",
+    })
+  }
+
+  const handleSaveTool = () => {
+    if (!toolFormData.toolItem) {
+      toast.error("Please select a Tool/Item.")
+      return
+    }
+    const newTool = {
+      ...toolFormData,
+      id: Date.now()
+    }
+    const updatedTools = [...toolsList, newTool]
+    setToolsList(updatedTools)
+    if (activeBOMItem) {
+      activeBOMItem.tools = updatedTools
+    }
+    toast.success("Tool added successfully!")
+    setToolFormData({
+      toolItem: "",
+      toolDieLife: "",
+      resharpeningLife: "",
+      totalLife: "",
+    })
+  }
+
+  const handleDeleteTool = (toolId) => {
+    const updatedTools = toolsList.filter(t => t.id !== toolId)
+    setToolsList(updatedTools)
+    if (activeBOMItem) {
+      activeBOMItem.tools = updatedTools
+    }
+    toast.success("Tool deleted successfully!")
+  }
+
+  const handleToolInputChange = (e) => {
+    const { name, value } = e.target
+    setToolFormData(prev => ({
+      ...prev,
+      [name]: value
+    }))
   }
 
   const handleSearch = (e) => {
@@ -930,65 +994,38 @@ const BillMaterial = () => {
                         </div>
                       )} */}
 
-                      <div className="row align-items-center flex-nowrap overflow-auto mt-3 text-start pb-2">
-                        <div className="col-auto">
-                          <label style={{ whiteSpace: "nowrap" }}>Select Item:</label>
-                        </div>
-
-                        <div className="col position-relative" style={{ minWidth: "200px" }} ref={dropdownRef}>
-                          <input
-                            type="text"
-                            className="form-control"
-                            placeholder="Search by part number"
-                            value={searchTerm}
-                            onChange={handleSearchChange}
-                            onKeyPress={(e) => {
-                              if (e.key === "Enter") {
-                                handleSearch()
-                              }
-                            }}
-                          />
-                          {showDropdown && searchResults.length > 0 && (
-                            <div
-                              className="position-absolute w-100 bg-white border rounded shadow-sm z-10"
-                              style={{ maxHeight: "200px", overflowY: "auto" }}
-                            >
-                              {searchResults.map((item) => (
-                                <div
-                                  key={item.id}
-                                  className="p-2 border-bottom cursor-pointer hover:bg-light"
-                                  onClick={() => handleSearchSelect(item)}
-                                >
-                                  {item.part_no} | {item.Part_Code} | {item.Name_Description}
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="col-auto" style={{ whiteSpace: "nowrap" }}>
-                          <button className="materialbtn me-2" onClick={(e) => handleSearch(e)}>
-                            Search
-                          </button>
-                          <button className="materialbtn" onClick={handleClear}>
-                            Clear
-                          </button>
-                        </div>
-
-                        <div className="col-auto">
-                          <label className="form-label mb-0" style={{ whiteSpace: "nowrap" }}>Born Authorise</label>
-                        </div>
-                        <div className="col-auto">
-                          <select className="form-select" style={{ width: "auto" }}>
-                            <option>No</option>
-                            <option>Yes</option>
+                      <div className="d-flex align-items-center justify-content-between rounded p-1 mb-2 bg-light shadow-sm" style={{ fontSize: "12px" }}>
+                        <div className="d-flex align-items-center gap-1">
+                          <select className="form-select">
+                            <option>ALL</option>
                           </select>
+                          <div className="position-relative" ref={dropdownRef} style={{ minWidth: '280px' }}>
+                            <input type="text" className="form-control" placeholder="Search by part number" value={searchTerm} onChange={handleSearchChange} onKeyPress={(e) => { if (e.key === "Enter") handleSearch(); }} />
+                            {showDropdown && searchResults.length > 0 && (
+                              <div className="position-absolute w-100 bg-white border rounded shadow-sm z-10" style={{ maxHeight: "200px", overflowY: "auto" }}>
+                                {searchResults.map((item) => (
+                                  <div key={item.id} className="p-2 border-bottom cursor-pointer hover:bg-light" onClick={() => handleSearchSelect(item)}>
+                                    {item.part_no} | {item.Part_Code} | {item.Name_Description}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                          <button className="btn d-inline-flex align-items-center gap-2" onClick={(e) => handleSearch(e)}>Search</button>
+                          <button className="btn d-inline-flex align-items-center gap-2" onClick={handleClear}>Clear</button>
+                          <div className="d-flex align-items-center ms-2">
+                            <span className="me-1" style={{ fontSize: '12px' }}>Bom Authorise:</span>
+                            <i className="fas fa-check-circle text-success fs-6 me-1"></i>
+                            <select className="form-select form-select-sm" style={{ width: '60px', padding: '2px', fontSize: '12px' }}>
+                              <option>Yes</option>
+                              <option>No</option>
+                            </select>
+                          </div>
                         </div>
-                        <div className="col-auto">
-                          <button className="materialbtn" style={{ whiteSpace: "nowrap" }}>Copy BOM</button>
-                        </div>
-                        <div className="col-auto">
-                          <p className="mb-0" style={{ color: "blue", whiteSpace: "nowrap" }}>Calculate RM Wt</p>
+                        <div className="d-flex align-items-center gap-3">
+                          <button className="btn d-inline-flex align-items-center gap-2">Copy BOM</button>
+                          <button className="btn d-inline-flex align-items-center gap-2">Calculate RM Wt</button>
+                          <button className="btn d-inline-flex align-items-center gap-2"><i className="fas fa-file-excel text-success"></i> Export Excel</button>
                         </div>
                       </div>
 
@@ -1002,361 +1039,226 @@ const BillMaterial = () => {
 
                       <div className="row mt-3">
                         <div className="col text-start">
-                          <div className="tabs">
-                            <ul className="nav nav-tabs">
+                          <div className="tabs w-100 text-start">
+                            <ul className="nav nav-tabs border-bottom-0" style={{ gap: '2px' }}>
                               <li className="nav-item">
                                 <button
-                                  className={`nav-link ${activeTab === "BOM" ? "active" : ""}`}
-                                  onClick={() => setActiveTab("BOM")}
+                                  className={`nav-link ${activeTab === "BOM" ? "active fw-bold" : ""}`} onClick={() => setActiveTab("BOM")}
                                 >
                                   BOM
                                 </button>
                               </li>
                               <li className="nav-item">
                                 <button
-                                  className={`nav-link ${activeTab === "BOM History" ? "active" : ""}`}
-                                  onClick={() => setActiveTab("BOM History")}
+                                  className={`nav-link ${activeTab === "BOM History" ? "active fw-bold" : ""}`} onClick={() => setActiveTab("BOM History")}
                                 >
                                   BOM History
                                 </button>
                               </li>
                             </ul>
-                            <div className="tab-content" style={{ border: "none" }}>
+
+                            <div className="tab-content mt-2">
                               {activeTab === "BOM" && (
                                 <div className="tab-pane fade show active">
-                                  <div className="row">
-                                    <div className="col-md-1">
-                                      <input type="checkbox" id="manualCheckbox" />
-                                      <label htmlFor="manualCheckbox" className="ms-2">
-                                        Manual
-                                      </label>
+
+                                  {/* Manual / Standard Routing */}
+                                  <div className="d-flex align-items-center mb-1" style={{ fontSize: '11px' }}>
+                                    <div className="form-check form-check-inline me-2">
+                                      <input type="radio" className="form-check-input" name="routeType" id="manualRadio" style={{ width: '12px', height: '12px', marginTop: '2px' }} defaultChecked />
+                                      <label className="form-check-label fw-bold" htmlFor="manualRadio">Manual</label>
                                     </div>
-                                    <div className="col-md-4">
-                                      <input type="checkbox" id="routingCheckbox" />
-                                      <label htmlFor="routingCheckbox" className="ms-2">
-                                        Standard Routing
-                                      </label>
+                                    <div className="form-check form-check-inline">
+                                      <input type="radio" className="form-check-input" name="routeType" id="stdRadio" style={{ width: '12px', height: '12px', marginTop: '2px' }} />
+                                      <label className="form-check-label fw-bold" htmlFor="stdRadio">Standard Routing</label>
                                     </div>
                                   </div>
-                                  {/* BOM Form Section - First Row */}
-                                  <div className="row mb-3 text-start mt-4">
-                                    <div className="col-md-2">
-                                      <label>BOM Part Type:</label>
-                                      <div className="row mt-2">
-                                        {["RM", "COM", "BOM"].map((type) => (
-                                          <div key={type} className="col-md-4 d-flex">
-                                            <input
-                                              type="checkbox"
-                                              id={type}
-                                              name="BOMPartType"
-                                              value={type}
-                                              checked={formData1.BOMPartType.includes(type)}
-                                              onChange={() => handleBOMPartTypeChange(type)}
-                                            />
-                                            <label htmlFor={type} className="ms-2">
-                                              {type}
-                                            </label>
-                                          </div>
-                                        ))}
-                                      </div>
-                                    </div>
 
-                                    {(formData1.BOMPartType.includes("RM") ||
-                                      formData1.BOMPartType.includes("COM")) && (
-                                        <div className="col-md-2">
-                                          <label>Bom Part Code:</label>
-                                          <select
-                                            className="form-control"
-                                            name="BomPartCode"
-                                            value={formData1.BomPartCode}
-                                            onChange={handleChange}
-                                          >
-                                            <option value="">Select Bom Part Code</option>
-                                            {formData1.BOMPartType.includes("RM") &&
-                                              bomOptions.map((item) => (
-                                                <option
-                                                  key={item.id}
-                                                  value={`${item.part_no} | ${item.Part_Code} | ${item.Name_Description}`}
-                                                >
-                                                  {item.part_no} | {item.Part_Code} | {item.Name_Description}
-                                                </option>
+                                  {/* Table-like Single Row Form */}
+                                  <div className="w-100" style={{ fontSize: "11px", overflow: "hidden" }}>
+                                    <table className="table table-bordered mb-0" style={{ width: '100%', tableLayout: 'fixed' }}>
+                                      <thead>
+                                        <tr style={{ background: '#f8f9fa', color: '#666' }}>
+                                          <th style={{ padding: '2px 4px', fontWeight: 'normal', width: '5%', borderBottom: 'none' }}>OP No :</th>
+                                          <th style={{ padding: '2px 4px', fontWeight: 'normal', width: '14%', borderBottom: 'none' }}>Part Code :</th>
+                                          <th style={{ padding: '2px 4px', fontWeight: 'normal', width: '15%', borderBottom: 'none' }}>BOM Part Type :</th>
+                                          <th style={{ padding: '2px 4px', fontWeight: 'normal', width: '15%', borderBottom: 'none' }}>Bom Part Code :</th>
+                                          <th style={{ padding: '2px 4px', fontWeight: 'normal', width: '7%', borderBottom: 'none' }}>Qty : Kg</th>
+                                          <th style={{ padding: '2px 4px', fontWeight: 'normal', width: '15%', borderBottom: 'none' }}><input type="checkbox" id="scrapChkTop" style={{ verticalAlign: 'middle', marginRight: '2px' }} /> Scrap Code:</th>
+                                          <th style={{ padding: '2px 4px', fontWeight: 'normal', width: '8%', borderBottom: 'none' }}>Scrap Qty :</th>
+                                          <th style={{ padding: '2px 4px', fontWeight: 'normal', width: '3%', borderBottom: 'none' }}>QC</th>
+                                          <th style={{ padding: '2px 4px', fontWeight: 'normal', width: '5%', borderBottom: 'none' }}>Ass Prod</th>
+                                          <th style={{ padding: '2px 4px', fontWeight: 'normal', width: '13%', borderBottom: 'none' }}></th>
+                                        </tr>
+                                      </thead>
+                                      <tbody>
+                                        <tr>
+                                          <td style={{ padding: '2px 4px' }}><input type="text" className="form-control form-control-sm" name="OPNo" value={formData1.OPNo} onChange={handleChange} style={{ padding: '1px 4px', fontSize: '11px' }} /></td>
+                                          <td style={{ padding: '2px 4px' }}>
+                                            <div className="d-flex">
+                                              <select className="form-select form-select-sm" name="PartCode" value={formData1.PartCode} onChange={handleChange} style={{ padding: '1px 4px', fontSize: '11px', width: 'calc(100% - 24px)' }}>
+                                                <option value="">Select</option>
+                                                {partCodeDropdownData.map((item, index) => (<option key={index} value={item.PartCode}>{item.PartCode}</option>))}
+                                              </select>
+                                              <button className="btn btn-sm btn-light border ms-1 p-0 d-flex align-items-center justify-content-center" onClick={toggleCardPlus1} style={{ width: '20px', height: '20px' }}><i className="fas fa-plus" style={{ fontSize: '10px' }}></i></button>
+                                            </div>
+                                          </td>
+                                          <td style={{ padding: '2px 4px' }}>
+                                            <div className="d-flex align-items-center h-100">
+                                              {["RM", "COM", "BOM"].map((type) => (
+                                                <div key={type} className="form-check form-check-inline mb-0 me-2 d-flex align-items-center">
+                                                  <input className="form-check-input m-0 me-1" type="radio" name="BOMPartTypeRadio" id={type} value={type} checked={formData1.BOMPartType.includes(type)} onChange={() => handleBOMPartTypeChange(type)} style={{ width: '10px', height: '10px' }} />
+                                                  <label className="form-check-label text-muted" htmlFor={type} style={{ fontSize: '11px', paddingTop: '1px' }}>{type}</label>
+                                                </div>
                                               ))}
-                                            {formData1.BOMPartType.includes("COM") &&
-                                              bomOptions.map((item, index) => (
-                                                <option
-                                                  key={item.id || index}
-                                                  value={`${item.OPNo} | ${item.Operation} | ${item.PartCode}`}
-                                                >
-                                                  {item.OPNo} | {item.Operation} | {item.PartCode}
-                                                </option>
-                                              ))}
-                                          </select>
-                                        </div>
-                                      )}
-
-                                    <div className="col-md-1">
-                                      <label>Op No:</label>
-                                      <input
-                                        type="text"
-                                        className="form-control"
-                                        name="OPNo"
-                                        value={formData1.OPNo}
-                                        onChange={handleChange}
-                                      />
-                                    </div>
-                                    <div className="col-md-2">
-                                      <label>Part Code:</label>
-                                      <div className="row align-items-center">
-                                        <div className="col position-relative" ref={partCodeDropdownRef}>
-                                          <select
-                                            className="form-control"
-                                            name="PartCode"
-                                            value={formData1.PartCode}
-                                            onChange={handleChange}
-                                          >
-                                            <option value="">Select Part Code</option>
-                                            {partCodeDropdownData.map((item, index) => (
-                                              <option key={index} value={item.PartCode}>
-                                                {item.PartCode} | {item.Operation || "No Operation"}
-                                              </option>
-                                            ))}
-                                          </select>
-                                        </div>
-                                        <div className="col-auto">
-                                          <button className="btn btn-outline-primary" onClick={toggleCardPlus1}>
-                                            <FaPlus />
-                                          </button>
-                                        </div>
-                                      </div>
-                                    </div>
-
-                                    <div className="col-md-1">
-                                      <label>Qty : Kg</label>
-                                      <input
-                                        type="text"
-                                        className="form-control"
-                                        name="QtyKg"
-                                        value={formData1.QtyKg}
-                                        onChange={handleChange}
-                                      />
-                                    </div>
-                                    <div className="col-md-1">
-                                      <label>Scrap Code</label>
-                                      <select
-                                        className="form-control"
-                                        name="ScrapCode"
-                                        value={formData1.ScrapCode}
-                                        onChange={handleChange}
-                                      >
-                                        <option value="">Select</option>
-                                        {scrapOptions.map((item, index) => (
-                                          <option key={index} value={item.part_no}>
-                                            {item.part_no} || {item.Name_Description}
-                                          </option>
-                                        ))}
-                                      </select>
-                                    </div>
-                                    <div className="col-md-1">
-                                      <label>Scrap Qty</label>
-                                      <input
-                                        type="text"
-                                        className="form-control"
-                                        name="ScracpQty"
-                                        value={formData1.ScracpQty}
-                                        onChange={handleChange}
-                                      />
-                                    </div>
-                                    <div className="col-md-1">
-                                      <label>QC</label>
-                                      <div className="mt-2">
-                                        <input
-                                          type="checkbox"
-                                          className="form-check-input"
-                                          name="QC"
-                                          checked={!!formData1.QC}
-                                          onChange={handleChange}
-                                          style={{ width: "20px", height: "20px" }}
-                                        />
-                                      </div>
-                                    </div>
-                                    <div className="col-md-1">
-                                      <label>Ass Prod</label>
-                                      <select
-                                        className="form-control"
-                                        name="AssProd"
-                                        value={formData1.AssProd}
-                                        onChange={handleChange}
-                                      >
-                                        <option value="">Select</option>
-                                        <option value="NO">No</option>
-                                        <option value="Yes">Yes</option>
-                                      </select>
-                                    </div>
+                                            </div>
+                                          </td>
+                                          <td style={{ padding: '2px 4px' }}>
+                                            {(formData1.BOMPartType.includes("RM") || formData1.BOMPartType.includes("COM")) ? (
+                                              <select className="form-select form-select-sm" name="BomPartCode" value={formData1.BomPartCode} onChange={handleChange} style={{ padding: '1px 4px', fontSize: '11px' }}>
+                                                <option value="">Select</option>
+                                                {formData1.BOMPartType.includes("RM") && bomOptions.map((item) => (<option key={item.id} value={`${item.part_no} | ${item.Part_Code} | ${item.Name_Description}`}>{item.part_no}</option>))}
+                                                {formData1.BOMPartType.includes("COM") && bomOptions.map((item, index) => (<option key={item.id || index} value={`${item.OPNo} | ${item.Operation} | ${item.PartCode}`}>{item.OPNo}</option>))}
+                                              </select>
+                                            ) : (
+                                              <input type="text" className="form-control form-control-sm" name="BomPartCode" value={formData1.BomPartCode} onChange={handleChange} style={{ padding: '1px 4px', fontSize: '11px' }} disabled />
+                                            )}
+                                          </td>
+                                          <td style={{ padding: '2px 4px' }}><input type="text" className="form-control form-control-sm" name="QtyKg" value={formData1.QtyKg} onChange={handleChange} style={{ padding: '1px 4px', fontSize: '11px' }} /></td>
+                                          <td style={{ padding: '2px 4px' }}>
+                                            <select className="form-select form-select-sm" name="ScrapCode" value={formData1.ScrapCode} onChange={handleChange} style={{ padding: '1px 4px', fontSize: '11px' }}>
+                                              <option value=""></option>
+                                              {scrapOptions.map((item, index) => (<option key={index} value={item.part_no}>{item.part_no}</option>))}
+                                            </select>
+                                          </td>
+                                          <td style={{ padding: '2px 4px' }}><input type="text" className="form-control form-control-sm" name="ScracpQty" value={formData1.ScracpQty} onChange={handleChange} style={{ padding: '1px 4px', fontSize: '11px' }} /></td>
+                                          <td style={{ padding: '2px 4px' }} className="text-center">
+                                            <input type="checkbox" className="form-check-input" name="QC" checked={!!formData1.QC} onChange={handleChange} style={{ width: '12px', height: '12px' }} /> QC
+                                          </td>
+                                          <td style={{ padding: '2px 4px' }}>
+                                            <select className="form-select form-select-sm" name="AssProd" value={formData1.AssProd} onChange={handleChange} style={{ padding: '1px 4px', fontSize: '11px' }}>
+                                              <option value="NO">N</option>
+                                              <option value="Yes">Y</option>
+                                            </select>
+                                          </td>
+                                          <td style={{ padding: '2px 4px' }} className="text-center align-middle">
+                                            <button className="btn btn-sm btn-primary" onClick={handleSave1} disabled={isLoading || !selectedItem} style={{ width: '80px' }}>{editingId ? "UPDATE" : "SAVE"}</button>
+                                          </td>
+                                        </tr>
+                                      </tbody>
+                                    </table>
                                   </div>
 
-                                  {/* BOM Form Section - Second Row (Additional Fields) */}
-                                  <div className="row mb-3 text-start">
-                                    {/* Operation Input Field */}
-                                    <div className="col-md-2">
-                                      <label htmlFor="Operation">Operation</label>
-                                      <input
-                                        type="text"
-                                        className="form-control"
-                                        id="Operation"
-                                        name="Operation"
-                                        value={formData1.Operation}
-                                        onChange={handleInputChange1}
-                                        placeholder="Operation"
-                                      />
-                                    </div>
-
-                                    <div className="col-md-1">
-                                      <label>Prod Qty:</label>
-                                      <input
-                                        type="text"
-                                        className="form-control"
-                                        name="ProdQty"
-                                        value={formData1.ProdQty}
-                                        onChange={handleChange}
-                                      />
-                                    </div>
-                                    <div className="col-md-1">
-                                      <label>WIP Wt:</label>
-                                      <input
-                                        type="text"
-                                        className="form-control"
-                                        name="WipWt"
-                                        value={formData1.WipWt}
-                                        onChange={handleChange}
-                                      />
-                                    </div>
-                                    <div className="col-md-1">
-                                      <label>WIP Rate:</label>
-                                      <input
-                                        type="text"
-                                        className="form-control"
-                                        name="WipRate"
-                                        value={formData1.WipRate}
-                                        onChange={handleChange}
-                                      />
-                                    </div>
-                                    <div className="col-md-1">
-                                      <label>Piece Rate:</label>
-                                      <input
-                                        type="text"
-                                        className="form-control"
-                                        name="PieceRate"
-                                        value={formData1.PieceRate}
-                                        onChange={handleChange}
-                                      />
-                                    </div>
-                                    <div className="col-md-1">
-                                      <label>OP Rate:</label>
-                                      <input
-                                        type="text"
-                                        className="form-control"
-                                        name="OPRate"
-                                        value={formData1.OPRate}
-                                        onChange={handleChange}
-                                      />
-                                    </div>
-                                    <div className="col-md-1 d-flex align-items-end mb-1">
-                                      <button
-                                        className="btn btn-success me-2"
-                                        onClick={handleSave1}
-                                        disabled={isLoading || !selectedItem}
-                                      >
-                                        {editingId ? "Update" : "Save"}
-                                      </button>
-                                    </div>
+                                  {/* Context Header for Selected Item below form */}
+                                  <div className="w-100 border p-1 mt-1 mb-2 bg-white" style={{ fontSize: '11px', fontWeight: 'bold' }}>
+                                    {selectedItem ? (
+                                      <>{selectedItem.part_no} | {selectedItem.Part_Code || "520MC00712"} | {selectedItem.Name_Description || "PINION (N)"} | 0 | 0</>
+                                    ) : (
+                                      <>FG1001 | 520MC00712 | PINION (N) 0 | 0</>
+                                    )}
                                   </div>
 
+                                  {/* Hidden inputs needed for save logic */}
+                                  <div className="d-none">
+                                    <input type="text" name="Operation" value={formData1.Operation} onChange={handleInputChange1} />
+                                    <input type="text" name="ProdQty" value={formData1.ProdQty} onChange={handleChange} />
+                                    <input type="text" name="WipWt" value={formData1.WipWt} onChange={handleChange} />
+                                    <input type="text" name="WipRate" value={formData1.WipRate} onChange={handleChange} />
+                                    <input type="text" name="PieceRate" value={formData1.PieceRate} onChange={handleChange} />
+                                    <input type="text" name="OPRate" value={formData1.OPRate} onChange={handleChange} />
+                                  </div>
+
+                                  {/* {selectedItem && (
+                                    <div className="fw-bold mb-2 pb-1 border-bottom" style={{fontSize: '12px'}}>
+                                      {selectedItem.part_no} | {selectedItem.Part_Code || "-"} | {selectedItem.Name_Description || "-"} | 0 | 0
+                                    </div>
+                                  )}
+                                  
                                   {/* BOM Table */}
-                                  <div className="table-responsive">
-                                    <table className="table table-bordered mt-3">
+                                  <div className="table-responsive edit-table-wrapper mt-3">
+                                    <table className="table table-bordered table-hover user-list-table text-center align-middle mb-0">
                                       <thead>
                                         <tr>
-                                          <th>Sr.</th>
-                                          <th>OP No</th>
+                                          <th>Op No</th>
                                           <th>Part Code</th>
-                                          <th>BOM Part Type</th>
-                                          <th>BOM Part Code</th>
+                                          <th>Part Type</th>
+                                          <th>Bom Part Code</th>
                                           <th>Qty</th>
-                                          <th>Scrap Code</th>
+                                          <th>Bom Part Desc</th>
+                                          <th>Scrap Item</th>
                                           <th>Scrap Qty</th>
+                                          <th>OP Name</th>
                                           <th>QC</th>
                                           <th>Prod Qty</th>
-                                          <th>Ass Prod</th>
-                                          <th>WIP Wt</th>
-                                          <th>WIP Rate</th>
+                                          <th>WIP wt</th>
+                                          <th>WIP rate</th>
                                           <th>Piece Rate</th>
-                                          <th>OP Rate</th>
-                                          <th>Operation</th>
-                                          {/* <th>BOM Part Desc</th> */}
+                                          <th>Op Rate</th>
+                                          <th>Active</th>
                                           <th>Edit</th>
+                                          <th>Doc</th>
                                           <th>Del</th>
+                                          <th>BOM</th>
+                                          <th>Tool</th>
+                                          <th>#</th>
+                                          <th>Modify Date</th>
                                         </tr>
                                       </thead>
                                       <tbody>
                                         {tableData.length > 0 ? (
                                           tableData.map((item, index) => (
-                                            <tr key={item.id || index}>
-                                              <td>{index + 1}</td>
-                                              <td>{item.OPNo}</td>
+                                            <tr key={item.id || index} style={{ backgroundColor: item.BOMPartType === "RM" ? "#a5fac5" : "transparent" }}>
+                                              <td>{item.OPNo || (index + 1) * 10}</td>
                                               <td>{item.PartCode}</td>
-
                                               <td>{item.BOMPartType}</td>
-                                              {/* Enhanced BOM Part Code display with better formatting */}
-                                              <td
-                                                style={{
-                                                  maxWidth: "350px",
-                                                  wordWrap: "break-word",
-                                                  whiteSpace: "normal",
-                                                  fontSize: "12px",
-                                                  lineHeight: "1.2",
-                                                }}
-                                              >
-                                                {item.BomPartCode ? (
-                                                  <span title={item.BomPartCode}>{item.BomPartCode}</span>
-                                                ) : (
-                                                  "N/A"
+                                              <td title={item.BomPartCode}>
+                                                {item.BomPartCode ? item.BomPartCode.split(' | ')[0] : 'N/A'}
+                                              </td>
+                                              <td>{Number(item.QtyKg || 0).toFixed(6)}</td>
+                                              <td title={item.BomPartCode}>
+                                                {item.BomPartCode && item.BomPartCode.includes('|') ? item.BomPartCode.split(' | ')[2] : ''}
+                                              </td>
+                                              <td>{item.ScrapCode}</td>
+                                              <td>{Number(item.ScracpQty || 0).toFixed(5)}</td>
+                                              <td>
+                                                {item.Operation && (
+                                                  <span className="badge" style={{ backgroundColor: '#d85a19', color: 'white', border: '1px solid #b34a12', fontSize: '9px', padding: '3px 4px', textTransform: 'uppercase' }}>
+                                                    {item.Operation}
+                                                  </span>
                                                 )}
                                               </td>
-
-                                              <td>{item.QtyKg}</td>
-                                              <td>{item.ScrapCode}</td>
-                                              <td>{item.ScracpQty}</td>
+                                              <td><input type="checkbox" checked={!!item.QC} readOnly className="form-check-input m-0" style={{ width: "12px", height: "12px" }} /></td>
+                                              <td>{item.ProdQty || 1}</td>
+                                              <td>{item.WipWt || '0.0066'}</td>
+                                              <td>{item.WipRate || 0}</td>
+                                              <td>{item.PieceRate || 0}</td>
+                                              <td>{item.OPRate || 0}</td>
+                                              <td>Y</td>
                                               <td>
-                                                <input
-                                                  type="checkbox"
-                                                  checked={!!item.QC}
-                                                  disabled
-                                                  className="form-check-input"
-                                                  style={{ width: "18px", height: "18px" }}
-                                                />
-                                              </td>
-                                              <td>{item.ProdQty}</td>
-                                              <td>{item.AssProd}</td>
-                                              <td>{item.WipWt}</td>
-                                              <td>{item.WipRate}</td>
-                                              <td>{item.PieceRate}</td>
-                                              <td>{item.OPRate}</td>
-                                              <td>{item.Operation}</td>
-                                              <td>
-                                                <button className="btn" onClick={() => handleEdit1(item)}>
-                                                  <FaEdit />
-                                                </button>
+                                                <button className="btn btn-sm" onClick={() => handleEdit1(item)}><FaEdit /></button>
                                               </td>
                                               <td>
-                                                <button className="btn" onClick={() => handleDelete1(item.id)}>
-                                                  <FaTrash />
-                                                </button>
+                                                <button className="btn btn-sm"><i className="fas fa-file-invoice"></i></button>
+                                              </td>
+                                              <td>
+                                                <button className="btn btn-sm" onClick={() => handleDelete1(item.id)}><FaTrash /></button>
+                                              </td>
+                                              <td>
+                                                <button className="btn btn-sm"><i className="fas fa-folder"></i></button>
+                                              </td>
+                                              <td>
+                                                <button className="btn btn-sm" onClick={() => handleOpenToolModal(item)}><i className="fas fa-wrench"></i></button>
+                                              </td>
+                                              <td>
+                                                <button className="btn btn-sm"><i className="fas fa-eye"></i></button>
+                                              </td>
+                                              <td>
+                                                {new Date().toLocaleString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                                               </td>
                                             </tr>
                                           ))
                                         ) : (
                                           <tr>
-                                            <td colSpan="19" className="text-center">
+                                            <td colSpan="23" className="text-center">
                                               {selectedItem
                                                 ? "No BOM items found for this item. You can add new ones."
                                                 : "No data available"}
@@ -1396,9 +1298,9 @@ const BillMaterial = () => {
                                         {/* Form Section */}
                                         <div className="row mb-3">
                                           <div className="col-md-3">
-                                            <label>Operation</label>
+                                            <label className="form-label mb-0 text-nowrap">Operation</label>
                                             <select
-                                              className="form-control"
+                                              className="form-control form-control-sm"
                                               value={selectedOperation}
                                               onChange={(e) => setSelectedOperation(e.target.value)}
                                             >
@@ -1412,10 +1314,10 @@ const BillMaterial = () => {
                                           </div>
 
                                           <div className="col-md-3">
-                                            <label>Part Code</label>
+                                            <label className="form-label mb-0 text-nowrap">Part Code</label>
                                             <input
                                               type="text"
-                                              className="form-control"
+                                              className="form-control form-control-sm"
                                               value={combinedPartCode}
                                               onChange={(e) => setCombinedPartCode(e.target.value)}
                                             />
@@ -1472,16 +1374,142 @@ const BillMaterial = () => {
                                       </div>
                                     </div>
                                   )}
+
+                                  {/* Tool Management Modal */}
+                                  {cardToolModal && (
+                                    <div
+                                      className="position-fixed top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center bg-dark bg-opacity-50"
+                                      style={{ zIndex: 1060 }}
+                                    >
+                                      <div
+                                        className="bg-white rounded p-4"
+                                        style={{
+                                          width: "90%",
+                                          maxWidth: "850px",
+                                          minHeight: "500px",
+                                          maxHeight: "90vh",
+                                          overflowY: "auto",
+                                          display: "flex",
+                                          flexDirection: "column"
+                                        }}
+                                      >
+                                        <div className="d-flex flex-column flex-grow-1">
+                                          {/* Modal Header */}
+                                          <div className="row align-items-center mb-3">
+                                            <div className="col-md-10 text-start">
+                                              <h6 style={{ fontWeight: "bold" }}>Add Tool</h6>
+                                            </div>
+                                            <div className="col-md-2 text-end">
+                                              <button className="btn btn-outline-secondary btn-sm" onClick={() => setCardToolModal(false)}>
+                                                <FaTimes />
+                                              </button>
+                                            </div>
+                                          </div>
+
+                                          {/* Tool Management title */}
+                                          <h6 className="text-primary text-start mb-2" style={{ fontWeight: "bold", fontSize: "14px" }}>Tool Management</h6>
+                                          <div style={{ borderTop: "1px solid #dee2e6", marginBottom: "15px" }}></div>
+
+                                          {/* Single-Row Input Form */}
+                                          <div className="d-flex align-items-end gap-2 mb-4 p-2 border rounded bg-light flex-wrap" style={{ fontSize: "11px" }}>
+                                            
+                                            {/* Tool/Item group */}
+                                            <div className="d-flex flex-column text-start">
+                                              <span className="fw-bold text-secondary mb-1">Tools/Items :</span>
+                                              <select className="form-select form-select-sm" name="toolItem" value={toolFormData.toolItem} onChange={handleToolInputChange} style={{ fontSize: "11px", padding: "2px 4px", width: "200px", height: "26px" }}>
+                                                <option value="">Select Tool</option>
+                                                <option value="CONSER1087 | | CANON 12 A TONER">CONSER1087 | | CANON 12 A TONER</option>
+                                                <option value="CONSER1088 | | HP LASERJET TONER">CONSER1088 | | HP LASERJET TONER</option>
+                                                <option value="TOOL001 | | CARBIDE DRILL BIT">TOOL001 | | CARBIDE DRILL BIT</option>
+                                              </select>
+                                            </div>
+
+                                            {/* Search button aligned with bottom inputs */}
+                                            <div>
+                                              <button className="btn d-inline-flex align-items-center gap-2 py-1 px-3 text-nowrap" style={{ fontSize: "11px", height: "26px" }}>Search</button>
+                                            </div>
+
+                                            {/* Tools/Die Life group */}
+                                            <div className="d-flex flex-column text-start ms-2">
+                                              <span className="fw-bold text-secondary mb-1">Tools/Die Life :</span>
+                                              <input type="text" className="form-control form-control-sm" name="toolDieLife" value={toolFormData.toolDieLife} onChange={handleToolInputChange} style={{ fontSize: "11px", padding: "2px 4px", width: "80px", height: "26px" }} />
+                                            </div>
+
+                                            {/* No of Resharpening group */}
+                                            <div className="d-flex flex-column text-start ms-2">
+                                              <span className="fw-bold text-secondary mb-1">No of Resharpening :</span>
+                                              <input type="text" className="form-control form-control-sm" name="resharpeningLife" value={toolFormData.resharpeningLife} onChange={handleToolInputChange} style={{ fontSize: "11px", padding: "2px 4px", width: "100px", height: "26px" }} />
+                                            </div>
+
+                                            {/* Total Life group */}
+                                            <div className="d-flex flex-column text-start ms-2">
+                                              <span className="fw-bold text-secondary mb-1">Total Life :</span>
+                                              <input type="text" className="form-control form-control-sm" name="totalLife" value={toolFormData.totalLife || (Number(toolFormData.toolDieLife || 0) * Number(toolFormData.resharpeningLife || 0)) || ""} onChange={handleToolInputChange} style={{ fontSize: "11px", padding: "2px 4px", width: "80px", height: "26px" }} />
+                                            </div>
+
+                                            {/* Save button aligned with bottom inputs */}
+                                            <div className="ms-auto">
+                                              <button className="btn btn-sm btn-primary px-3 text-nowrap" onClick={handleSaveTool} style={{ fontSize: "11px", height: "26px", fontWeight: "bold", display: "flex", alignItems: "center" }}>Save</button>
+                                            </div>
+                                          </div>
+
+                                          {/* Tools List Table */}
+                                          <div className="table-responsive border rounded mb-3" style={{ maxHeight: "250px", overflowY: "auto" }}>
+                                            {toolsList.length > 0 ? (
+                                              <table className="table table-bordered table-striped table-sm text-center align-middle mb-0" style={{ fontSize: "11px" }}>
+                                                <thead className="table-light">
+                                                  <tr>
+                                                    <th>Sr. No</th>
+                                                    <th>Tool/ Item Name</th>
+                                                    <th>Tool/Die Life</th>
+                                                    <th>No of Resharpening</th>
+                                                    <th>Total Life</th>
+                                                    <th>Action</th>
+                                                  </tr>
+                                                </thead>
+                                                <tbody>
+                                                  {toolsList.map((tool, idx) => (
+                                                    <tr key={tool.id || idx}>
+                                                      <td>{idx + 1}</td>
+                                                      <td>{tool.toolItem}</td>
+                                                      <td>{tool.toolDieLife}</td>
+                                                      <td>{tool.resharpeningLife}</td>
+                                                      <td>{tool.totalLife || (Number(tool.toolDieLife || 0) * Number(tool.resharpeningLife || 0))}</td>
+                                                      <td>
+                                                        <button className="btn btn-sm btn-outline-danger p-0 px-2" onClick={() => handleDeleteTool(tool.id)} style={{ fontSize: "10px" }}>
+                                                          <FaTrash />
+                                                        </button>
+                                                      </td>
+                                                    </tr>
+                                                  ))}
+                                                </tbody>
+                                              </table>
+                                            ) : (
+                                              <div className="p-4 text-center text-danger fw-bold" style={{ fontSize: "13px" }}>
+                                                No Data Found !!!
+                                              </div>
+                                            )}
+                                          </div>
+                                        </div>
+
+                                        {/* Modal Footer */}
+                                        <div className="d-flex justify-content-end mt-auto pt-3" style={{ borderTop: "1px solid #dee2e6" }}>
+                                          <button className="btn btn-sm btn-secondary px-4" onClick={() => setCardToolModal(false)} style={{ fontSize: "12px", fontWeight: "bold" }}>Close</button>
+                                        </div>
+
+                                      </div>
+                                    </div>
+                                  )}
                                 </div>
                               )}
                               {activeTab === "BOM History" && (
                                 <div className="tab-pane fade show active">
                                   <div className="row mb-3 text-start">
                                     <div className="col-md-2 ms-1">
-                                      <label>Select BOM Revision:</label>
+                                      <label className="form-label mb-0 text-nowrap">Select BOM Revision:</label>
                                     </div>
                                     <div className="col-md-1">
-                                      <select name="" className="form-control" style={{ marginTop: "-1px" }}>
+                                      <select name="" className="form-control form-control-sm" style={{ marginTop: "-1px" }}>
                                         <option value="">Select</option>
                                         <option value="All">All</option>
                                         <option value="Director">Director</option>

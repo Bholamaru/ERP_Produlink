@@ -829,7 +829,7 @@ const Dashboard = () => {
 
   const fetchDailySalesReport = async () => {
     try {
-      const response = await fetch("http://127.0.0.1:8000/Dashboard/monthly/daily/report/?month=4&year=2026");
+      const response = await fetch("https://erp-render.onrender.com/Dashboard/monthly/daily/report/?month=4&year=2026");
       if (!response.ok) throw new Error("Failed to fetch daily sales report");
       const data = await response.json();
 
@@ -845,7 +845,7 @@ const Dashboard = () => {
 
   const fetchTop5SalesData = async () => {
     try {
-      const response = await fetch("http://127.0.0.1:8000/Dashboard/Top/5/Customer/");
+      const response = await fetch("https://erp-render.onrender.com/Dashboard/Top/5/Customer/");
       if (!response.ok) throw new Error("Failed to fetch top 5 sales data");
       const data = await response.json();
 
@@ -865,7 +865,7 @@ const Dashboard = () => {
 
   const fetchItemWiseDispatchData = async () => {
     try {
-      const response = await fetch("http://127.0.0.1:8000/Dashboard/itemwise/data/");
+      const response = await fetch("https://erp-render.onrender.com/Dashboard/itemwise/data/");
       if (!response.ok) throw new Error("Failed to fetch itemwise dispatch data");
       const data = await response.json();
 
@@ -910,7 +910,7 @@ const Dashboard = () => {
 
   const fetchAssessableReport = async () => {
     try {
-      const response = await fetch("http://127.0.0.1:8000/Dashboard/assessable-report/?month=4&year=2026");
+      const response = await fetch("https://erp-render.onrender.com/Dashboard/assessable-report/?month=4&year=2026");
       if (!response.ok) throw new Error("Failed to fetch assessable report");
       const data = await response.json();
 

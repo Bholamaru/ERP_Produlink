@@ -78,7 +78,7 @@ const OurVendorStock = () => {
         setLoading(true);
         try {
           const resp = await axios.get(
-            "http://127.0.0.1:8000/Store/api/grn/items/",
+            "https://erp-render.onrender.com/Store/api/grn/items/",
             { params: { q: filters.itemDesc } }
           );
           if (resp.data.success && resp.data.data) {
@@ -119,7 +119,7 @@ const OurVendorStock = () => {
   const handleViewAll = async () => {
     setLoading(true);
     try {
-      const resp = await axios.get("http://127.0.0.1:8000/Store/api/grn/items/");
+      const resp = await axios.get("https://erp-render.onrender.com/Store/api/grn/items/");
       if (resp.data.success && resp.data.data) {
         setRows(resp.data.data); // Table  all  data  update 
       } else {
