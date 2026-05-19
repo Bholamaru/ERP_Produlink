@@ -54,7 +54,8 @@
 
 .gl-master .user-list-table {
   width: 100%;
-  min-width: 800px; /* Standard for Master tables */
+  min-width: 800px;
+  /* Standard for Master tables */
   margin-top: 0;
 }
 

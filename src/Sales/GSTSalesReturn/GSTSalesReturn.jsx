@@ -78,7 +78,7 @@ const GSTSalesReturn = () => {
     try {
       setLoadingReturnNo(true);
       setErrorReturnNo(null);
-      const response = await fetch("http://127.0.0.1:8000/Sales/sales/return-no/");
+      const response = await fetch("https://erp-render.onrender.com/Sales/sales/return-no/");
       if (!response.ok) {
         throw new Error(`API error: ${response.status}`);
       }
@@ -125,7 +125,7 @@ const GSTSalesReturn = () => {
     const fetchGateEntryData = async () => {
       try {
         setLoadingGateEntry(true);
-        const response = await fetch("http://127.0.0.1:8000/Sales/salesreturn/gate-entry");
+        const response = await fetch("https://erp-render.onrender.com/Sales/salesreturn/gate-entry");
         if (!response.ok) {
           throw new Error(`API error: ${response.status}`);
         }
@@ -169,7 +169,7 @@ const GSTSalesReturn = () => {
     const fetchInvoiceData = async () => {
       try {
         setLoadingInvoices(true);
-        const response = await fetch("http://127.0.0.1:8000/Sales/invoice/");
+        const response = await fetch("https://erp-render.onrender.com/Sales/invoice/");
         if (!response.ok) {
           throw new Error(`API error: ${response.status}`);
         }
@@ -348,7 +348,7 @@ const GSTSalesReturn = () => {
 
       console.log("Sending payload:", payload);
 
-      const response = await fetch("http://127.0.0.1:8000/Sales/Gstsalesretun/", {
+      const response = await fetch("https://erp-render.onrender.com/Sales/Gstsalesretun/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"

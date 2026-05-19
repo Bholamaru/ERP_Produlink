@@ -75,7 +75,7 @@ const InwardChallan1 = () => {
 
   const fetchGateEntries = async () => {
     try {
-      const res = await fetch("http://127.0.0.1:8000/Store/general-details/");
+      const res = await fetch("https://erp-render.onrender.com/Store/general-details/");
       const resData = await res.json();
       console.log(resData);
       setGateEntries(resData);
@@ -138,7 +138,7 @@ const InwardChallan1 = () => {
 
   const fetchInwardF4No = async () => {
     try {
-      const res = await fetch("http://127.0.0.1:8000/Store/inward-no");
+      const res = await fetch("https://erp-render.onrender.com/Store/inward-no");
       if (!res.ok) {
         throw new Error("Failed to fetch Inward F4 No from API");
       }
@@ -203,7 +203,7 @@ const InwardChallan1 = () => {
     try {
       // Use the new API with the itemName as a query parameter
       const res = await fetch(
-        `http://127.0.0.1:8000/Store/get-bom-jobwork/?q=${encodeURIComponent(
+        `https://erp-render.onrender.com/Store/get-bom-jobwork/?q=${encodeURIComponent(
           itemName
         )}`
       );
@@ -439,13 +439,13 @@ const InwardChallan1 = () => {
 
     try {
       const res = await fetch(
-        "http://127.0.0.1:8000/Sales/supplierview/?supplier=" + supplier
+        "https://erp-render.onrender.com/Sales/supplierview/?supplier=" + supplier
       );
       const resData = await res.json();
       setChallanNumbers(resData.challans || []);
 
       const res2 = await fetch(
-        "http://127.0.0.1:8000/Store/newjobworkpodetails/?supplier=" + supplier
+        "https://erp-render.onrender.com/Store/newjobworkpodetails/?supplier=" + supplier
       );
       const resData2 = await res2.json();
       setPO(resData2.purchase_orders || []);

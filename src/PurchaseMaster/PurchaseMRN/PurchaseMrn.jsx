@@ -48,7 +48,7 @@ const PurchaseMrn = () => {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch('http://127.0.0.1:8000/Store/mrns/pending_mrn');
+      const response = await fetch('https://erp-render.onrender.com/Store/mrns/pending_mrn');
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);

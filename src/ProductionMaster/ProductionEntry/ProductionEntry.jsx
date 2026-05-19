@@ -758,7 +758,7 @@ const ProductionEntry = () => {
     }
 
     try {
-      const res = await axios.get(`http://127.0.0.1:8000/Production/api/item-dropdown/?q=${value}`)
+      const res = await axios.get(`https://erp-render.onrender.com/Production/api/item-dropdown/?q=${value}`)
       setItemResults(res.data)
     } catch (error) {
       console.error("Error fetching item list", error)
@@ -792,13 +792,13 @@ const ProductionEntry = () => {
 
     try {
       const operationRes = await axios.get(
-        `http://127.0.0.1:8000/Production/api/bom-by-partcode/?part_code=${partCode}`,
+        `https://erp-render.onrender.com/Production/api/bom-by-partcode/?part_code=${partCode}`,
       )
       setOperationList(operationRes.data || [])
 
 
       // Fetch Raw Material List
-      const rmRes = await axios.get(`http://127.0.0.1:8000/All_Masters/api/rm-items/?part_code=${partCode}`)
+      const rmRes = await axios.get(`https://erp-render.onrender.com/All_Masters/api/rm-items/?part_code=${partCode}`)
       setBomOptions(rmRes.data || [])
     } catch (err) {
       console.error("Error fetching BOM operation Or RM Items", err)
@@ -891,7 +891,7 @@ const ProductionEntry = () => {
   // const [optionsHtml, setOptionsHtml] = useState("")
   // useEffect(() => {
   //   axios
-  //     .get("http://127.0.0.1:8000/Production/api/grn/heat-numbers/")
+  //     .get("https://erp-render.onrender.com/Production/api/grn/heat-numbers/")
   //     .then((res) => {
   //       console.log("API Response:", res.data)
 
@@ -954,7 +954,7 @@ const ProductionEntry = () => {
       if (currentOpNum === 10 || currentIndex === 0) {
         // First Operation - Raw Material
         console.log("✅ First Operation - Raw Material API")
-        apiUrl = `http://127.0.0.1:8000/Production/item-heatqty/?item=${itemCode}`
+        apiUrl = `https://erp-render.onrender.com/Production/item-heatqty/?item=${itemCode}`
       } else if (currentIndex > 0) {
         // Subsequent Operations - Get previous OP number
         const previousOperation = operationList[currentIndex - 1]
@@ -963,7 +963,7 @@ const ProductionEntry = () => {
         console.log("🔙 Previous OP:", previousOPNo)
 
         if (previousOPNo) {
-          apiUrl = `http://127.0.0.1:8000/Production/item/op/heatqty/?item=${itemCode}&parent_op=${previousOPNo}`
+          apiUrl = `https://erp-render.onrender.com/Production/item/op/heatqty/?item=${itemCode}&parent_op=${previousOPNo}`
           console.log("✅ Subsequent Operation API:", apiUrl)
         } else {
           console.warn(`⚠️ Previous OP nahi mila`)
@@ -1104,7 +1104,7 @@ const ProductionEntry = () => {
     }
     try {
       setWipLoading(true)
-      const res = await axios.get(`http://127.0.0.1:8000/Store/api/WIPstockreport/?q=${partNo}`)
+      const res = await axios.get(`https://erp-render.onrender.com/Store/api/WIPstockreport/?q=${partNo}`)
       setWipData(res.data.data || [])
       setShowWIPTable(true)
     } catch (err) {

@@ -28,7 +28,7 @@ const ListIndent = () => {
   // Mock fetch – replace URL with your real endpoint
   const fetchIndents = async () => {
     try {
-      const res = await fetch("http://127.0.0.1:8000/Purchase/all-indents/");
+      const res = await fetch("https://erp-render.onrender.com/Purchase/all-indents/");
       const json = await res.json();
       setIndentList(json.data);
       setFilteredList(json.data); // Initialize filtered list

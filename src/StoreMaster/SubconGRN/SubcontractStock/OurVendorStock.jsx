@@ -62,7 +62,7 @@ const OurVendorStock = () => {
           console.log("🔍 Fetching vendors for:", vendorName);
 
           const res = await fetch(
-            `http://127.0.0.1:8000/Store/api/SubcornStock/?q=${encodeURIComponent(vendorName)}`
+            `https://erp-render.onrender.com/Store/api/SubcornStock/?q=${encodeURIComponent(vendorName)}`
           );
 
           if (!res.ok) {
@@ -140,7 +140,7 @@ const OurVendorStock = () => {
       });
 
       const response = await fetch(
-        `http://127.0.0.1:8000/Store/vender-stock/?q=${encodeURIComponent(
+        `https://erp-render.onrender.com/Store/vender-stock/?q=${encodeURIComponent(
           vendorName.trim() // ✅ Trim whitespace
         )}&start=${fromDate}&end=${toDate}`
       );

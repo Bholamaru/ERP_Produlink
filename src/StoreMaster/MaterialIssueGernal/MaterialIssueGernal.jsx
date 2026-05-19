@@ -56,7 +56,7 @@ const MaterialIssueGernal = () => {
     try {
       const token = localStorage.getItem("accessToken");
       const res = await fetch(
-        "http://127.0.0.1:8000/All_Masters/api/item/summary/",
+        "https://erp-render.onrender.com/All_Masters/api/item/summary/",
         {
           headers: {
             Authorization: `Bearer ${token}`,

@@ -75,7 +75,7 @@ const GSTJobworkInvoice = () => {
 
   const fetchInvoiceNo = async () => {
     try {
-      const response = await fetch("http://127.0.0.1:8000/Sales/gstjobwork/invoice/no/");
+      const response = await fetch("https://erp-render.onrender.com/Sales/gstjobwork/invoice/no/");
       if (response.ok) {
         const data = await response.json();
         const nextNo = data.invoice_no || (Array.isArray(data) ? data[0]?.invoice_no : data);
@@ -95,7 +95,7 @@ const GSTJobworkInvoice = () => {
     }
     try {
       setPoSearchLoading(true);
-      const response = await fetch(`http://127.0.0.1:8000/Sales/customer/po/?customer=${encodeURIComponent(customerName)}`);
+      const response = await fetch(`https://erp-render.onrender.com/Sales/customer/po/?customer=${encodeURIComponent(customerName)}`);
       if (response.ok) {
         const data = await response.json();
         const rawPoArray = Array.isArray(data) ? data : (data.data || data.po || []);
@@ -134,7 +134,7 @@ const GSTJobworkInvoice = () => {
   useEffect(() => {
     const fetchMasterItems = async () => {
       try {
-        const res = await fetch("http://127.0.0.1:8000/Sales/newsalesorder/");
+        const res = await fetch("https://erp-render.onrender.com/Sales/newsalesorder/");
         if (res.ok) {
             const data = await res.json();
             const flatItems = data.flatMap((order) =>
@@ -171,7 +171,7 @@ const GSTJobworkInvoice = () => {
     // Fetch customers from API
     const fetchCustomers = async () => {
       try {
-        const res = await fetch("http://127.0.0.1:8000/Sales/items/customers-list/");
+        const res = await fetch("https://erp-render.onrender.com/Sales/items/customers-list/");
         if (res.ok) {
            const data = await res.json();
            const cusArray = Array.isArray(data) ? data : (data.data || []);
@@ -247,7 +247,7 @@ const GSTJobworkInvoice = () => {
     
     try {
       setRefLoading(true);
-      const url = `http://127.0.0.1:8000/Sales/fetch_jobwork_grn/?customer=${encodeURIComponent(formData.bill_to_cust)}&po=${encodeURIComponent(formData.PoNo)}&item=${encodeURIComponent(formData.ItemName)}`;
+      const url = `https://erp-render.onrender.com/Sales/fetch_jobwork_grn/?customer=${encodeURIComponent(formData.bill_to_cust)}&po=${encodeURIComponent(formData.PoNo)}&item=${encodeURIComponent(formData.ItemName)}`;
       const response = await fetch(url);
       
       if (response.ok) {
@@ -462,7 +462,7 @@ const GSTJobworkInvoice = () => {
         }
       };
       console.log("Submitting dataToSubmit:", dataToSubmit);
-      const response = await fetch("http://127.0.0.1:8000/Sales/gst-jobwork-invoice/", {
+      const response = await fetch("https://erp-render.onrender.com/Sales/gst-jobwork-invoice/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

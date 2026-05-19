@@ -245,7 +245,7 @@ const GrnList = () => {
                               <button className="btn">
                                 {" "}
                                 <a
-                                  href={`http://127.0.0.1:8000/${item.PDF_Link}`}
+                                  href={`https://erp-render.onrender.com/${item.PDF_Link}`}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                 >

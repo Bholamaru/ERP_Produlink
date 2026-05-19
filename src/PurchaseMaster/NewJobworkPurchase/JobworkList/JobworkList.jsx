@@ -258,7 +258,7 @@ useEffect(() => {
                               <td>{item.User || "-"}</td>
                                     <td>
                                                                     <a
-                                href={`http://127.0.0.1:8000/${item.View}`}
+                                href={`https://erp-render.onrender.com/${item.View}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="btn btn-sm btn-primary"

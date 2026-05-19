@@ -374,7 +374,7 @@ const JobworkBill = () => {
                   </div>
 
                   <div className="footer-actions mt-3 text-end">
-                    <button 
+                    <button
                       className="btn btn-success d-inline-flex align-items-center gap-2"
                       onClick={() => {
                         if (selectedGrns.length === 0) {

@@ -47,77 +47,84 @@ const GLMaster = () => {
               <SideNav sideNavOpen={sideNavOpen} toggleSideNav={toggleSideNav} />
               <main className={`main-content ${sideNavOpen ? "shifted" : ""}`}>
                 <div className="user-management">
-                  <div className="WorkOrderEntry-header mb-4">
-                    <div className="row">
-                      <div className="col-md-3">
-                        <h5 className="header-title text-start">
-                          General Ledger Master
-                        </h5>
-                      </div>
-                      <div className="col-md-9 text-end">
-                        <button className="btn d-inline-flex align-items-center gap-2">
-                          <FaFileExcel /> Export Excel
-                        </button>
-                      </div>
+                  {/* Top Bar matching BillMaterial style */}
+                  <div className="d-flex align-items-center justify-content-between rounded p-1 mb-2 bg-light shadow-sm" style={{ fontSize: "12px" }}>
+                    <div className="d-flex align-items-center">
+                      <h5 className="mb-0 fw-bold text-primary" style={{ fontSize: '14px', marginLeft: '4px' }}>
+                        General Ledger Master
+                      </h5>
+                    </div>
+                    <div className="d-flex align-items-center gap-3">
+                      <a href="#" className="text-primary text-decoration-underline fw-bold" style={{ fontSize: '12px' }}>Export Excel</a>
                     </div>
                   </div>
 
-                  <div className="header-section mb-4">
-                    <div className="row align-items-end mt-2 mb-3">
-                      <div className="col-md-3">
-                        <label className="form-label mb-1">GL Code :</label>
-                        <input type="text" className="form-control" placeholder="Enter GL Code" />
-                      </div>
-
-                      <div className="col-md-4">
-                        <label className="form-label mb-1">GL Name :</label>
-                        <input type="text" className="form-control" placeholder="Enter GL Name" />
-                      </div>
-
-                      <div className="col-md-3">
-                        <label className="form-label mb-1">GL Category :</label>
-                        <select className="form-select">
-                          <option value="General">General</option>
-                          <option value="Other">Other</option>
-                          <option value="TCS">TCS</option>
-                        </select>
-                      </div>
-
-                      <div className="col-md-2">
-                        <button className="btn w-100">Save</button>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="table-responsive">
-                    <table className="table table-bordered table-hover user-list-table">
+                  {/* Form Section mapped to table layout style */}
+                  <div className="w-100 mb-3" style={{ fontSize: '11px', border: '1px solid #d9d9d9', overflow: 'hidden' }}>
+                    <table className="table table-bordered mb-0" style={{ width: '100%', tableLayout: 'fixed' }}>
                       <thead>
+                        <tr style={{ background: '#f8f9fa', color: '#666' }}>
+                          <th style={{ padding: '2px 4px', fontWeight: 'normal', width: '25%', borderBottom: 'none' }}>GL Code :</th>
+                          <th style={{ padding: '2px 4px', fontWeight: 'normal', width: '35%', borderBottom: 'none' }}>GL Name :</th>
+                          <th style={{ padding: '2px 4px', fontWeight: 'normal', width: '25%', borderBottom: 'none' }}>GL Category :</th>
+                          <th style={{ padding: '2px 4px', fontWeight: 'normal', width: '15%', borderBottom: 'none' }}></th>
+                        </tr>
+                      </thead>
+                      <tbody>
                         <tr>
-                          <th>Sr. No.</th>
-                          <th>GL Code</th>
-                          <th>GL Description</th>
-                          <th>GL Category</th>
-                          <th>User</th>
-                          <th>Edit</th>
-                          <th>Del</th>
+                          <td style={{ padding: '2px 4px' }}>
+                            <input type="text" className="form-control form-control-sm" placeholder="Enter GL Code" style={{ padding: '1px 4px', fontSize: '11px' }} />
+                          </td>
+                          <td style={{ padding: '2px 4px' }}>
+                            <input type="text" className="form-control form-control-sm" placeholder="Enter GL Name" style={{ padding: '1px 4px', fontSize: '11px' }} />
+                          </td>
+                          <td style={{ padding: '2px 4px' }}>
+                            <select className="form-select form-select-sm" style={{ padding: '1px 4px', fontSize: '11px' }}>
+                              <option value="General">General</option>
+                              <option value="Other">Other</option>
+                              <option value="TCS">TCS</option>
+                            </select>
+                          </td>
+                          <td style={{ padding: '2px 4px' }} className="text-center align-middle">
+                            <button className="btn btn-sm btn-light border w-100" style={{ padding: '2px', fontSize: '11px', background: '#e9ecef' }}>
+                              SAVE
+                            </button>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Table Section */}
+                  <div className="table-responsive edit-table-wrapper" style={{ maxHeight: '450px', overflowY: 'auto' }}>
+                    <table className="table table-bordered table-sm text-center align-middle mb-0">
+                      <thead className="ps-table-header" style={{ background: 'linear-gradient(to bottom, #4a8bce, #2e6ca4)', color: 'white' }}>
+                        <tr>
+                          <th style={{ padding: '4px', fontSize: '11px', borderRight: '1px solid #73a6d8', verticalAlign: 'middle', whiteSpace: 'nowrap', position: 'sticky', top: 0, zIndex: 1 }}>Sr. No.</th>
+                          <th style={{ padding: '4px', fontSize: '11px', borderRight: '1px solid #73a6d8', verticalAlign: 'middle', whiteSpace: 'nowrap', position: 'sticky', top: 0, zIndex: 1 }}>GL Code</th>
+                          <th style={{ padding: '4px', fontSize: '11px', borderRight: '1px solid #73a6d8', verticalAlign: 'middle', whiteSpace: 'nowrap', position: 'sticky', top: 0, zIndex: 1 }}>GL Description</th>
+                          <th style={{ padding: '4px', fontSize: '11px', borderRight: '1px solid #73a6d8', verticalAlign: 'middle', whiteSpace: 'nowrap', position: 'sticky', top: 0, zIndex: 1 }}>GL Category</th>
+                          <th style={{ padding: '4px', fontSize: '11px', borderRight: '1px solid #73a6d8', verticalAlign: 'middle', whiteSpace: 'nowrap', position: 'sticky', top: 0, zIndex: 1 }}>User</th>
+                          <th style={{ padding: '4px', fontSize: '11px', borderRight: '1px solid #73a6d8', verticalAlign: 'middle', whiteSpace: 'nowrap', position: 'sticky', top: 0, zIndex: 1 }}>Edit</th>
+                          <th style={{ padding: '4px', fontSize: '11px', verticalAlign: 'middle', whiteSpace: 'nowrap', position: 'sticky', top: 0, zIndex: 1 }}>Del</th>
                         </tr>
                       </thead>
                       <tbody>
                         {mockData.map((data, index) => (
                           <tr key={data.id}>
-                            <td>{index + 1}</td>
-                            <td>{data.glCode}</td>
-                            <td>{data.glDesc}</td>
-                            <td>{data.glCategory}</td>
-                            <td>{data.user}</td>
-                            <td>
-                              <button className="btn btn-sm">
-                                <FaEdit />
+                            <td style={{ padding: '4px', fontSize: '11px', borderRight: '1px solid #dee2e6' }}>{index + 1}</td>
+                            <td style={{ padding: '4px', fontSize: '11px', borderRight: '1px solid #dee2e6' }}>{data.glCode}</td>
+                            <td style={{ padding: '4px', fontSize: '11px', borderRight: '1px solid #dee2e6' }}>{data.glDesc}</td>
+                            <td style={{ padding: '4px', fontSize: '11px', borderRight: '1px solid #dee2e6' }}>{data.glCategory}</td>
+                            <td style={{ padding: '4px', fontSize: '11px', borderRight: '1px solid #dee2e6' }}>{data.user}</td>
+                            <td style={{ padding: '4px', borderRight: '1px solid #dee2e6' }}>
+                              <button className="btn btn-sm btn-light border p-0 d-flex align-items-center justify-content-center bg-white" style={{ width: '20px', height: '20px', margin: '0 auto' }}>
+                                <FaEdit className="text-warning" style={{ fontSize: '11px', filter: 'drop-shadow(1px 1px 0px #000)' }} />
                               </button>
                             </td>
-                            <td>
-                              <button className="btn btn-sm">
-                                <FaTrash />
+                            <td style={{ padding: '4px', borderRight: '1px solid #dee2e6' }}>
+                              <button className="btn btn-sm btn-light border p-0 d-flex align-items-center justify-content-center bg-white" style={{ width: '20px', height: '20px', margin: '0 auto' }}>
+                                <FaTrash className="text-secondary" style={{ fontSize: '11px' }} />
                               </button>
                             </td>
                           </tr>
