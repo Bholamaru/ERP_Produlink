@@ -40,7 +40,7 @@ const GSTSalesReturnList    = () => {
   useEffect(() => {
     const fetchSalesReturns = async () => {
       try {
-        const response = await axios.get("https://erp-render.onrender.com/Sales/Gstsalesretun/");
+        const response = await axios.get("http://127.0.0.1:8000/Sales/Gstsalesretun/");
         setSalesReturns(response.data);
       } catch (error) {
         console.error("Error fetching sales returns:", error);
@@ -52,7 +52,7 @@ const GSTSalesReturnList    = () => {
   }, []);
 
   const handleViewPdf = (id) => {
-    const url = `https://erp-render.onrender.com/Sales/sales-return-pdf/${id}/`;
+    const url = `http://127.0.0.1:8000/Sales/sales-return-pdf/${id}/`;
     window.open(url, "_blank");
   };
 

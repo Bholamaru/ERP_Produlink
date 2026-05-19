@@ -270,7 +270,7 @@ const VenderList = () => {
 
                                     <td>
                                       <a
-                                        href={`https://erp-render.onrender.com/${item.View}`}
+                                        href={`http://127.0.0.1:8000/${item.View}`}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="btn btn-sm btn-primary"

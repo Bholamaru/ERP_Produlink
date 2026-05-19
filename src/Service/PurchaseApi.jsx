@@ -3,7 +3,7 @@
 import axios from 'axios';
 
 // Services/PurchaseApi.jsx
-const BASE_URL = "https://erp-render.onrender.com/Purchase/";
+const BASE_URL = "http://127.0.0.1:8000/Purchase/";
 // const BASE_URL = "api/Purchase/";
 export const addItem = async (data) => {
     try {
@@ -677,7 +677,7 @@ export const postIndent = async (data) => {
 
 export const deletePurchaseOrder = async (po_id) => {
   try {
-    const response = await fetch(`https://erp-render.onrender.com/Purchase/purchase-po/delete/${po_id}/`, {
+    const response = await fetch(`http://127.0.0.1:8000/Purchase/purchase-po/delete/${po_id}/`, {
       method: "DELETE",
     });
 
@@ -697,7 +697,7 @@ export const deletePurchaseOrder = async (po_id) => {
 
 export const deleteJobworkPO = async (po_id) => {
   try {
-    const response = await fetch(`https://erp-render.onrender.com/Purchase/jobwork/delete/${po_id}/`, {
+    const response = await fetch(`http://127.0.0.1:8000/Purchase/jobwork/delete/${po_id}/`, {
       method: "DELETE",
     });
 

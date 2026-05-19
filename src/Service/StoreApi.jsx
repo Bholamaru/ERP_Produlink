@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 
-const Base_Url = "https://erp-render.onrender.com/Store/";
+const Base_Url = "http://127.0.0.1:8000/Store/";
 
 // const Base_Url = "api/Store/"; 
   
@@ -480,7 +480,7 @@ export const getgateInward = async () => {
 export const deleteGateInward = async (id) => {
   try {
     // URL match karein apne backend url se
-    const response = await fetch(`https://erp-render.onrender.com/Store/gate/entry/delete/${id}/`, {
+    const response = await fetch(`http://127.0.0.1:8000/Store/gate/entry/delete/${id}/`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
@@ -497,7 +497,7 @@ export const deleteGateInward = async (id) => {
 // Add this function
 export const deleteGrn = async (id) => {
     try {
-        await axios.delete(`https://erp-render.onrender.com/Store/grn/delete/${id}/`);
+        await axios.delete(`http://127.0.0.1:8000/Store/grn/delete/${id}/`);
         return true;
     } catch (error) {
         console.error("Error deleting GRN:", error);

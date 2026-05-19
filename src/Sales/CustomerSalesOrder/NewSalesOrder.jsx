@@ -76,12 +76,12 @@ const NewSalesOrder = () => {
     const fetchData = async () => {
       try {
         const custRes = await fetch(
-          "https://erp-render.onrender.com/Sales/items/customers-list/"
+          "http://127.0.0.1:8000/Sales/items/customers-list/"
         );
         const custData = await custRes.json();
         setCustomers(Array.isArray(custData) ? custData : custData.data || []);
 
-        const itemRes = await fetch("https://erp-render.onrender.com/Sales/items-list/");
+        const itemRes = await fetch("http://127.0.0.1:8000/Sales/items-list/");
         const itemData = await itemRes.json();
         setItemsList(Array.isArray(itemData) ? itemData : itemData.data || []);
       } catch (error) {
@@ -98,7 +98,7 @@ const NewSalesOrder = () => {
         setSoNoLoading(true);
         setSoNoError(null);
         const response = await fetch(
-          "https://erp-render.onrender.com/Sales/generate-so-no/"
+          "http://127.0.0.1:8000/Sales/generate-so-no/"
         );
         if (response.ok) {
           const data = await response.json();
@@ -352,7 +352,7 @@ const NewSalesOrder = () => {
       console.log("Sending Payload:", JSON.stringify(payload, null, 2));
 
       const res = await fetch(
-        "https://erp-render.onrender.com/Sales/newsalesorder/",
+        "http://127.0.0.1:8000/Sales/newsalesorder/",
         {
           method: "POST",
           headers: {

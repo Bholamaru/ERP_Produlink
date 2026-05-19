@@ -23,7 +23,7 @@ const OutwardChallanList = () => {
 
   const fetchOutwardChallanList = async () => {
     try {
-      const res = await fetch("https://erp-render.onrender.com/Sales/onward-challans/");
+      const res = await fetch("http://127.0.0.1:8000/Sales/onward-challans/");
       const responseData = await res.json();
       console.log(responseData);
       setChallanList(responseData);
@@ -35,7 +35,7 @@ const OutwardChallanList = () => {
   const handleViewPdf = (challanNo) => {
     // Navigate to PDF view page - adjust the URL as needed
     window.open(
-      `https://erp-render.onrender.com/Sales/onwardchallan/pdf/${challanNo}/`,
+      `http://127.0.0.1:8000/Sales/onwardchallan/pdf/${challanNo}/`,
       "_blank"
     );
     // Alternative: Open PDF in new tab

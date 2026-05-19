@@ -78,7 +78,7 @@ const NewInvoice = () => {
   useEffect(() => {
     const fetchItems = async () => {
       try {
-        const res = await fetch("https://erp-render.onrender.com/Sales/newsalesorder/");
+        const res = await fetch("http://127.0.0.1:8000/Sales/newsalesorder/");
         const data = await res.json();
 
         const flatItems = data.flatMap((order) =>
@@ -144,7 +144,7 @@ const NewInvoice = () => {
   useEffect(() => {
     const fetchTaxData = async () => {
       try {
-        const res = await fetch("https://erp-render.onrender.com/Sales/newsalesorder/");
+        const res = await fetch("http://127.0.0.1:8000/Sales/newsalesorder/");
         const data = await res.json();
 
         if (data.length > 0 && data[0].item && data[0].item.length > 0) {
@@ -224,7 +224,7 @@ const NewInvoice = () => {
       try {
         const hsnCode = selectedItemObj.HSN_SAC_Code;
 
-        const res = await fetch("https://erp-render.onrender.com/Sales/newsalesorder/");
+        const res = await fetch("http://127.0.0.1:8000/Sales/newsalesorder/");
         const data = await res.json();
 
         let foundItem = null;
@@ -273,8 +273,8 @@ const NewInvoice = () => {
       setItemSearchLoading(true);
 
       const [stockRes, itemFieldsRes] = await Promise.all([
-        fetch(`https://erp-render.onrender.com/Sales/wip/stock/get/?q=${lookupKey}`),
-        fetch(`https://erp-render.onrender.com/All_Masters/Fetch_Item_fields/?q=${encodeURIComponent(lookupKey)}`)
+        fetch(`http://127.0.0.1:8000/Sales/wip/stock/get/?q=${lookupKey}`),
+        fetch(`http://127.0.0.1:8000/All_Masters/Fetch_Item_fields/?q=${encodeURIComponent(lookupKey)}`)
       ]);
 
       const stockData = await stockRes.json();
@@ -380,7 +380,7 @@ const NewInvoice = () => {
     if (selectedSeries === "GST Invoice") {
       try {
         const response = await fetch(
-          "https://erp-render.onrender.com/Sales/create/invoice_no"
+          "http://127.0.0.1:8000/Sales/create/invoice_no"
         );
         if (response.ok) {
           const data = await response.json();
@@ -525,7 +525,7 @@ const NewInvoice = () => {
       console.log("🔍 CLEANED PAYLOAD BEFORE SEND:");
       console.log(JSON.stringify(invoicePayload, null, 2));
 
-      const response = await fetch("https://erp-render.onrender.com/Sales/invoice/", {
+      const response = await fetch("http://127.0.0.1:8000/Sales/invoice/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(invoicePayload),
@@ -599,7 +599,7 @@ const NewInvoice = () => {
         }
 
         const response = await fetch(
-          `https://erp-render.onrender.com/Sales/items/customers-list/?q=${customerSearchTerm}`
+          `http://127.0.0.1:8000/Sales/items/customers-list/?q=${customerSearchTerm}`
         );
 
         if (response.ok) {
@@ -625,7 +625,7 @@ const NewInvoice = () => {
     try {
       setPoSearchLoading(true);
       const response = await fetch(
-        `https://erp-render.onrender.com/Sales/customer/po/?customer=${encodeURIComponent(customerName)}`
+        `http://127.0.0.1:8000/Sales/customer/po/?customer=${encodeURIComponent(customerName)}`
       );
 
       if (response.ok) {

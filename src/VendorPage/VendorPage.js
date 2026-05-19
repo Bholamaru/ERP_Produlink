@@ -107,7 +107,7 @@ const VendorPage = () => {
 
     try {
       const response = await axios.post(
-        "https://erp-render.onrender.com/vendor/register/",
+        "http://127.0.0.1:8000/vendor/register/",
         formDataToSend,
         {
           headers: {

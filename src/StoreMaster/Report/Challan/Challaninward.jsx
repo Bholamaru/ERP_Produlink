@@ -29,7 +29,7 @@ const Challaninward = () => {
 
   const fetchAllData = async ()=>{
     try{
-      const res = await fetch('https://erp-render.onrender.com/Store/InwardChallan/');
+      const res = await fetch('http://127.0.0.1:8000/Store/InwardChallan/');
       const resData = await res.json();
       setAllData(resData);
       setFilteredData(resData)
@@ -383,7 +383,7 @@ const Challaninward = () => {
                                 </td>
                                 <td>
                                   <button onClick={()=>{
-                                     window.open(`https://erp-render.onrender.com/Store/InwardChallan/pdf/${item.id}/`, '_blank');
+                                     window.open(`http://127.0.0.1:8000/Store/InwardChallan/pdf/${item.id}/`, '_blank');
                                   }} className="btn btn-sm btn-secondary">View</button>
                                 </td>
                               </tr>

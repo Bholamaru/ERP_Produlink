@@ -17,7 +17,7 @@ const InwardChallanList = () => {
   const fetchInwardChallanList = async () => {
     try {
       setLoading(true);
-      const response = await fetch('https://erp-render.onrender.com/Store/InwardChallan/');
+      const response = await fetch('http://127.0.0.1:8000/Store/InwardChallan/');
       const data = await response.json();
       console.log('Fetched data:', data);
       setInwardChallanList(data);
@@ -40,7 +40,7 @@ const InwardChallanList = () => {
 
   const handleViewPdf = (challanId) => {
     // Open PDF in new tab - adjust the URL to match your Django URL pattern
-    window.open(`https://erp-render.onrender.com/Store/InwardChallan/pdf/${challanId}/`, '_blank');
+    window.open(`http://127.0.0.1:8000/Store/InwardChallan/pdf/${challanId}/`, '_blank');
   };
 
   useEffect(() => {

@@ -306,7 +306,7 @@ const ScrapRejectionReport = () => {
                                       <FaEdit />
                                     </Link>
                                     <a
-                                      href={`https://erp-render.onrender.com/Production/scrap-line-rejection/pdf/${entry.id}/`}
+                                      href={`http://127.0.0.1:8000/Production/scrap-line-rejection/pdf/${entry.id}/`}
                                       target="_blank"
                                       rel="noopener noreferrer"
                                       className="btn btn-sm btn-primary"

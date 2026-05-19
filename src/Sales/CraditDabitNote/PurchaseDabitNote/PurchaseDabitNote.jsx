@@ -137,7 +137,7 @@ const PurchaseDabitNote = () => {
       console.log("💰 Totals - Subtotal:", totalSubtotal.toFixed(2), "CGST:", totalCgst.toFixed(2), "SGST:", totalSgst.toFixed(2), "IGST:", totalIgst.toFixed(2));
 
       const response = await axios.post(
-        "https://erp-render.onrender.com/Sales/debitnote/",
+        "http://127.0.0.1:8000/Sales/debitnote/",
         dataToSave,
       );
 
@@ -186,7 +186,7 @@ const PurchaseDabitNote = () => {
   // Function fetch New Debit Note Number
   const fetchDebitNoteNo = async () => {
     try {
-      const response = await axios.get("https://erp-render.onrender.com/Sales/debit/no");
+      const response = await axios.get("http://127.0.0.1:8000/Sales/debit/no");
       if (response.data && response.data.debit_note_no) {
         setFormData((prev) => ({
           ...prev,
@@ -222,7 +222,7 @@ const PurchaseDabitNote = () => {
   //   }
 
   //   try {
-  //     const url = `https://erp-render.onrender.com/Sales/purchase-po/by-supplier/?supplier=${encodeURIComponent(formData.party_name)}&from_date=${searchParams.from_date}&to_date=${searchParams.to_date}`;
+  //     const url = `http://127.0.0.1:8000/Sales/purchase-po/by-supplier/?supplier=${encodeURIComponent(formData.party_name)}&from_date=${searchParams.from_date}&to_date=${searchParams.to_date}`;
   //     const response = await axios.get(url);
   //     setSearchResults(response.data);
   //     toast.success("Data fetched successfully!");
@@ -240,7 +240,7 @@ const PurchaseDabitNote = () => {
     }
 
     try {
-      const url = `https://erp-render.onrender.com/Sales/purchase-po/by-supplier/?supplier=${encodeURIComponent(
+      const url = `http://127.0.0.1:8000/Sales/purchase-po/by-supplier/?supplier=${encodeURIComponent(
         formData.party_name
       )}&from_date=${searchParams.from_date}&to_date=${searchParams.to_date}`;
 

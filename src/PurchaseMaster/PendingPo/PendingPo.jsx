@@ -29,7 +29,7 @@ const PendingPo = () => {
   const fetchPendingPo = async () => {
     try {
       const res = await fetch(
-        "https://erp-render.onrender.com/Purchase/purchase-orders/unverified/simple/"
+        "http://127.0.0.1:8000/Purchase/purchase-orders/unverified/simple/"
       );
       const { data } = await res.json();
       setPendingPoList(data);
@@ -51,7 +51,7 @@ const PendingPo = () => {
   const handleTakeAction = async (id, action) => {
     try {
       await fetch(
-        `https://erp-render.onrender.com/Purchase/purchase-po/${id}/update-status-fbv/`,
+        `http://127.0.0.1:8000/Purchase/purchase-po/${id}/update-status-fbv/`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

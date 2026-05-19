@@ -211,8 +211,8 @@ const DabitNoteList = () => {
         
         // Fetch from both endpoints in parallel
         const [res1, res2] = await Promise.all([
-          fetch("https://erp-render.onrender.com/Sales/debitnote/"),
-          fetch("https://erp-render.onrender.com/Sales/gst-jobwork-rate-diff/")
+          fetch("http://127.0.0.1:8000/Sales/debitnote/"),
+          fetch("http://127.0.0.1:8000/Sales/gst-jobwork-rate-diff/")
         ]);
 
         if (!res1.ok || !res2.ok) {
@@ -316,7 +316,7 @@ const DabitNoteList = () => {
       if (!id) {
         throw new Error("No ID found for this debit note");
       }
-      const response = await fetch(`https://erp-render.onrender.com/Sales/debit-note/${id}/`);
+      const response = await fetch(`http://127.0.0.1:8000/Sales/debit-note/${id}/`);
       if (!response.ok) {
         throw new Error(`PDF API error: ${response.status}`);
       }

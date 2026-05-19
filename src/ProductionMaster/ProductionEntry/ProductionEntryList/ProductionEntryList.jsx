@@ -200,7 +200,7 @@ const ProductionEntryList = () => {
 
                                 <td>
                                   <a
-                                    href={`https://erp-render.onrender.com/${entry.View}`}
+                                    href={`http://127.0.0.1:8000/${entry.View}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="btn btn-sm btn-primary"

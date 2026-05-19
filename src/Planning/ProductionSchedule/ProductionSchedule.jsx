@@ -35,7 +35,7 @@ const ProductionSchedule = () => {
 
   const fetchSchedules = async () => {
     try {
-      const response = await fetch("https://erp-render.onrender.com/Settings/schedule-month/");
+      const response = await fetch("http://127.0.0.1:8000/Settings/schedule-month/");
       if (response.ok) {
         const result = await response.json();
         const rawData = Array.isArray(result) ? result : (result.data || result.results || []);
@@ -43,7 +43,7 @@ const ProductionSchedule = () => {
         // Fetch ALL items once to count them for each schedule more efficiently
         let allItems = [];
         try {
-          const itemsRes = await fetch("https://erp-render.onrender.com/Planning/production-schedule/");
+          const itemsRes = await fetch("http://127.0.0.1:8000/Planning/production-schedule/");
           if (itemsRes.ok) {
             const itemsResult = await itemsRes.json();
             allItems = Array.isArray(itemsResult) ? itemsResult : (itemsResult.data || result.results || itemsResult.data || itemsResult.results || []);
@@ -104,7 +104,7 @@ const ProductionSchedule = () => {
   const fetchCustomers = async () => {
     try {
       const token = localStorage.getItem("accessToken");
-      const response = await fetch("https://erp-render.onrender.com/Sales/items/customers-list/", {
+      const response = await fetch("http://127.0.0.1:8000/Sales/items/customers-list/", {
         headers: { "Authorization": `Bearer ${token}` }
       });
       if (response.ok) {
@@ -120,7 +120,7 @@ const ProductionSchedule = () => {
   const fetchItems = async () => {
     try {
       const token = localStorage.getItem("accessToken");
-      const response = await fetch("https://erp-render.onrender.com/All_Masters/api/item/summary/", {
+      const response = await fetch("http://127.0.0.1:8000/All_Masters/api/item/summary/", {
         headers: { "Authorization": `Bearer ${token}` }
       });
       if (response.ok) {
@@ -137,7 +137,7 @@ const ProductionSchedule = () => {
     setLoadingItems(true);
     try {
       const formattedMonth = monthYear ? monthYear.replace("-", " ") : "";
-      const response = await fetch(`https://erp-render.onrender.com/Planning/schedule-month-filter/?month_name=${encodeURIComponent(formattedMonth)}`);
+      const response = await fetch(`http://127.0.0.1:8000/Planning/schedule-month-filter/?month_name=${encodeURIComponent(formattedMonth)}`);
       let rawItems = [];
       if (response.ok) {
         const result = await response.json();
@@ -290,7 +290,7 @@ const ProductionSchedule = () => {
     };
 
     try {
-      const response = await fetch("https://erp-render.onrender.com/Planning/production-schedule/", {
+      const response = await fetch("http://127.0.0.1:8000/Planning/production-schedule/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)

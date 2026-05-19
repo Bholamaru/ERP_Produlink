@@ -35,7 +35,7 @@ const QuoteStatementList = () => {
   const fetchQuotationComparisons = async () => {
     try {
       setLoading(true)
-      const response = await fetch('https://erp-render.onrender.com/Purchase/Quote_Comparison_Statement/')
+      const response = await fetch('http://127.0.0.1:8000/Purchase/Quote_Comparison_Statement/')
       if (!response.ok) {
         throw new Error('Failed to fetch quotation comparisons')
       }

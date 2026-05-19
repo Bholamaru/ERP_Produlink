@@ -374,7 +374,7 @@ const ProductionReport = () => {
 
                                   <td>
                                     <a
-                                      href={`https://erp-render.onrender.com/Production/ProductionEntry/pdf/${item.id}/`}
+                                      href={`http://127.0.0.1:8000/Production/ProductionEntry/pdf/${item.id}/`}
                                       target="_blank"
                                       rel="noopener noreferrer"
                                       className="btn btn-sm btn-primary"

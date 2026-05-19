@@ -54,7 +54,7 @@ const JobworkInwardChallan = () => {
 
   const fetchGateEntryData = async () => {
     try {
-      const res = await fetch("https://erp-render.onrender.com/Store/general-details/");
+      const res = await fetch("http://127.0.0.1:8000/Store/general-details/");
       const resData = await res.json();
       setGateEntryData(resData);
     } catch (err) {
@@ -64,7 +64,7 @@ const JobworkInwardChallan = () => {
 
   const fetchBomItems = async () => {
     try {
-      const res = await fetch("https://erp-render.onrender.com/All_Masters/api/bom-items/");
+      const res = await fetch("http://127.0.0.1:8000/All_Masters/api/bom-items/");
       const resData = await res.json();
 
       // Transform keys to "FGCode - Name - ID" instead of "ID - Name - FGCode"
@@ -90,7 +90,7 @@ const JobworkInwardChallan = () => {
 
   const fetchChallanNo = async (series) => {
     try {
-      const res = await fetch(`https://erp-render.onrender.com/Store/jobwork-challan-no/?series=${series}`);
+      const res = await fetch(`http://127.0.0.1:8000/Store/jobwork-challan-no/?series=${series}`);
       const resData = await res.json();
       // Key from API is "InwardF4No"
       const challanNo = resData.InwardF4No || "";
@@ -278,13 +278,13 @@ const JobworkInwardChallan = () => {
 
     try {
       const res = await fetch(
-        "https://erp-render.onrender.com/Sales/supplierview/?supplier=" + customerName
+        "http://127.0.0.1:8000/Sales/supplierview/?supplier=" + customerName
       );
       const resData = await res.json();
       setChallanNumbers(resData.challans);
 
       const res2 = await fetch(
-        "https://erp-render.onrender.com/Store/newjobworkpodetails/?supplier=" + customerName
+        "http://127.0.0.1:8000/Store/newjobworkpodetails/?supplier=" + customerName
       );
       const resData2 = await res2.json();
       setPO(resData2.purchase_orders);
@@ -357,7 +357,7 @@ const JobworkInwardChallan = () => {
 
     try {
       const response = await fetch(
-        "https://erp-render.onrender.com/Store/JobworkInwardChallan/",
+        "http://127.0.0.1:8000/Store/JobworkInwardChallan/",
         {
           method: "POST",
           headers: {

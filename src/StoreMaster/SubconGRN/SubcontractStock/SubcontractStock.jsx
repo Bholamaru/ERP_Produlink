@@ -29,7 +29,7 @@ const SubcontractStock = () => {
     try {
       setLoading(true);
       const res = await axios.get(
-        `https://erp-render.onrender.com/Store/api/SubcornStock/?q=${q}`
+        `http://127.0.0.1:8000/Store/api/SubcornStock/?q=${q}`
       );
       setStockData(res.data || []); // <-- array
     } catch (error) {

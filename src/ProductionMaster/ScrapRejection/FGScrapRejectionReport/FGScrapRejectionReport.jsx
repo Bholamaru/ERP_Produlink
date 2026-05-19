@@ -316,7 +316,7 @@ const FGScrapRejectionReport = () => {
                                       <FaEdit />
                                     </Link>
                                     <a
-                                      href={`https://erp-render.onrender.com/Production/FGScrap/pdf/${entry.id}/`}
+                                      href={`http://127.0.0.1:8000/Production/FGScrap/pdf/${entry.id}/`}
                                       target="_blank"
                                       rel="noopener noreferrer"
                                       className="btn btn-sm btn-primary"

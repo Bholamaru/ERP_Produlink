@@ -60,7 +60,7 @@ const MaterialIssueChallan = () => {
     try {
       const token = localStorage.getItem("accessToken");
       const res = await fetch(
-        "https://erp-render.onrender.com/All_Masters/api/item/summary/",
+        "http://127.0.0.1:8000/All_Masters/api/item/summary/",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -101,7 +101,7 @@ const MaterialIssueChallan = () => {
       try {
         const token = localStorage.getItem("accessToken");
         const response = await fetch(
-          "https://erp-render.onrender.com/Store/generate-challan/",
+          "http://127.0.0.1:8000/Store/generate-challan/",
           {
             method: "GET",
             headers: {
@@ -194,7 +194,7 @@ const MaterialIssueChallan = () => {
       try {
         const token = localStorage.getItem("accessToken");
 
-        const apiUrl = `https://erp-render.onrender.com/Store/heat-no/?item_code=${encodeURIComponent(
+        const apiUrl = `http://127.0.0.1:8000/Store/heat-no/?item_code=${encodeURIComponent(
           combinedItemCode
         )}`;
 

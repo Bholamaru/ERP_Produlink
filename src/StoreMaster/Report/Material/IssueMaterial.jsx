@@ -15,11 +15,11 @@ const IssueMaterial = () => {
   const [error, setError] = useState(null);
 
   // API URLs
-  const GET_API_URL = "https://erp-render.onrender.com/Store/api/New-Material-Issue/";
+  const GET_API_URL = "http://127.0.0.1:8000/Store/api/New-Material-Issue/";
   const PDF_API_BASE_URL =
-    "https://erp-render.onrender.com/Store/generate-materialissue/";
+    "http://127.0.0.1:8000/Store/generate-materialissue/";
   const DELETE_API_BASE_URL =
-    "https://erp-render.onrender.com/Store/material-challan/delete/"; // New Delete API URL
+    "http://127.0.0.1:8000/Store/material-challan/delete/"; // New Delete API URL
 
   const fetchData = async () => {
     try {
