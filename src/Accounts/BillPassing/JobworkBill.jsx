@@ -39,7 +39,7 @@ const JobworkBill = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem("accessToken");
-      let url = `https://erp-render.onrender.com/Account/inwardchllan-date-fillter/`;
+      let url = `http://127.0.0.1:8000/Account/inwardchllan-date-fillter/`;
       let params = {};
 
       if (type === 'supplier') {
@@ -147,7 +147,7 @@ const JobworkBill = () => {
       return;
     }
     try {
-      const response = await axios.get(`https://erp-render.onrender.com/Purchase/Fetch_Supplier_Code/`, {
+      const response = await axios.get(`http://127.0.0.1:8000/Purchase/Fetch_Supplier_Code/`, {
         params: { search }
       });
       console.log("Supplier Suggestion API Response:", response.data);

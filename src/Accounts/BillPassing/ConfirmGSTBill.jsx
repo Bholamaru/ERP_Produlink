@@ -49,7 +49,7 @@ const ConfirmGSTBill = () => {
 
   const fetchNextBillNo = async () => {
     try {
-      const response = await axios.get("https://erp-render.onrender.com/Account/genrate-jobwork-bill-no/");
+      const response = await axios.get("http://127.0.0.1:8000/Account/genrate-jobwork-bill-no/");
       const nextNo = response.data.next_bill_no || response.data.bill_no || response.data.no;
       if (nextNo) {
         setBillPNo(nextNo);
@@ -202,7 +202,7 @@ const ConfirmGSTBill = () => {
 
       console.log("Saving Jobwork Bill Payload:", JSON.stringify(payload, null, 2));
 
-      const response = await axios.post("https://erp-render.onrender.com/Account/jobwork-bill-register/", payload, {
+      const response = await axios.post("http://127.0.0.1:8000/Account/jobwork-bill-register/", payload, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json"
