@@ -29,29 +29,46 @@ const PurchaseRegister = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem("accessToken");
-      const response = await axios.get(`https://erp-render.onrender.com/Account/jobwork-bill-register/?from_date=${fromDate}&to_date=${toDate}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
       
-      const rawData = Array.isArray(response.data) ? response.data : 
-                      (response.data.data ? response.data.data : []);
+      const [jobworkResponse, purchaseResponse] = await Promise.all([
+        axios.get(`https://erp-render.onrender.com/Account/jobwork-bill-register/?from_date=${fromDate}&to_date=${toDate}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }).catch(err => {
+          console.error("Error fetching jobwork bills:", err);
+          return { data: [] };
+        }),
+        axios.get(`https://erp-render.onrender.com/Account/bill-register/?from_date=${fromDate}&to_date=${toDate}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }).catch(err => {
+          console.error("Error fetching purchase bills:", err);
+          return { data: [] };
+        })
+      ]);
       
-      const mappedData = rawData.map((item, index) => ({
+      const rawJobworkData = Array.isArray(jobworkResponse.data) ? jobworkResponse.data : 
+                      (jobworkResponse.data?.data ? jobworkResponse.data.data : []);
+                      
+      const rawPurchaseData = Array.isArray(purchaseResponse.data) ? purchaseResponse.data : 
+                      (purchaseResponse.data?.data ? purchaseResponse.data.data : []);
+                      
+      const combinedRawData = [...rawJobworkData, ...rawPurchaseData];
+      
+      const mappedData = combinedRawData.map((item, index) => ({
         sr: index + 1,
-        year: item.series_no || "26-27",
-        billNo: item.bill_no || "",
-        billDate: item.posting_date || "",
-        type: "Purchase",
-        billType: item.bill_type || "JOBWORK-BILL",
-        challanNo: item.inv_challan_no || "",
-        challanDate: item.inv_challan_date || "",
+        year: "",
+        billNo: item.bill_no || item.no || "",
+        billDate: item.posting_date || item.bill_date || "",
+        type: item.type || "",
+        billType: item.bill_type || "",
+        challanNo: item.inv_challan_no || item.challan_no || "",
+        challanDate: item.inv_challan_date || item.challan_date || "",
         poNo: item.items?.[0]?.po_no || "",
         grnNo: item.items?.[0]?.grn_no || "",
         code: item.supplier_code || "",
-        supplier: item.supplier || "",
-        assAmt: item.assable_value || "0.00",
-        totalAmt: item.grand_total || "0.00",
-        user: item.prepared_by || "more"
+        supplier: item.supplier || item.supplier_name || "",
+        assAmt: item.assable_value || "",
+        totalAmt: item.grand_total || item.net_total || "",
+        user: item.prepared_by || ""
       }));
 
       setData(mappedData);

@@ -85,8 +85,8 @@
 }
 
 .purchase-register .table-responsive {
-  max-height: 340px;
-  /* Exactly 8 rows + header at standard density */
+  max-height: calc(100vh - 280px);
+  min-height: 400px;
   overflow-y: auto;
   overflow-x: auto;
 }

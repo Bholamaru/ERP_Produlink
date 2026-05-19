@@ -10,8 +10,8 @@ import { FaEye, FaCheck, FaExclamationTriangle, FaFileExcel, FaSearch, FaCogs } 
 
 const PurchaseBill = () => {
   const [sideNavOpen, setSideNavOpen] = useState(false);
-  const [fromDate, setFromDate] = useState(new Date().toISOString().split('T')[0]);
-  const [toDate, setToDate] = useState(new Date().toISOString().split('T')[0]);
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
   const [reportData, setReportData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedIds, setSelectedIds] = useState([]);
@@ -40,11 +40,7 @@ const PurchaseBill = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem("accessToken");
-      const response = await axios.get(`http://127.0.0.1:8000/Account/purchase-po-date-filter/`, {
-        params: {
-          from_date: fromDate,
-          to_date: toDate,
-        },
+      const response = await axios.get(`https://erp-render.onrender.com/Account/purchase-po-date-filter/?from_date=${fromDate}&to_date=${toDate}`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -52,8 +48,11 @@ const PurchaseBill = () => {
 
       console.log("Purchase Bill API Response:", response.data);
 
-      if (response.data && Array.isArray(response.data.data)) {
-        const mappedData = response.data.data.flatMap((item) => {
+      const rawData = Array.isArray(response.data) ? response.data : 
+                      (response.data?.data ? response.data.data : []);
+
+      if (Array.isArray(rawData)) {
+        const mappedData = rawData.flatMap((item) => {
           const items = Array.isArray(item.item_details) ? item.item_details : [];
           const gstDetails = Array.isArray(item.gst_details) ? item.gst_details : [];
 
@@ -76,12 +75,13 @@ const PurchaseBill = () => {
               total: item.GR_Total || item.net_total || item.total || "0",
               user: item.created_by_username || "",
               description: "",
-              hsn: "",
+              hsnCode: item.hsnCode || item.hsn_code || item.HSN || item.hsn || "",
               qty: 0,
+              dis: parseFloat(item.Disc || item.disc || item.Discount || item.discount || item.dis || 0),
               taxableValue: 0,
-              cgstPer: 0,
-              sgstPer: 0,
-              igstPer: 0,
+              cgst: parseFloat(item.TOC_CGST || item.cgst || item.cgst_per || item.cgstPer || 0),
+              sgst: parseFloat(item.TOC_SGST || item.sgst || item.sgst_per || item.sgstPer || 0),
+              igst: parseFloat(item.TOC_IGST || item.igst || item.igst_per || item.igstPer || 0),
             }];
           }
 
@@ -102,18 +102,17 @@ const PurchaseBill = () => {
               supplier: item.Supplier || item.supplier_name || "",
               supplierCode: item.CodeNo || "",
               poNo: item.PoNo || "",
-              total: item.GR_Total || item.net_total || item.total || (rate * qty).toFixed(2),
               user: item.created_by_username || "",
               description: (detail.Item || detail.item_code || gst.ItemCode) && (detail.ItemDescription || detail.item_description)
                 ? `${detail.Item || detail.item_code || gst.ItemCode} - ${detail.ItemDescription || detail.item_description}` 
                 : (detail.Item || detail.item_code || gst.ItemCode || detail.ItemDescription || detail.item_description || ""),
-              hsnCode: gst.HSN || detail.HSN || detail.HSNCode || detail.hsn_code || detail.HSN_SAC_Code || "",
-              dis: parseFloat(detail.Disc || detail.disc || gst.Discount || detail.Discount || detail.discount || 0),
+              hsnCode: gst.HSN || detail.HSN || detail.HSNCode || detail.hsn_code || detail.HSN_SAC_Code || detail.hsn_sac_code || detail.hsnSacCode || detail.Hsn || detail.hsn || "",
+              dis: parseFloat(detail.Disc || detail.disc || gst.Discount || detail.Discount || detail.discount || detail.dis || detail.dis_per || detail.discount_percent || detail.disc_per || 0),
               qty: qty,
               taxableValue: parseFloat(gst.AssValue || (rate * qty)),
-              cgst: parseFloat(gst.CGST || gst.cgst_per || gst.cgst || detail.CGST || detail.cgst_per || detail.cgst || 0),
-              sgst: parseFloat(gst.SGST || gst.sgst_per || gst.sgst || detail.SGST || detail.sgst_per || detail.sgst || 0),
-              igst: parseFloat(gst.IGST || gst.igst_per || gst.igst || detail.IGST || detail.igst_per || detail.igst || 0),
+              cgst: parseFloat(gst.CGST || gst.cgst_per || gst.cgst || detail.CGST || detail.cgst_per || detail.cgst || detail.cgstPer || detail.cgst_percent || item.TOC_CGST || item.cgst || 0),
+              sgst: parseFloat(gst.SGST || gst.sgst_per || gst.sgst || detail.SGST || detail.sgst_per || detail.sgst || detail.sgstPer || detail.sgst_percent || item.TOC_SGST || item.sgst || 0),
+              igst: parseFloat(gst.IGST || gst.igst_per || gst.igst || detail.IGST || detail.igst_per || detail.igst || detail.igstPer || detail.igst_percent || item.TOC_IGST || item.igst || 0),
               total: gst.Total || item.GR_Total || item.net_total || item.total || (rate * qty).toFixed(2),
               
               // Master Level Data (Footer/Header)
@@ -157,9 +156,7 @@ const PurchaseBill = () => {
     }
   }, [sideNavOpen]);
 
-  useEffect(() => {
-    handleSearch();
-  }, []);
+
 
 
 
