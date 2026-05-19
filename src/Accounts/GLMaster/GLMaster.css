@@ -52,6 +52,25 @@
   border: 1px solid #dee2e6;
 }
 
+/* Custom scrollbar for table responsive wrapper */
+.gl-master .table-responsive::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.gl-master .table-responsive::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.gl-master .table-responsive::-webkit-scrollbar-thumb {
+  background: #cccccc;
+  border-radius: 3px;
+}
+
+.gl-master .table-responsive::-webkit-scrollbar-thumb:hover {
+  background: #999999;
+}
+
 .gl-master .user-list-table {
   width: 100%;
   min-width: 800px;
