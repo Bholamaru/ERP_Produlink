@@ -21,35 +21,44 @@ const GSTR1 = () => {
     }
     setLoading(true);
     try {
-      const response = await axios.get(`http://127.0.0.1:8000/Account/invoice/date-filter/`, {
+      const token = localStorage.getItem("accessToken");
+      const response = await axios.get(`https://erp-render.onrender.com/Account/invoice/date-filter/`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
         params: {
           from_date: fromDate,
           to_date: toDate,
         },
       });
 
-      if (response.data && response.data.status && Array.isArray(response.data.data)) {
-        const flattenedData = response.data.data.flatMap((invoice) => {
+      console.log("GSTR-1 API Response:", response.data);
+      
+      const rawData = Array.isArray(response.data) ? response.data : 
+                      (response.data?.data ? response.data.data : []);
+
+      if (Array.isArray(rawData) && rawData.length > 0) {
+        const flattenedData = rawData.flatMap((invoice) => {
           const gst = invoice.GSTdetails?.[0] || {};
-          return (invoice.items || []).map((item) => ({
+          return (Array.isArray(invoice.items) ? invoice.items : []).map((item) => ({
             custName: item.customer || invoice.bill_to || "",
             gstin: "", // GSTIN not directly provided in this API endpoint
             stateCode: invoice.place_of_supply || "",
             pos: invoice.place_of_supply || "",
             invoiceNo: invoice.invoice_no || "",
-            invoiceDate: invoice.invoice_Date || "",
+            invoiceDate: invoice.invoice_Date || invoice.date || "",
             invoiceValue: gst.grand_total || "0",
             hsn: item.hsn_code || "",
             description: item.description || "",
-            taxableValue: gst.assessble_value || "0",
-            qty: item.inv_qty || "0",
+            taxableValue: gst.assessble_value || item.assessable_value || "0",
+            qty: item.inv_qty || item.qty || "0",
             unitCode: "NOS",
-            cgstPer: gst.cgst || "0",
-            cgstAmt: gst.cgst_amt || "0",
-            sgstPer: gst.sgst || "0",
-            sgstAmt: gst.sgst_amt || "0",
-            igstPer: gst.igst || "0",
-            igstAmt: gst.igst_amt || "0",
+            cgstPer: gst.cgst || item.cgst || "0",
+            cgstAmt: gst.cgst_amt || item.cgst_amt || "0",
+            sgstPer: gst.sgst || item.sgst || "0",
+            sgstAmt: gst.sgst_amt || item.sgst_amt || "0",
+            igstPer: gst.igst || item.igst || "0",
+            igstAmt: gst.igst_amt || item.igst_amt || "0",
             cess: "0",
             cessAmt: "0",
             tcsPer: "0",
@@ -73,8 +82,6 @@ const GSTR1 = () => {
     }
   };
 
-
-
   const toggleSideNav = () => {
     setSideNavOpen((prevState) => !prevState);
   };
@@ -86,8 +93,6 @@ const GSTR1 = () => {
       document.body.classList.remove("side-nav-open");
     }
   }, [sideNavOpen]);
-
-
 
   return (
     <div className="gstr-1">
@@ -137,9 +142,7 @@ const GSTR1 = () => {
                         <option value="Invoice_Wise">Invoice_Wise</option>
                       </select>
                     </div>
-                    <div className="d-flex gap-2 ms-auto">
-                      <button className="btn filter-btn">Search</button>
-                      <button className="btn filter-btn">Export To Excel</button>
+                    <div className="d-flex gap-2">
                       <button 
                         className="btn btn-sm btn-light border px-3 d-inline-flex align-items-center gap-2" 
                         style={{ height: "32px" }}
