@@ -73,7 +73,7 @@ const DirectBill = () => {
   const fetchNextBillNo = async () => {
     try {
       const token = localStorage.getItem("accessToken");
-      const response = await axios.get("http://127.0.0.1:8000/Account/generate-bill-no/", {
+      const response = await axios.get("https://erp-render.onrender.com/Account/generate-bill-no/", {
         headers: { Authorization: `Bearer ${token}` }
       });
       console.log("Bill No Response:", response.data);
@@ -89,6 +89,41 @@ const DirectBill = () => {
   useEffect(() => {
     fetchNextBillNo();
   }, []);
+
+  const fetchMasterDetailsForRows = async (rowsData) => {
+    try {
+      const updated = await Promise.all(rowsData.map(async (row) => {
+        let updatedRow = { ...row };
+        
+        // 1. Fetch HSN Code if missing
+        if (!updatedRow.hsnCode) {
+          const itemCodeOnly = updatedRow.itemCode?.split(' - ')[0]?.trim();
+          if (itemCodeOnly) {
+            try {
+              const response = await axios.get(`https://erp-render.onrender.com/All_Masters/Fetch_Item_fields/?q=${encodeURIComponent(itemCodeOnly)}`);
+              const data = Array.isArray(response.data) ? response.data[0] : response.data;
+              if (data && data.HSN_SAC_Code) {
+                updatedRow.hsnCode = data.HSN_SAC_Code;
+              }
+            } catch (e) {
+              console.error("Error fetching HSN for item:", itemCodeOnly, e);
+            }
+          }
+        }
+
+        // 2. Set default CGST and SGST to 9% if both are 0 and IGST is 0
+        if (parseFloat(updatedRow.cgst || 0) === 0 && parseFloat(updatedRow.sgst || 0) === 0 && parseFloat(updatedRow.igst || 0) === 0) {
+          updatedRow.cgst = 9;
+          updatedRow.sgst = 9;
+        }
+
+        return updatedRow;
+      }));
+      setRows(updated);
+    } catch (err) {
+      console.error("Error in fetchMasterDetailsForRows:", err);
+    }
+  };
 
   useEffect(() => {
     if (location.state && location.state.selectedInvoices) {
@@ -110,7 +145,12 @@ const DirectBill = () => {
         glId: "",
         remark: "",
       }));
+      
+      // Load initial mapped rows first
       setRows(mappedRows);
+      
+      // Dynamically fetch missing HSN and apply fallback GST rates
+      fetchMasterDetailsForRows(mappedRows);
 
       if (incomingInvoices.length > 0) {
         const first = incomingInvoices[0];
@@ -200,7 +240,7 @@ const DirectBill = () => {
         }))
       };
 
-      const response = await axios.post("http://127.0.0.1:8000/Account/bill-register/", payload, {
+      const response = await axios.post("https://erp-render.onrender.com/Account/bill-register/", payload, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json"
