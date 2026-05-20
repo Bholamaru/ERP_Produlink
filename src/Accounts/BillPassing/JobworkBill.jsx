@@ -64,6 +64,7 @@ const JobworkBill = () => {
           
           return nestedItems.map((detail, idx) => ({
             id: `${item.id}-${idx}`,
+            masterId: item.id,
             year: item.Series || item.series || item.Year || item.Series_No || "",
             grnNo: item.InwardF4No || item.no || item.Inward_no || item.No || item.PoNo || "",
             grnDate: item.InwardDate || item.challan_date || item.Date || item.PoDate || "",
@@ -139,6 +140,37 @@ const JobworkBill = () => {
 
   const handleRemoveGrn = (grnId) => {
     setSelectedGrns(selectedGrns.filter(item => item.id !== grnId));
+  };
+
+  const handleViewPdf = async (masterId) => {
+    // Open a new tab immediately to prevent popup blocker
+    const newWindow = window.open('', '_blank');
+    if (newWindow) {
+      newWindow.document.write('<html><head><title>Loading PDF...</title></head><body style="font-family: sans-serif; padding: 20px;">Loading PDF securely...</body></html>');
+    }
+
+    try {
+      const token = localStorage.getItem("accessToken");
+      const response = await axios.get(`https://erp-render.onrender.com/Account/generate-jobworkbill-pdf/${masterId}/`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
+        responseType: 'blob'
+      });
+      
+      const file = new Blob([response.data], { type: 'application/pdf' });
+      const fileURL = URL.createObjectURL(file);
+      
+      if (newWindow) {
+        newWindow.location.href = fileURL;
+      } else {
+        window.open(fileURL, '_blank');
+      }
+    } catch (error) {
+      if (newWindow) newWindow.close();
+      console.error("Error viewing PDF:", error);
+      alert("Failed to load PDF. Make sure you have permission or the record exists.");
+    }
   };
 
   const fetchSuppliers = async (search) => {
@@ -313,7 +345,13 @@ const JobworkBill = () => {
                                 <div className="badge bg-warning p-1"><FaExclamationTriangle /></div>
                               )}
                             </td>
-                            <td><FaEye className="text-primary cursor-pointer" /></td>
+                            <td>
+                              <FaEye 
+                                className="text-primary cursor-pointer" 
+                                onClick={() => handleViewPdf(data.masterId)}
+                                title="View PDF"
+                              />
+                            </td>
                             <td>
                               <button className="btn btn-sm" onClick={() => handleAddGrn(data)}>
                                 <FaPlus />

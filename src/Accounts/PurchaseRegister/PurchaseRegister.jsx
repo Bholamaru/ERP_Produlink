@@ -47,14 +47,19 @@ const PurchaseRegister = () => {
       
       const rawJobworkData = Array.isArray(jobworkResponse.data) ? jobworkResponse.data : 
                       (jobworkResponse.data?.data ? jobworkResponse.data.data : []);
+      const processedJobwork = rawJobworkData.map(item => ({ ...item, isJobwork: true }));
                       
       const rawPurchaseData = Array.isArray(purchaseResponse.data) ? purchaseResponse.data : 
                       (purchaseResponse.data?.data ? purchaseResponse.data.data : []);
+      const processedPurchase = rawPurchaseData.map(item => ({ ...item, isJobwork: false }));
                       
-      const combinedRawData = [...rawJobworkData, ...rawPurchaseData];
+      const combinedRawData = [...processedJobwork, ...processedPurchase];
       
       const mappedData = combinedRawData.map((item, index) => ({
         sr: index + 1,
+        id: item.id,
+        pdfId: item.id,
+        isJobwork: item.isJobwork,
         year: "",
         billNo: item.bill_no || item.no || "",
         billDate: item.posting_date || item.bill_date || "",
@@ -90,6 +95,43 @@ const PurchaseRegister = () => {
       document.body.classList.remove("side-nav-open");
     }
   }, [sideNavOpen]);
+
+  const handleViewPdf = async (id, isJobwork) => {
+    if (!id) {
+      alert("Invalid ID for PDF generation.");
+      return;
+    }
+    
+    // Open a new tab immediately to prevent popup blocker
+    const newWindow = window.open('', '_blank');
+    if (newWindow) {
+      newWindow.document.write('<html><head><title>Loading PDF...</title></head><body style="font-family: sans-serif; padding: 20px;">Loading PDF securely...</body></html>');
+    }
+
+    try {
+      const token = localStorage.getItem("accessToken");
+      const endpoint = isJobwork ? 'jobwork-bill-pdf' : 'bill-register-pdf';
+      const response = await axios.get(`https://erp-render.onrender.com/Account/${endpoint}/${id}/`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
+        responseType: 'blob'
+      });
+      
+      const file = new Blob([response.data], { type: 'application/pdf' });
+      const fileURL = URL.createObjectURL(file);
+      
+      if (newWindow) {
+        newWindow.location.href = fileURL;
+      } else {
+        window.open(fileURL, '_blank');
+      }
+    } catch (error) {
+      if (newWindow) newWindow.close();
+      console.error("Error viewing PDF:", error);
+      alert("Failed to load PDF. Make sure you have permission or the record exists.");
+    }
+  };
 
   return (
     <div className="purchase-register">
@@ -245,7 +287,11 @@ const PurchaseRegister = () => {
                                 )}
                               </td>
                               <td className="text-center">
-                                <FaEye className="text-primary cursor-pointer" />
+                                <FaEye 
+                                  className="text-primary cursor-pointer"
+                                  onClick={() => handleViewPdf(row.pdfId, row.isJobwork)}
+                                  title="View PDF"
+                                />
                               </td>
                               <td className="text-center">
                                 <button className="btn btn-sm">
