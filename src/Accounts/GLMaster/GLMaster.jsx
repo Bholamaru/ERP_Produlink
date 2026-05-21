@@ -5,9 +5,16 @@ import NavBar from "../../NavBar/NavBar.js";
 import SideNav from "../../SideNav/SideNav.js";
 import "./GLMaster.css";
 import { FaTrash, FaEdit, FaFileExcel } from "react-icons/fa";
+import axios from "axios";
 
 const GLMaster = () => {
   const [sideNavOpen, setSideNavOpen] = useState(false);
+  const [dataList, setDataList] = useState([]);
+  const [glCode, setGlCode] = useState("");
+  const [glName, setGlName] = useState("");
+  const [glCategory, setGlCategory] = useState("General");
+  const [editingId, setEditingId] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const toggleSideNav = () => {
     setSideNavOpen((prevState) => !prevState);
@@ -21,21 +28,115 @@ const GLMaster = () => {
     }
   }, [sideNavOpen]);
 
-  // Mock Data from the provided image
-  const mockData = [
-    { id: 1, glCode: "17", glDesc: "Purchase Servises", glCategory: "General", user: "vishwas" },
-    { id: 2, glCode: "16", glDesc: "Services Purchase 18%", glCategory: "Other", user: "vishwas" },
-    { id: 3, glCode: "15", glDesc: "Purchase Rm 18%", glCategory: "TCS", user: "vishwas" },
-    { id: 4, glCode: "14", glDesc: "Purchase con. 5%", glCategory: "Other", user: "vishwas" },
-    { id: 5, glCode: "13", glDesc: "Purchase con. 12%", glCategory: "Other", user: "vishwas" },
-    { id: 6, glCode: "12", glDesc: "Purchase con. 18%", glCategory: "General", user: "vishwas" },
-    { id: 7, glCode: "11", glDesc: "Purchase Rm 18%", glCategory: "General", user: "vishwas" },
-    { id: 8, glCode: "10", glDesc: "Purchase FG 28 %", glCategory: "Other", user: "vishwas" },
-    { id: 9, glCode: "1", glDesc: "Purchase Rm 18%", glCategory: "Other", user: "vishwas" },
-    { id: 10, glCode: "09", glDesc: "Services Purchase 18%", glCategory: "General", user: "vishwas" },
-    { id: 11, glCode: "07", glDesc: "Purchase FG 28 %", glCategory: "Other", user: "vishwas" },
-    { id: 12, glCode: "06", glDesc: "Purchase FG 18%", glCategory: "General", user: "vishwas" },
-  ];
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("accessToken");
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      const response = await axios.get("https://erp-render.onrender.com/Account/general-ledger/", { headers });
+      setDataList(response.data);
+    } catch (error) {
+      console.error("Error fetching GL data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const handleSave = async () => {
+    if (!glCode.trim() || !glName.trim()) {
+      alert("Please enter GL Code and GL Name");
+      return;
+    }
+    const token = localStorage.getItem("accessToken");
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+    const username = localStorage.getItem("username") || "Admin";
+
+    const payload = {
+      gl_code: glCode,
+      gl_description: glName,
+      gl_category: glCategory,
+      user: username
+    };
+
+    try {
+      if (editingId) {
+        // Update
+        const response = await axios.put(`https://erp-render.onrender.com/Account/general-ledger/${editingId}/`, payload, { headers });
+        if (response.status === 200 || response.status === 201) {
+          alert("General Ledger updated successfully");
+          setEditingId(null);
+        }
+      } else {
+        // Create
+        const response = await axios.post("https://erp-render.onrender.com/Account/general-ledger/", payload, { headers });
+        if (response.status === 200 || response.status === 201) {
+          alert("General Ledger created successfully");
+        }
+      }
+      setGlCode("");
+      setGlName("");
+      setGlCategory("General");
+      fetchData();
+    } catch (error) {
+      console.error("Error saving General Ledger:", error);
+      alert("Failed to save. Please try again.");
+    }
+  };
+
+  const handleEdit = (item) => {
+    setEditingId(item.id);
+    setGlCode(item.gl_code || "");
+    setGlName(item.gl_description || "");
+    setGlCategory(item.gl_category || "General");
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this General Ledger?")) {
+      return;
+    }
+    const token = localStorage.getItem("accessToken");
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+    try {
+      const response = await axios.delete(`https://erp-render.onrender.com/Account/general-ledger/${id}/`, { headers });
+      if (response.status === 200 || response.status === 204) {
+        alert("General Ledger deleted successfully");
+        fetchData();
+      }
+    } catch (error) {
+      console.error("Error deleting General Ledger:", error);
+      alert("Failed to delete. Please try again.");
+    }
+  };
+
+  const handleExportExcel = () => {
+    if (dataList.length === 0) {
+      alert("No data to export");
+      return;
+    }
+    const headers = ["Sr. No.", "GL Code", "GL Description", "GL Category", "User"];
+    const rows = dataList.map((data, index) => [
+      index + 1,
+      data.gl_code || "",
+      data.gl_description || "",
+      data.gl_category || "",
+      data.user || ""
+    ]);
+
+    const csvContent = "data:text/csv;charset=utf-8," 
+      + [headers.join(","), ...rows.map(e => e.map(val => `"${String(val).replace(/"/g, '""')}"`).join(","))].join("\n");
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "General_Ledger_Master.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   return (
     <div className="gl-master">
@@ -55,7 +156,7 @@ const GLMaster = () => {
                         </h5>
                       </div>
                       <div className="col-md-9 text-end">
-                        <button className="btn d-inline-flex align-items-center gap-2">
+                        <button className="btn d-inline-flex align-items-center gap-2" onClick={handleExportExcel}>
                           <FaFileExcel /> Export Excel
                         </button>
                       </div>
@@ -66,17 +167,33 @@ const GLMaster = () => {
                     <div className="row align-items-end mt-2 mb-3">
                       <div className="col-md-3">
                         <label className="form-label mb-1">GL Code :</label>
-                        <input type="text" className="form-control" placeholder="Enter GL Code" />
+                        <input 
+                          type="text" 
+                          className="form-control" 
+                          placeholder="Enter GL Code" 
+                          value={glCode}
+                          onChange={(e) => setGlCode(e.target.value)}
+                        />
                       </div>
 
                       <div className="col-md-4">
                         <label className="form-label mb-1">GL Name :</label>
-                        <input type="text" className="form-control" placeholder="Enter GL Name" />
+                        <input 
+                          type="text" 
+                          className="form-control" 
+                          placeholder="Enter GL Name" 
+                          value={glName}
+                          onChange={(e) => setGlName(e.target.value)}
+                        />
                       </div>
 
                       <div className="col-md-3">
                         <label className="form-label mb-1">GL Category :</label>
-                        <select className="form-select">
+                        <select 
+                          className="form-select"
+                          value={glCategory}
+                          onChange={(e) => setGlCategory(e.target.value)}
+                        >
                           <option value="General">General</option>
                           <option value="Other">Other</option>
                           <option value="TCS">TCS</option>
@@ -84,7 +201,9 @@ const GLMaster = () => {
                       </div>
 
                       <div className="col-md-2">
-                        <button className="btn w-100">Save</button>
+                        <button className="btn w-100" onClick={handleSave}>
+                          {editingId ? "Update" : "Save"}
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -103,25 +222,32 @@ const GLMaster = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {mockData.map((data, index) => (
+                        {dataList.map((data, index) => (
                           <tr key={data.id}>
                             <td>{index + 1}</td>
-                            <td>{data.glCode}</td>
-                            <td>{data.glDesc}</td>
-                            <td>{data.glCategory}</td>
+                            <td>{data.gl_code}</td>
+                            <td>{data.gl_description}</td>
+                            <td>{data.gl_category}</td>
                             <td>{data.user}</td>
                             <td>
-                              <button className="btn btn-sm">
+                              <button className="btn btn-sm" onClick={() => handleEdit(data)}>
                                 <FaEdit />
                               </button>
                             </td>
                             <td>
-                              <button className="btn btn-sm">
+                              <button className="btn btn-sm" onClick={() => handleDelete(data.id)}>
                                 <FaTrash />
                               </button>
                             </td>
                           </tr>
                         ))}
+                        {dataList.length === 0 && !loading && (
+                          <tr>
+                            <td colSpan="7" className="text-center py-4 text-muted">
+                              No General Ledger records found.
+                            </td>
+                          </tr>
+                        )}
                       </tbody>
                     </table>
                   </div>

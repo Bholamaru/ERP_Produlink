@@ -32,6 +32,43 @@ const PurchaseBill = () => {
     navigate("/direct-bill", { state: { selectedInvoices: selectedData } });
   };
 
+  const handleViewPdf = async (id) => {
+    if (!id) {
+      alert("Invalid ID for PDF generation.");
+      return;
+    }
+    const cleanId = String(id).split('-')[0];
+    
+    // Open a new tab immediately to prevent popup blocker
+    const newWindow = window.open('', '_blank');
+    if (newWindow) {
+      newWindow.document.write('<html><head><title>Loading PDF...</title></head><body style="font-family: sans-serif; padding: 20px;">Loading PDF securely...</body></html>');
+    }
+
+    try {
+      const token = localStorage.getItem("accessToken");
+      const response = await axios.get(`https://erp-render.onrender.com/Account/purchasebillpdf/${cleanId}/`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
+        responseType: 'blob'
+      });
+      
+      const file = new Blob([response.data], { type: 'application/pdf' });
+      const fileURL = URL.createObjectURL(file);
+      
+      if (newWindow) {
+        newWindow.location.href = fileURL;
+      } else {
+        window.open(fileURL, '_blank');
+      }
+    } catch (error) {
+      if (newWindow) newWindow.close();
+      console.error("Error viewing PDF:", error);
+      alert("Failed to load PDF. Make sure you have permission or the record exists.");
+    }
+  };
+
   const handleSearch = async () => {
     if (!fromDate || !toDate) {
       alert("Please select both From and To dates.");
@@ -53,79 +90,80 @@ const PurchaseBill = () => {
 
       if (Array.isArray(rawData)) {
         const mappedData = rawData.flatMap((item) => {
-          const items = Array.isArray(item.item_details) ? item.item_details : [];
-          const gstDetails = Array.isArray(item.gst_details) ? item.gst_details : [];
+          const items = Array.isArray(item.NewGrnList) ? item.NewGrnList : (Array.isArray(item.item_details) ? item.item_details : []);
+          const gstDetails = Array.isArray(item.GrnGstTDC) ? item.GrnGstTDC : (Array.isArray(item.gst_details) ? item.gst_details : []);
 
-          console.log(`Mapping item ${item.PoNo || item.id}`, { items, gstDetails });
+          console.log(`Mapping item ${item.GrnNo || item.PoNo || item.id}`, { items, gstDetails });
 
           // If no items, return at least one row for the master data
           if (items.length === 0) {
+            const gst = gstDetails[0] || {};
             return [{
               id: item.id,
-              year: item.Series || item.Series_No || "",
-              grnNo: item.PoNo || item.no || "",
-              grnDate: item.PoDate || item.challan_date || "",
-              challanNo: item.PoNo || item.challan_no || "",
-              challanDate: item.PoDate || item.challan_date || "",
-              invoiceNo: item.PoNo || item.invoice_no || "",
-              invoiceDate: item.PoDate || item.invoice_Date || "",
-              supplier: item.Supplier || item.supplier_name || "",
-              supplierCode: item.CodeNo || "",
-              poNo: item.PoNo || "",
-              total: item.GR_Total || item.net_total || item.total || "0",
-              user: item.created_by_username || "",
+              year: "",
+              grnNo: item.GrnNo || item.PoNo || item.no || "",
+              grnDate: item.GrnDate || item.PoDate || item.challan_date || "",
+              challanNo: item.ChallanNo || item.PoNo || item.challan_no || "",
+              challanDate: item.ChallanDate || item.PoDate || item.challan_date || "",
+              invoiceNo: item.InvoiceNo || item.PoNo || item.invoice_no || "",
+              invoiceDate: item.InvoiceDate || item.PoDate || item.invoice_Date || "",
+              supplier: item.SelectSupplier || item.Supplier || item.supplier_name || "",
+              supplierCode: item.SelectSupplier ? item.SelectSupplier.split(" - ")[0] : (item.CodeNo || ""),
+              poNo: item.SelectPO || item.PoNo || "",
+              total: gst.grand_total || item.GR_Total || item.net_total || item.total || "0",
+              user: item.PreparedBy || item.created_by_username || "",
               description: "",
               hsnCode: item.hsnCode || item.hsn_code || item.HSN || item.hsn || "",
               qty: 0,
               dis: parseFloat(item.Disc || item.disc || item.Discount || item.discount || item.dis || 0),
               taxableValue: 0,
-              cgst: parseFloat(item.TOC_CGST || item.cgst || item.cgst_per || item.cgstPer || 0),
-              sgst: parseFloat(item.TOC_SGST || item.sgst || item.sgst_per || item.sgstPer || 0),
-              igst: parseFloat(item.TOC_IGST || item.igst || item.igst_per || item.igstPer || 0),
+              cgst: parseFloat(gst.cgst || item.TOC_CGST || item.cgst || item.cgst_per || item.cgstPer || 0),
+              sgst: parseFloat(gst.sgst || item.TOC_SGST || item.sgst || item.sgst_per || item.sgstPer || 0),
+              igst: parseFloat(gst.igst || item.TOC_IGST || item.igst || item.igst_per || item.igstPer || 0),
             }];
           }
 
           return items.map((detail, idx) => {
             const gst = gstDetails[idx] || gstDetails[0] || {};
             const rate = parseFloat(detail.Rate || detail.rate || gst.Rate || 0);
-            const qty = parseFloat(detail.Qty || detail.grn_qty || gst.Qty || 0);
+            const qty = parseFloat(detail.Qty || detail.grn_qty || gst.Qty || detail.GrnQty || 0);
             
             const mappedItem = {
               id: `${item.id}-${idx}`,
-              year: item.Series || item.Series_No || "",
-              grnNo: item.PoNo || item.no || "",
-              grnDate: item.PoDate || item.challan_date || "",
-              challanNo: item.PoNo || item.challan_no || "",
-              challanDate: item.PoDate || item.challan_date || "",
-              invoiceNo: item.PoNo || item.invoice_no || "",
-              invoiceDate: item.PoDate || item.invoice_Date || "",
-              supplier: item.Supplier || item.supplier_name || "",
-              supplierCode: item.CodeNo || "",
-              poNo: item.PoNo || "",
-              user: item.created_by_username || "",
-              description: (detail.Item || detail.item_code || gst.ItemCode) && (detail.ItemDescription || detail.item_description)
-                ? `${detail.Item || detail.item_code || gst.ItemCode} - ${detail.ItemDescription || detail.item_description}` 
-                : (detail.Item || detail.item_code || gst.ItemCode || detail.ItemDescription || detail.item_description || ""),
+              year: "",
+              grnNo: item.GrnNo || item.PoNo || item.no || "",
+              grnDate: item.GrnDate || item.PoDate || item.challan_date || "",
+              challanNo: item.ChallanNo || item.PoNo || item.challan_no || "",
+              challanDate: item.ChallanDate || item.PoDate || item.challan_date || "",
+              invoiceNo: item.InvoiceNo || item.PoNo || item.invoice_no || "",
+              invoiceDate: item.InvoiceDate || item.PoDate || item.invoice_Date || "",
+              supplier: item.SelectSupplier || item.Supplier || item.supplier_name || "",
+              supplierCode: item.SelectSupplier ? item.SelectSupplier.split(" - ")[0] : (item.CodeNo || ""),
+              poNo: detail.PoNo || item.SelectPO || item.PoNo || "",
+              user: item.PreparedBy || item.created_by_username || "",
+              description: (detail.Item || detail.ItemNoCode || detail.item_code || gst.ItemCode) && (detail.Description || detail.ItemDescription || detail.item_description)
+                ? `${detail.Item || detail.ItemNoCode || detail.item_code || gst.ItemCode} - ${detail.Description || detail.ItemDescription || detail.item_description}` 
+                : (detail.Item || detail.ItemNoCode || detail.item_code || gst.ItemCode || detail.Description || detail.ItemDescription || detail.item_description || ""),
               hsnCode: gst.HSN || detail.HSN || detail.HSNCode || detail.hsn_code || detail.HSN_SAC_Code || detail.hsn_sac_code || detail.hsnSacCode || detail.Hsn || detail.hsn || "",
               dis: parseFloat(detail.Disc || detail.disc || gst.Discount || detail.Discount || detail.discount || detail.dis || detail.dis_per || detail.discount_percent || detail.disc_per || 0),
               qty: qty,
-              taxableValue: parseFloat(gst.AssValue || (rate * qty)),
-              cgst: parseFloat(gst.CGST || gst.cgst_per || gst.cgst || detail.CGST || detail.cgst_per || detail.cgst || detail.cgstPer || detail.cgst_percent || item.TOC_CGST || item.cgst || 0),
-              sgst: parseFloat(gst.SGST || gst.sgst_per || gst.sgst || detail.SGST || detail.sgst_per || detail.sgst || detail.sgstPer || detail.sgst_percent || item.TOC_SGST || item.sgst || 0),
-              igst: parseFloat(gst.IGST || gst.igst_per || gst.igst || detail.IGST || detail.igst_per || detail.igst || detail.igstPer || detail.igst_percent || item.TOC_IGST || item.igst || 0),
-              total: gst.Total || item.GR_Total || item.net_total || item.total || (rate * qty).toFixed(2),
+              taxableValue: parseFloat(gst.assessable_value || gst.AssValue || (rate * qty)),
+              cgst: parseFloat(gst.cgst || gst.CGST || gst.cgst_per || gst.cgst || detail.CGST || detail.cgst_per || detail.cgst || detail.cgstPer || detail.cgst_percent || item.TOC_CGST || item.cgst || 0),
+              sgst: parseFloat(gst.sgst || gst.SGST || gst.sgst_per || gst.sgst || detail.SGST || detail.sgst_per || detail.sgst || detail.sgstPer || detail.sgst_percent || item.TOC_SGST || item.sgst || 0),
+              igst: parseFloat(gst.igst || gst.IGST || gst.igst_per || gst.igst || detail.IGST || detail.igst_per || detail.igst || detail.igstPer || detail.igst_percent || item.TOC_IGST || item.igst || 0),
+              total: detail.Total || gst.Total || gst.grand_total || item.GR_Total || item.net_total || item.total || (rate * qty).toFixed(2),
               
               // Master Level Data (Footer/Header)
-              paymentTerms: item.PaymentTerms || "",
-              poDate: item.PoDate || "",
-              challanNo: item.PoNo || item.no || "",
-              challanDate: item.PoDate || item.challan_date || "",
-              packCharges: parseFloat(item.TOC_PackCharges || 0),
-              transCharges: parseFloat(item.TOC_TransportCost || 0),
-              insCharges: parseFloat(item.TOC_Insurance || 0),
-              instCharges: parseFloat(item.TOC_InstallationCharges || 0),
-              otherCharges: parseFloat(item.TOC_OtherCharges || 0),
-              tdsPer: parseFloat(item.TOC_TDS || 0),
+              paymentTerms: item.PaymentTermDay || item.PaymentTerms || "",
+              poDate: detail.Date || item.PoDate || "",
+              challanNo: item.ChallanNo || item.PoNo || item.no || "",
+              challanDate: item.ChallanDate || item.PoDate || item.challan_date || "",
+              packCharges: parseFloat(gst.packing_forwarding_charges || item.TOC_PackCharges || 0),
+              transCharges: parseFloat(gst.transport_charges || item.TOC_TransportCost || 0),
+              insCharges: parseFloat(gst.insurance || item.TOC_Insurance || 0),
+              instCharges: parseFloat(gst.installation_charges || item.TOC_InstallationCharges || 0),
+              otherCharges: parseFloat(gst.other_charges || item.TOC_OtherCharges || 0),
+              tdsPer: parseFloat(gst.Tds || item.TOC_TDS || 0),
             };
 
             console.log(`Mapped Item Row for DirectBill:`, mappedItem);
@@ -155,6 +193,7 @@ const PurchaseBill = () => {
       document.body.classList.remove("side-nav-open");
     }
   }, [sideNavOpen]);
+
 
 
 
@@ -278,7 +317,13 @@ const PurchaseBill = () => {
                             <td>{data.poNo}</td>
                             <td>{data.total}</td>
                             <td>{data.user}</td>
-                            <td><FaEye className="text-primary cursor-pointer" /></td>
+                            <td>
+                              <FaEye 
+                                className="text-primary cursor-pointer" 
+                                onClick={() => handleViewPdf(data.id)} 
+                                title="View PDF"
+                              />
+                            </td>
                             <td><div className="badge bg-success p-1"><FaCheck /></div></td>
                             <td><div className="badge bg-success p-1"><FaCheck /></div></td>
                             <td>

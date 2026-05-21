@@ -419,11 +419,46 @@ const BillMaterial = () => {
     })
   }
 
-  const handleSaveTool = () => {
+  const handleSaveTool = async () => {
     if (!toolFormData.toolItem) {
       toast.error("Please select a Tool/Item.")
       return
     }
+
+    try {
+      const calculatedTotalLife = toolFormData.totalLife || String(Number(toolFormData.toolDieLife || 0) * Number(toolFormData.resharpeningLife || 0));
+
+      const payload = {
+        tool_item: toolFormData.toolItem || null,
+        tool_life: toolFormData.toolDieLife || null,
+        no_of_resharpening: toolFormData.resharpeningLife || null,
+        total: calculatedTotalLife,
+        bom_item: activeBOMItem ? activeBOMItem.id : null
+      };
+
+      const token = localStorage.getItem("accessToken");
+      const headers = {
+        "Content-Type": "application/json",
+      };
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+
+      const response = await fetch("https://erp-render.onrender.com/All_Masters/tools/", {
+        method: "POST",
+        headers: headers,
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to save tool to API");
+      }
+    } catch (error) {
+      console.error("Error saving tool:", error);
+      toast.error("Failed to save tool. Please try again.");
+      return;
+    }
+
     const newTool = {
       ...toolFormData,
       id: Date.now()
