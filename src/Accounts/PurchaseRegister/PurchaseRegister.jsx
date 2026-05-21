@@ -31,13 +31,13 @@ const PurchaseRegister = () => {
       const token = localStorage.getItem("accessToken");
       
       const [jobworkResponse, purchaseResponse] = await Promise.all([
-        axios.get(`https://erp-render.onrender.com/Account/jobwork-bill-register/?from_date=${fromDate}&to_date=${toDate}`, {
+        axios.get(`http://127.0.0.1:8000/Account/jobwork-bill-register/?from_date=${fromDate}&to_date=${toDate}`, {
           headers: { Authorization: `Bearer ${token}` }
         }).catch(err => {
           console.error("Error fetching jobwork bills:", err);
           return { data: [] };
         }),
-        axios.get(`https://erp-render.onrender.com/Account/bill-register/?from_date=${fromDate}&to_date=${toDate}`, {
+        axios.get(`http://127.0.0.1:8000/Account/bill-register/?from_date=${fromDate}&to_date=${toDate}`, {
           headers: { Authorization: `Bearer ${token}` }
         }).catch(err => {
           console.error("Error fetching purchase bills:", err);

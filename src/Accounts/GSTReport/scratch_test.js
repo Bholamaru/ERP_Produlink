@@ -2,7 +2,7 @@ const axios = require('axios');
 
 async function test() {
   try {
-    const response = await axios.get('https://erp-render.onrender.com/Account/invoice/date-filter/', {
+    const response = await axios.get('http://127.0.0.1:8000/Account/invoice/date-filter/', {
       params: {
         from_date: '2026-05-01',
         to_date: '2026-05-10'

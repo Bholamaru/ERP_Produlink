@@ -22,7 +22,7 @@ const GSTR1 = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem("accessToken");
-      const response = await axios.get(`https://erp-render.onrender.com/Account/invoice/date-filter/`, {
+      const response = await axios.get(`http://127.0.0.1:8000/Account/invoice/date-filter/`, {
         headers: {
           Authorization: `Bearer ${token}`
         },
