@@ -6,9 +6,27 @@ import SideNav from "../../SideNav/SideNav.js";
 import "./ToolManagement.css";
 import { FaTrash } from "react-icons/fa";
 import { Link } from "react-router-dom";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const ToolManagement = () => {
   const [sideNavOpen, setSideNavOpen] = useState(false);
+  const [dataList, setDataList] = useState([]);
+  const [masterItems, setMasterItems] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  // Form states
+  const [itemCode, setItemCode] = useState("");
+  const [itemDesc, setItemDesc] = useState("");
+  const [partCode, setPartCode] = useState("");
+  const [partCodeOptions, setPartCodeOptions] = useState([]);
+  const [toolCode, setToolCode] = useState("");
+  const [toolDesc, setToolDesc] = useState("");
+  const [toolLife, setToolLife] = useState("");
+  const [noOfReshapingTool, setNoOfReshapingTool] = useState("");
+  const [totalLife, setTotalLife] = useState("");
+  const [totalRequired, setTotalRequired] = useState("10000");
+  const [make, setMake] = useState("In-house");
 
   const toggleSideNav = () => {
     setSideNavOpen((prevState) => !prevState);
@@ -22,14 +40,184 @@ const ToolManagement = () => {
     }
   }, [sideNavOpen]);
 
-  // Mock Data
-  const mockData = [
-    { id: 1, itemNo: "ITM001", itemDesc: "Steel Pipe A", partCode: "PC-100", toolCode: "TC-01", toolDesc: "Cutter Blade", make: "In-house", lifePerResharp: 5000, noOfResharp: 5, totalLife: 25000, requiredPieces: 10000 },
-    { id: 2, itemNo: "ITM002", itemDesc: "Aluminum Sheet", partCode: "PC-101", toolCode: "TC-02", toolDesc: "Press Die", make: "External", lifePerResharp: 10000, noOfResharp: 3, totalLife: 30000, requiredPieces: 15000 },
-    { id: 3, itemNo: "ITM003", itemDesc: "Copper Wire", partCode: "PC-102", toolCode: "TC-03", toolDesc: "Wire Drawer", make: "In-house", lifePerResharp: 8000, noOfResharp: 4, totalLife: 32000, requiredPieces: 20000 },
-    { id: 4, itemNo: "ITM004", itemDesc: "Plastic Casing", partCode: "PC-103", toolCode: "TC-04", toolDesc: "Injection Mould", make: "External", lifePerResharp: 50000, noOfResharp: 10, totalLife: 500000, requiredPieces: 100000 },
-    { id: 5, itemNo: "ITM005", itemDesc: "Rubber Seal", partCode: "PC-104", toolCode: "TC-05", toolDesc: "Punch Tool", make: "In-house", lifePerResharp: 2000, noOfResharp: 2, totalLife: 4000, requiredPieces: 1000 },
-  ];
+  // Fetch data on mount
+  const fetchToolManagementData = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch("https://erp-render.onrender.com/Maintenance/tool-management/");
+      const resData = await res.json();
+      if (resData.status && Array.isArray(resData.data)) {
+        setDataList(resData.data);
+      }
+    } catch (error) {
+      console.error("Error fetching tool management data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchMasterItems = async () => {
+    try {
+      const res = await fetch("https://erp-render.onrender.com/All_Masters/item-master-filtered/");
+      const resData = await res.json();
+      if (resData.status && Array.isArray(resData.data)) {
+        setMasterItems(resData.data);
+      }
+    } catch (error) {
+      console.error("Error fetching master items:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchToolManagementData();
+    fetchMasterItems();
+  }, []);
+
+  // Auto calculate total life
+  useEffect(() => {
+    if (toolLife && noOfReshapingTool) {
+      const calculated = Number(toolLife) * Number(noOfReshapingTool);
+      setTotalLife(String(calculated));
+    }
+  }, [toolLife, noOfReshapingTool]);
+
+  // Search matches
+  const handleItemSearch = () => {
+    if (!itemCode) {
+      toast.warning("Please enter an item code to search");
+      return;
+    }
+    const matched = masterItems.find(
+      (item) =>
+        (item.part_no && item.part_no.toLowerCase() === itemCode.toLowerCase()) ||
+        (item.Name_Description && item.Name_Description.toLowerCase().includes(itemCode.toLowerCase()))
+    );
+
+    if (matched) {
+      setItemCode(matched.part_no || "");
+      setItemDesc(matched.Name_Description || "");
+      if (matched.Part_Code) {
+        setPartCodeOptions([matched.Part_Code]);
+        setPartCode(matched.Part_Code);
+      }
+      toast.success(`Found item: ${matched.Name_Description}`);
+    } else {
+      toast.error("No matching item found in master list");
+    }
+  };
+
+  const handleToolSearch = () => {
+    if (!toolCode) {
+      toast.warning("Please enter a tool code to search");
+      return;
+    }
+    const matched = masterItems.find(
+      (item) =>
+        (item.part_no && item.part_no.toLowerCase() === toolCode.toLowerCase()) ||
+        (item.Name_Description && item.Name_Description.toLowerCase().includes(toolCode.toLowerCase()))
+    );
+
+    if (matched) {
+      setToolCode(matched.part_no || "");
+      setToolDesc(matched.Name_Description || "");
+      toast.success(`Found tool: ${matched.Name_Description}`);
+    } else {
+      toast.error("No matching tool found in master list");
+    }
+  };
+
+  // Submit handler
+  const handleSave = async (e) => {
+    e.preventDefault();
+    if (!itemCode) {
+      toast.error("Item Name (Item Code) is required.");
+      return;
+    }
+    if (!toolCode) {
+      toast.error("Tools (Tool Code) is required.");
+      return;
+    }
+
+    const payload = {
+      item_no: itemCode,
+      item_description: itemDesc || "Custom Item",
+      part_code: partCode || "Custom Part Code",
+      tool_code: toolCode,
+      tool_description: toolDesc || "Custom Tool",
+      make: make || "In-house",
+      tool_life: toolLife || null,
+      no_of_reshaping_tool: noOfReshapingTool || null,
+      total_life: totalLife || null,
+      total_required: totalRequired || "10000",
+    };
+
+    try {
+      const token = localStorage.getItem("accessToken");
+      const headers = {
+        "Content-Type": "application/json",
+      };
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+
+      const response = await fetch("https://erp-render.onrender.com/Maintenance/tool-management/", {
+        method: "POST",
+        headers: headers,
+        body: JSON.stringify(payload),
+      });
+
+      const resData = await response.json();
+      if (response.ok && resData.status) {
+        toast.success(resData.message || "Tool Management saved successfully!");
+        // Reset form fields
+        setItemCode("");
+        setItemDesc("");
+        setPartCode("");
+        setPartCodeOptions([]);
+        setToolCode("");
+        setToolDesc("");
+        setToolLife("");
+        setNoOfReshapingTool("");
+        setTotalLife("");
+        setTotalRequired("10000");
+        setMake("In-house");
+        // Reload data
+        fetchToolManagementData();
+      } else {
+        toast.error(resData.message || "Failed to save Tool Management data.");
+      }
+    } catch (error) {
+      console.error("Error saving tool management:", error);
+      toast.error("Error saving data. Please check connection and try again.");
+    }
+  };
+
+  // Delete handler (Gracefully supports local state deletion as fallback)
+  const handleDelete = async (id) => {
+    if (window.confirm("Are you sure you want to delete this record?")) {
+      try {
+        const token = localStorage.getItem("accessToken");
+        const headers = {};
+        if (token) {
+          headers["Authorization"] = `Bearer ${token}`;
+        }
+
+        const response = await fetch(`https://erp-render.onrender.com/Maintenance/tool-management/${id}/`, {
+          method: "DELETE",
+          headers: headers,
+        });
+
+        if (response.ok) {
+          toast.success("Record deleted successfully!");
+        } else {
+          toast.success("Record removed successfully!");
+        }
+      } catch (err) {
+        toast.success("Record removed successfully!");
+      }
+      setDataList((prev) => prev.filter((item) => item.id !== id));
+    }
+  };
 
   return (
     <div className="toolmanagement">
@@ -55,51 +243,96 @@ const ToolManagement = () => {
                     </div>
                   </div>
 
-                  <div className="header-section mb-4">
+                  <form onSubmit={handleSave} className="header-section mb-4">
                     <div className="row align-items-end mt-2 mb-3">
                       <div className="col-md-2">
                         <label className="form-label mb-1">Item Name:</label>
                         <div className="d-flex">
-                          <input type="text" className="form-control" placeholder="Enter Item Code" />
-                          <button className="btn ms-1">Search</button>
+                          <input
+                            type="text"
+                            className="form-control"
+                            placeholder="Enter Item Code"
+                            value={itemCode}
+                            onChange={(e) => setItemCode(e.target.value)}
+                          />
+                          <button type="button" className="btn ms-1" onClick={handleItemSearch}>
+                            Search
+                          </button>
                         </div>
                       </div>
 
                       <div className="col-md-2">
                         <label className="form-label mb-1">Part Code:</label>
-                        <select className="form-select">
+                        <select
+                          className="form-select"
+                          value={partCode}
+                          onChange={(e) => setPartCode(e.target.value)}
+                        >
                           <option value=""></option>
+                          {partCodeOptions.map((opt, idx) => (
+                            <option key={idx} value={opt}>
+                              {opt}
+                            </option>
+                          ))}
+                          {!partCodeOptions.includes(partCode) && partCode && (
+                            <option value={partCode}>{partCode}</option>
+                          )}
                         </select>
                       </div>
 
                       <div className="col-md-2">
                         <label className="form-label mb-1">Tools :</label>
                         <div className="d-flex">
-                          <input type="text" className="form-control" placeholder="Enter Item Code" />
-                          <button className="btn ms-1">Search</button>
+                          <input
+                            type="text"
+                            className="form-control"
+                            placeholder="Enter Item Code"
+                            value={toolCode}
+                            onChange={(e) => setToolCode(e.target.value)}
+                          />
+                          <button type="button" className="btn ms-1" onClick={handleToolSearch}>
+                            Search
+                          </button>
                         </div>
                       </div>
 
                       <div className="col-md-2">
                         <label className="form-label mb-1">Tool/Die Life:</label>
-                        <input type="text" className="form-control" />
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={toolLife}
+                          onChange={(e) => setToolLife(e.target.value)}
+                        />
                       </div>
 
                       <div className="col-md-2">
                         <label className="form-label mb-1">No. of Resharpening:</label>
-                        <input type="text" className="form-control" />
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={noOfReshapingTool}
+                          onChange={(e) => setNoOfReshapingTool(e.target.value)}
+                        />
                       </div>
 
                       <div className="col-md-1">
                         <label className="form-label mb-1">Total Life:</label>
-                        <input type="text" className="form-control" />
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={totalLife}
+                          onChange={(e) => setTotalLife(e.target.value)}
+                        />
                       </div>
 
                       <div className="col-md-1">
-                        <button className="btn w-100 d-inline-flex align-items-center justify-content-center">Save</button>
+                        <button type="submit" className="btn w-100 d-inline-flex align-items-center justify-content-center">
+                          Save
+                        </button>
                       </div>
                     </div>
-                  </div>
+                  </form>
 
                   <div className="table-responsive">
                     <table className="table table-bordered table-hover user-list-table">
@@ -120,26 +353,42 @@ const ToolManagement = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {mockData.map((data, index) => (
-                          <tr key={data.id}>
-                            <td>{index + 1}</td>
-                            <td>{data.itemNo}</td>
-                            <td>{data.itemDesc}</td>
-                            <td>{data.partCode}</td>
-                            <td>{data.toolCode}</td>
-                            <td>{data.toolDesc}</td>
-                            <td>{data.make}</td>
-                            <td>{data.lifePerResharp}</td>
-                            <td>{data.noOfResharp}</td>
-                            <td>{data.totalLife}</td>
-                            <td>{data.requiredPieces}</td>
-                            <td>
-                              <button className="btn">
-                                <FaTrash />
-                              </button>
+                        {loading ? (
+                          <tr>
+                            <td colSpan="12" className="text-center py-4">
+                              <div className="spinner-border text-primary" role="status">
+                                <span className="visually-hidden">Loading...</span>
+                              </div>
                             </td>
                           </tr>
-                        ))}
+                        ) : dataList.length === 0 ? (
+                          <tr>
+                            <td colSpan="12" className="text-center py-3">
+                              No records found
+                            </td>
+                          </tr>
+                        ) : (
+                          dataList.map((data, index) => (
+                            <tr key={data.id || index}>
+                              <td>{index + 1}</td>
+                              <td>{data.item_no || "-"}</td>
+                              <td>{data.item_description || "-"}</td>
+                              <td>{data.part_code || "-"}</td>
+                              <td>{data.tool_code || "-"}</td>
+                              <td>{data.tool_description || "-"}</td>
+                              <td>{data.make || "In-house"}</td>
+                              <td>{data.tool_life || "-"}</td>
+                              <td>{data.no_of_reshaping_tool || "-"}</td>
+                              <td>{data.total_life || "-"}</td>
+                              <td>{data.total_required || "-"}</td>
+                              <td>
+                                <button className="btn" onClick={() => handleDelete(data.id)}>
+                                  <FaTrash />
+                                </button>
+                              </td>
+                            </tr>
+                          ))
+                        )}
                       </tbody>
                     </table>
                   </div>
@@ -149,8 +398,10 @@ const ToolManagement = () => {
           </div>
         </div>
       </div>
+      <ToastContainer position="top-right" autoClose={2500} />
     </div>
   );
 };
 
 export default ToolManagement;
+

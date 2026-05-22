@@ -231,6 +231,7 @@ const BillMaterial = () => {
     totalLife: "",
   })
   const [toolsList, setToolsList] = useState([])
+  const [toolDropdownItems, setToolDropdownItems] = useState([])
   const [activeBOMItem, setActiveBOMItem] = useState(null)
 
   // Part Code dropdown state
@@ -260,6 +261,16 @@ const BillMaterial = () => {
 
       const opsData = await fetchoperationData()
       setOperationList(opsData)
+
+      try {
+        const toolRes = await fetch("https://erp-render.onrender.com/All_Masters/item-master-filtered/")
+        const toolData = await toolRes.json()
+        if (toolData.status && Array.isArray(toolData.data)) {
+          setToolDropdownItems(toolData.data)
+        }
+      } catch (err) {
+        console.error("Error fetching tool items:", err)
+      }
     }
 
     loadInitialData()
@@ -1453,9 +1464,12 @@ const BillMaterial = () => {
                                               <span className="fw-bold text-secondary mb-1">Tools/Items :</span>
                                               <select className="form-select form-select-sm" name="toolItem" value={toolFormData.toolItem} onChange={handleToolInputChange} style={{ fontSize: "11px", padding: "2px 4px", width: "200px", height: "26px" }}>
                                                 <option value="">Select Tool</option>
-                                                <option value="CONSER1087 | | CANON 12 A TONER">CONSER1087 | | CANON 12 A TONER</option>
-                                                <option value="CONSER1088 | | HP LASERJET TONER">CONSER1088 | | HP LASERJET TONER</option>
-                                                <option value="TOOL001 | | CARBIDE DRILL BIT">TOOL001 | | CARBIDE DRILL BIT</option>
+                                                {toolDropdownItems.map((item, index) => {
+                                                  const val = `${item.part_no || ""} | ${item.Part_Code || ""} | ${item.Name_Description || ""}`;
+                                                  return (
+                                                    <option key={index} value={val}>{val}</option>
+                                                  );
+                                                })}
                                               </select>
                                             </div>
 
