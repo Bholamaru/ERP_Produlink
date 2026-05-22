@@ -47,7 +47,7 @@ const PurchaseBill = () => {
 
     try {
       const token = localStorage.getItem("accessToken");
-      const response = await axios.get(`https://erp-render.onrender.com/Account/purchasebillpdf/${cleanId}/`, {
+      const response = await axios.get(`http://127.0.0.1:8000/Account/purchasebillpdf/${cleanId}/`, {
         headers: {
           Authorization: `Bearer ${token}`
         },

@@ -151,7 +151,7 @@ const JobworkBill = () => {
 
     try {
       const token = localStorage.getItem("accessToken");
-      const response = await axios.get(`https://erp-render.onrender.com/Account/generate-jobworkbill-pdf/${masterId}/`, {
+      const response = await axios.get(`http://127.0.0.1:8000/Account/generate-jobworkbill-pdf/${masterId}/`, {
         headers: {
           Authorization: `Bearer ${token}`
         },

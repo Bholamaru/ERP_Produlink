@@ -111,7 +111,7 @@ const PurchaseRegister = () => {
     try {
       const token = localStorage.getItem("accessToken");
       const endpoint = isJobwork ? 'jobwork-bill-pdf' : 'bill-register-pdf';
-      const response = await axios.get(`https://erp-render.onrender.com/Account/${endpoint}/${id}/`, {
+      const response = await axios.get(`http://127.0.0.1:8000/Account/${endpoint}/${id}/`, {
         headers: {
           Authorization: `Bearer ${token}`
         },

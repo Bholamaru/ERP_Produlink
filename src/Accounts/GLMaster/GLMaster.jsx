@@ -33,7 +33,7 @@ const GLMaster = () => {
     try {
       const token = localStorage.getItem("accessToken");
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
-      const response = await axios.get("https://erp-render.onrender.com/Account/general-ledger/", { headers });
+      const response = await axios.get("http://127.0.0.1:8000/Account/general-ledger/", { headers });
       setDataList(response.data);
     } catch (error) {
       console.error("Error fetching GL data:", error);
@@ -65,14 +65,14 @@ const GLMaster = () => {
     try {
       if (editingId) {
         // Update
-        const response = await axios.put(`https://erp-render.onrender.com/Account/general-ledger/${editingId}/`, payload, { headers });
+        const response = await axios.put(`http://127.0.0.1:8000/Account/general-ledger/${editingId}/`, payload, { headers });
         if (response.status === 200 || response.status === 201) {
           alert("General Ledger updated successfully");
           setEditingId(null);
         }
       } else {
         // Create
-        const response = await axios.post("https://erp-render.onrender.com/Account/general-ledger/", payload, { headers });
+        const response = await axios.post("http://127.0.0.1:8000/Account/general-ledger/", payload, { headers });
         if (response.status === 200 || response.status === 201) {
           alert("General Ledger created successfully");
         }
@@ -101,7 +101,7 @@ const GLMaster = () => {
     const token = localStorage.getItem("accessToken");
     const headers = token ? { Authorization: `Bearer ${token}` } : {};
     try {
-      const response = await axios.delete(`https://erp-render.onrender.com/Account/general-ledger/${id}/`, { headers });
+      const response = await axios.delete(`http://127.0.0.1:8000/Account/general-ledger/${id}/`, { headers });
       if (response.status === 200 || response.status === 204) {
         alert("General Ledger deleted successfully");
         fetchData();
