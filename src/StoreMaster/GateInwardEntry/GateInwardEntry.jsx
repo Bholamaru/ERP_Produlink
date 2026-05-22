@@ -26,14 +26,39 @@ const GateInwardEntry = () => {
   const itemsPerPage = 10;
 
   const [gateInwardData, setGateInwardData] = useState([]);
+  const [grnDataMap, setGrnDataMap] = useState({});
 
   useEffect(() => {
     fetchGateInward();
+    fetchGrnData();
   }, []);
 
  const fetchGateInward = async () => {
     const data = await getgateInward();
     setGateInwardData(data.sort((a, b) => b.id - a.id));
+  };
+
+  const fetchGrnData = async () => {
+    try {
+      const token = localStorage.getItem("accessToken");
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      const response = await fetch("https://erp-render.onrender.com/Store/gate-entry-wise-grn-data/", { headers });
+      const json = await response.json();
+      if (json.status && Array.isArray(json.results)) {
+        const map = {};
+        json.results.forEach((entry) => {
+          if (entry.GateEntryNo && Array.isArray(entry.data) && entry.data.length > 0) {
+            map[entry.GateEntryNo] = {
+              GrnNo: entry.data[0].GrnNo || "-",
+              GrnDate: entry.data[0].GrnDate || "-",
+            };
+          }
+        });
+        setGrnDataMap(map);
+      }
+    } catch (error) {
+      console.error("Error fetching GRN data:", error);
+    }
   };
 
   // --- DELETE FUNCTIONALITY ---
@@ -209,6 +234,8 @@ const GateInwardEntry = () => {
                               <th>Challan Date</th>
                               <th>Invoice No</th>
                               <th>Invoice Date</th>
+                              <th>Ref Doc No</th>
+                              <th>Ref Doc Date</th>
                               <th>User</th>
                               <th>Edit</th>
                               <th>View</th>
@@ -242,6 +269,8 @@ const GateInwardEntry = () => {
                                   <td>{item.ChallanDate}</td>
                                   <td>{item.InVoiceNo}</td>
                                   <td>{item.Invoicedate}</td>
+                                  <td>{grnDataMap[item.GE_No]?.GrnNo || "-"}</td>
+                                  <td>{grnDataMap[item.GE_No]?.GrnDate || "-"}</td>
 
                                   <td>{item.User || "-"}</td>
 
