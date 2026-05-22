@@ -155,3 +155,34 @@
   .toolmanagement .table-responsive { overflow-x: auto !important; } /* Allow horizontal scroll ONLY on very small screens if necessary */
   .toolmanagement .user-list-table { table-layout: auto !important; }
 }
+
+/* Autocomplete Dropdown List */
+.toolmanagement .list-group {
+  border-radius: 4px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+  border: 1px solid #dee2e6;
+  z-index: 1050 !important;
+}
+
+.toolmanagement .list-group-item {
+  color: #333;
+  transition: background-color 0.15s ease, color 0.15s ease;
+  font-size: 0.76rem !important;
+  border: none !important;
+  border-bottom: 1px solid #f1f1f1 !important;
+}
+
+.toolmanagement .list-group-item:last-child {
+  border-bottom: none !important;
+}
+
+.toolmanagement .list-group-item-action:hover,
+.toolmanagement .list-group-item-action:focus {
+  background-color: #f1f8ff !important;
+  color: #007bff !important;
+}
+
+.toolmanagement .list-group-item.disabled {
+  background-color: #fafafa !important;
+  color: #aaa !important;
+}
