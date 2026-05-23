@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min";
 import NavBar from "../../NavBar/NavBar.js";
@@ -27,6 +27,20 @@ const ToolManagement = () => {
   const [totalLife, setTotalLife] = useState("");
   const [totalRequired, setTotalRequired] = useState("10000");
   const [make, setMake] = useState("In-house");
+
+  // BOM items API states
+  const [bomItems, setBomItems] = useState({});
+  const [bomItemsList, setBomItemsList] = useState([]);
+  const [showItemDescDropdown, setShowItemDescDropdown] = useState(false);
+  const [itemDescSearch, setItemDescSearch] = useState("");
+  const [itemCodeSearch, setItemCodeSearch] = useState("");
+
+  // Tool dropdown states
+  const [showToolDropdown, setShowToolDropdown] = useState(false);
+  const [toolSearchTerm, setToolSearchTerm] = useState("");
+
+  const itemDescDropdownRef = useRef(null);
+  const toolDropdownRef = useRef(null);
 
   const toggleSideNav = () => {
     setSideNavOpen((prevState) => !prevState);
@@ -68,10 +82,106 @@ const ToolManagement = () => {
     }
   };
 
+  const fetchBomItems = async () => {
+    try {
+      const res = await fetch("http://127.0.0.1:8000/All_Masters/api/bom-items/");
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+      const resData = await res.json();
+      setBomItems(resData);
+
+      // Parse keys: format "ID - Name - FGCode"
+      const parsed = Object.keys(resData).map(key => {
+        const parts = key.split(" - ");
+        let id = "";
+        let name = key;
+        let code = key;
+        if (parts.length === 3) {
+          id = parts[0];
+          name = parts[1];
+          code = parts[2];
+        } else if (parts.length === 2) {
+          name = parts[0];
+          code = parts[1];
+        }
+        return {
+          rawKey: key,
+          id,
+          name,
+          code,
+          bom_items: resData[key]?.bom_items || []
+        };
+      });
+      setBomItemsList(parsed);
+    } catch (error) {
+      console.error("Error fetching BOM items:", error);
+    }
+  };
+
   useEffect(() => {
     fetchToolManagementData();
     fetchMasterItems();
+    fetchBomItems();
+
+    const handleClickOutside = (event) => {
+      if (itemDescDropdownRef.current && !itemDescDropdownRef.current.contains(event.target)) {
+        setShowItemDescDropdown(false);
+      }
+      if (toolDropdownRef.current && !toolDropdownRef.current.contains(event.target)) {
+        setShowToolDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const getCombinedItems = () => {
+    if (bomItemsList.length > 0) {
+      return bomItemsList;
+    }
+    // Fallback to masterItems
+    return masterItems.map(item => {
+      const id = item.id || "";
+      const name = item.Name_Description || "";
+      const code = item.part_no || "";
+      const rawKey = id ? `${id} - ${name} - ${code}` : (name && code ? `${name} - ${code}` : (name || code));
+      return {
+        rawKey,
+        id,
+        name,
+        code,
+        bom_items: item.Part_Code ? [{ PartCode: item.Part_Code }] : []
+      };
+    });
+  };
+
+  const selectBOMItem = (item) => {
+    setItemCode(item.code);
+    setItemDesc(item.rawKey);
+    setItemCodeSearch(item.code);
+    setItemDescSearch(item.rawKey);
+    setShowItemDescDropdown(false);
+
+    // Extract unique PartCodes from bom_items of the selected item
+    const uniquePartCodes = [...new Set(item.bom_items.map(bItem => bItem.PartCode).filter(Boolean))];
+    setPartCodeOptions(uniquePartCodes);
+    setPartCode(""); // Do not select directly
+  };
+
+  const handleItemDescChange = (val) => {
+    setItemDescSearch(val);
+    setItemDesc(val);
+    setShowItemDescDropdown(true);
+    if (!val) {
+      setItemCode("");
+      setItemCodeSearch("");
+      setPartCodeOptions([]);
+      setPartCode("");
+    }
+  };
+
+
 
   // Auto calculate total life
   useEffect(() => {
@@ -120,6 +230,7 @@ const ToolManagement = () => {
     if (matched) {
       setToolCode(matched.part_no || "");
       setToolDesc(matched.Name_Description || "");
+      setMake(matched.Male || matched.male || matched.make || "In-house");
       toast.success(`Found tool: ${matched.Name_Description}`);
     } else {
       toast.error("No matching tool found in master list");
@@ -174,8 +285,11 @@ const ToolManagement = () => {
         setItemDesc("");
         setPartCode("");
         setPartCodeOptions([]);
+        setItemCodeSearch("");
+        setItemDescSearch("");
         setToolCode("");
         setToolDesc("");
+        setToolSearchTerm("");
         setToolLife("");
         setNoOfReshapingTool("");
         setTotalLife("");
@@ -245,23 +359,56 @@ const ToolManagement = () => {
 
                   <form onSubmit={handleSave} className="header-section mb-4">
                     <div className="row align-items-end mt-2 mb-3">
-                      <div className="col-md-2">
+                      <div className="col-md-3 position-relative" ref={itemDescDropdownRef}>
                         <label className="form-label mb-1">Item Name:</label>
-                        <div className="d-flex">
-                          <input
-                            type="text"
-                            className="form-control"
-                            placeholder="Enter Item Code"
-                            value={itemCode}
-                            onChange={(e) => setItemCode(e.target.value)}
-                          />
-                          <button type="button" className="btn ms-1" onClick={handleItemSearch}>
-                            Search
-                          </button>
-                        </div>
+                        <input
+                          type="text"
+                          className="form-control"
+                          placeholder="Search by Name or Code..."
+                          value={itemDescSearch}
+                          onChange={(e) => handleItemDescChange(e.target.value)}
+                          onFocus={() => setShowItemDescDropdown(true)}
+                        />
+                        {showItemDescDropdown && itemDescSearch && (
+                          <ul className="list-group position-absolute z-3" style={{
+                            top: "100%",
+                            left: 0,
+                            right: 0,
+                            maxHeight: "220px",
+                            overflowY: "auto",
+                            fontSize: "0.78rem",
+                            border: "1px solid #dee2e6",
+                            background: "#fff",
+                            padding: 0,
+                            margin: 0,
+                            boxShadow: "0 4px 8px rgba(0,0,0,0.12)",
+                            listStyle: "none",
+                            minWidth: "320px"
+                          }}>
+                            {getCombinedItems()
+                              .filter(item =>
+                                item.rawKey.toLowerCase().includes(itemDescSearch.toLowerCase())
+                              )
+                              .map((item, idx) => (
+                                <li
+                                  key={idx}
+                                  className="list-group-item list-group-item-action py-2 px-3"
+                                  style={{ cursor: "pointer", textAlign: "left", whiteSpace: "normal" }}
+                                  onClick={() => selectBOMItem(item)}
+                                >
+                                  <div style={{ fontWeight: 600, color: "#333", fontSize: "0.82rem" }}>{item.rawKey}</div>
+                                </li>
+                              ))}
+                            {getCombinedItems().filter(item =>
+                              item.rawKey.toLowerCase().includes(itemDescSearch.toLowerCase())
+                            ).length === 0 && (
+                              <li className="list-group-item disabled py-1 px-2 text-muted">No items found</li>
+                            )}
+                          </ul>
+                        )}
                       </div>
 
-                      <div className="col-md-2">
+                      <div className="col">
                         <label className="form-label mb-1">Part Code:</label>
                         <select
                           className="form-select"
@@ -280,23 +427,81 @@ const ToolManagement = () => {
                         </select>
                       </div>
 
-                      <div className="col-md-2">
+                      <div className="col-md-2 position-relative" ref={toolDropdownRef}>
                         <label className="form-label mb-1">Tools :</label>
-                        <div className="d-flex">
-                          <input
-                            type="text"
-                            className="form-control"
-                            placeholder="Enter Item Code"
-                            value={toolCode}
-                            onChange={(e) => setToolCode(e.target.value)}
-                          />
-                          <button type="button" className="btn ms-1" onClick={handleToolSearch}>
-                            Search
-                          </button>
-                        </div>
+                        <input
+                          type="text"
+                          className="form-control"
+                          placeholder="Search Tool..."
+                          value={toolSearchTerm}
+                          onChange={(e) => {
+                            setToolSearchTerm(e.target.value);
+                            setToolCode(e.target.value);
+                            setToolDesc(e.target.value);
+                            setShowToolDropdown(true);
+                          }}
+                          onFocus={() => setShowToolDropdown(true)}
+                        />
+                        {showToolDropdown && toolSearchTerm && (
+                          <ul className="list-group position-absolute z-3" style={{
+                            top: "100%",
+                            left: 0,
+                            right: 0,
+                            maxHeight: "220px",
+                            overflowY: "auto",
+                            fontSize: "0.78rem",
+                            border: "1px solid #dee2e6",
+                            background: "#fff",
+                            padding: 0,
+                            margin: 0,
+                            boxShadow: "0 4px 8px rgba(0,0,0,0.12)",
+                            listStyle: "none",
+                            minWidth: "250px"
+                          }}>
+                            {masterItems
+                              .filter(item => {
+                                const id = item.id || "";
+                                const name = item.Name_Description || "";
+                                const code = item.part_no || "";
+                                const toolDisplay = id ? `${id} - ${name} - ${code}` : (name && code ? `${name} - ${code}` : (name || code));
+                                return toolDisplay.toLowerCase().includes(toolSearchTerm.toLowerCase());
+                              })
+                              .map((item, idx) => {
+                                const id = item.id || "";
+                                const name = item.Name_Description || "";
+                                const code = item.part_no || "";
+                                const toolDisplay = id ? `${id} - ${name} - ${code}` : (name && code ? `${name} - ${code}` : (name || code));
+                                return (
+                                  <li
+                                    key={idx}
+                                    className="list-group-item list-group-item-action py-2 px-3"
+                                    style={{ cursor: "pointer", textAlign: "left", whiteSpace: "normal" }}
+                                    onClick={() => {
+                                      setToolCode(code);
+                                      setToolDesc(name);
+                                      setToolSearchTerm(toolDisplay);
+                                      setMake(item.Male || item.male || item.make || "In-house");
+                                      setShowToolDropdown(false);
+                                    }}
+                                  >
+                                    <div style={{ fontWeight: 600, color: "#333", fontSize: "0.82rem" }}>{toolDisplay}</div>
+                                  </li>
+                                );
+                              })}
+                            {masterItems.filter(item => {
+                              const id = item.id || "";
+                              const name = item.Name_Description || "";
+                              const code = item.part_no || "";
+                              const toolDisplay = id ? `${id} - ${name} - ${code}` : (name && code ? `${name} - ${code}` : (name || code));
+                              return toolDisplay.toLowerCase().includes(toolSearchTerm.toLowerCase());
+                            }).length === 0 && (
+                              <li className="list-group-item disabled py-1 px-2 text-muted">No tools found</li>
+                            )}
+                          </ul>
+                        )}
                       </div>
 
-                      <div className="col-md-2">
+                      <div className="col">
                         <label className="form-label mb-1">Tool/Die Life:</label>
                         <input
                           type="text"
@@ -306,8 +511,8 @@ const ToolManagement = () => {
                         />
                       </div>
 
-                      <div className="col-md-2">
-                        <label className="form-label mb-1">No. of Resharpening:</label>
+                      <div className="col">
+                        <label className="form-label mb-1" style={{ whiteSpace: "nowrap" }}>No. of Resharpening:</label>
                         <input
                           type="text"
                           className="form-control"
@@ -316,7 +521,7 @@ const ToolManagement = () => {
                         />
                       </div>
 
-                      <div className="col-md-1">
+                      <div className="col">
                         <label className="form-label mb-1">Total Life:</label>
                         <input
                           type="text"
@@ -326,8 +531,8 @@ const ToolManagement = () => {
                         />
                       </div>
 
-                      <div className="col-md-1">
-                        <button type="submit" className="btn w-100 d-inline-flex align-items-center justify-content-center">
+                      <div className="col-auto">
+                        <button type="submit" className="btn d-inline-flex align-items-center justify-content-center" style={{ minWidth: "75px" }}>
                           Save
                         </button>
                       </div>
