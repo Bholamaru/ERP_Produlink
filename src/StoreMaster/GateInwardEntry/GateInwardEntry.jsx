@@ -42,7 +42,7 @@ const GateInwardEntry = () => {
     try {
       const token = localStorage.getItem("accessToken");
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
-      const response = await fetch("https://erp-render.onrender.com/Store/gate-entry-wise-grn-data/", { headers });
+      const response = await fetch("http://127.0.0.1:8000/Store/gate-entry-wise-grn-data/", { headers });
       const json = await response.json();
       if (json.status && Array.isArray(json.results)) {
         const map = {};

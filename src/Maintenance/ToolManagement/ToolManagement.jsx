@@ -44,7 +44,7 @@ const ToolManagement = () => {
   const fetchToolManagementData = async () => {
     try {
       setLoading(true);
-      const res = await fetch("https://erp-render.onrender.com/Maintenance/tool-management/");
+      const res = await fetch("http://127.0.0.1:8000/Maintenance/tool-management/");
       const resData = await res.json();
       if (resData.status && Array.isArray(resData.data)) {
         setDataList(resData.data);
@@ -58,7 +58,7 @@ const ToolManagement = () => {
 
   const fetchMasterItems = async () => {
     try {
-      const res = await fetch("https://erp-render.onrender.com/All_Masters/item-master-filtered/");
+      const res = await fetch("http://127.0.0.1:8000/All_Masters/item-master-filtered/");
       const resData = await res.json();
       if (resData.status && Array.isArray(resData.data)) {
         setMasterItems(resData.data);
@@ -160,7 +160,7 @@ const ToolManagement = () => {
         headers["Authorization"] = `Bearer ${token}`;
       }
 
-      const response = await fetch("https://erp-render.onrender.com/Maintenance/tool-management/", {
+      const response = await fetch("http://127.0.0.1:8000/Maintenance/tool-management/", {
         method: "POST",
         headers: headers,
         body: JSON.stringify(payload),
@@ -202,7 +202,7 @@ const ToolManagement = () => {
           headers["Authorization"] = `Bearer ${token}`;
         }
 
-        const response = await fetch(`https://erp-render.onrender.com/Maintenance/tool-management/${id}/`, {
+        const response = await fetch(`http://127.0.0.1:8000/Maintenance/tool-management/${id}/`, {
           method: "DELETE",
           headers: headers,
         });

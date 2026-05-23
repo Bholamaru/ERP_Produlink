@@ -263,7 +263,7 @@ const BillMaterial = () => {
       setOperationList(opsData)
 
       try {
-        const toolRes = await fetch("https://erp-render.onrender.com/All_Masters/item-master-filtered/")
+        const toolRes = await fetch("http://127.0.0.1:8000/All_Masters/item-master-filtered/")
         const toolData = await toolRes.json()
         if (toolData.status && Array.isArray(toolData.data)) {
           setToolDropdownItems(toolData.data)
