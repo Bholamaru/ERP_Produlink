@@ -21,17 +21,55 @@ const GSTSalesReturnList = () => {
     }
   }, [sideNavOpen]);
 
-  const mockData = [
-    { sr: 1, year: "26-27", series: "GST SALES RETURN", no: "GSR 262700020", ap: false, date: "30/04/2026", party: "ENDURANCE TECHNOLOGIES LTD (H)", itemDetails: "Rate : 19.58 | Qty : 2574 | FG1152 FORK BOLT PRFH-006", amount: "59173.37", user: "Togre" },
-    { sr: 2, year: "26-27", series: "GST SALES RETURN", no: "GSR 262700019", ap: false, date: "30/04/2026", party: "ENDURANCE TECHNOLOGIES LTD (I)", itemDetails: "Rate : 22.39 | Qty : 140 | FG1073 TAP REBOUND SPLIT", amount: "3680.33", user: "Togre" },
-    { sr: 3, year: "26-27", series: "GST SALES RETURN", no: "GSR 262700018", ap: false, date: "30/04/2026", party: "ENDURANCE TECHNOLOGIES LTD (I)", itemDetails: "Rate : 22.39 | Qty : 300 | FG1073 TAP REBOUND SPLIT", amount: "7886.44", user: "Togre" },
-    { sr: 4, year: "26-27", series: "GST SALES RETURN", no: "GSR 262700017", ap: false, date: "30/04/2026", party: "ENDURANCE TECHNOLOGIES LTD (I)", itemDetails: "Rate : 8.27 | Qty : 246 | FG1313 LOCK NUT - Ø31 SPD", amount: "2388.61", user: "Togre" },
-    { sr: 5, year: "26-27", series: "GST SALES RETURN", no: "GSR 262700016", ap: false, date: "27/04/2026", party: "ENDURANCE TECHNOLOGIES LTD (I)", itemDetails: "Rate : 12.59 | Qty : 500 | FG1155 NUT REBOUND (MY-17)", amount: "7390.96", user: "prakash" },
-    { sr: 6, year: "26-27", series: "GST SALES RETURN", no: "GSR 262700015", ap: false, date: "27/04/2026", party: "ENDURANCE TECHNOLOGIES LTD (I)", itemDetails: "Rate : 8.27 | Qty : 1856 | FG1313 LOCK NUT - Ø31 SPD", amount: "18021.39", user: "prakash" },
-    { sr: 7, year: "26-27", series: "GST SALES RETURN", no: "GSR 262700014", ap: false, date: "27/04/2026", party: "ENDURANCE TECHNOLOGIES LTD (I)", itemDetails: "Rate : 8.27 | Qty : 1694 | FG1313 LOCK NUT - Ø31 SPD", amount: "16448.41", user: "prakash" },
-    { sr: 8, year: "26-27", series: "GST SALES RETURN", no: "GSR 262700013", ap: false, date: "23/04/2026", party: "ENDURANCE TECHNOLOGIES LTD (I)", itemDetails: "Rate : 7.20 | Qty : 82 | FG1500 EXTENSION B106C", amount: "693.19", user: "Togre" },
-    { sr: 9, year: "26-27", series: "GST SALES RETURN", no: "GSR 262700012", ap: false, date: "23/04/2026", party: "ENDURANCE TECHNOLOGIES LTD (I)", itemDetails: "Rate : 7.20 | Qty : 2000 | FG1500 EXTENSION B106C", amount: "16907.04", user: "Togre" },
-  ];
+  const [salesReturns, setSalesReturns] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    fetchSalesReturns();
+  }, []);
+
+  const fetchSalesReturns = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch("https://erp-render.onrender.com/Sales/Gstsalesretun/");
+      const resData = await res.json();
+      if (Array.isArray(resData)) {
+        setSalesReturns(resData);
+      } else if (resData.data && Array.isArray(resData.data)) {
+        setSalesReturns(resData.data);
+      }
+    } catch (error) {
+      console.error("Error fetching GST sales returns:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return "-";
+    const date = new Date(dateStr);
+    if (isNaN(date)) return dateStr;
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
+
+  const getYear = (invoiceNo) => {
+    if (!invoiceNo) return "-";
+    // Usually formatted as XX-XX
+    if (invoiceNo.length >= 4 && !isNaN(invoiceNo.substring(0, 4))) {
+      return `${invoiceNo.substring(0, 2)}-${invoiceNo.substring(2, 4)}`;
+    }
+    return "-";
+  };
+
+  const calculateTotalAmount = (items) => {
+    if (!items || !Array.isArray(items)) return 0;
+    return items.reduce((acc, item) => acc + (Number(item.grand_total) || Number(item.total_amount) || 0), 0);
+  };
+
+  const totalOverallAmount = salesReturns.reduce((acc, row) => acc + calculateTotalAmount(row.items), 0);
 
   return (
     <div className="gst-sales-return-list">
@@ -108,42 +146,65 @@ const GSTSalesReturnList = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {mockData.map((row, index) => (
-                          <tr key={index}>
-                            <td>{row.sr}</td>
-                            <td>{row.year}</td>
-                            <td>{row.series}</td>
-                            <td className="text-primary fw-bold">{row.no}</td>
-                            <td><input type="checkbox" checked={row.ap} readOnly /></td>
-                            <td>{row.date}</td>
-                            <td className="text-start">{row.party}</td>
-                            <td className="text-start" style={{ fontSize: "12px" }}>
-                              {row.itemDetails.split('|').map((part, i) => {
-                                if (i === 0) return <span key={i} className="text-primary fw-bold">{part}</span>;
-                                if (i === 1) return <span key={i} className="text-primary fw-bold mx-1">| {part}</span>;
-                                return <span key={i} className="text-orange ms-1">| {part}</span>;
-                              })}
-                            </td>
-                            <td className="text-end fw-bold">{row.amount}</td>
-                            <td>{row.user}</td>
-                            <td>
-                              <button className="view-eye-btn">
-                                <FaEye size={16} />
-                              </button>
+                        {loading ? (
+                          <tr>
+                            <td colSpan="11" className="text-center py-4">
+                              <div className="spinner-border text-primary" role="status">
+                                <span className="visually-hidden">Loading...</span>
+                              </div>
                             </td>
                           </tr>
-                        ))}
+                        ) : salesReturns.length === 0 ? (
+                          <tr>
+                            <td colSpan="11" className="text-center py-3 text-muted fw-bold">No Records Found</td>
+                          </tr>
+                        ) : (
+                          salesReturns.map((row, index) => {
+                            const totalAmount = calculateTotalAmount(row.items);
+                            return (
+                              <tr key={row.id || index}>
+                                <td>{index + 1}</td>
+                                <td>{getYear(row.sales_return_no)}</td>
+                                <td>{row.series || "GST SALES RETURN"}</td>
+                                <td className="text-primary fw-bold">{row.sales_return_no || "-"}</td>
+                                <td><input type="checkbox" /></td>
+                                <td>{formatDate(row.sales_return_date)}</td>
+                                <td className="text-start">{row.cust_name || "-"}</td>
+                                <td className="text-start" style={{ fontSize: "12px" }}>
+                                  {row.items && row.items.length > 1 ? (
+                                    <span className="text-primary fw-bold">Total Item : {row.items.length}</span>
+                                  ) : row.items && row.items.length === 1 ? (
+                                    <>
+                                      <span className="text-primary fw-bold">Rate : {row.items[0].rate || 0}</span>
+                                      <span className="text-primary fw-bold mx-1">| Qty : {row.items[0].return_qty || row.items[0].inv_qty || 0}</span>
+                                      <span className="text-orange ms-1">| {row.items[0].item_code || "-"} {row.items[0].reason || ""}</span>
+                                    </>
+                                  ) : (
+                                    "-"
+                                  )}
+                                </td>
+                                <td className="text-end fw-bold">{totalAmount.toFixed(2)}</td>
+                                <td>prakash</td>
+                                <td>
+                                  <button className="view-eye-btn">
+                                    <FaEye size={16} />
+                                  </button>
+                                </td>
+                              </tr>
+                            );
+                          })
+                        )}
                       </tbody>
                     </table>
                   </div>
 
                   {/* Footer Section */}
                   <div className="footer-bar shadow-sm">
-                    <div className="fw-bold">Total Record : 18</div>
+                    <div className="fw-bold">Total Record : {salesReturns.length}</div>
                     <button className="btn d-flex align-items-center gap-2 border">
                        <FaCheck size={14} className="text-success" /> Post To A/c
                     </button>
-                    <div className="fw-bold">Total Amount : 169608.2</div>
+                    <div className="fw-bold">Total Amount : {totalOverallAmount.toFixed(2)}</div>
                   </div>
                 </div>
               </main>

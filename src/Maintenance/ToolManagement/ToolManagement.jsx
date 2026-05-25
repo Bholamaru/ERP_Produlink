@@ -259,7 +259,7 @@ const ToolManagement = () => {
       tool_life: toolLife || null,
       no_of_reshaping_tool: noOfReshapingTool || null,
       total_life: totalLife || null,
-      total_required: totalRequired || "10000",
+      total_required: totalLife && Number(totalLife) !== 0 ? (1 / Number(totalLife)).toFixed(5) : "0",
     };
 
     try {
@@ -278,6 +278,9 @@ const ToolManagement = () => {
       });
 
       const resData = await response.json();
+      console.log("Backend response status:", response.status);
+      console.log("Backend response data:", JSON.stringify(resData, null, 2));
+      console.log("Payload sent:", JSON.stringify(payload, null, 2));
       if (response.ok && resData.status) {
         toast.success(resData.message || "Tool Management saved successfully!");
         // Reset form fields
@@ -298,7 +301,9 @@ const ToolManagement = () => {
         // Reload data
         fetchToolManagementData();
       } else {
-        toast.error(resData.message || "Failed to save Tool Management data.");
+        const errMsg = resData.message || JSON.stringify(resData.errors || resData) || "Failed to save Tool Management data.";
+        console.error("Save failed:", errMsg);
+        toast.error(errMsg);
       }
     } catch (error) {
       console.error("Error saving tool management:", error);
@@ -585,7 +590,7 @@ const ToolManagement = () => {
                               <td>{data.tool_life || "-"}</td>
                               <td>{data.no_of_reshaping_tool || "-"}</td>
                               <td>{data.total_life || "-"}</td>
-                              <td>{data.total_required || "-"}</td>
+                              <td>{data.total_life && Number(data.total_life) !== 0 ? (1 / Number(data.total_life)).toFixed(5) : "-"}</td>
                               <td>
                                 <button className="btn" onClick={() => handleDelete(data.id)}>
                                   <FaTrash />

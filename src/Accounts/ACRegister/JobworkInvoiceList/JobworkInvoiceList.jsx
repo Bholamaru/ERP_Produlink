@@ -13,6 +13,9 @@ const JobworkInvoiceList = () => {
     setSideNavOpen((prevState) => !prevState);
   };
 
+  const [jobworkInvoices, setJobworkInvoices] = useState([]);
+  const [loading, setLoading] = useState(false);
+
   useEffect(() => {
     if (sideNavOpen) {
       document.body.classList.add("side-nav-open");
@@ -20,6 +23,46 @@ const JobworkInvoiceList = () => {
       document.body.classList.remove("side-nav-open");
     }
   }, [sideNavOpen]);
+
+  useEffect(() => {
+    fetchJobworkInvoices();
+  }, []);
+
+  const fetchJobworkInvoices = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch("https://erp-render.onrender.com/Sales/gst-jobwork-invoice/");
+      const resData = await res.json();
+      if (Array.isArray(resData)) {
+        setJobworkInvoices(resData);
+      } else if (resData.data && Array.isArray(resData.data)) {
+        setJobworkInvoices(resData.data);
+      }
+    } catch (error) {
+      console.error("Error fetching job-work invoice data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return "-";
+    const date = new Date(dateStr);
+    if (isNaN(date)) return dateStr;
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
+
+  const calculateTotalQty = (items) => {
+    if (!items || !Array.isArray(items)) return 0;
+    return items.reduce((acc, item) => acc + (Number(item.invoice_qty_nos) || 0) + (Number(item.invoice_qty_kg) || 0), 0);
+  };
+
+  const totalAssessableValue = jobworkInvoices.reduce((acc, row) => acc + (Number(row.gst_details?.assessable_value) || 0), 0);
+  const totalNetTotal = jobworkInvoices.reduce((acc, row) => acc + (Number(row.gst_details?.gr_total) || 0), 0);
+
 
   return (
     <div className="jobwork-invoice-list">
@@ -111,24 +154,55 @@ const JobworkInvoiceList = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        <tr>
-                          <td colSpan="12" className="text-start py-5 ps-4 text-muted fw-bold">
-                            No Data Found !!
-                          </td>
-                        </tr>
+                        {loading ? (
+                          <tr>
+                            <td colSpan="12" className="text-center py-4">
+                              <div className="spinner-border text-primary" role="status">
+                                <span className="visually-hidden">Loading...</span>
+                              </div>
+                            </td>
+                          </tr>
+                        ) : jobworkInvoices.length === 0 ? (
+                          <tr>
+                            <td colSpan="12" className="text-start py-5 ps-4 text-muted fw-bold">
+                              No Data Found !!
+                            </td>
+                          </tr>
+                        ) : (
+                          jobworkInvoices.map((row, index) => {
+                            const totalQty = calculateTotalQty(row.items);
+                            const gst = row.gst_details || {};
+                            return (
+                              <tr key={row.id || index}>
+                                <td>{index + 1}</td>
+                                <td className="fw-bold">{row.invoice_no || "-"}</td>
+                                <td>{formatDate(row.invoice_date)}</td>
+                                <td className="text-start ps-2">{row.bill_to_cust || "-"}</td>
+                                <td>{totalQty}</td>
+                                <td>{Number(gst.assessable_value || 0).toFixed(2)}</td>
+                                <td>{Number(gst.cgst_amt || 0).toFixed(2)}</td>
+                                <td>{Number(gst.sgst_amt || 0).toFixed(2)}</td>
+                                <td>{Number(gst.igst_amt || 0).toFixed(2)}</td>
+                                <td>{Number(gst.tcs_amt || 0).toFixed(2)}</td>
+                                <td className="fw-bold">{Number(gst.gr_total || 0).toFixed(2)}</td>
+                                <td>prakash</td>
+                              </tr>
+                            );
+                          })
+                        )}
                       </tbody>
                     </table>
                   </div>
 
                   {/* Footer Section - MIRRORING TAX INVOICE LIST */}
                   <div className="d-flex justify-content-between align-items-center mt-3 p-2 bg-light border">
-                    <div>Total Records : <b>0</b></div>
+                    <div>Total Records : <b>{jobworkInvoices.length}</b></div>
                     <button className="btn d-flex align-items-center gap-2">
                        <FaCheck /> Post To A/c
                     </button>
                     <div className="d-flex gap-4">
-                      <div><b>Assessable Value : 00</b></div>
-                      <div><b>Net Total : 00</b></div>
+                      <div><b>Assessable Value : {totalAssessableValue.toFixed(2)}</b></div>
+                      <div><b>Net Total : {totalNetTotal.toFixed(2)}</b></div>
                     </div>
                   </div>
                 </div>

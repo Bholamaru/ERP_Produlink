@@ -21,16 +21,52 @@ const TaxInvoiceList = () => {
     }
   }, [sideNavOpen]);
 
-  const mockData = [
-    { srNo: 1, year: "26-27", invoiceNo: "262703067", date: "09/05/2026", poNo: "1900004259", type: "GST", customer: "ENDURANCE TECHNOLOGIES LTD (I)", total: "10170.65", details: { qty: "750", rate: "11.550000", code: "FG1047", desc: "S2DP03802B, EXTENSION-K11 GDC," }, user: "prakash" },
-    { srNo: 2, year: "26-27", invoiceNo: "262703066", date: "09/05/2026", poNo: "1900005296", type: "GST", customer: "ENDURANCE TECHNOLOGIES LTD (I)", total: "7267.38", details: { qty: "1575", rate: "3.930000", code: "FG1409", desc: "530LZ00602, SPACER (JZ & JL)," }, user: "prakash" },
-    { srNo: 3, year: "26-27", invoiceNo: "262703065", date: "09/05/2026", poNo: "1900006351", type: "GST", customer: "ENDURANCE TECHNOLOGIES LTD (F)", total: "85191.76", details: { qty: "3920", rate: "18.510000", code: "FG1263", desc: "F2BZ05712B, CAP OIL LOCK J1D FF (10 mm taper)," }, user: "prakash" },
-    { srNo: 4, year: "26-27", invoiceNo: "262703064", date: "09/05/2026", poNo: "1900004244", type: "GST", customer: "ENDURANCE TECHNOLOGIES LTD (F)", total: "10577.47", details: { qty: "1155", rate: "7.800000", code: "FG1084", desc: "520BZ00102, CAP OIL LOCK-LML," }, user: "prakash" },
-    { srNo: 5, year: "26-27", invoiceNo: "262703063", date: "09/05/2026", poNo: "1900006046", type: "GST", customer: "ENDURANCE TECHNOLOGIES LTD (I)", total: "52777.44", details: { qty: "3060", rate: "14.690000", code: "FG1572", desc: "S2CW05007B, D NUT," }, user: "prakash" },
-    { srNo: 6, year: "26-27", invoiceNo: "262703062", date: "09/05/2026", poNo: "1900004259", type: "GST", customer: "ENDURANCE TECHNOLOGIES LTD (I)", total: "20311.94", details: { qty: "2000", rate: "8.650000", code: "FG1040", desc: "S2DP04702B, EXTENSION -K10[20X34.5]," }, user: "prakash" },
-    { srNo: 7, year: "26-27", invoiceNo: "262703061", date: "09/05/2026", poNo: "1900005296", type: "GST", customer: "ENDURANCE TECHNOLOGIES LTD (I)", total: "9533.7", details: { qty: "1000", rate: "8.120000", code: "FG1234", desc: "S2DP07202B, EXTENSION K3 NEW," }, user: "prakash" },
-    { srNo: 8, year: "26-27", invoiceNo: "262703060", date: "09/05/2026", poNo: "1900004248", type: "GST", customer: "ENDURANCE TECHNOLOGIES LTD (I)", total: "32961.91", details: { isTotal: true, text: "Total Item : 2" }, user: "prakash" },
-  ];
+  const [invoiceList, setInvoiceList] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    fetchInvoiceData();
+  }, []);
+
+  const fetchInvoiceData = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch("https://erp-render.onrender.com/Sales/invoice/");
+      const resData = await res.json();
+      if (Array.isArray(resData)) {
+        setInvoiceList(resData);
+      } else if (resData.data && Array.isArray(resData.data)) {
+        setInvoiceList(resData.data);
+      }
+    } catch (error) {
+      console.error("Error fetching invoice data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const calculateInvoiceTotal = (invoice) => {
+    if (!invoice.items || !Array.isArray(invoice.items)) return 0;
+    return invoice.items.reduce((acc, item) => acc + ((Number(item.inv_qty) || 0) * (Number(item.rate) || 0)), 0);
+  };
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return "-";
+    const date = new Date(dateStr);
+    if (isNaN(date)) return dateStr;
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
+
+  const getYear = (invoiceNo) => {
+    if (!invoiceNo) return "-";
+    if (invoiceNo.length >= 4 && !isNaN(invoiceNo.substring(0, 4))) {
+      return `${invoiceNo.substring(0, 2)}-${invoiceNo.substring(2, 4)}`;
+    }
+    return "-";
+  };
 
   return (
     <div className="tax-invoice-list">
@@ -154,47 +190,66 @@ const TaxInvoiceList = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {mockData.map((row, index) => (
-                          <tr key={index}>
-                            <td>{row.srNo}</td>
-                            <td>{row.year}</td>
-                            <td><input type="checkbox" /></td>
-                            <td className="fw-bold">{row.invoiceNo}</td>
-                            <td>{row.date}</td>
-                            <td>{row.poNo}</td>
-                            <td>{row.type}</td>
-                            <td className="text-start ps-2">{row.customer}</td>
-                            <td className="fw-bold">{row.total}</td>
-                            <td className="text-start ps-2" style={{ fontSize: "11px", whiteSpace: "normal" }}>
-                              {row.details.isTotal ? (
-                                <span className="text-primary fw-bold">{row.details.text}</span>
-                              ) : (
-                                <>
-                                  <span className="text-primary-deep fw-bold">Qty: {row.details.qty} Rate: {row.details.rate}</span>
-                                  <span className="text-purple fw-bold mx-1">| {row.details.code} |</span>
-                                  <span className="text-orange">{row.details.desc}</span>
-                                </>
-                              )}
-                            </td>
-                            <td><span className="cancel-badge">N</span></td>
-                            <td>{row.user}</td>
-                            <td>
-                              <button className="btn border-0 p-1" style={{ background: "transparent" }}>
-                                <FaEye />
-                              </button>
+                        {loading ? (
+                          <tr>
+                            <td colSpan="13" className="text-center py-4">
+                              <div className="spinner-border text-primary" role="status">
+                                <span className="visually-hidden">Loading...</span>
+                              </div>
                             </td>
                           </tr>
-                        ))}
+                        ) : invoiceList.length === 0 ? (
+                          <tr>
+                            <td colSpan="13" className="text-center py-3">No records found</td>
+                          </tr>
+                        ) : (
+                          invoiceList.map((row, index) => {
+                            const total = calculateInvoiceTotal(row);
+                            return (
+                              <tr key={row.id || index}>
+                                <td>{index + 1}</td>
+                                <td>{getYear(row.invoice_no)}</td>
+                                <td><input type="checkbox" /></td>
+                                <td className="fw-bold">{row.invoice_no || "-"}</td>
+                                <td>{formatDate(row.invoice_Date)}</td>
+                                <td>{row.items && row.items.length > 0 ? row.items[0].po_no || "-" : "-"}</td>
+                                <td>GST</td>
+                                <td className="text-start ps-2">{row.bill_to || "-"}</td>
+                                <td className="fw-bold">{total.toFixed(2)}</td>
+                                <td className="text-start ps-2" style={{ fontSize: "11px", whiteSpace: "normal" }}>
+                                  {row.items && row.items.length > 1 ? (
+                                    <span className="text-primary fw-bold">Total Item : {row.items.length}</span>
+                                  ) : row.items && row.items.length === 1 ? (
+                                    <>
+                                      <span className="text-primary-deep fw-bold">Qty: {row.items[0].inv_qty || 0} Rate: {row.items[0].rate || 0}</span>
+                                      <span className="text-purple fw-bold mx-1">| {row.items[0].part_code || row.items[0].hsn_code || "-"} |</span>
+                                      <span className="text-orange">{row.items[0].description || "-"}</span>
+                                    </>
+                                  ) : (
+                                    "-"
+                                  )}
+                                </td>
+                                <td><span className="cancel-badge">N</span></td>
+                                <td>prakash</td>
+                                <td>
+                                  <button className="btn border-0 p-1" style={{ background: "transparent" }}>
+                                    <FaEye />
+                                  </button>
+                                </td>
+                              </tr>
+                            );
+                          })
+                        )}
                       </tbody>
                     </table>
                   </div>
 
                   <div className="d-flex justify-content-between align-items-center mt-3 p-2 bg-light border shadow-sm">
-                    <div style={{ fontSize: "13px" }}>Total Records : <b>102</b></div>
+                    <div style={{ fontSize: "13px" }}>Total Records : <b>{invoiceList.length}</b></div>
                     <button className="btn btn-success btn-sm d-flex align-items-center gap-2 px-4 shadow-sm">
                       <FaCheck /> Post To A/c
                     </button>
-                    <div style={{ fontSize: "13px" }}><b>Total : 3877334.23</b></div>
+                    <div style={{ fontSize: "13px" }}><b>Total : {invoiceList.reduce((acc, row) => acc + calculateInvoiceTotal(row), 0).toFixed(2)}</b></div>
                   </div>
                 </div>
               </main>
