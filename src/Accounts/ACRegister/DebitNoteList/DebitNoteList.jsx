@@ -21,17 +21,56 @@ const DebitNoteList = () => {
     }
   }, [sideNavOpen]);
 
-  const mockData = [
-    { sr: 1, type: "Purchase DN", certNo: "262700011", date: "08/05/2026", party: "VISHWA SAMRUDHI INDUSTRIES", tax: "20367", amount: "133517", user: "prakash" },
-    { sr: 2, type: "Purchase DN", certNo: "262700010", date: "08/05/2026", party: "VISHWA SAMRUDHI INDUSTRIES", tax: "209.24", amount: "1371.74", user: "prakash" },
-    { sr: 3, type: "Purchase DN", certNo: "262700009", date: "07/05/2026", party: "VISHWA SAMRUDHI INDUSTRIES", tax: "279", amount: "1829", user: "prakash" },
-    { sr: 4, type: "Purchase DN", certNo: "262700008", date: "07/05/2026", party: "VISHWA SAMRUDHI INDUSTRIES", tax: "194.4", amount: "1274.4", user: "prakash" },
-    { sr: 5, type: "Purchase DN", certNo: "262700007", date: "04/05/2026", party: "VISHWA SAMRUDHI INDUSTRIES", tax: "143.1", amount: "938.1", user: "prakash" },
-    { sr: 6, type: "Purchase DN", certNo: "262700006", date: "02/05/2026", party: "VISHWA SAMRUDHI INDUSTRIES", tax: "214.64", amount: "1407.14", user: "Togre" },
-    { sr: 7, type: "Purchase DN", certNo: "262700005", date: "30/04/2026", party: "VISHWA SAMRUDHI INDUSTRIES", tax: "279", amount: "1829", user: "Togre" },
-    { sr: 8, type: "Purchase DN", certNo: "262700004", date: "23/04/2026", party: "VISHWA SAMRUDHI INDUSTRIES", tax: "139.5", amount: "914.5", user: "Togre" },
-    { sr: 9, type: "Purchase DN", certNo: "262700003", date: "23/04/2026", party: "VISHWA SAMRUDHI INDUSTRIES", tax: "142.2", amount: "932.2", user: "Togre" },
-  ];
+  const [debitNotes, setDebitNotes] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    fetchDebitNotes();
+  }, []);
+
+  const fetchDebitNotes = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch("https://erp-render.onrender.com/Sales/debitnote/");
+      const resData = await res.json();
+      if (Array.isArray(resData)) {
+        setDebitNotes(resData);
+      } else if (resData.data && Array.isArray(resData.data)) {
+        setDebitNotes(resData.data);
+      }
+    } catch (error) {
+      console.error("Error fetching debit note data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return "-";
+    const date = new Date(dateStr);
+    if (isNaN(date)) return dateStr;
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
+
+  const getTaxAmount = (items) => {
+    if (!items || !Array.isArray(items)) return 0;
+    return items.reduce((acc, item) => 
+      acc + (Number(item.cgst) || 0) + (Number(item.sgst) || 0) + (Number(item.igst) || 0) + (Number(item.utgst) || 0), 0
+    );
+  };
+
+  const getGrandTotal = (items) => {
+    if (!items || !Array.isArray(items)) return 0;
+    return items.reduce((acc, item) => acc + (Number(item.grand_total) || 0), 0);
+  };
+
+  const totalAssessableValue = debitNotes.reduce((acc, row) => {
+    const items = row.items || [];
+    return acc + items.reduce((itemAcc, item) => itemAcc + (Number(item.amount) || 0), 0);
+  }, 0);
 
   return (
     <div className="debit-note-list">
@@ -110,22 +149,40 @@ const DebitNoteList = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {mockData.map((row, index) => (
-                          <tr key={index}>
-                            <td>{row.sr}</td>
-                            <td>{row.type}</td>
-                            <td><input type="checkbox" /></td>
-                            <td>{row.certNo}</td>
-                            <td>{row.date}</td>
-                            <td className="text-start">{row.party}</td>
-                            <td className="text-end">{row.tax}</td>
-                            <td className="text-end">{row.amount}</td>
-                            <td>{row.user}</td>
-                            <td>
-                              <button className="btn btn-sm p-1"><FaEye /></button>
+                        {loading ? (
+                          <tr>
+                            <td colSpan="10" className="text-center py-4">
+                              <div className="spinner-border text-primary" role="status">
+                                <span className="visually-hidden">Loading...</span>
+                              </div>
                             </td>
                           </tr>
-                        ))}
+                        ) : debitNotes.length === 0 ? (
+                          <tr>
+                            <td colSpan="10" className="text-center py-3 text-muted fw-bold">No Records Found</td>
+                          </tr>
+                        ) : (
+                          debitNotes.map((row, index) => {
+                            const taxAmount = getTaxAmount(row.items);
+                            const grandTotal = getGrandTotal(row.items);
+                            return (
+                              <tr key={row.id || index}>
+                                <td>{index + 1}</td>
+                                <td>{row.notetype || "Purchase DN"}</td>
+                                <td><input type="checkbox" /></td>
+                                <td>{row.debit_note_no || "-"}</td>
+                                <td>{formatDate(row.debit_note_date)}</td>
+                                <td className="text-start">{row.party_name || "-"}</td>
+                                <td className="text-end">{taxAmount.toFixed(2)}</td>
+                                <td className="text-end">{grandTotal.toFixed(2)}</td>
+                                <td>prakash</td>
+                                <td>
+                                  <button className="btn btn-sm p-1"><FaEye /></button>
+                                </td>
+                              </tr>
+                            );
+                          })
+                        )}
                       </tbody>
                     </table>
                   </div>
@@ -139,8 +196,8 @@ const DebitNoteList = () => {
                     </div>
 
                     <div className="d-flex gap-5" style={{ fontSize: "14px", fontWeight: "bold" }}>
-                      <div>Total Records : 9</div>
-                      <div>Assessable Value : 144013.08</div>
+                      <div>Total Records : {debitNotes.length}</div>
+                      <div>Assessable Value : {totalAssessableValue.toFixed(2)}</div>
                     </div>
                   </div>
                 </div>
