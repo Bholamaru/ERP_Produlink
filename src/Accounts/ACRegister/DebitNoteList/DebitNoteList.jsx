@@ -31,7 +31,7 @@ const DebitNoteList = () => {
   const fetchDebitNotes = async () => {
     try {
       setLoading(true);
-      const res = await fetch("https://erp-render.onrender.com/Sales/debitnote/");
+      const res = await fetch("http://127.0.0.1:8000/Sales/debitnote/");
       const resData = await res.json();
       if (Array.isArray(resData)) {
         setDebitNotes(resData);

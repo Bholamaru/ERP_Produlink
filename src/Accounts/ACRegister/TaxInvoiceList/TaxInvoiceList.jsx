@@ -31,7 +31,7 @@ const TaxInvoiceList = () => {
   const fetchInvoiceData = async () => {
     try {
       setLoading(true);
-      const res = await fetch("https://erp-render.onrender.com/Sales/invoice/");
+      const res = await fetch("http://127.0.0.1:8000/Sales/invoice/");
       const resData = await res.json();
       if (Array.isArray(resData)) {
         setInvoiceList(resData);

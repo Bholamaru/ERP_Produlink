@@ -31,7 +31,7 @@ const GSTSalesReturnList = () => {
   const fetchSalesReturns = async () => {
     try {
       setLoading(true);
-      const res = await fetch("https://erp-render.onrender.com/Sales/Gstsalesretun/");
+      const res = await fetch("http://127.0.0.1:8000/Sales/Gstsalesretun/");
       const resData = await res.json();
       if (Array.isArray(resData)) {
         setSalesReturns(resData);

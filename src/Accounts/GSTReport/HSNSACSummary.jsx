@@ -33,7 +33,7 @@ const HSNSACSummary = () => {
   const fetchHsnData = async () => {
     try {
       setLoading(true);
-      const res = await fetch("https://erp-render.onrender.com/Account/hsn-summary/");
+      const res = await fetch("http://127.0.0.1:8000/Account/hsn-summary/");
       const resData = await res.json();
       if (Array.isArray(resData)) {
         setHsnData(resData);
