@@ -1,4 +1,4 @@
-/* PurchaseRegister.css - Standardized Report UI (Mirrored from HSNSACSummary) */
+/* PurchaseRegister.css - Standardized Report UI */
 
 .purchase-register {
   padding: 1rem;
@@ -59,10 +59,14 @@
   height: 32px;
 }
 
-/* Button Styling - Standard Output */
+/* Button Styling */
 .purchase-register .btn {
   margin-left: 5px;
-  font-size: 14px;
+  font-size: 13px;
+  padding: 5px 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .purchase-register .excel-icon {
@@ -85,8 +89,7 @@
 }
 
 .purchase-register .table-responsive {
-  max-height: calc(100vh - 280px);
-  min-height: 400px;
+  max-height: 420px;
   overflow-y: auto;
   overflow-x: auto;
 }
@@ -95,7 +98,7 @@
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
 }
 
 .purchase-register .custom-register-table thead th {
@@ -113,7 +116,7 @@
 }
 
 .purchase-register .custom-register-table tbody td {
-  padding: 6px 8px;
+  padding: 8px 8px;
   border: 1px solid #dee2e6;
   vertical-align: middle;
   text-align: center;
@@ -128,7 +131,7 @@
   background-color: #f1f8ff;
 }
 
-/* Footer Section */
+/* Footer Summary */
 .purchase-register .register-footer {
   background-color: #f8f9fa;
   border: 1px solid #dee2e6;
@@ -138,6 +141,8 @@
   font-weight: 700;
   color: #333;
   text-align: left;
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 4px;
 }
 
 /* Custom scrollbar - Size 8px, No Hover Change */
@@ -159,26 +164,37 @@
   background: #ccc !important;
 }
 
-/* Action Icons */
-.purchase-register .action-icon {
-  cursor: pointer;
-  font-size: 14px;
-  color: #333;
+/* Badge & Action icons */
+.purchase-register .custom-register-table .badge {
+  font-size: 0.7rem;
+  padding: 4px 6px;
 }
 
-.purchase-register .text-success { color: #28a745 !important; }
-.purchase-register .text-warning { color: #ffc107 !important; }
-.purchase-register .text-primary { color: #1fb5ff !important; }
-.purchase-register .text-danger { color: #dc3545 !important; }
+.purchase-register .custom-register-table .btn-sm {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
 
-/* Modals Styling */
+.purchase-register .view-icon {
+  cursor: pointer;
+  color: #333;
+  font-size: 15px;
+  transition: transform 0.2s;
+}
+
+.purchase-register .view-icon:hover {
+  transform: scale(1.2);
+}
+
+/* Modals */
 .purchase-register .query-modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -186,11 +202,13 @@
 }
 
 .purchase-register .query-modal-content {
-  background: #fff;
-  border-radius: 8px;
+  background: #ffffff;
+  border-radius: 6px;
   width: 90%;
   max-width: 850px;
   overflow: hidden;
+  border: 1px solid #dee2e6;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
 }
 
 .purchase-register .query-modal-header {
@@ -198,16 +216,33 @@
   border-bottom: 1px solid #dee2e6;
 }
 
+.purchase-register .modal-title {
+  color: #1fb5ff;
+  font-size: 1rem;
+}
+
 .purchase-register .tab-btn {
   flex: 1;
-  padding: 10px;
+  padding: 8px 12px;
   border: none;
-  background: #f1f1f1;
+  border-bottom: 2px solid transparent;
+  background: #f8f9fa;
+  color: #555;
   font-weight: 600;
   font-size: 0.85rem;
+  cursor: pointer;
 }
 
 .purchase-register .tab-btn.active {
-  background: #1fb5ff;
-  color: #fff;
+  background: #fff;
+  color: #1fb5ff;
+  border-bottom-color: #1fb5ff;
+}
+
+@media (max-width: 768px) {
+  .purchase-register .header-section .d-flex {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 15px !important;
+  }
 }

@@ -69,6 +69,14 @@
     }
   }
   
+  /* Table Styling */
+  .GSTSalesReturnList-Main .table th {
+    white-space: nowrap;
+    background-color: #6366ff;
+    color: white;
+    font-weight: 600;
+  }
+
   @media (max-width: 576px) {
     .GSTSalesReturnList-header {
       text-align: center;

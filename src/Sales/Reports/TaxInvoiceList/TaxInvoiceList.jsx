@@ -322,8 +322,8 @@ const TaxInvoiceList = () => {
                               <td>{inv.items?.[0]?.po_no || inv.cust_po || inv.d_c_no || ""}</td>
                               <td>{inv.series_type || inv.invoice_type || "GST"}</td>
                               <td>{getCustomerCode(inv)}</td>
-                              <td>{getCustomerName(inv)}</td>
-                              <td style={{ maxWidth: "250px", fontSize: "11px" }}>{getItemDesc(inv)}</td>
+                              <td style={{ maxWidth: "150px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", wordBreak: "break-word" }}>{getCustomerName(inv)}</td>
+                              <td style={{ maxWidth: "120px", fontSize: "11px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{getItemDesc(inv)}</td>
                               <td>{getInvoiceQty(inv)}</td>
                               <td>{getAssessableValue(inv).toFixed(2)}</td>
                               <td style={{ fontWeight: "600" }}>{getTotal(inv).toFixed(2)}</td>

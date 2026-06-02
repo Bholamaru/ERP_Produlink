@@ -142,7 +142,7 @@ const PurchaseRegister = () => {
               <NavBar toggleSideNav={toggleSideNav} />
               <SideNav sideNavOpen={sideNavOpen} toggleSideNav={toggleSideNav} />
               <main className={`main-content ${sideNavOpen ? "shifted" : ""}`}>
-                <div className="register-container">
+                <div>
 
                   {/* Header Section */}
                   <div className="WorkOrderEntry-header mb-3">
@@ -234,8 +234,9 @@ const PurchaseRegister = () => {
                   </div>
 
                   {/* Table Section */}
-                  <div className="table-responsive shadow-sm border rounded bg-white table-scroll-container">
-                    <table className="table table-bordered table-hover mb-0 custom-register-table">
+                  <div className="table-container">
+                    <div className="table-responsive">
+                    <table className="table table-bordered mb-0 custom-register-table">
                       <thead>
                         <tr>
                           <th>Sr</th>
@@ -320,11 +321,11 @@ const PurchaseRegister = () => {
                       </tbody>
                     </table>
                   </div>
-
                   {/* Footer Section */}
-                  <div className="register-footer mt-2 p-2 bg-light border d-flex justify-content-between align-items-center small fw-bold">
+                  <div className="register-footer d-flex justify-content-between">
                     <div>Total Record's : {data.length}</div>
                     <div>Total Amt : 6,53,48,404.87</div>
+                  </div>
                   </div>
                 </div>
               </main>

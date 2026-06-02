@@ -411,10 +411,10 @@ const JobworkInwardChallan = () => {
               <SideNav sideNavOpen={sideNavOpen} toggleSideNav={toggleSideNav} />
               <main className={`main-content ${sideNavOpen ? "shifted" : ""}`}>
                 {/* ── Header ── */}
-                <div className="InwardJobwork-header mb-4 text-start mt-5">
+                <div className="InwardJobwork-header mb-2 text-start">
                   <div className="d-flex align-items-center gap-5 justify-content-between w-100" style={{ flexWrap: "nowrap", overflowX: "auto", whiteSpace: "nowrap" }}>
 
-                    <h5 className="header-title mb-0" style={{ fontSize: "1.1rem", whiteSpace: "nowrap" }}>Jobwork InWard</h5>
+                    <h5 className="header-title mb-0" style={{ fontSize: "1.1rem", whiteSpace: "nowrap" }}>Jobwork Inward Challan</h5>
 
                     <select id="sharpSelect" className="form-select w-auto" style={{ minWidth: "90px", fontSize: "0.8rem", padding: "4px 25px 4px 8px" }}>
                       <option defaultValue>Produlink</option>
@@ -491,7 +491,7 @@ const JobworkInwardChallan = () => {
                 </div>
 
                 {/* ── Item Entry Table ── */}
-                <div className="InwardJobwork-main mt-5">
+                <div className="InwardJobwork-main mt-2">
                   <div className="container-fluid text-start">
                     <div className="table-responsive" style={(showItemDropdown && itemSearchTerm) ? { overflow: "visible" } : {}}>
                       <table className="table table-bordered">

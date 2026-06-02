@@ -112,6 +112,7 @@ const availablePermissions = {
     "Material GatePass List",
     "Report",
     "Customer Sales Order List",
+    "Proforma Invoice List",
     "Tax Invoice List",
     "Tax Invoice List Bajaj",
     "JobWork Invoice List",

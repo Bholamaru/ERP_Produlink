@@ -370,6 +370,7 @@ import WorkOrderStatusEntry from "./ProductionV2/WorkOrderStatusEntry/WorkOrderS
 
 /////////////////////////////////////     Sales       ////////////////////////////////////
 
+import NewProformaInvoice from "./Sales/NewProformaInvoice/NewProformaInvoice.jsx";
 import GSTsales1 from "./Sales/EInvoicing/GSTsales/GSTsales1.jsx";
 import JobWorkSales from "./Sales/EInvoicing/JobWorkSales/JobWorkSales.jsx";
 import DebitNote from "./Sales/EInvoicing/DebitNote/DebitNote.jsx";
@@ -398,6 +399,7 @@ import Creditnoteto from "./Sales/CraditDabitNote/CreditNotie/Creditnoteto/Credi
 import CreditNoteList from "./Accounts/ACRegister/CreditNoteList/CreditNoteList.jsx";
 import GSTSalesReturn from "./Sales/GSTSalesReturn/GSTSalesReturn.jsx";
 import GSTSalesReturnList from "./Accounts/ACRegister/GSTSalesReturnList/GSTSalesReturnList.jsx";
+import SalesCreditNoteList from "./Sales/CraditDabitNote/CreditNotie/CreditNoteList/CreditNoteList.jsx";
 import MaterialGatepassNew from "./Sales/MaterialGatepass/MaterialGatepassNew/MaterialGatepassNew.jsx";
 import PendingMaterialGatepassList from "./Sales/MaterialGatepass/PendingMaterialGatepassList/PendingMaterialGatepassList.jsx";
 import MaterialGatepassList from "./Sales/MaterialGatepass/MaterialGatepassList/MaterialGatepassList.jsx";
@@ -407,11 +409,14 @@ import JobworkInvoiceList from "./Accounts/ACRegister/JobworkInvoiceList/Jobwork
 import BajajTaxInvoiceList from "./Sales/Reports/BajajTaxInvoiceList/BajajTaxInvoiceList.jsx";
 import JobworkInvList from "./Sales/Reports/JobworkInvList/JobworkInvList.jsx";
 import JobworkDCList from "./Sales/Reports/JobworkDCList/JobworkDCList.jsx";
+import GSTJobworkDCReturnList from "./Sales/Reports/GSTJobworkDCReturnList/GSTJobworkDCReturnList.jsx";
 import OutwardChallanList from "./Sales/Reports/OutwardChallanList/OutwardChallanList.jsx";
 import DebitNoteList from "./Accounts/ACRegister/DebitNoteList/DebitNoteList.jsx";
 import CreditListNote from "./Sales/Reports/CreditNoteList/CreditListNote.jsx";
 import RG1Register from "./Sales/Reports/RG1Register/RG1Register.jsx";
 import TransportList from "./Sales/Reports/TransportList/TransportList.jsx";
+import ProformaInvoiceList from "./Sales/Reports/ProformaInvoiceList/ProformaInvoiceList.jsx";
+
 
 import ViewStockList from "./Sales/CustomerSalesOrder/OrderLiast/ViewStockList.jsx";
 import UserSubList from "./Sales/CustomerSalesOrder/OrderLiast/UserSubList.jsx";
@@ -901,6 +906,7 @@ function App() {
 
         {/* //////////////////////////////     Sales       /////////////////////////// */}
 
+        <Route path="NewProformaInvoice" element={<NewProformaInvoice />} />
         <Route path="GSTsales1" element={<GSTsales1 />} />
         <Route path="JobWorkSales" element={<JobWorkSales />} />
         <Route path="DebitNote" element={<DebitNote />} />
@@ -923,9 +929,11 @@ function App() {
         <Route path="DabitNoteList" element={<DabitNoteList />} />
         <Route path="NewDabitNote" element={<NewDabitNote />} />
         <Route path="DN574Fout" element={<DN574Fout />} />
-        <Route path="JobWorkRateDiff" element={<JobWorkRateDiff />} />
-        <Route path="CreditNotie" element={<CreditNotie />} />
-        <Route path="Creditnoteto" element={<Creditnoteto />} />
+        <Route path="/NewDabitNote" element={<NewDabitNote />} />
+        <Route path="/JobWorkRateDiff" element={<JobWorkRateDiff />} />
+        <Route path="/CreditNotie" element={<CreditNotie />} />
+        <Route path="/Creditnoteto" element={<Creditnoteto />} />
+        <Route path="/CreditNoteList" element={<SalesCreditNoteList />} />
         <Route path="GSTSalesReturn1" element={<GSTSalesReturn />} />
         <Route path="/gst-sales-return-list" element={<GSTSalesReturnList />} />
         <Route path="/GSTSalesReturnList" element={<GSTSalesReturnList />} /> {/* Alias */}
@@ -935,10 +943,12 @@ function App() {
         <Route path="CustSalesOrderList" element={<CustSalesOrderList />} />
         <Route path="/tax-invoice-list" element={<TaxInvoiceList />} />
         <Route path="/TaxInvoiceList" element={<TaxInvoiceList />} /> {/* Alias for backward compatibility */}
+        <Route path="/ProformaInvoiceList" element={<ProformaInvoiceList />} />
         <Route path="/jobwork-invoice-list" element={<JobworkInvoiceList />} />
         <Route path="BajajTaxInvoiceList" element={<BajajTaxInvoiceList />} />
         <Route path="JobworkInvList" element={<JobworkInvList />} />
         <Route path="JobworkDCList" element={<JobworkDCList />} />
+        <Route path="GSTJobworkDCReturnList" element={<GSTJobworkDCReturnList />} />
         <Route path="OutwardChallanList" element={<OutwardChallanList />} />
         <Route path="/debit-note-list" element={<DebitNoteList />} />
         <Route path="/credit-note-list" element={<CreditNoteList />} />
