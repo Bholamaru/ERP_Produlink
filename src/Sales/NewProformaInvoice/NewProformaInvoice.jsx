@@ -71,6 +71,7 @@ const NewProformaInvoice = () => {
   const [customers, setCustomers] = useState([]);
   const [customerSearchTerm, setCustomerSearchTerm] = useState("");
   const [selectedCustomer, setSelectedCustomer] = useState("");
+  const [customerDropdownOpen, setCustomerDropdownOpen] = useState(false);
   const [items, setItems] = useState([]);
   const [selectedItemNo, setSelectedItemNo] = useState("");
   const [soList, setSoList] = useState([]);
@@ -117,6 +118,27 @@ const NewProformaInvoice = () => {
     setNewRow((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleTableChange = (index, field, val) => {
+    setTableData((prev) => {
+      const newData = [...prev];
+      const updatedRow = { ...newData[index], [field]: val };
+
+      // Universally recalculate dependent fields on any change
+      const rateVal = parseFloat(updatedRow.rate) || 0;
+      const descPctVal = parseFloat(updatedRow.desc_pct) || 0;
+      const discAmt = (rateVal * (descPctVal / 100)).toFixed(2);
+      updatedRow.disc_amt = discAmt;
+      updatedRow.rate_with_disc = (rateVal - parseFloat(discAmt)).toFixed(2);
+
+      const poQty = parseFloat(updatedRow.po_qty) || 0;
+      const invQty = parseFloat(updatedRow.invoice_qty) || 0;
+      updatedRow.bal_qty = (poQty - invQty).toString();
+
+      newData[index] = updatedRow;
+      return newData;
+    });
+  };
+
   const handleAddRow = () => {
     // 1. Find the selected order
     const selectedOrder = soList.find(so => {
@@ -134,6 +156,19 @@ const NewProformaInvoice = () => {
       });
     }
 
+    const initialRateStr = fetchedItem?.rate || newRow.rate || "0";
+    const initRate = parseFloat(initialRateStr) || 0;
+    const initDescPct = parseFloat(newRow.desc_pct) || 0;
+    const initDiscAmt = (initRate * (initDescPct / 100)).toFixed(2);
+    const initRateWithDisc = (initRate - parseFloat(initDiscAmt)).toFixed(2);
+    
+    const initialPoQtyStr = fetchedItem?.qty || newRow.po_qty || "0";
+    const initPoQty = parseFloat(initialPoQtyStr) || 0;
+    const initInvoiceQtyStr = newRow.invoice_qty;
+    // Default invoice_qty to po_qty if empty, so taxes calculate properly immediately
+    const initInvoiceQty = initInvoiceQtyStr !== "" ? parseFloat(initInvoiceQtyStr) || 0 : initPoQty; 
+    const initBalQty = (initPoQty - initInvoiceQty).toString();
+
     const emptyRow = {
       sr: tableData.length + 1,
       po_no: fetchedItem?.pr_no || selectedOrder?.cust_po || newRow.po_no || "",
@@ -143,16 +178,16 @@ const NewProformaInvoice = () => {
       description: fetchedItem?.item_description || newRow.description || "",
       other_desc: fetchedItem?.desc || newRow.other_desc || "",
       rate_per_qty: newRow.rate_per_qty || "1Nos",
-      rate: fetchedItem?.rate || newRow.rate || "",
+      rate: initialRateStr,
       rate_type: fetchedItem?.uom || newRow.rate_type || "NOS",
       desc_pct: newRow.desc_pct || "",
-      disc_amt: newRow.disc_amt || "",
-      rate_with_disc: newRow.rate_with_disc || "",
+      disc_amt: initDiscAmt,
+      rate_with_disc: initRateWithDisc,
       hc: newRow.hc || "",
       fc: newRow.fc || "",
-      po_qty: fetchedItem?.qty || newRow.po_qty || "",
-      bal_qty: newRow.bal_qty || "",
-      invoice_qty: newRow.invoice_qty || "",
+      po_qty: initialPoQtyStr,
+      bal_qty: initBalQty,
+      invoice_qty: initInvoiceQty.toString(),
       unit_code: fetchedItem?.uom || newRow.unit_code || "",
       per: newRow.per || "",
       per_unit: newRow.per_unit || "",
@@ -402,6 +437,86 @@ const NewProformaInvoice = () => {
     }
   };
 
+  // Dynamic Tax Recalculation Effect
+  useEffect(() => {
+    let totalRateQty = 0;
+    let totalDiscAmt = 0;
+
+    tableData.forEach(row => {
+      const rate = parseFloat(row.rate) || 0;
+      const qty = parseFloat(row.invoice_qty) || 0;
+      const rowDiscAmt = parseFloat(row.disc_amt) || 0;
+      
+      totalRateQty += (rate * qty);
+      totalDiscAmt += (rowDiscAmt * qty); // disc_amt is per unit
+    });
+
+    const basicValue = totalRateQty - totalDiscAmt;
+    const assessableValue = basicValue; 
+
+    setTaxData(prev => {
+      const cgstPct = parseFloat(prev.cgst_pct) || 0;
+      const sgstPct = parseFloat(prev.sgst_pct) || 0;
+      const igstPct = parseFloat(prev.igst_pct) || 0;
+      const utgstPct = parseFloat(prev.utgst_pct) || 0;
+
+      const cgstAmt = (assessableValue * (cgstPct / 100)).toFixed(2);
+      const sgstAmt = (assessableValue * (sgstPct / 100)).toFixed(2);
+      const igstAmt = (assessableValue * (igstPct / 100)).toFixed(2);
+      const utgstAmt = (assessableValue * (utgstPct / 100)).toFixed(2);
+
+      const pkgAmt = parseFloat(prev.pkg_fwd_amt) || 0;
+      const insAmt = parseFloat(prev.other_insurance) || 0;
+      const freightAmt = parseFloat(prev.loading_freight) || 0;
+
+      const grandTotal = (
+        assessableValue +
+        parseFloat(cgstAmt) +
+        parseFloat(sgstAmt) +
+        parseFloat(igstAmt) +
+        parseFloat(utgstAmt) +
+        pkgAmt +
+        insAmt +
+        freightAmt
+      ).toFixed(2);
+
+      if (
+        prev.rate_qty !== totalRateQty.toFixed(2) ||
+        prev.discount_amount !== totalDiscAmt.toFixed(2) ||
+        prev.basic_value !== basicValue.toFixed(2) ||
+        prev.assessable_value !== assessableValue.toFixed(2) ||
+        prev.cgst !== cgstAmt ||
+        prev.sgst !== sgstAmt ||
+        prev.igst !== igstAmt ||
+        prev.utgst !== utgstAmt ||
+        prev.gr_total !== grandTotal
+      ) {
+        return {
+          ...prev,
+          rate_qty: totalRateQty.toFixed(2),
+          discount_amount: totalDiscAmt.toFixed(2),
+          basic_value: basicValue.toFixed(2),
+          assessable_value: assessableValue.toFixed(2),
+          cgst: cgstAmt,
+          sgst: sgstAmt,
+          igst: igstAmt,
+          utgst: utgstAmt,
+          gr_total: grandTotal,
+        };
+      }
+      return prev;
+    });
+  }, [
+    tableData,
+    taxData.cgst_pct,
+    taxData.sgst_pct,
+    taxData.igst_pct,
+    taxData.utgst_pct,
+    taxData.pkg_fwd_amt,
+    taxData.other_insurance,
+    taxData.loading_freight
+  ]);
+
   const handleCancel = () => {
     navigate(-1);
   };
@@ -630,20 +745,48 @@ const NewProformaInvoice = () => {
                           <div className="row align-items-center mb-2 text-start gy-2">
                             <div className="col-lg-3 col-md-6 d-flex align-items-center gap-2">
                               <label className="mb-0 text-nowrap" style={{ fontSize: "12px", fontWeight: "600", minWidth: "100px" }}>Select Customer</label>
-                              <input
-                                type="text"
-                                list="customer-options"
-                                className="form-control form-control-sm"
-                                placeholder="Enter Name..."
-                                value={selectedCustomer}
-                                onChange={(e) => setSelectedCustomer(e.target.value)}
-                              />
-                              <datalist id="customer-options">
-                                {customers.map((cust, i) => {
-                                  const val = cust.Name ? `${cust.Name} | ${cust.number || ''}` : (cust.customer_name || cust.customer || cust.name || cust);
-                                  return <option key={i} value={val} />;
-                                })}
-                              </datalist>
+                              <div className="position-relative w-100">
+                                <input
+                                  type="text"
+                                  className="form-control form-control-sm w-100"
+                                  placeholder="Enter Name..."
+                                  value={selectedCustomer}
+                                  onChange={(e) => {
+                                    setSelectedCustomer(e.target.value);
+                                    setCustomerDropdownOpen(true);
+                                  }}
+                                  onFocus={() => setCustomerDropdownOpen(true)}
+                                  onBlur={() => setTimeout(() => setCustomerDropdownOpen(false), 200)}
+                                />
+                                {customerDropdownOpen && (
+                                  <ul className="dropdown-menu show w-100 p-0 m-0 shadow" style={{ position: "absolute", top: "100%", left: 0, maxHeight: "200px", overflowY: "auto", zIndex: 1050 }}>
+                                    {customers
+                                      .map((cust) => cust.Name ? `${cust.Name} | ${cust.number || ''}` : (cust.customer_name || cust.customer || cust.name || cust))
+                                      .filter(val => val.toLowerCase().includes(selectedCustomer.toLowerCase()))
+                                      .map((val, i) => (
+                                        <li key={i}>
+                                          <button 
+                                            type="button" 
+                                            className="dropdown-item py-1" 
+                                            style={{ fontSize: "12px" }}
+                                            onClick={() => {
+                                              setSelectedCustomer(val);
+                                              setCustomerDropdownOpen(false);
+                                            }}
+                                          >
+                                            {val}
+                                          </button>
+                                        </li>
+                                      ))}
+                                    {customers.filter(cust => {
+                                      const val = cust.Name ? `${cust.Name} | ${cust.number || ''}` : (cust.customer_name || cust.customer || cust.name || cust);
+                                      return val.toLowerCase().includes(selectedCustomer.toLowerCase());
+                                    }).length === 0 && (
+                                      <li className="dropdown-item text-muted text-center py-1" style={{ fontSize: "12px" }}>No match found</li>
+                                    )}
+                                  </ul>
+                                )}
+                              </div>
                               <button
                                 type="button"
                                 className="btn btn-sm btn-outline-secondary"
@@ -802,7 +945,7 @@ const NewProformaInvoice = () => {
                                   <th>Rate |PerQty</th>
                                   <th>Rate</th>
                                   <th>Rate Type</th>
-                                  <th>Desc%</th>
+                                  <th>Disc %</th>
                                   <th>Disc Amt</th>
                                   <th>Rate/WithDisc</th>
                                   <th>PO Qty</th>
@@ -896,7 +1039,8 @@ const NewProformaInvoice = () => {
                                           type="text"
                                           className="form-control form-control-sm"
                                           style={{ width: "60px" }}
-                                          defaultValue={row.rate}
+                                          value={row.rate || ""}
+                                          onChange={(e) => handleTableChange(index, "rate", e.target.value)}
                                         />
                                       </td>
                                       <td>
@@ -914,31 +1058,28 @@ const NewProformaInvoice = () => {
                                         <input
                                           type="text"
                                           className="form-control form-control-sm"
-                                          style={{ width: "50px" }}
-                                          defaultValue={row.desc_pct}
-                                          placeholder="HC :"
-                                        />
-                                        <div style={{ fontSize: "9px" }}>
-                                          HC :
-                                        </div>
-                                        <div style={{ fontSize: "9px" }}>
-                                          FC :
-                                        </div>
-                                      </td>
-                                      <td>
-                                        <input
-                                          type="text"
-                                          className="form-control form-control-sm"
                                           style={{ width: "60px" }}
-                                          defaultValue={row.disc_amt}
+                                          value={row.desc_pct || ""}
+                                          onChange={(e) => handleTableChange(index, "desc_pct", e.target.value)}
+                                          placeholder="%"
                                         />
                                       </td>
                                       <td>
                                         <input
                                           type="text"
-                                          className="form-control form-control-sm"
+                                          className="form-control form-control-sm bg-light"
+                                          style={{ width: "60px" }}
+                                          value={row.disc_amt || ""}
+                                          readOnly
+                                        />
+                                      </td>
+                                      <td>
+                                        <input
+                                          type="text"
+                                          className="form-control form-control-sm bg-light"
                                           style={{ width: "70px" }}
-                                          defaultValue={row.rate_with_disc}
+                                          value={row.rate_with_disc || ""}
+                                          readOnly
                                         />
                                       </td>
                                       <td>
@@ -946,7 +1087,17 @@ const NewProformaInvoice = () => {
                                           type="text"
                                           className="form-control form-control-sm"
                                           style={{ width: "60px" }}
-                                          defaultValue={row.po_qty}
+                                          value={row.po_qty || ""}
+                                          onChange={(e) => handleTableChange(index, "po_qty", e.target.value)}
+                                        />
+                                      </td>
+                                      <td>
+                                        <input
+                                          type="text"
+                                          className="form-control form-control-sm bg-light"
+                                          style={{ width: "60px" }}
+                                          value={row.bal_qty || ""}
+                                          readOnly
                                         />
                                       </td>
                                       <td>
@@ -954,15 +1105,8 @@ const NewProformaInvoice = () => {
                                           type="text"
                                           className="form-control form-control-sm"
                                           style={{ width: "60px" }}
-                                          defaultValue={row.bal_qty}
-                                        />
-                                      </td>
-                                      <td>
-                                        <input
-                                          type="text"
-                                          className="form-control form-control-sm"
-                                          style={{ width: "60px" }}
-                                          defaultValue={row.invoice_qty}
+                                          value={row.invoice_qty || ""}
+                                          onChange={(e) => handleTableChange(index, "invoice_qty", e.target.value)}
                                         />
                                         <div style={{ fontSize: "9px" }}>
                                           Item Per Pc
@@ -1316,8 +1460,8 @@ const NewProformaInvoice = () => {
                                     <td>
                                       <input
                                         type="text"
-                                        name="rate_qty"
-                                        value={taxData.rate_qty}
+                                        name="basic_value"
+                                        value={taxData.basic_value}
                                         onChange={handleTaxChange}
                                         className="form-control form-control-sm text-end"
                                         readOnly
