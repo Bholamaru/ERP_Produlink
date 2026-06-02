@@ -306,7 +306,7 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
                   </Link>
                 )}
 
-                {/* {permissions.All_Masters.includes("Business Partner Address") && (
+                {permissions.All_Masters.includes("Business Partner Address") && (
                   <Link className="dropdown-item" to="/business-partner">
                     Business Partner Address
                   </Link>
@@ -348,7 +348,7 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
                       )}
                     </div>
                   </div>
-                )} */}
+                )}
 
                 {permissions.All_Masters.includes("GST Rate Master") && (
                   <Link className="dropdown-item" to="/gst-rate-master">
@@ -356,11 +356,11 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
                   </Link>
                 )}
 
-                {/* {permissions.All_Masters.includes("Commodity Master") && (
+                {permissions.All_Masters.includes("Commodity Master") && (
                   <Link className="dropdown-item" to="/commodity-master">
                     Commodity Master
                   </Link>
-                )} */}
+                )}
 
                 {permissions.All_Masters.includes("BOM Routing Master") && (
                   <Link className="dropdown-item" to="/bom-routing">
@@ -380,7 +380,7 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
                   </Link>
                 )}
 
-                {/* {permissions.All_Masters.includes("Operator and Supervisor Master") && (
+                {permissions.All_Masters.includes("Operator and Supervisor Master") && (
                   <Link className="dropdown-item" to="/operator-supervisor-master">
                     Operator and Supervisor Master
                   </Link>
@@ -390,7 +390,7 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
                   <Link className="dropdown-item" to="/contractor-master">
                     Contractor Master
                   </Link>
-                )} */}
+                )}
 
                 {permissions.All_Masters.includes("Shift Master") && (
                   <Link className="dropdown-item" to="/shift-master">
@@ -398,7 +398,7 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
                   </Link>
                 )}
 
-                {/* {permissions.All_Masters.includes("Work Center Schedule") && (
+                {permissions.All_Masters.includes("Work Center Schedule") && (
                   <Link className="dropdown-item" to="/work-center-schedule">
                     Work Center Schedule
                   </Link>
@@ -477,7 +477,7 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
                   <Link className="dropdown-item" to="/master-state">
                     Master State
                   </Link>
-                )} */}
+                )}
               </div>
             </li>
           )}
@@ -521,7 +521,7 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
                   </Link>
                 )}
 
-                {/* {permissions.Purchase.includes("Purchase MRN Release") && (
+                {permissions.Purchase.includes("Purchase MRN Release") && (
                   <Link className="dropdown-item" to="/Purchse-Mrn">
                     Purchase MRN Release
                   </Link>
@@ -563,7 +563,7 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
                       )}
                     </div>
                   </div>
-                )} */}
+                )}
 
                 {permissions.Purchase.includes("Reports") && (
                   <div className="nested-dropdown">
@@ -588,7 +588,7 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
                           Jobwork Purchase Order List
                         </Link>
                       )}
-                      {/* {permissions.Purchase.includes("Supplier Wise Item Purchase List") && (
+                      {permissions.Purchase.includes("Supplier Wise Item Purchase List") && (
                         <Link className="dropdown-item" to="/supplier-wise-list">
                           Supplier Wise Item Purchase List
                         </Link>
@@ -597,16 +597,16 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
                         <Link className="dropdown-item" to="/purchase-report">
                           Purchase Report (Cost Center Wise)
                         </Link>
-                      )} */}
+                      )}
                     </div>
                   </div>
                 )}
 
-                {/* {permissions.Purchase.includes("Import") && (
+                {permissions.Purchase.includes("Import") && (
                   <Link className="dropdown-item" to="/Importfile">
                     Import
                   </Link>
-                )} */}
+                )}
               </div>
             </li>
           )}
@@ -652,13 +652,13 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
                   Purchase Register
                 </Link>
 
-                {/* <Link className="dropdown-item" to="/tds-register">
+                <Link className="dropdown-item" to="/tds-register">
                   TDS Register
                 </Link>
 
                 <Link className="dropdown-item" to="/tcs-register">
                   TCS Register
-                </Link> */}
+                </Link>
 
                 <div className="nested-dropdown">
                   <div
@@ -687,9 +687,9 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
                     <Link className="dropdown-item" to="/gst-sales-return-list">
                       GST Sales Return List
                     </Link>
-                    {/* <Link className="dropdown-item" to="/ac-purchase-register">
+                    <Link className="dropdown-item" to="/ac-purchase-register">
                       Purchase Register
-                    </Link> */}
+                    </Link>
                   </div>
                 </div>
 
@@ -715,7 +715,7 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
                     <Link className="dropdown-item" to="/hsn-sac-summary">
                       HSN/SAC Summary
                     </Link>
-                    {/* <Link className="dropdown-item" to="/gstr-2">
+                    <Link className="dropdown-item" to="/gstr-2">
                       GSTR 2
                     </Link>
                     <Link className="dropdown-item" to="/gstr-3b">
@@ -723,7 +723,7 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
                     </Link>
                     <Link className="dropdown-item" to="/gst-itc-04">
                       GST ITC_04
-                    </Link> */}
+                    </Link>
                   </div>
                 </div>
               </div>
@@ -745,17 +745,17 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
                   </Link>
                 )}
 
-                {/* {permissions.Store.includes("Pending ASN List") && (
+                {permissions.Store.includes("Pending ASN List") && (
                   <Link className="dropdown-item" to="/Pending-Asn-List">
                     Pending ASN List
                   </Link>
-                )} */}
+                )}
 
-                {/* {permissions.Store.includes("New MRN") && (
+                {permissions.Store.includes("New MRN") && (
                   <Link className="dropdown-item" to="/New-Mrn">
                     New MRN
                   </Link>
-                )} */}
+                )}
 
                 {permissions.Store.includes("Purchase GRN") && (
                   <Link className="dropdown-item" to="/Purchase-Grn">
@@ -786,11 +786,11 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
                           Jobwork Inward Challan
                         </Link>
                       )}
-                      {/* {permissions.Store.includes("Vendor Scrap Inward") && (
+                      {permissions.Store.includes("Vendor Scrap Inward") && (
                         <Link className="dropdown-item" to="/Vendor-Scrap-Inward">
                           Vendor Scrap Inward
                         </Link>
-                      )} */}
+                      )}
                     </div>
                   </div>
                 )}
@@ -801,11 +801,11 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
                   </Link>
                 )}
 
-                {/* {permissions.Store.includes("Material Issue Gernal") && (
+                {permissions.Store.includes("Material Issue Gernal") && (
                   <Link className="dropdown-item" to="/Material-Issue-Gernal">
                     Material Issue Gernal
                   </Link>
-                )} */}
+                )}
 
                 {permissions.Store.includes("Stock Transaction") && (
                   <div className="nested-dropdown">
@@ -835,11 +835,11 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
                           RM Stock Transaction
                         </Link>
                       )}
-                      {/* {permissions.Store.includes("Stock Transfer") && (
+                      {permissions.Store.includes("Stock Transfer") && (
                         <Link className="dropdown-item" to="/Stock-Transaction">
                           Stock Transfer
                         </Link>
-                      )} */}
+                      )}
                     </div>
                   </div>
                 )}
@@ -850,7 +850,7 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
                   </Link>
                 )}
 
-                {/* {permissions.Store.includes("DC GRN") && (
+                {permissions.Store.includes("DC GRN") && (
                   <Link className="dropdown-item" to="/Dcgrn">
                     DC GRN
                   </Link>
@@ -860,7 +860,7 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
                   <Link className="dropdown-item" to="/Store-New-indent">
                     New Indent
                   </Link>
-                )} */}
+                )}
 
                 {permissions.Store.includes("Store Report") && (
                   <div className="nested-dropdown">
@@ -880,11 +880,11 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
                           GRN List
                         </Link>
                       )}
-                      {/* {permissions.Store.includes("MRN List") && (
+                      {permissions.Store.includes("MRN List") && (
                         <Link className="dropdown-item" to="/MRNList">
                           MRN List
                         </Link>
-                      )} */}
+                      )}
                       {permissions.Store.includes("Inward 57F4 Challan List") && (
                         <Link className="dropdown-item" to="/Challaninward">
                           Inward 57F4 Challan List
@@ -895,31 +895,31 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
                           Material Issue Challan List
                         </Link>
                       )}
-                      {/* {permissions.Store.includes("General Material Issue Challan List") && (
+                      {permissions.Store.includes("General Material Issue Challan List") && (
                         <Link className="dropdown-item" to="/GeneralMtrlIssue">
                           General Material Issue Challan List
                         </Link>
-                      )} */}
+                      )}
                       {permissions.Store.includes("Deliver Challan List") && (
                         <Link className="dropdown-item" to="/DeliveryChlln">
                           Delivery Challan List
                         </Link>
                       )}
-                      {/* {permissions.Store.includes("DC GRN List") && (
+                      {permissions.Store.includes("DC GRN List") && (
                         <Link className="dropdown-item" to="/GRNDCReport">
                           DC GRN List
                         </Link>
-                      )} */}
+                      )}
                       {permissions.Store.includes("Indent List") && (
                         <Link className="dropdown-item" to="/IndentReport">
                           Indent List
                         </Link>
                       )}
-                      {/* {permissions.Store.includes("Indent Status") && (
+                      {permissions.Store.includes("Indent Status") && (
                         <Link className="dropdown-item" to="/IndentStatus">
                           Indent Status
                         </Link>
-                      )} */}
+                      )}
                     </div>
                   </div>
                 )}
@@ -1001,7 +1001,7 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
                 <span className={`dropdown-arrow ${isDropdownOpen("maintenance") ? "open" : ""}`}>  </span>
               </div>
               <div className={`custom-dropdown-menu ${isDropdownOpen("maintenance") ? "show" : ""}`}>
-                {/* <Link className="dropdown-item" to="/asset-list">
+                <Link className="dropdown-item" to="/asset-list">
                   Asset List
                 </Link>
 
@@ -1082,7 +1082,7 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
                       Machine Preventive SetUp
                     </Link>
                   </div>
-                </div> */}
+                </div>
 
                 <Link className="dropdown-item" to="/tool-management">
                   Tool Management
@@ -1100,7 +1100,7 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
                 <span className={`dropdown-arrow ${isDropdownOpen("production") ? "open" : ""}`}>  </span>
               </div>
               <div className={`custom-dropdown-menu ${isDropdownOpen("production") ? "show" : ""}`}>
-                {/* {permissions.Production.includes("Work Order Entry") && (
+                {permissions.Production.includes("Work Order Entry") && (
                   <Link className="dropdown-item" to="/WorkOrderEntry">
                     Work Order Entry
                   </Link>
@@ -1116,7 +1116,7 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
                   <Link className="dropdown-item" to="/ProductionPlanList">
                     Production Plan List
                   </Link>
-                )} */}
+                )}
 
                 {permissions.Production.includes("Production Entry") && (
                   <Link className="dropdown-item" to="/ProductionEntry">
@@ -1124,11 +1124,11 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
                   </Link>
                 )}
 
-                {/* {permissions.Production.includes("Production Entry Ass.") && (
+                {permissions.Production.includes("Production Entry Ass.") && (
                   <Link className="dropdown-item" to="/ProductionEntryAss">
                     Production Entry Ass.
                   </Link>
-                )} */}
+                )}
 
                 {permissions.Production.includes("Production Report") && (
                   <Link className="dropdown-item" to="/ProductionReport">
@@ -1136,7 +1136,7 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
                   </Link>
                 )}
 
-                {/* {permissions.Production.includes("Rework Production") && (
+                {permissions.Production.includes("Rework Production") && (
                   <div className="nested-dropdown">
                     <div
                       className="dropdown-item nested-toggle"
@@ -1227,7 +1227,7 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
                   <Link className="dropdown-item" to="/ContractorReport">
                     Contractor Payment
                   </Link>
-                )} */}
+                )}
 
                 {permissions.Production.includes("P Report") && (
                   <div className="nested-dropdown">
@@ -1252,7 +1252,7 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
                           Rework Report
                         </Link>
                       )}
-                      {/* {permissions.Production.includes("Default Ideal Time Report") && (
+                      {permissions.Production.includes("Default Ideal Time Report") && (
                         <Link className="dropdown-item" to="/MachineDefaultidle">
                           Default Idle Time Report
                         </Link>
@@ -1271,7 +1271,7 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
                         <Link className="dropdown-item" to="/OperatorReport">
                           Operator Performance Report
                         </Link>
-                      )} */}
+                      )}
                     </div>
                   </div>
                 )}
@@ -1457,7 +1457,7 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
                   </div>
                 )}
 
-                {/* {permissions.Quality.includes("Gauges And Instruction Calibration") && (
+                {permissions.Quality.includes("Gauges And Instruction Calibration") && (
                   <Link className="dropdown-item" to="/GaugesCalibration">
                     Gauges and Instruction Calibration
                   </Link>
@@ -1567,7 +1567,7 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
                       )}
                     </div>
                   </div>
-                )} */}
+                )}
               </div>
             </li>
           )}
@@ -1581,11 +1581,11 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
                 <span className={`dropdown-arrow ${isDropdownOpen("planning") ? "open" : ""}`}>  </span>
               </div>
               <div className={`custom-dropdown-menu ${isDropdownOpen("planning") ? "show" : ""}`}>
-                {/* {permissions.Planning.includes("Manufacturing Order") && (
+                {permissions.Planning.includes("Manufacturing Order") && (
                   <Link className="dropdown-item" to="/ManufacturingOrder">
                     Manufacturing Order
                   </Link>
-                )} */}
+                )}
 
                 {permissions.Planning.includes("Production Schedule") && (
                   <Link className="dropdown-item" to="/ProductionSchedule">
@@ -1599,9 +1599,9 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
                   </Link>
                 )}
 
-                {/* <Link className="dropdown-item" to="/DispatchPlanSetup">
+                <Link className="dropdown-item" to="/DispatchPlanSetup">
                   Dispatch Plan Setup
-                </Link> */}
+                </Link>
 
 
 
@@ -1611,7 +1611,7 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
                   </Link>
                 )}
 
-                {/* {permissions.Planning.includes("Business Plan") && (
+                {permissions.Planning.includes("Business Plan") && (
                   <Link className="dropdown-item" to="/BusinessPlan">
                     Business Plan
                   </Link>
@@ -1656,7 +1656,7 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
                       </Link>
                     </div>
                   </div>
-                )} */}
+                )}
               </div>
             </li>
           )}
@@ -1719,7 +1719,7 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
                   </Link>
                 )}
 
-                {/* {permissions.Sales.includes("Schedule Sales Order") && (
+                {permissions.Sales.includes("Schedule Sales Order") && (
                   <Link className="dropdown-item" to="/SacheduleSalesNew">
                     Schedule Sales Order
                   </Link>
@@ -1729,7 +1729,7 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
                   <Link className="dropdown-item" to="/SalesOrderStatus">
                     Customer Sales Order Status
                   </Link>
-                )} */}
+                )}
 
                 {permissions.Sales.includes("GST Invoice") && (
                   <Link className="dropdown-item" to="/NewInvoice">
@@ -1761,11 +1761,11 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
                           GST JobWork Invoice
                         </Link>
                       )}
-                      {/* {permissions.Sales.includes("GST JobWork DC Return") && (
+                      {permissions.Sales.includes("GST JobWork DC Return") && (
                         <Link className="dropdown-item" to="/GSTJobworkDCreturn">
                           GST JobWork DC Return
                         </Link>
-                      )} */}
+                      )}
                     </div>
                   </div>
                 )}
@@ -1819,7 +1819,7 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
                   </Link>
                 )}
 
-                {/* {permissions.Sales.includes("Material GatePass") && (
+                {permissions.Sales.includes("Material GatePass") && (
                   <div className="nested-dropdown">
                     <div
                       className="dropdown-item nested-toggle"
@@ -1849,7 +1849,7 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
                       )}
                     </div>
                   </div>
-                )} */}
+                )}
 
                 {permissions.Sales.includes("Sales Report") && (
                   <div className="nested-dropdown">
@@ -1879,11 +1879,11 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
                           Tax Invoice List
                         </Link>
                       )}
-                      {/* {permissions.Sales.includes("Tax Invoice List Bajaj") && (
+                      {permissions.Sales.includes("Tax Invoice List Bajaj") && (
                         <Link className="dropdown-item" to="/BajajTaxInvoiceList">
                           Tax Invoice List Bajaj
                         </Link>
-                      )} */}
+                      )}
                       {permissions.Sales.includes("JobWork Invoice List") && (
                         <Link className="dropdown-item" to="/JobworkInvList">
                           JobWork Invoice List
@@ -1917,7 +1917,7 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
                           GST Sales Return List
                         </Link>
                       )}
-                      {/* {permissions.Sales.includes("RG1 Register") && (
+                      {permissions.Sales.includes("RG1 Register") && (
                         <Link className="dropdown-item" to="/RG1Register">
                           RG1 Register
                         </Link>
@@ -1926,7 +1926,7 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
                         <Link className="dropdown-item" to="/TransportList">
                           Transport List
                         </Link>
-                      )} */}
+                      )}
                     </div>
                   </div>
                 )}
