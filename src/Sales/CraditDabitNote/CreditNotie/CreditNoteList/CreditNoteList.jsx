@@ -15,7 +15,7 @@ const CreditNoteList = () => {
   useEffect(() => {
     const fetchCreditNotes = async () => {
       try {
-        const response = await fetch("https://erp-render.onrender.com/Sales/credit-note/");
+        const response = await fetch("http://127.0.0.1:8000/Sales/credit-note/");
         const data = await response.json();
         setCreditNotes(data);
       } catch (error) {
@@ -158,7 +158,7 @@ const CreditNoteList = () => {
                                                             <i 
                                                               className="fa fa-eye text-primary" 
                                                               style={{ cursor: "pointer" }}
-                                                              onClick={() => window.open(`https://erp-render.onrender.com/Sales/credit-note-pdf/${note.id}/`, "_blank")}
+                                                              onClick={() => window.open(`http://127.0.0.1:8000/Sales/credit-note-pdf/${note.id}/`, "_blank")}
                                                             ></i>
                                                         </td>
                                                         <td style={{ padding: "6px" }}><i className="fa fa-edit text-success" style={{ cursor: 'pointer' }}></i></td>

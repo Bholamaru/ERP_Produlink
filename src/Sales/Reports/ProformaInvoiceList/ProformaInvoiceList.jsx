@@ -17,7 +17,7 @@ const ProformaInvoiceList = () => {
   const fetchInvoices = async () => {
     setLoading(true);
     try {
-      const response = await axios.get("https://erp-render.onrender.com/Sales/profoma-invoice/");
+      const response = await axios.get("http://127.0.0.1:8000/Sales/profoma-invoice/");
       const list = Array.isArray(response.data) ? response.data : (response.data.data || []);
       setInvoices(list);
     } catch (error) {

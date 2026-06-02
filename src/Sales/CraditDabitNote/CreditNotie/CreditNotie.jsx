@@ -111,7 +111,7 @@ const CreditNotie = () => {
 
     const fetchCreditNoteNo = async () => {
       try {
-        const response = await fetch("https://erp-render.onrender.com/Sales/generate-credit-note-no/");
+        const response = await fetch("http://127.0.0.1:8000/Sales/generate-credit-note-no/");
         const data = await response.json();
         setCreditNoteNo(data.credit_note_no || data);
       } catch (error) {
@@ -163,7 +163,7 @@ const CreditNotie = () => {
             grn_date: item.grn_date || null
           })),
         };
-        const response = await fetch("https://erp-render.onrender.com/Sales/credit-note/", {
+        const response = await fetch("http://127.0.0.1:8000/Sales/credit-note/", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),

@@ -306,7 +306,7 @@ const NewProformaInvoice = () => {
 
         items: safeItems,
       };
-      await axios.post("https://erp-render.onrender.com/Sales/profoma-invoice/", payload);
+      await axios.post("http://127.0.0.1:8000/Sales/profoma-invoice/", payload);
       toast.success("Proforma Invoice saved successfully!");
 
       // Clear the form
@@ -371,7 +371,7 @@ const NewProformaInvoice = () => {
 
       // Refetch the new incremented invoice number
       try {
-        const invRes = await axios.get("https://erp-render.onrender.com/Sales/generate-invoice-no/");
+        const invRes = await axios.get("http://127.0.0.1:8000/Sales/generate-invoice-no/");
         const fetchedNo = invRes.data?.invoice_no || invRes.data?.Invoice_no || "";
         if (fetchedNo) {
           setFormData(prev => ({ ...prev, invoice_no: fetchedNo }));
@@ -436,7 +436,7 @@ const NewProformaInvoice = () => {
   useEffect(() => {
     const fetchInvoiceNo = async () => {
       try {
-        const response = await axios.get("https://erp-render.onrender.com/Sales/generate-invoice-no/");
+        const response = await axios.get("http://127.0.0.1:8000/Sales/generate-invoice-no/");
         const fetchedNo = response.data?.invoice_no || response.data?.Invoice_no || "";
         if (fetchedNo) {
           setFormData(prev => ({ ...prev, invoice_no: fetchedNo }));
