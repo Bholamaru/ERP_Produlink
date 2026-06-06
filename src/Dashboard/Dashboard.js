@@ -25,6 +25,7 @@ import {
 
 import NavBar from "../NavBar/NavBar";
 import SideNav from "../SideNav/SideNav";
+import { useNavigate } from "react-router-dom";
 
 /*     Mock Data     */
 const areaDataDay = [
@@ -155,10 +156,14 @@ const deptCards = [
 ];
 
 const alertItems = [
-  { id: 1, label: "Pending PO Approval", count: 2, color: "#dbeafe" },
-  { id: 2, label: "Pending Sales Return QC", count: 7, color: "#93c5fd" },
-  { id: 3, label: "Bill Passing (Purchase)", count: 181, color: "#3b82f6" },
-  { id: 4, label: "Bill Passing (Jobwork)", count: 442, color: "#1d4ed8" },
+  { id: 1, label: "Pending PO Approval", count: 2, color: "#eff6ff" },
+  { id: 2, label: "Pending Inprocess QC", count: 12, color: "#dbeafe" },
+  { id: 3, label: "Pending Sales Return QC", count: 7, color: "#bfdbfe" },
+  { id: 4, label: "Bill Passing (Purchase)", count: 181, color: "#93c5fd" },
+  { id: 5, label: "Bill Passing (Jobwork)", count: 442, color: "#60a5fa" },
+  { id: 6, label: "Upcoming Dispatch", count: 8, color: "#3b82f6" },
+  { id: 7, label: "Unauthorised BOM", count: 4, color: "#2563eb" },
+  { id: 8, label: "Pending Gate Inward Entry", count: 15, color: "#1e3a8a" },
 ];
 
 const recordItems = [
@@ -576,7 +581,7 @@ const itemWiseDispatchData = [
   { sr: 5, customer: "ENDURANCE TECHNOLOGIES LTD (DISC BREAK DIVISION E-7", itemNo: "FG1005", itemCode: "520AW00212", itemDesc: "BLEEDER SCREW(M7)", qty: 7000, amount: 27020 },
 ];
 
-const businessPlanData = [
+const initialBusinessPlanData = [
   { name: "Bus. plan Qty", value: 0 },
   { name: "Schedule Qty", value: 0 },
   { name: "Invoice Qty", value: 0 },
@@ -584,7 +589,7 @@ const businessPlanData = [
   { name: "Inv Qty Actual", value: 2992500 },
 ];
 
-const stateWiseSalesData = [
+const initialStateWiseSalesData = [
   { name: "MAHARASHTRA", value: 19877002.64, total: 23460244.98, percent: 73.15, fill: "#007bff" },
   { name: "GUJRAT", value: 5248981.78, total: 6193798.51, percent: 19.32, fill: "#f59e0b" },
   { name: "KARNATAKA", value: 1029637.16, total: 1214971.82, percent: 3.79, fill: "#0ea5e9" },
@@ -798,8 +803,48 @@ const CustomPieLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, i
   );
 };
 
+const getBpMonths = (financialYear) => {
+  const [startYearStr, endYearStr] = financialYear.split("-");
+  const startYear = parseInt(startYearStr);
+  let endYear = parseInt(endYearStr);
+  if (endYear < 100) {
+    endYear = Math.floor(startYear / 100) * 100 + endYear;
+  }
+  
+  return [
+    { label: `APR-${startYear}`, month: 4 },
+    { label: `MAY-${startYear}`, month: 5 },
+    { label: `JUN-${startYear}`, month: 6 },
+    { label: `JUL-${startYear}`, month: 7 },
+    { label: `AUG-${startYear}`, month: 8 },
+    { label: `SEP-${startYear}`, month: 9 },
+    { label: `OCT-${startYear}`, month: 10 },
+    { label: `NOV-${startYear}`, month: 11 },
+    { label: `DEC-${startYear}`, month: 12 },
+    { label: `JAN-${endYear}`, month: 1 },
+    { label: `FEB-${endYear}`, month: 2 },
+    { label: `MAR-${endYear}`, month: 3 },
+  ];
+};
+
+const salesMonthsList = [
+  { label: "APR-26", month: 4, year: 2026 },
+  { label: "MAY-26", month: 5, year: 2026 },
+  { label: "JUN-26", month: 6, year: 2026 },
+  { label: "JUL-26", month: 7, year: 2026 },
+  { label: "AUG-26", month: 8, year: 2026 },
+  { label: "SEP-26", month: 9, year: 2026 },
+  { label: "OCT-26", month: 10, year: 2026 },
+  { label: "NOV-26", month: 11, year: 2026 },
+  { label: "DEC-26", month: 12, year: 2026 },
+  { label: "JAN-27", month: 1, year: 2027 },
+  { label: "FEB-27", month: 2, year: 2027 },
+  { label: "MAR-27", month: 3, year: 2027 },
+];
+
 /*     Component     */
 const Dashboard = () => {
+  const navigate = useNavigate();
   const [sideNavOpen, setSideNavOpen] = useState(false);
   const [activeDept, setActiveDept] = useState("financial");
   const [activeRange, setActiveRange] = useState("Week");
@@ -812,6 +857,8 @@ const Dashboard = () => {
   const [bpTimeMode, setBpTimeMode] = useState("Monthly");
   const [bpCustomerWise, setBpCustomerWise] = useState(false);
   const [bpSearchBy, setBpSearchBy] = useState("Quantity");
+  const [bpSelectedYear, setBpSelectedYear] = useState("2026-27");
+  const [bpSelectedMonth, setBpSelectedMonth] = useState(5);
 
   // State Wise Sales Filters State
   const [stateWiseType, setStateWiseType] = useState("Top 5 State");
@@ -826,10 +873,14 @@ const Dashboard = () => {
 
   const [top5SalesData, setTop5SalesData] = useState([]);
   const [itemWiseDispatchData, setItemWiseDispatchData] = useState([]);
+  const [businessPlanData, setBusinessPlanData] = useState(initialBusinessPlanData);
+  const [spSelectedMonthObj, setSpSelectedMonthObj] = useState({ month: 4, year: 2026 });
+  const [dsSelectedMonthObj, setDsSelectedMonthObj] = useState({ month: 4, year: 2026 });
+  const [stateWiseSalesData, setStateWiseSalesData] = useState(initialStateWiseSalesData);
 
-  const fetchDailySalesReport = async () => {
+  const fetchDailySalesReport = async (month = 4, year = 2026) => {
     try {
-      const response = await fetch("http://127.0.0.1:8000/Dashboard/monthly/daily/report/?month=4&year=2026");
+      const response = await fetch(`http://127.0.0.1:8000/Dashboard/monthly/daily/report/?month=${month}&year=${year}`);
       if (!response.ok) throw new Error("Failed to fetch daily sales report");
       const data = await response.json();
 
@@ -849,7 +900,7 @@ const Dashboard = () => {
       if (!response.ok) throw new Error("Failed to fetch top 5 sales data");
       const data = await response.json();
 
-      const colors = ["#0ea5e9", "#3b82f6", "#6366f1", "#8b5cf6", "#a855f7"];
+      const colors = ["#3b82f6", "#10b981", "#f59e0b", "#8b5cf6", "#06b6d4"];
       const updated = data.map((item, index) => ({
         name: item.customer,
         value: parseFloat(item.total_assessable || 0),
@@ -908,9 +959,9 @@ const Dashboard = () => {
     { name: "Purchase", value: 0 }
   ]);
 
-  const fetchAssessableReport = async () => {
+  const fetchAssessableReport = async (month = 4, year = 2026) => {
     try {
-      const response = await fetch("http://127.0.0.1:8000/Dashboard/assessable-report/?month=4&year=2026");
+      const response = await fetch(`http://127.0.0.1:8000/Dashboard/assessable-report/?month=${month}&year=${year}`);
       if (!response.ok) throw new Error("Failed to fetch assessable report");
       const data = await response.json();
 
@@ -950,6 +1001,66 @@ const Dashboard = () => {
     }
   };
 
+  const fetchBusinessPlanData = async () => {
+    try {
+      const [startYearStr, endYearStr] = bpSelectedYear.split("-");
+      const startYear = parseInt(startYearStr);
+      let endYear = parseInt(endYearStr);
+      if (endYear < 100) {
+        endYear = Math.floor(startYear / 100) * 100 + endYear;
+      }
+      const fetchYear = bpSelectedMonth >= 4 ? startYear : endYear;
+      
+      const apiEndpoint = bpSearchBy === "Value"
+        ? `https://erp-render.onrender.com/Dashboard/bussiness-invoice-value/?month=${bpSelectedMonth}&year=${fetchYear}`
+        : `https://erp-render.onrender.com/Dashboard/bussiness-invoice-summary/?month=${bpSelectedMonth}&year=${fetchYear}`;
+      
+      const response = await fetch(apiEndpoint);
+      if (!response.ok) throw new Error("Failed to fetch business plan data");
+      const data = await response.json();
+      
+      if (bpSearchBy === "Value") {
+        setBusinessPlanData([
+          { name: "Bus. plan Val", value: 0 },
+          { name: "Schedule Val", value: 0 },
+          { name: "Invoice Val", value: 0 },
+          { name: "Sch Val Actual", value: data.sales_order_assessable_value || 0 },
+          { name: "Inv Val Actual", value: data.invoice_assessable_value || 0 },
+        ]);
+      } else {
+        setBusinessPlanData([
+          { name: "Bus. plan Qty", value: 0 },
+          { name: "Schedule Qty", value: 0 },
+          { name: "Invoice Qty", value: 0 },
+          { name: "Sch Qty Actual", value: data.total_sch_qty || 0 },
+          { name: "Inv Qty Actual", value: data.total_inv_qty || 0 },
+        ]);
+      }
+    } catch (err) {
+      console.error("Error fetching business plan summary:", err);
+    }
+  };
+  const fetchStateWiseSalesData = async () => {
+    try {
+      const response = await fetch("https://erp-render.onrender.com/Dashboard/top-5-region-sales/");
+      if (!response.ok) throw new Error("Failed to fetch state wise sales data");
+      const data = await response.json();
+
+      const colors = ["#007bff", "#f59e0b", "#0ea5e9", "#ef4444", "#8b5cf6", "#10b981"];
+      const updated = (data.top_regions || []).map((item, index) => ({
+        name: (item.region || "").toUpperCase(),
+        value: parseFloat(item.assessable_value || 0),
+        total: parseFloat(item.grand_total || 0),
+        percent: parseFloat(item.percentage || 0) / 100.0,
+        fill: colors[index % colors.length]
+      }));
+
+      setStateWiseSalesData(updated);
+    } catch (err) {
+      console.error("Error fetching state wise sales data:", err);
+    }
+  };
+
 
   const toggleSection = (label) => {
     setExpandedSections(prev => ({ ...prev, [label]: !prev[label] }));
@@ -958,11 +1069,22 @@ const Dashboard = () => {
   const toggleSideNav = () => setSideNavOpen((p) => !p);
 
   useEffect(() => {
-    fetchAssessableReport();
-    fetchDailySalesReport();
     fetchTop5SalesData();
     fetchItemWiseDispatchData();
+    fetchStateWiseSalesData();
   }, []);
+
+  useEffect(() => {
+    fetchBusinessPlanData();
+  }, [bpSelectedYear, bpSelectedMonth, bpSearchBy]);
+
+  useEffect(() => {
+    fetchAssessableReport(spSelectedMonthObj.month, spSelectedMonthObj.year);
+  }, [spSelectedMonthObj]);
+
+  useEffect(() => {
+    fetchDailySalesReport(dsSelectedMonthObj.month, dsSelectedMonthObj.year);
+  }, [dsSelectedMonthObj]);
 
 
 
@@ -1026,12 +1148,56 @@ const Dashboard = () => {
                   </div>
 
                   <div className="dn-alert-list">
-                    {alertItems.map(item => (
-                      <div key={item.id} className="dn-alert-item">
-                        <span className="dn-alert-label">{item.label}</span>
-                        <span className="dn-alert-badge" style={{ background: item.color }}>{item.count}</span>
-                      </div>
-                    ))}
+                    {alertItems.map((item, index) => {
+                      const baseSize = 20 + index * 2.5; // From 20px to 37.5px
+                      const fontSize = 9 + index * 0.5;  // From 9px to 12.5px
+                      const isDarkColor = index >= 5;
+                      return (
+                        <div
+                          key={item.id}
+                          className="dn-alert-item"
+                          onClick={() => {
+                            if (item.label === "Pending PO Approval") {
+                              navigate("/pendingpo");
+                            } else if (item.label === "Pending Inprocess QC") {
+                              navigate("/InprocessInspection");
+                            } else if (item.label === "Pending Sales Return QC") {
+                              navigate("/PaddingSalesQC");
+                            } else if (item.label === "Bill Passing (Purchase)") {
+                              navigate("/purchase-bill");
+                            } else if (item.label === "Bill Passing (Jobwork)") {
+                              navigate("/jobwork-bill");
+                            } else if (item.label === "Upcoming Dispatch") {
+                              navigate("/UpcomingDispatchList");
+                            } else if (item.label === "Unauthorised BOM") {
+                              navigate("/bom-routing");
+                            } else if (item.label === "Pending Gate Inward Entry") {
+                              navigate("/Gate-Inward-Entry");
+                            }
+                          }}
+                        >
+                          <span className="dn-alert-label">{item.label}</span>
+                          <span
+                            className="dn-alert-badge"
+                            style={{
+                              background: item.color,
+                              fontSize: `${fontSize}px`,
+                              minWidth: `${24 + index * 3}px`,
+                              height: `${16 + index * 2}px`,
+                              borderRadius: "999px",
+                              color: isDarkColor ? "#fff" : "#000",
+                              display: "inline-flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              padding: `0 ${6 + index * 1}px`,
+                              lineHeight: 1
+                            }}
+                          >
+                            {item.count}
+                          </span>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
 
@@ -1165,7 +1331,22 @@ const Dashboard = () => {
                             <div className="dn-inner-filter-bar complex" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 16px", background: "#f8fafc", borderBottom: '1px solid #e2e8f0', flexWrap: 'nowrap' }}>
                               <div className="dn-f-left" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                 <div className="dn-f-item sm">Plant : <select className="dn-mini-select" style={{ width: 80 }}><option>SHARP</option></select></div>
-                                <div className="dn-f-item sm">Month : <select className="dn-mini-select" style={{ width: 100 }}><option>Apr-2026</option></select></div>
+                                <div className="dn-f-item sm">
+                                  Month : 
+                                  <select 
+                                    className="dn-mini-select" 
+                                    style={{ width: 100 }}
+                                    value={`${spSelectedMonthObj.month}-${spSelectedMonthObj.year}`}
+                                    onChange={(e) => {
+                                      const [m, y] = e.target.value.split("-").map(Number);
+                                      setSpSelectedMonthObj({ month: m, year: y });
+                                    }}
+                                  >
+                                    {salesMonthsList.map(item => (
+                                      <option key={item.label} value={`${item.month}-${item.year}`}>{item.label}</option>
+                                    ))}
+                                  </select>
+                                </div>
                                 <button className="dn-icon-btn small" style={{ background: '#f1f5f9', border: '1px solid #cbd5e1', padding: 4, borderRadius: 4, cursor: 'pointer' }}>
                                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M23 4v6h-6M1 20v-6h6" /><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" /></svg>
                                 </button>
@@ -1220,11 +1401,11 @@ const Dashboard = () => {
                               <table className="dn-erp-table high-density">
                                 <thead>
                                   <tr style={{ background: '#007bff', color: '#fff', fontSize: '11px' }}>
-                                    <th style={{ width: 40, textAlign: 'center', background: '#007bff', color: '#fff', border: '1px solid #0056b3' }}>#</th>
-                                    <th style={{ width: 30, textAlign: 'center', background: '#007bff', color: '#fff', border: '1px solid #0056b3' }}><input type="checkbox" /></th>
-                                    <th style={{ textAlign: 'left', background: '#007bff', color: '#fff', border: '1px solid #0056b3' }}>Type</th>
-                                    <th style={{ textAlign: 'right', background: '#007bff', color: '#fff', border: '1px solid #0056b3' }}>Assessable Value</th>
-                                    <th style={{ textAlign: 'right', background: '#007bff', color: '#fff', border: '1px solid #0056b3' }}>Total Value</th>
+                                    <th style={{ width: 40, textAlign: 'center', background: '#007bff', color: '#fff', border: 'none' }}>#</th>
+                                    <th style={{ width: 30, textAlign: 'center', background: '#007bff', color: '#fff', border: 'none' }}><input type="checkbox" /></th>
+                                    <th style={{ textAlign: 'left', background: '#007bff', color: '#fff', border: 'none' }}>Type</th>
+                                    <th style={{ textAlign: 'right', background: '#007bff', color: '#fff', border: 'none' }}>Assessable Value</th>
+                                    <th style={{ textAlign: 'right', background: '#007bff', color: '#fff', border: 'none' }}>Total Value</th>
                                   </tr>
                                 </thead>
                                 <tbody>
@@ -1248,7 +1429,22 @@ const Dashboard = () => {
                             {/* Standardized Flex Filter Strip */}
                             <div className="dn-inner-filter-bar" style={{ display: "flex", alignItems: "center", gap: '8px', padding: "10px 16px", background: "#f8fafc", borderBottom: '1px solid #e2e8f0' }}>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: '#64748b' }}>Plant : <select className="dn-mini-select" style={{ width: 80, border: 'none', background: 'transparent', fontWeight: 700 }}><option>SHARP</option></select></div>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: '#64748b', marginLeft: '5px' }}>Sales Month : <select className="dn-mini-select" style={{ width: 100, border: 'none', background: 'transparent', fontWeight: 700 }}><option>Apr-2026</option></select></div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: '#64748b', marginLeft: '5px' }}>
+                                Sales Month : 
+                                <select 
+                                  className="dn-mini-select" 
+                                  style={{ width: 100, border: 'none', background: 'transparent', fontWeight: 700 }}
+                                  value={`${dsSelectedMonthObj.month}-${dsSelectedMonthObj.year}`}
+                                  onChange={(e) => {
+                                    const [m, y] = e.target.value.split("-").map(Number);
+                                    setDsSelectedMonthObj({ month: m, year: y });
+                                  }}
+                                >
+                                  {salesMonthsList.map(item => (
+                                    <option key={item.label} value={`${item.month}-${item.year}`}>{item.label}</option>
+                                  ))}
+                                </select>
+                              </div>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: '#64748b', marginLeft: '5px' }}>Type : <select className="dn-mini-select" style={{ width: 60, border: 'none', background: 'transparent', fontWeight: 700 }}><option>ALL</option></select></div>
                               
                               <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10px', fontWeight: 700, color: '#ef4444', marginLeft: '10px' }}>* Values are in Lacs</div>
@@ -1292,7 +1488,7 @@ const Dashboard = () => {
                                 Values Include : <span className="blue-link">GST Sales</span>, <span className="blue-link">Export Sales</span>, <span className="blue-link">Job-work Sales</span>
                               </div>
                               <div className="dn-status-badge-orange">
-                                Daily Sales : Apr-2026
+                                Daily Sales : {salesMonthsList.find(m => m.month === dsSelectedMonthObj.month && m.year === dsSelectedMonthObj.year)?.label || "apr-26"}
                               </div>
                             </div>
                           </div>
@@ -1444,14 +1640,14 @@ const Dashboard = () => {
                               </ResponsiveContainer>
                             </div>
 
-                            <div className="dn-table-scroll-container" style={{ margin: 0, borderTop: '1px solid #e2e8f0', padding: '0 10px 15px 10px' }}>
+                            <div className="dn-table-scroll-container" style={{ margin: 0, borderTop: '1px solid #e2e8f0', padding: '0 0px 15px 0px' }}>
                               <table className="dn-erp-table high-density" style={{ width: '100%', borderCollapse: 'collapse' }}>
-                                <thead>
+                                <thead className="erp-th-gradient">
                                   <tr style={{ background: '#007bff', color: '#fff', fontSize: '11px' }}>
-                                    <th style={{ border: '1px solid #cbd5e1', width: 30, textAlign: 'center', background: '#007bff', color: '#fff', padding: '6px 4px' }}>Sr.</th>
-                                    <th style={{ border: '1px solid #cbd5e1', textAlign: 'left', background: '#007bff', color: '#fff', padding: '6px 4px' }}>Customer / Item</th>
-                                    <th style={{ border: '1px solid #cbd5e1', textAlign: 'right', background: '#007bff', color: '#fff', padding: '6px 4px' }}>Value</th>
-                                    <th style={{ border: '1px solid #cbd5e1', textAlign: 'right', background: '#007bff', color: '#fff', padding: '6px 4px' }}>%</th>
+                                    <th style={{ border: '1px solid #cbd5e1', width: 50, textAlign: 'center', background: '#007bff', color: '#fff', padding: '6px 4px', whiteSpace: 'nowrap' }}>Sr.</th>
+                                    <th style={{ border: '1px solid #cbd5e1', textAlign: 'center', background: '#007bff', color: '#fff', padding: '6px 4px' }}>Customer / Item</th>
+                                    <th style={{ border: '1px solid #cbd5e1', textAlign: 'center', background: '#007bff', color: '#fff', padding: '6px 4px' }}>Value</th>
+                                    <th style={{ border: '1px solid #cbd5e1', textAlign: 'center', background: '#007bff', color: '#fff', padding: '6px 4px' }}>%</th>
                                   </tr>
                                 </thead>
                                 <tbody>
@@ -1503,11 +1699,11 @@ const Dashboard = () => {
                               <button className="dn-btn-search" style={{ height: '22px', padding: '0 10px', fontSize: '10.5px', background: '#f1f5f9', border: '1px solid #cbd5e1', color: '#334155', fontWeight: 700, marginLeft: 'auto', flexShrink: 0 }}>Search</button>
                             </div>
 
-                            <div className="dn-table-scroll-container" style={{ margin: 0, border: 'none', padding: '0 10px 0 10px' }}>
+                            <div className="dn-table-scroll-container" style={{ margin: 0, border: 'none', padding: '0 0px 0 0px' }}>
                               <table className="dn-erp-table high-density dispatch-table" style={{ width: '100%' }}>
                                 <thead>
                                   <tr style={{ background: '#007bff', color: '#fff' }}>
-                                    <th style={{ width: 40, background: '#007bff', color: '#fff', textAlign: 'center', border: '1px solid rgba(255,255,255,0.2)' }}>Sr.</th>
+                                    <th style={{ width: 50, background: '#007bff', color: '#fff', textAlign: 'center', border: '1px solid rgba(255,255,255,0.2)', whiteSpace: 'nowrap' }}>Sr.</th>
                                     <th style={{ background: '#007bff', color: '#fff', border: '1px solid rgba(255,255,255,0.2)' }}>Customer</th>
                                     <th style={{ background: '#007bff', color: '#fff', border: '1px solid rgba(255,255,255,0.2)' }}>Item No</th>
                                     <th style={{ background: '#007bff', color: '#fff', border: '1px solid rgba(255,255,255,0.2)' }}>Item Code</th>
@@ -1566,8 +1762,26 @@ const Dashboard = () => {
 
                               {/* Row 2: Selectors, Search Controls and Excel Icons */}
                               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                <select className="dn-mini-select" style={{ width: 100 }}><option>2026-2027</option></select>
-                                <select className="dn-mini-select" style={{ width: 100 }}><option>APR-2026</option></select>
+                                <select 
+                                  className="dn-mini-select" 
+                                  style={{ width: 100 }}
+                                  value={bpSelectedYear}
+                                  onChange={(e) => setBpSelectedYear(e.target.value)}
+                                >
+                                  {["2026-27"].map(yr => (
+                                    <option key={yr} value={yr}>{yr}</option>
+                                  ))}
+                                </select>
+                                <select 
+                                  className="dn-mini-select" 
+                                  style={{ width: 100 }}
+                                  value={bpSelectedMonth}
+                                  onChange={(e) => setBpSelectedMonth(parseInt(e.target.value))}
+                                >
+                                  {getBpMonths(bpSelectedYear).map(m => (
+                                    <option key={m.label} value={m.month}>{m.label}</option>
+                                  ))}
+                                </select>
                                 <input type="text" className="dn-mini-select" placeholder="Enter Customer Name..." style={{ width: 180, background: '#fff' }} />
                                 
                                 <div className="dn-radio-group mini" style={{ display: 'flex', gap: '8px', fontSize: '11px', fontWeight: 700, marginLeft: '10px' }}>
@@ -1608,26 +1822,36 @@ const Dashboard = () => {
                             </div>
 
                             {/* Screenshot-matched Detail Table */}
-                            <div className="dn-table-scroll-container" style={{ margin: 0, borderTop: '1px solid #e2e8f0', padding: '0 10px 15px 10px' }}>
+                            <div className="dn-table-scroll-container" style={{ margin: 0, borderTop: '1px solid #e2e8f0', padding: '0 0px 15px 0px' }}>
                               <table className="dn-erp-table high-density" style={{ width: '100%', borderCollapse: 'collapse' }}>
-                                <thead>
+                                <thead className="erp-th-gradient">
                                   <tr style={{ background: '#007bff', color: '#fff', fontSize: '11px' }}>
                                     <th style={{ border: '1px solid #cbd5e1', width: 30, textAlign: 'center', background: '#007bff', color: '#fff', padding: '6px 4px' }}>#</th>
-                                    <th style={{ border: '1px solid #cbd5e1', textAlign: 'center', background: '#007bff', color: '#fff', padding: '6px 4px' }}>Bus. plan (Qty)</th>
-                                    <th style={{ border: '1px solid #cbd5e1', textAlign: 'center', background: '#007bff', color: '#fff', padding: '6px 4px' }}>Schedule (Qty)</th>
-                                    <th style={{ border: '1px solid #cbd5e1', textAlign: 'center', background: '#007bff', color: '#fff', padding: '6px 4px' }}>Invoice (Qty)</th>
-                                    <th style={{ border: '1px solid #cbd5e1', textAlign: 'center', background: '#007bff', color: '#fff', padding: '6px 4px' }}>Schedule (Qty) Actual</th>
-                                    <th style={{ border: '1px solid #cbd5e1', textAlign: 'center', background: '#007bff', color: '#fff', padding: '6px 4px' }}>Invoice (Qty) Actual</th>
+                                    <th style={{ border: '1px solid #cbd5e1', textAlign: 'center', background: '#007bff', color: '#fff', padding: '6px 4px' }}>{bpSearchBy === "Value" ? "Bus. plan (Val)" : "Bus. plan (Qty)"}</th>
+                                    <th style={{ border: '1px solid #cbd5e1', textAlign: 'center', background: '#007bff', color: '#fff', padding: '6px 4px' }}>{bpSearchBy === "Value" ? "Schedule (Val)" : "Schedule (Qty)"}</th>
+                                    <th style={{ border: '1px solid #cbd5e1', textAlign: 'center', background: '#007bff', color: '#fff', padding: '6px 4px' }}>{bpSearchBy === "Value" ? "Invoice (Val)" : "Invoice (Qty)"}</th>
+                                    <th style={{ border: '1px solid #cbd5e1', textAlign: 'center', background: '#007bff', color: '#fff', padding: '6px 4px' }}>{bpSearchBy === "Value" ? "Schedule (Val) Actual" : "Schedule (Qty) Actual"}</th>
+                                    <th style={{ border: '1px solid #cbd5e1', textAlign: 'center', background: '#007bff', color: '#fff', padding: '6px 4px' }}>{bpSearchBy === "Value" ? "Invoice (Val) Actual" : "Invoice (Qty) Actual"}</th>
                                   </tr>
                                 </thead>
                                 <tbody>
                                   <tr>
                                     <td style={{ border: '1px solid #cbd5e1', textAlign: 'center', fontWeight: 600 }}>1</td>
-                                    <td style={{ border: '1px solid #cbd5e1', textAlign: 'center' }}>0.00</td>
-                                    <td style={{ border: '1px solid #cbd5e1', textAlign: 'center' }}>0.00</td>
-                                    <td style={{ border: '1px solid #cbd5e1', textAlign: 'center' }}>0.00</td>
-                                    <td style={{ border: '1px solid #cbd5e1', textAlign: 'center', background: '#fff7ed', fontWeight: 700 }}>13,124,665.00</td>
-                                    <td style={{ border: '1px solid #cbd5e1', textAlign: 'center', background: '#fff7ed', fontWeight: 700 }}>2,992,500.00</td>
+                                    <td style={{ border: '1px solid #cbd5e1', textAlign: 'center' }}>
+                                      {(businessPlanData.find(d => d.name === (bpSearchBy === "Value" ? "Bus. plan Val" : "Bus. plan Qty"))?.value || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                    </td>
+                                    <td style={{ border: '1px solid #cbd5e1', textAlign: 'center' }}>
+                                      {(businessPlanData.find(d => d.name === (bpSearchBy === "Value" ? "Schedule Val" : "Schedule Qty"))?.value || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                    </td>
+                                    <td style={{ border: '1px solid #cbd5e1', textAlign: 'center' }}>
+                                      {(businessPlanData.find(d => d.name === (bpSearchBy === "Value" ? "Invoice Val" : "Invoice Qty"))?.value || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                    </td>
+                                    <td style={{ border: '1px solid #cbd5e1', textAlign: 'center', background: '#fff7ed', fontWeight: 700 }}>
+                                      {(businessPlanData.find(d => d.name === (bpSearchBy === "Value" ? "Sch Val Actual" : "Sch Qty Actual"))?.value || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                    </td>
+                                    <td style={{ border: '1px solid #cbd5e1', textAlign: 'center', background: '#fff7ed', fontWeight: 700 }}>
+                                      {(businessPlanData.find(d => d.name === (bpSearchBy === "Value" ? "Inv Val Actual" : "Inv Qty Actual"))?.value || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                    </td>
                                   </tr>
                                 </tbody>
                               </table>
@@ -1695,11 +1919,11 @@ const Dashboard = () => {
                             </div>
 
                             {/* State Wise Detail Table matched to image */}
-                            <div className="dn-table-scroll-container" style={{ margin: 0, borderTop: '1px solid #e2e8f0', padding: '0 10px 15px 10px' }}>
+                            <div className="dn-table-scroll-container" style={{ margin: 0, borderTop: '1px solid #e2e8f0', padding: '0 0px 15px 0px' }}>
                               <table className="dn-erp-table high-density" style={{ width: '100%', borderCollapse: 'collapse' }}>
-                                <thead>
+                                <thead className="erp-th-gradient">
                                   <tr style={{ background: '#007bff', color: '#fff', fontSize: '11px' }}>
-                                    <th style={{ border: '1px solid #cbd5e1', width: 30, textAlign: 'center', background: '#007bff', color: '#fff', padding: '6px 4px' }}>Sr.</th>
+                                    <th style={{ border: '1px solid #cbd5e1', width: 50, textAlign: 'center', background: '#007bff', color: '#fff', padding: '6px 4px', whiteSpace: 'nowrap' }}>Sr.</th>
                                     <th style={{ border: '1px solid #cbd5e1', textAlign: 'left', background: '#007bff', color: '#fff', padding: '6px 4px' }}>Customer</th>
                                     <th style={{ border: '1px solid #cbd5e1', textAlign: 'right', background: '#007bff', color: '#fff', padding: '6px 4px' }}>Assessable Value</th>
                                     <th style={{ border: '1px solid #cbd5e1', textAlign: 'right', background: '#007bff', color: '#fff', padding: '6px 4px' }}>Total Value</th>
