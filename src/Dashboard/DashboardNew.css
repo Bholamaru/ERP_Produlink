@@ -1998,3 +1998,162 @@ html, body {
   background: #f1f5ff !important;
 }
 
+/* --- Full Screen Width View for Non-Financial Dashboards --- */
+.mainContent.dn-full-width-view {
+  max-width: 100% !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.mainContent.dn-full-width-view.shifted {
+  width: calc(100% - 260px) !important;
+  margin-left: 260px !important;
+}
+
+.mainContent.dn-full-width-view:not(.shifted) {
+  width: 100% !important;
+  margin-left: 0 !important;
+}
+
+
+/* --- Responsive layout adjustments for Purchase, PPC, OEE, Quality, Stores, Subcon --- */
+
+/* 1. Prevent parent container clipping on horizontal scrollable items */
+.mainContent.dn-full-width-view {
+  overflow-x: clip !important;
+  min-width: 0 !important;
+}
+
+/* 2. Constrain direct children (dashboard root Boxes) to prevent tables from stretching the parent */
+.mainContent.dn-full-width-view > div {
+  min-width: 0 !important;
+  max-width: 1600px !important;
+  width: 100% !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+/* 3. Prevent closed SideNav wrapper from occupying flex container space */
+.blueside-Nav:not(.open) {
+  display: none !important;
+}
+
+/* 4. Force horizontal scroll on tables when they exceed container width */
+.mainContent.dn-full-width-view div:has(> table),
+.mainContent.dn-full-width-view div:has(> div > table),
+.mainContent.dn-full-width-view .overflow-hidden:has(table) {
+  overflow-x: auto !important;
+  max-width: 100% !important;
+  scrollbar-width: thin !important;
+}
+
+/* Scrollbar styling for Chrome/Safari/Edge */
+.mainContent.dn-full-width-view div:has(> table)::-webkit-scrollbar,
+.mainContent.dn-full-width-view div:has(> div > table)::-webkit-scrollbar,
+.mainContent.dn-full-width-view .overflow-hidden:has(table)::-webkit-scrollbar {
+  height: 6px !important;
+}
+
+.mainContent.dn-full-width-view div:has(> table)::-webkit-scrollbar-thumb,
+.mainContent.dn-full-width-view div:has(> div > table)::-webkit-scrollbar-thumb,
+.mainContent.dn-full-width-view .overflow-hidden:has(table)::-webkit-scrollbar-thumb {
+  background: #cbd5e1 !important;
+  border-radius: 3px !important;
+}
+
+/* 5. Make all flex filter rows wrap nicely on small screens to prevent right side clipping */
+.mainContent.dn-full-width-view .flex:has(input, select, .MuiSelect-select, button) {
+  flex-wrap: wrap !important;
+  gap: 12px !important;
+}
+
+/* 6. Fix hardcoded grids to be responsive */
+/* Machine utilization grid in OEE: change grid-cols-4 to be responsive */
+.mainContent.dn-full-width-view .grid-cols-4 {
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)) !important;
+}
+
+/* Ageing summary cards in Subcon: change grid-cols-8 to be responsive */
+.mainContent.dn-full-width-view .grid-cols-8 {
+  grid-template-columns: repeat(auto-fit, minmax(135px, 1fr)) !important;
+}
+
+/* Machine Graphs in OEE: stack 2-column layouts on tablets/mobiles */
+@media (max-width: 1024px) {
+  .mainContent.dn-full-width-view .grid-cols-2 {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* 7. Handle Quality Dashboard split flex columns (40% / 60% sections) */
+@media (max-width: 1024px) {
+  .mainContent.dn-full-width-view .flex:has(> .w-\[40\%\]) {
+    flex-direction: column !important;
+  }
+  .mainContent.dn-full-width-view .w-\[40\%\] {
+    width: 100% !important;
+  }
+  .mainContent.dn-full-width-view .w-\[60\%\] {
+    width: 100% !important;
+  }
+}
+
+/* --- Subcontracting Ageing summary Cards Styling --- */
+.dn-ageing-card {
+  padding: 8px 6px !important;
+  border-radius: 8px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 3px !important;
+  border: none !important;
+  background: #2563eb !important; /* Original solid blue color */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.dn-ageing-card:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12) !important;
+}
+
+.dn-ageing-card .dn-ageing-label {
+  font-size: 9px !important;
+  font-weight: 800 !important;
+  color: #ffffff !important; /* White text */
+  opacity: 0.8;
+  letter-spacing: 0.03em;
+  text-align: center;
+  text-transform: uppercase;
+  margin: 0 !important;
+  line-height: 1.2 !important;
+  font-family: 'Outfit', 'Inter', sans-serif !important;
+}
+
+.dn-ageing-card .dn-ageing-val {
+  font-size: 15px !important;
+  font-weight: 900 !important;
+  color: #ffffff !important; /* White text */
+  line-height: 1 !important;
+  margin: 0 !important;
+  font-family: 'Outfit', 'Inter', sans-serif !important;
+}
+
+/* Original slate styling for VIEW ALL card */
+.dn-ageing-card.dn-view-all {
+  background: #1e293b !important; /* Original slate background */
+}
+
+.dn-ageing-card.dn-view-all .dn-ageing-label {
+  color: #ffffff !important;
+}
+
+.dn-ageing-card.dn-view-all .dn-ageing-val {
+  color: #ffffff !important;
+}
+
+
+
+
+
