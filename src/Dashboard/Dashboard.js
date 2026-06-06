@@ -25,6 +25,13 @@ import {
 
 import NavBar from "../NavBar/NavBar";
 import SideNav from "../SideNav/SideNav";
+import { useNavigate } from "react-router-dom";
+import PurchaseView from "./Purchase";
+import PpcView from "./PPC";
+import OeeView from "./OEE";
+import QualityView from "./Quality";
+import StoresView from "./Stores";
+import SubconView from "./Subcon";
 
 /*     Mock Data     */
 const areaDataDay = [
@@ -155,10 +162,14 @@ const deptCards = [
 ];
 
 const alertItems = [
-  { id: 1, label: "Pending PO Approval", count: 2, color: "#dbeafe" },
-  { id: 2, label: "Pending Sales Return QC", count: 7, color: "#93c5fd" },
-  { id: 3, label: "Bill Passing (Purchase)", count: 181, color: "#3b82f6" },
-  { id: 4, label: "Bill Passing (Jobwork)", count: 442, color: "#1d4ed8" },
+  { id: 1, label: "Pending PO Approval", count: 2, color: "#eff6ff" },
+  { id: 2, label: "Pending Inprocess QC", count: 12, color: "#dbeafe" },
+  { id: 3, label: "Pending Sales Return QC", count: 7, color: "#bfdbfe" },
+  { id: 4, label: "Bill Passing (Purchase)", count: 181, color: "#93c5fd" },
+  { id: 5, label: "Bill Passing (Jobwork)", count: 442, color: "#60a5fa" },
+  { id: 6, label: "Upcoming Dispatch", count: 8, color: "#3b82f6" },
+  { id: 7, label: "Unauthorised BOM", count: 4, color: "#2563eb" },
+  { id: 8, label: "Pending Gate Inward Entry", count: 15, color: "#1e3a8a" },
 ];
 
 const recordItems = [
@@ -576,7 +587,7 @@ const itemWiseDispatchData = [
   { sr: 5, customer: "ENDURANCE TECHNOLOGIES LTD (DISC BREAK DIVISION E-7", itemNo: "FG1005", itemCode: "520AW00212", itemDesc: "BLEEDER SCREW(M7)", qty: 7000, amount: 27020 },
 ];
 
-const businessPlanData = [
+const initialBusinessPlanData = [
   { name: "Bus. plan Qty", value: 0 },
   { name: "Schedule Qty", value: 0 },
   { name: "Invoice Qty", value: 0 },
@@ -584,7 +595,7 @@ const businessPlanData = [
   { name: "Inv Qty Actual", value: 2992500 },
 ];
 
-const stateWiseSalesData = [
+const initialStateWiseSalesData = [
   { name: "MAHARASHTRA", value: 19877002.64, total: 23460244.98, percent: 73.15, fill: "#007bff" },
   { name: "GUJRAT", value: 5248981.78, total: 6193798.51, percent: 19.32, fill: "#f59e0b" },
   { name: "KARNATAKA", value: 1029637.16, total: 1214971.82, percent: 3.79, fill: "#0ea5e9" },
@@ -798,8 +809,48 @@ const CustomPieLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, i
   );
 };
 
+const getBpMonths = (financialYear) => {
+  const [startYearStr, endYearStr] = financialYear.split("-");
+  const startYear = parseInt(startYearStr);
+  let endYear = parseInt(endYearStr);
+  if (endYear < 100) {
+    endYear = Math.floor(startYear / 100) * 100 + endYear;
+  }
+  
+  return [
+    { label: `APR-${startYear}`, month: 4 },
+    { label: `MAY-${startYear}`, month: 5 },
+    { label: `JUN-${startYear}`, month: 6 },
+    { label: `JUL-${startYear}`, month: 7 },
+    { label: `AUG-${startYear}`, month: 8 },
+    { label: `SEP-${startYear}`, month: 9 },
+    { label: `OCT-${startYear}`, month: 10 },
+    { label: `NOV-${startYear}`, month: 11 },
+    { label: `DEC-${startYear}`, month: 12 },
+    { label: `JAN-${endYear}`, month: 1 },
+    { label: `FEB-${endYear}`, month: 2 },
+    { label: `MAR-${endYear}`, month: 3 },
+  ];
+};
+
+const salesMonthsList = [
+  { label: "APR-26", month: 4, year: 2026 },
+  { label: "MAY-26", month: 5, year: 2026 },
+  { label: "JUN-26", month: 6, year: 2026 },
+  { label: "JUL-26", month: 7, year: 2026 },
+  { label: "AUG-26", month: 8, year: 2026 },
+  { label: "SEP-26", month: 9, year: 2026 },
+  { label: "OCT-26", month: 10, year: 2026 },
+  { label: "NOV-26", month: 11, year: 2026 },
+  { label: "DEC-26", month: 12, year: 2026 },
+  { label: "JAN-27", month: 1, year: 2027 },
+  { label: "FEB-27", month: 2, year: 2027 },
+  { label: "MAR-27", month: 3, year: 2027 },
+];
+
 /*     Component     */
 const Dashboard = () => {
+  const navigate = useNavigate();
   const [sideNavOpen, setSideNavOpen] = useState(false);
   const [activeDept, setActiveDept] = useState("financial");
   const [activeRange, setActiveRange] = useState("Week");
@@ -812,6 +863,8 @@ const Dashboard = () => {
   const [bpTimeMode, setBpTimeMode] = useState("Monthly");
   const [bpCustomerWise, setBpCustomerWise] = useState(false);
   const [bpSearchBy, setBpSearchBy] = useState("Quantity");
+  const [bpSelectedYear, setBpSelectedYear] = useState("2026-27");
+  const [bpSelectedMonth, setBpSelectedMonth] = useState(5);
 
   // State Wise Sales Filters State
   const [stateWiseType, setStateWiseType] = useState("Top 5 State");
@@ -826,10 +879,14 @@ const Dashboard = () => {
 
   const [top5SalesData, setTop5SalesData] = useState([]);
   const [itemWiseDispatchData, setItemWiseDispatchData] = useState([]);
+  const [businessPlanData, setBusinessPlanData] = useState(initialBusinessPlanData);
+  const [spSelectedMonthObj, setSpSelectedMonthObj] = useState({ month: 4, year: 2026 });
+  const [dsSelectedMonthObj, setDsSelectedMonthObj] = useState({ month: 4, year: 2026 });
+  const [stateWiseSalesData, setStateWiseSalesData] = useState(initialStateWiseSalesData);
 
-  const fetchDailySalesReport = async () => {
+  const fetchDailySalesReport = async (month = 4, year = 2026) => {
     try {
-      const response = await fetch("http://127.0.0.1:8000/Dashboard/monthly/daily/report/?month=4&year=2026");
+      const response = await fetch(`http://127.0.0.1:8000/Dashboard/monthly/daily/report/?month=${month}&year=${year}`);
       if (!response.ok) throw new Error("Failed to fetch daily sales report");
       const data = await response.json();
 
@@ -849,7 +906,7 @@ const Dashboard = () => {
       if (!response.ok) throw new Error("Failed to fetch top 5 sales data");
       const data = await response.json();
 
-      const colors = ["#0ea5e9", "#3b82f6", "#6366f1", "#8b5cf6", "#a855f7"];
+      const colors = ["#3b82f6", "#10b981", "#f59e0b", "#8b5cf6", "#06b6d4"];
       const updated = data.map((item, index) => ({
         name: item.customer,
         value: parseFloat(item.total_assessable || 0),
@@ -908,9 +965,9 @@ const Dashboard = () => {
     { name: "Purchase", value: 0 }
   ]);
 
-  const fetchAssessableReport = async () => {
+  const fetchAssessableReport = async (month = 4, year = 2026) => {
     try {
-      const response = await fetch("http://127.0.0.1:8000/Dashboard/assessable-report/?month=4&year=2026");
+      const response = await fetch(`http://127.0.0.1:8000/Dashboard/assessable-report/?month=${month}&year=${year}`);
       if (!response.ok) throw new Error("Failed to fetch assessable report");
       const data = await response.json();
 
@@ -950,6 +1007,66 @@ const Dashboard = () => {
     }
   };
 
+  const fetchBusinessPlanData = async () => {
+    try {
+      const [startYearStr, endYearStr] = bpSelectedYear.split("-");
+      const startYear = parseInt(startYearStr);
+      let endYear = parseInt(endYearStr);
+      if (endYear < 100) {
+        endYear = Math.floor(startYear / 100) * 100 + endYear;
+      }
+      const fetchYear = bpSelectedMonth >= 4 ? startYear : endYear;
+      
+      const apiEndpoint = bpSearchBy === "Value"
+        ? `https://erp-render.onrender.com/Dashboard/bussiness-invoice-value/?month=${bpSelectedMonth}&year=${fetchYear}`
+        : `https://erp-render.onrender.com/Dashboard/bussiness-invoice-summary/?month=${bpSelectedMonth}&year=${fetchYear}`;
+      
+      const response = await fetch(apiEndpoint);
+      if (!response.ok) throw new Error("Failed to fetch business plan data");
+      const data = await response.json();
+      
+      if (bpSearchBy === "Value") {
+        setBusinessPlanData([
+          { name: "Bus. plan Val", value: 0 },
+          { name: "Schedule Val", value: 0 },
+          { name: "Invoice Val", value: 0 },
+          { name: "Sch Val Actual", value: data.sales_order_assessable_value || 0 },
+          { name: "Inv Val Actual", value: data.invoice_assessable_value || 0 },
+        ]);
+      } else {
+        setBusinessPlanData([
+          { name: "Bus. plan Qty", value: 0 },
+          { name: "Schedule Qty", value: 0 },
+          { name: "Invoice Qty", value: 0 },
+          { name: "Sch Qty Actual", value: data.total_sch_qty || 0 },
+          { name: "Inv Qty Actual", value: data.total_inv_qty || 0 },
+        ]);
+      }
+    } catch (err) {
+      console.error("Error fetching business plan summary:", err);
+    }
+  };
+  const fetchStateWiseSalesData = async () => {
+    try {
+      const response = await fetch("https://erp-render.onrender.com/Dashboard/top-5-region-sales/");
+      if (!response.ok) throw new Error("Failed to fetch state wise sales data");
+      const data = await response.json();
+
+      const colors = ["#007bff", "#f59e0b", "#0ea5e9", "#ef4444", "#8b5cf6", "#10b981"];
+      const updated = (data.top_regions || []).map((item, index) => ({
+        name: (item.region || "").toUpperCase(),
+        value: parseFloat(item.assessable_value || 0),
+        total: parseFloat(item.grand_total || 0),
+        percent: parseFloat(item.percentage || 0) / 100.0,
+        fill: colors[index % colors.length]
+      }));
+
+      setStateWiseSalesData(updated);
+    } catch (err) {
+      console.error("Error fetching state wise sales data:", err);
+    }
+  };
+
 
   const toggleSection = (label) => {
     setExpandedSections(prev => ({ ...prev, [label]: !prev[label] }));
@@ -958,11 +1075,22 @@ const Dashboard = () => {
   const toggleSideNav = () => setSideNavOpen((p) => !p);
 
   useEffect(() => {
-    fetchAssessableReport();
-    fetchDailySalesReport();
     fetchTop5SalesData();
     fetchItemWiseDispatchData();
+    fetchStateWiseSalesData();
   }, []);
+
+  useEffect(() => {
+    fetchBusinessPlanData();
+  }, [bpSelectedYear, bpSelectedMonth, bpSearchBy]);
+
+  useEffect(() => {
+    fetchAssessableReport(spSelectedMonthObj.month, spSelectedMonthObj.year);
+  }, [spSelectedMonthObj]);
+
+  useEffect(() => {
+    fetchDailySalesReport(dsSelectedMonthObj.month, dsSelectedMonthObj.year);
+  }, [dsSelectedMonthObj]);
 
 
 
@@ -984,7 +1112,7 @@ const Dashboard = () => {
       <div className="mainContainer">
         <SideNav sideNavOpen={sideNavOpen} toggleSideNav={toggleSideNav} />
 
-        <main className={`mainContent dn-main ${sideNavOpen ? "shifted" : ""}`}>
+        <main className={`mainContent dn-main ${sideNavOpen ? "shifted" : ""} ${activeDept !== "financial" ? "dn-full-width-view" : ""}`}>
           {/*    Department Cards    */}
           <div className="dn-dept-cards-row">
             {deptCards.map((card) => (
@@ -1026,12 +1154,56 @@ const Dashboard = () => {
                   </div>
 
                   <div className="dn-alert-list">
-                    {alertItems.map(item => (
-                      <div key={item.id} className="dn-alert-item">
-                        <span className="dn-alert-label">{item.label}</span>
-                        <span className="dn-alert-badge" style={{ background: item.color }}>{item.count}</span>
-                      </div>
-                    ))}
+                    {alertItems.map((item, index) => {
+                      const baseSize = 20 + index * 2.5; // From 20px to 37.5px
+                      const fontSize = 9 + index * 0.5;  // From 9px to 12.5px
+                      const isDarkColor = index >= 5;
+                      return (
+                        <div
+                          key={item.id}
+                          className="dn-alert-item"
+                          onClick={() => {
+                            if (item.label === "Pending PO Approval") {
+                              navigate("/pendingpo");
+                            } else if (item.label === "Pending Inprocess QC") {
+                              navigate("/InprocessInspection");
+                            } else if (item.label === "Pending Sales Return QC") {
+                              navigate("/PaddingSalesQC");
+                            } else if (item.label === "Bill Passing (Purchase)") {
+                              navigate("/purchase-bill");
+                            } else if (item.label === "Bill Passing (Jobwork)") {
+                              navigate("/jobwork-bill");
+                            } else if (item.label === "Upcoming Dispatch") {
+                              navigate("/UpcomingDispatchList");
+                            } else if (item.label === "Unauthorised BOM") {
+                              navigate("/bom-routing");
+                            } else if (item.label === "Pending Gate Inward Entry") {
+                              navigate("/Gate-Inward-Entry");
+                            }
+                          }}
+                        >
+                          <span className="dn-alert-label">{item.label}</span>
+                          <span
+                            className="dn-alert-badge"
+                            style={{
+                              background: item.color,
+                              fontSize: `${fontSize}px`,
+                              minWidth: `${24 + index * 3}px`,
+                              height: `${16 + index * 2}px`,
+                              borderRadius: "999px",
+                              color: isDarkColor ? "#fff" : "#000",
+                              display: "inline-flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              padding: `0 ${6 + index * 1}px`,
+                              lineHeight: 1
+                            }}
+                          >
+                            {item.count}
+                          </span>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
 
@@ -1165,7 +1337,22 @@ const Dashboard = () => {
                             <div className="dn-inner-filter-bar complex" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 16px", background: "#f8fafc", borderBottom: '1px solid #e2e8f0', flexWrap: 'nowrap' }}>
                               <div className="dn-f-left" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                 <div className="dn-f-item sm">Plant : <select className="dn-mini-select" style={{ width: 80 }}><option>SHARP</option></select></div>
-                                <div className="dn-f-item sm">Month : <select className="dn-mini-select" style={{ width: 100 }}><option>Apr-2026</option></select></div>
+                                <div className="dn-f-item sm">
+                                  Month : 
+                                  <select 
+                                    className="dn-mini-select" 
+                                    style={{ width: 100 }}
+                                    value={`${spSelectedMonthObj.month}-${spSelectedMonthObj.year}`}
+                                    onChange={(e) => {
+                                      const [m, y] = e.target.value.split("-").map(Number);
+                                      setSpSelectedMonthObj({ month: m, year: y });
+                                    }}
+                                  >
+                                    {salesMonthsList.map(item => (
+                                      <option key={item.label} value={`${item.month}-${item.year}`}>{item.label}</option>
+                                    ))}
+                                  </select>
+                                </div>
                                 <button className="dn-icon-btn small" style={{ background: '#f1f5f9', border: '1px solid #cbd5e1', padding: 4, borderRadius: 4, cursor: 'pointer' }}>
                                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M23 4v6h-6M1 20v-6h6" /><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" /></svg>
                                 </button>
@@ -1220,11 +1407,11 @@ const Dashboard = () => {
                               <table className="dn-erp-table high-density">
                                 <thead>
                                   <tr style={{ background: '#007bff', color: '#fff', fontSize: '11px' }}>
-                                    <th style={{ width: 40, textAlign: 'center', background: '#007bff', color: '#fff', border: '1px solid #0056b3' }}>#</th>
-                                    <th style={{ width: 30, textAlign: 'center', background: '#007bff', color: '#fff', border: '1px solid #0056b3' }}><input type="checkbox" /></th>
-                                    <th style={{ textAlign: 'left', background: '#007bff', color: '#fff', border: '1px solid #0056b3' }}>Type</th>
-                                    <th style={{ textAlign: 'right', background: '#007bff', color: '#fff', border: '1px solid #0056b3' }}>Assessable Value</th>
-                                    <th style={{ textAlign: 'right', background: '#007bff', color: '#fff', border: '1px solid #0056b3' }}>Total Value</th>
+                                    <th style={{ width: 40, textAlign: 'center', background: '#007bff', color: '#fff', border: 'none' }}>#</th>
+                                    <th style={{ width: 30, textAlign: 'center', background: '#007bff', color: '#fff', border: 'none' }}><input type="checkbox" /></th>
+                                    <th style={{ textAlign: 'left', background: '#007bff', color: '#fff', border: 'none' }}>Type</th>
+                                    <th style={{ textAlign: 'right', background: '#007bff', color: '#fff', border: 'none' }}>Assessable Value</th>
+                                    <th style={{ textAlign: 'right', background: '#007bff', color: '#fff', border: 'none' }}>Total Value</th>
                                   </tr>
                                 </thead>
                                 <tbody>
@@ -1248,7 +1435,22 @@ const Dashboard = () => {
                             {/* Standardized Flex Filter Strip */}
                             <div className="dn-inner-filter-bar" style={{ display: "flex", alignItems: "center", gap: '8px', padding: "10px 16px", background: "#f8fafc", borderBottom: '1px solid #e2e8f0' }}>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: '#64748b' }}>Plant : <select className="dn-mini-select" style={{ width: 80, border: 'none', background: 'transparent', fontWeight: 700 }}><option>SHARP</option></select></div>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: '#64748b', marginLeft: '5px' }}>Sales Month : <select className="dn-mini-select" style={{ width: 100, border: 'none', background: 'transparent', fontWeight: 700 }}><option>Apr-2026</option></select></div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: '#64748b', marginLeft: '5px' }}>
+                                Sales Month : 
+                                <select 
+                                  className="dn-mini-select" 
+                                  style={{ width: 100, border: 'none', background: 'transparent', fontWeight: 700 }}
+                                  value={`${dsSelectedMonthObj.month}-${dsSelectedMonthObj.year}`}
+                                  onChange={(e) => {
+                                    const [m, y] = e.target.value.split("-").map(Number);
+                                    setDsSelectedMonthObj({ month: m, year: y });
+                                  }}
+                                >
+                                  {salesMonthsList.map(item => (
+                                    <option key={item.label} value={`${item.month}-${item.year}`}>{item.label}</option>
+                                  ))}
+                                </select>
+                              </div>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: '#64748b', marginLeft: '5px' }}>Type : <select className="dn-mini-select" style={{ width: 60, border: 'none', background: 'transparent', fontWeight: 700 }}><option>ALL</option></select></div>
                               
                               <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10px', fontWeight: 700, color: '#ef4444', marginLeft: '10px' }}>* Values are in Lacs</div>
@@ -1292,7 +1494,7 @@ const Dashboard = () => {
                                 Values Include : <span className="blue-link">GST Sales</span>, <span className="blue-link">Export Sales</span>, <span className="blue-link">Job-work Sales</span>
                               </div>
                               <div className="dn-status-badge-orange">
-                                Daily Sales : Apr-2026
+                                Daily Sales : {salesMonthsList.find(m => m.month === dsSelectedMonthObj.month && m.year === dsSelectedMonthObj.year)?.label || "apr-26"}
                               </div>
                             </div>
                           </div>
@@ -1444,14 +1646,14 @@ const Dashboard = () => {
                               </ResponsiveContainer>
                             </div>
 
-                            <div className="dn-table-scroll-container" style={{ margin: 0, borderTop: '1px solid #e2e8f0', padding: '0 10px 15px 10px' }}>
+                            <div className="dn-table-scroll-container" style={{ margin: 0, borderTop: '1px solid #e2e8f0', padding: '0 0px 15px 0px' }}>
                               <table className="dn-erp-table high-density" style={{ width: '100%', borderCollapse: 'collapse' }}>
-                                <thead>
+                                <thead className="erp-th-gradient">
                                   <tr style={{ background: '#007bff', color: '#fff', fontSize: '11px' }}>
-                                    <th style={{ border: '1px solid #cbd5e1', width: 30, textAlign: 'center', background: '#007bff', color: '#fff', padding: '6px 4px' }}>Sr.</th>
-                                    <th style={{ border: '1px solid #cbd5e1', textAlign: 'left', background: '#007bff', color: '#fff', padding: '6px 4px' }}>Customer / Item</th>
-                                    <th style={{ border: '1px solid #cbd5e1', textAlign: 'right', background: '#007bff', color: '#fff', padding: '6px 4px' }}>Value</th>
-                                    <th style={{ border: '1px solid #cbd5e1', textAlign: 'right', background: '#007bff', color: '#fff', padding: '6px 4px' }}>%</th>
+                                    <th style={{ border: '1px solid #cbd5e1', width: 50, textAlign: 'center', background: '#007bff', color: '#fff', padding: '6px 4px', whiteSpace: 'nowrap' }}>Sr.</th>
+                                    <th style={{ border: '1px solid #cbd5e1', textAlign: 'center', background: '#007bff', color: '#fff', padding: '6px 4px' }}>Customer / Item</th>
+                                    <th style={{ border: '1px solid #cbd5e1', textAlign: 'center', background: '#007bff', color: '#fff', padding: '6px 4px' }}>Value</th>
+                                    <th style={{ border: '1px solid #cbd5e1', textAlign: 'center', background: '#007bff', color: '#fff', padding: '6px 4px' }}>%</th>
                                   </tr>
                                 </thead>
                                 <tbody>
@@ -1503,11 +1705,11 @@ const Dashboard = () => {
                               <button className="dn-btn-search" style={{ height: '22px', padding: '0 10px', fontSize: '10.5px', background: '#f1f5f9', border: '1px solid #cbd5e1', color: '#334155', fontWeight: 700, marginLeft: 'auto', flexShrink: 0 }}>Search</button>
                             </div>
 
-                            <div className="dn-table-scroll-container" style={{ margin: 0, border: 'none', padding: '0 10px 0 10px' }}>
+                            <div className="dn-table-scroll-container" style={{ margin: 0, border: 'none', padding: '0 0px 0 0px' }}>
                               <table className="dn-erp-table high-density dispatch-table" style={{ width: '100%' }}>
                                 <thead>
                                   <tr style={{ background: '#007bff', color: '#fff' }}>
-                                    <th style={{ width: 40, background: '#007bff', color: '#fff', textAlign: 'center', border: '1px solid rgba(255,255,255,0.2)' }}>Sr.</th>
+                                    <th style={{ width: 50, background: '#007bff', color: '#fff', textAlign: 'center', border: '1px solid rgba(255,255,255,0.2)', whiteSpace: 'nowrap' }}>Sr.</th>
                                     <th style={{ background: '#007bff', color: '#fff', border: '1px solid rgba(255,255,255,0.2)' }}>Customer</th>
                                     <th style={{ background: '#007bff', color: '#fff', border: '1px solid rgba(255,255,255,0.2)' }}>Item No</th>
                                     <th style={{ background: '#007bff', color: '#fff', border: '1px solid rgba(255,255,255,0.2)' }}>Item Code</th>
@@ -1566,8 +1768,26 @@ const Dashboard = () => {
 
                               {/* Row 2: Selectors, Search Controls and Excel Icons */}
                               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                <select className="dn-mini-select" style={{ width: 100 }}><option>2026-2027</option></select>
-                                <select className="dn-mini-select" style={{ width: 100 }}><option>APR-2026</option></select>
+                                <select 
+                                  className="dn-mini-select" 
+                                  style={{ width: 100 }}
+                                  value={bpSelectedYear}
+                                  onChange={(e) => setBpSelectedYear(e.target.value)}
+                                >
+                                  {["2026-27"].map(yr => (
+                                    <option key={yr} value={yr}>{yr}</option>
+                                  ))}
+                                </select>
+                                <select 
+                                  className="dn-mini-select" 
+                                  style={{ width: 100 }}
+                                  value={bpSelectedMonth}
+                                  onChange={(e) => setBpSelectedMonth(parseInt(e.target.value))}
+                                >
+                                  {getBpMonths(bpSelectedYear).map(m => (
+                                    <option key={m.label} value={m.month}>{m.label}</option>
+                                  ))}
+                                </select>
                                 <input type="text" className="dn-mini-select" placeholder="Enter Customer Name..." style={{ width: 180, background: '#fff' }} />
                                 
                                 <div className="dn-radio-group mini" style={{ display: 'flex', gap: '8px', fontSize: '11px', fontWeight: 700, marginLeft: '10px' }}>
@@ -1608,26 +1828,36 @@ const Dashboard = () => {
                             </div>
 
                             {/* Screenshot-matched Detail Table */}
-                            <div className="dn-table-scroll-container" style={{ margin: 0, borderTop: '1px solid #e2e8f0', padding: '0 10px 15px 10px' }}>
+                            <div className="dn-table-scroll-container" style={{ margin: 0, borderTop: '1px solid #e2e8f0', padding: '0 0px 15px 0px' }}>
                               <table className="dn-erp-table high-density" style={{ width: '100%', borderCollapse: 'collapse' }}>
-                                <thead>
+                                <thead className="erp-th-gradient">
                                   <tr style={{ background: '#007bff', color: '#fff', fontSize: '11px' }}>
                                     <th style={{ border: '1px solid #cbd5e1', width: 30, textAlign: 'center', background: '#007bff', color: '#fff', padding: '6px 4px' }}>#</th>
-                                    <th style={{ border: '1px solid #cbd5e1', textAlign: 'center', background: '#007bff', color: '#fff', padding: '6px 4px' }}>Bus. plan (Qty)</th>
-                                    <th style={{ border: '1px solid #cbd5e1', textAlign: 'center', background: '#007bff', color: '#fff', padding: '6px 4px' }}>Schedule (Qty)</th>
-                                    <th style={{ border: '1px solid #cbd5e1', textAlign: 'center', background: '#007bff', color: '#fff', padding: '6px 4px' }}>Invoice (Qty)</th>
-                                    <th style={{ border: '1px solid #cbd5e1', textAlign: 'center', background: '#007bff', color: '#fff', padding: '6px 4px' }}>Schedule (Qty) Actual</th>
-                                    <th style={{ border: '1px solid #cbd5e1', textAlign: 'center', background: '#007bff', color: '#fff', padding: '6px 4px' }}>Invoice (Qty) Actual</th>
+                                    <th style={{ border: '1px solid #cbd5e1', textAlign: 'center', background: '#007bff', color: '#fff', padding: '6px 4px' }}>{bpSearchBy === "Value" ? "Bus. plan (Val)" : "Bus. plan (Qty)"}</th>
+                                    <th style={{ border: '1px solid #cbd5e1', textAlign: 'center', background: '#007bff', color: '#fff', padding: '6px 4px' }}>{bpSearchBy === "Value" ? "Schedule (Val)" : "Schedule (Qty)"}</th>
+                                    <th style={{ border: '1px solid #cbd5e1', textAlign: 'center', background: '#007bff', color: '#fff', padding: '6px 4px' }}>{bpSearchBy === "Value" ? "Invoice (Val)" : "Invoice (Qty)"}</th>
+                                    <th style={{ border: '1px solid #cbd5e1', textAlign: 'center', background: '#007bff', color: '#fff', padding: '6px 4px' }}>{bpSearchBy === "Value" ? "Schedule (Val) Actual" : "Schedule (Qty) Actual"}</th>
+                                    <th style={{ border: '1px solid #cbd5e1', textAlign: 'center', background: '#007bff', color: '#fff', padding: '6px 4px' }}>{bpSearchBy === "Value" ? "Invoice (Val) Actual" : "Invoice (Qty) Actual"}</th>
                                   </tr>
                                 </thead>
                                 <tbody>
                                   <tr>
                                     <td style={{ border: '1px solid #cbd5e1', textAlign: 'center', fontWeight: 600 }}>1</td>
-                                    <td style={{ border: '1px solid #cbd5e1', textAlign: 'center' }}>0.00</td>
-                                    <td style={{ border: '1px solid #cbd5e1', textAlign: 'center' }}>0.00</td>
-                                    <td style={{ border: '1px solid #cbd5e1', textAlign: 'center' }}>0.00</td>
-                                    <td style={{ border: '1px solid #cbd5e1', textAlign: 'center', background: '#fff7ed', fontWeight: 700 }}>13,124,665.00</td>
-                                    <td style={{ border: '1px solid #cbd5e1', textAlign: 'center', background: '#fff7ed', fontWeight: 700 }}>2,992,500.00</td>
+                                    <td style={{ border: '1px solid #cbd5e1', textAlign: 'center' }}>
+                                      {(businessPlanData.find(d => d.name === (bpSearchBy === "Value" ? "Bus. plan Val" : "Bus. plan Qty"))?.value || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                    </td>
+                                    <td style={{ border: '1px solid #cbd5e1', textAlign: 'center' }}>
+                                      {(businessPlanData.find(d => d.name === (bpSearchBy === "Value" ? "Schedule Val" : "Schedule Qty"))?.value || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                    </td>
+                                    <td style={{ border: '1px solid #cbd5e1', textAlign: 'center' }}>
+                                      {(businessPlanData.find(d => d.name === (bpSearchBy === "Value" ? "Invoice Val" : "Invoice Qty"))?.value || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                    </td>
+                                    <td style={{ border: '1px solid #cbd5e1', textAlign: 'center', background: '#fff7ed', fontWeight: 700 }}>
+                                      {(businessPlanData.find(d => d.name === (bpSearchBy === "Value" ? "Sch Val Actual" : "Sch Qty Actual"))?.value || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                    </td>
+                                    <td style={{ border: '1px solid #cbd5e1', textAlign: 'center', background: '#fff7ed', fontWeight: 700 }}>
+                                      {(businessPlanData.find(d => d.name === (bpSearchBy === "Value" ? "Inv Val Actual" : "Inv Qty Actual"))?.value || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                    </td>
                                   </tr>
                                 </tbody>
                               </table>
@@ -1695,11 +1925,11 @@ const Dashboard = () => {
                             </div>
 
                             {/* State Wise Detail Table matched to image */}
-                            <div className="dn-table-scroll-container" style={{ margin: 0, borderTop: '1px solid #e2e8f0', padding: '0 10px 15px 10px' }}>
+                            <div className="dn-table-scroll-container" style={{ margin: 0, borderTop: '1px solid #e2e8f0', padding: '0 0px 15px 0px' }}>
                               <table className="dn-erp-table high-density" style={{ width: '100%', borderCollapse: 'collapse' }}>
-                                <thead>
+                                <thead className="erp-th-gradient">
                                   <tr style={{ background: '#007bff', color: '#fff', fontSize: '11px' }}>
-                                    <th style={{ border: '1px solid #cbd5e1', width: 30, textAlign: 'center', background: '#007bff', color: '#fff', padding: '6px 4px' }}>Sr.</th>
+                                    <th style={{ border: '1px solid #cbd5e1', width: 50, textAlign: 'center', background: '#007bff', color: '#fff', padding: '6px 4px', whiteSpace: 'nowrap' }}>Sr.</th>
                                     <th style={{ border: '1px solid #cbd5e1', textAlign: 'left', background: '#007bff', color: '#fff', padding: '6px 4px' }}>Customer</th>
                                     <th style={{ border: '1px solid #cbd5e1', textAlign: 'right', background: '#007bff', color: '#fff', padding: '6px 4px' }}>Assessable Value</th>
                                     <th style={{ border: '1px solid #cbd5e1', textAlign: 'right', background: '#007bff', color: '#fff', padding: '6px 4px' }}>Total Value</th>
@@ -1731,2397 +1961,18 @@ const Dashboard = () => {
           )}
 
 
-          {activeDept === "purchase" && (
-            <div className="dn-purchase-view fade-in">
-              {/* --- NEW PURCHASE DASHBOARD HEADER SECTION --- */}
-              <div className="dn-purchase-hero-section">
-                <div className="dn-hero-card">
-                  <div className="dn-hero-left">
-                    <h2 className="dn-hero-title">Purchase Operations & Procurement</h2>
-                    <p className="dn-hero-subtitle">Global view of active Purchase Orders, Goods Receipt (GRN) metrics, and Vendor expenditures.</p>
-                  </div>
-                  <div className="dn-hero-right">
-                    <button className="dn-master-export-btn">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ marginRight: '8px' }}>
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" />
-                      </svg>
-                      Export Master List
-                    </button>
-                  </div>
-                </div>
+          {activeDept === "purchase" && <PurchaseView />}
+          {activeDept === "ppc" && <PpcView />}
 
-                <div className="dn-purchase-top-charts">
-                  <div className="dn-top-chart-card">
-                    <div className="dn-chart-header-row">
-                      <h3 className="dn-chart-title-sm">MONTHLY PURCHASE COST (IN LACS)</h3>
-                      <select className="dn-chart-select-sm">
-                        <option>2026 Fiscal</option>
-                      </select>
-                    </div>
-                    <div className="dn-chart-body-sm">
-                      <ResponsiveContainer width="100%" height={240}>
-                        <BarChart data={purchaseCostDetailedData} margin={{ top: 20, right: 10, left: -20, bottom: 0 }}>
-                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                          <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#94a3b8', fontWeight: 500 }} />
-                          <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#94a3b8' }} domain={[0, 240]} ticks={[0, 60, 120, 180, 240]} />
-                          <Tooltip cursor={{ fill: '#f8fafc' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
-                          <Bar dataKey="value" fill="#6366f1" radius={[4, 4, 0, 0]} barSize={28} />
-                        </BarChart>
-                      </ResponsiveContainer>
-                    </div>
-                  </div>
 
-                  <div className="dn-top-chart-card">
-                    <div className="dn-chart-header-row">
-                      <h3 className="dn-chart-title-sm">DAILY ACTIVE DISPATCHES (COUNT)</h3>
-                    </div>
-                    <div className="dn-chart-body-sm">
-                      <ResponsiveContainer width="100%" height={240}>
-                        <BarChart data={dailyActiveDispatchesData} margin={{ top: 20, right: 10, left: -20, bottom: 0 }}>
-                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                          <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#94a3b8', fontWeight: 500 }} />
-                          <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#94a3b8' }} domain={[0, 60]} ticks={[0, 15, 30, 45, 60]} />
-                          <Tooltip cursor={{ fill: '#f8fafc' }} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }} />
-                          <Bar dataKey="count" fill="#06b6d4" radius={[4, 4, 0, 0]} barSize={18} />
-                        </BarChart>
-                      </ResponsiveContainer>
-                    </div>
-                  </div>
-                </div>
+          {activeDept === "oee" && <OeeView />}
 
-                <div className="dn-purchase-top-charts" style={{ marginTop: '20px' }}>
-                  <div className="dn-top-chart-card" style={{ padding: 0 }}>
-                    <div className="dn-chart-header-row" style={{ padding: '20px 20px 10px' }}>
-                      <h3 className="dn-chart-title-sm">
-                        <span className="dn-title-accent">|</span> PO CATEGORIES FOCUS
-                      </h3>
-                    </div>
-                    <div className="dn-table-scroll-container" style={{ margin: 0, padding: '0 20px 20px' }}>
-                      <table className="dn-erp-table high-density">
-                        <thead>
-                          <tr style={{ background: '#f1f5ff', borderBottom: '1px solid #e2e8f0' }}>
-                            <th style={{ color: '#1e40af', fontSize: '11px' }}>CATEGORY ID</th>
-                            <th style={{ color: '#1e40af', fontSize: '11px' }}>CATEGORY NAME</th>
-                            <th style={{ color: '#1e40af', fontSize: '11px', textAlign: 'center' }}>TOTAL PO COUNT</th>
-                            <th style={{ color: '#1e40af', fontSize: '11px', textAlign: 'right' }}>FINANCIAL LOAD</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {poCategoriesTableData.map((row, idx) => (
-                            <tr key={idx} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                              <td style={{ fontWeight: 700 }}>{row.id}</td>
-                              <td>{row.name}</td>
-                              <td style={{ textAlign: 'center' }}>{row.count}</td>
-                              <td style={{ textAlign: 'right', fontWeight: 700 }}>{row.load}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
+          {activeDept === "stores" && <StoresView />}
+          {activeDept === "subcon" && <SubconView />}
 
-                  <div className="dn-top-chart-card">
-                    <div className="dn-chart-header-row">
-                      <h3 className="dn-chart-title-sm">
-                        <span className="dn-title-accent">|</span> GLOBAL GRN VALUE BREAKDOWN
-                      </h3>
-                    </div>
-                    <div className="dn-chart-body-sm" style={{ height: 260 }}>
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                          <Pie
-                            data={grnValueSummaryData}
-                            cx="50%"
-                            cy="50%"
-                            innerRadius={0}
-                            outerRadius={80}
-                            dataKey="value"
-                            labelLine={true}
-                            minAngle={15}
-                            label={({ value, cx, cy, midAngle, innerRadius, outerRadius, index }) => {
-                              const RADIAN = Math.PI / 180;
-                              const radius = outerRadius + 20;
-                              const x = cx + radius * Math.cos(-midAngle * RADIAN);
-                              const y = cy + radius * Math.sin(-midAngle * RADIAN);
-                              return (
-                                <text
-                                  x={x}
-                                  y={y}
-                                  fill={grnValueSummaryData[index].color}
-                                  textAnchor={x > cx ? 'start' : 'end'}
-                                  dominantBaseline="central"
-                                  style={{ fontSize: '11px', fontWeight: 700 }}
-                                >
-                                  {value.toLocaleString()}
-                                </text>
-                              );
-                            }}
-                          >
-                            {grnValueSummaryData.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={entry.color} />
-                            ))}
-                          </Pie>
-                          <Tooltip />
-                        </PieChart>
-                      </ResponsiveContainer>
-                    </div>
-                  </div>
-                </div>
 
-                {/* --- DETAILED SYSTEM GRN VALUES SECTION --- */}
-                <div className="dn-top-chart-card" style={{ marginTop: '20px', padding: 0 }}>
-                  <div className="dn-chart-header-row" style={{ padding: '20px 20px 10px', alignItems: 'center' }}>
-                    <h3 className="dn-chart-title-sm" style={{ margin: 0 }}>
-                      <span className="dn-title-accent">|</span> DETAILED SYSTEM GRN VALUES (MATERIAL LEVEL)
-                    </h3>
-                    <div style={{ display: 'flex', gap: '10px' }}>
-                      <div className="dn-search-pill" style={{ position: 'relative' }}>
-                        <input type="text" placeholder="Search Master item..." style={{ padding: '6px 12px 6px 32px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '12px', width: '220px', background: '#f8fafc' }} />
-                        <svg style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)' }} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="3"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
-                      </div>
-                      <button style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#fff', border: '1px solid #cbd5e1', padding: '6px 12px', borderRadius: '8px', fontSize: '12px', fontWeight: 700, color: '#1e293b' }}>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="6 9 12 15 18 9" /></svg>
-                        Date Filters
-                      </button>
-                    </div>
-                  </div>
-                  <div className="dn-table-scroll-container" style={{ margin: 0, padding: '0 0 10px' }}>
-                    <table className="dn-erp-table high-density">
-                      <thead style={{ background: '#f1f5ff' }}>
-                        <tr>
-                          <th style={{ width: 40, textAlign: 'center' }}><input type="checkbox" /></th>
-                          <th style={{ color: '#1e40af' }}>TRANSACTION ID</th>
-                          <th style={{ color: '#1e40af' }}>SYSTEM ITEM NO.</th>
-                          <th style={{ color: '#1e40af' }}>ITEM DESCRIPTION</th>
-                          <th style={{ color: '#1e40af' }}>CATEGORY GROUP</th>
-                          <th style={{ textAlign: 'center', color: '#1e40af' }}>GRN QTY</th>
-                          <th style={{ textAlign: 'right', color: '#1e40af' }}>ITEM RATE</th>
-                          <th style={{ textAlign: 'right', color: '#1e40af' }}>CALCULATED AMOUNT</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {detailedGrnValuesData.map((row, idx) => (
-                          <tr key={idx} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                            <td style={{ textAlign: 'center' }}><input type="checkbox" /></td>
-                            <td style={{ fontWeight: 700 }}>{row.id}</td>
-                            <td>{row.itemNo}</td>
-                            <td>{row.desc}</td>
-                            <td>
-                              <span className={`dn-tag-pill ${row.badge}`} style={{ fontSize: '10px', fontWeight: 800, padding: '4px 10px', borderRadius: '12px', textTransform: 'uppercase' }}>
-                                {row.group}
-                              </span>
-                            </td>
-                            <td style={{ textAlign: 'center', fontWeight: 700 }}>{row.qty}</td>
-                            <td style={{ textAlign: 'right' }}>${row.rate.toFixed(2)}</td>
-                            <td style={{ textAlign: 'right', fontWeight: 700 }}>${row.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
 
-              <div className="dn-accordion-container">
-                {purchaseAccordionList.map((label) => {
-                  const isOpen = expandedSections[label];
-                  return (
-                    <div key={label} className={`dn-accordion-item ${isOpen ? "open" : ""}`}>
-                      <div className="dn-accordion-row" onClick={() => toggleSection(label)}>
-                        <div className="dn-acc-left">
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#007bff" strokeWidth="2.5" style={{ marginRight: 10 }}>
-                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2" /><line x1="12" y1="3" x2="12" y2="21" /><line x1="3" y1="12" x2="21" y2="12" />
-                          </svg>
-                          {label}
-                        </div>
-                        <div className="dn-acc-right">
-                          <div className="dn-acc-right-wrapper">
-                            <span style={{ fontSize: '16px', fontWeight: 500, color: '#1e293b', marginRight: 8 }}>{isOpen ? "Hide" : "Show"}</span>
-                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#1e293b" strokeWidth="3" style={{ transform: isOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
-                              <polyline points="6 9 12 15 18 9"></polyline>
-                            </svg>
-                          </div>
-                        </div>
-                      </div>
-
-                      {isOpen && label === "Purchase Orders" && (
-                        <div className="dn-card-body dn-purchase-body" style={{ background: '#fff', padding: 0 }}>
-                          <div className="dn-inner-filter-bar complex" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 16px", background: "#f8fafc", borderBottom: '1px solid #e2e8f0' }}>
-                            <div className="dn-f-left" style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                              <div className="dn-f-item sm" style={{ fontSize: '11px', fontWeight: 700 }}>Plant : <select className="dn-mini-select" style={{ width: 80, border: '1px solid #cbd5e1' }}><option>SHARP</option></select></div>
-                              <div className="dn-f-item sm" style={{ fontSize: '11px', fontWeight: 700 }}>Select Month : <select className="dn-mini-select" style={{ width: 100, border: '1px solid #cbd5e1' }}><option>Apr-2026</option></select></div>
-                            </div>
-                            <div className="dn-f-right">
-                              <button className="dn-icon-btn small excel-btn" style={{ background: '#fff', border: '1px solid #cbd5e1', padding: '4px', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#166534" strokeWidth="3"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /></svg>
-                              </button>
-                            </div>
-                          </div>
-
-                          <div style={{ display: 'flex', padding: '15px', gap: '20px' }}>
-                            {/* Left: Summary Table */}
-                            <div style={{ flex: '0 0 50%' }}>
-                              <div className="dn-table-scroll-container" style={{ margin: 0, border: 'none' }}>
-                                <table className="dn-erp-table high-density">
-                                  <thead>
-                                    <tr style={{ background: '#007bff', color: '#fff' }}>
-                                      <th style={{ width: 40, textAlign: 'center', backgroundColor: '#007bff', color: '#fff', fontSize: '10px', border: '1px solid rgba(255,255,255,0.2)' }}>Sr</th>
-                                      <th style={{ backgroundColor: '#007bff', color: '#fff', fontSize: '10px', border: '1px solid rgba(255,255,255,0.2)' }}>Series Name</th>
-                                      <th style={{ textAlign: 'right', backgroundColor: '#007bff', color: '#fff', fontSize: '10px', border: '1px solid rgba(255,255,255,0.2)' }}>Total PO</th>
-                                      <th style={{ textAlign: 'right', backgroundColor: '#007bff', color: '#fff', fontSize: '10px', border: '1px solid rgba(255,255,255,0.2)' }}>Amount (Basic)</th>
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    {purchaseOrdersData.map(item => (
-                                      <tr key={item.sr}>
-                                        <td style={{ textAlign: 'center' }}>{item.sr}</td>
-                                        <td style={{ color: '#007bff', fontWeight: 700 }}>{item.series}</td>
-                                        <td style={{ textAlign: 'right', fontWeight: 700 }}>{item.total}</td>
-                                        <td style={{ textAlign: 'right', fontWeight: 700 }}>{item.amount.toLocaleString()}</td>
-                                      </tr>
-                                    ))}
-                                  </tbody>
-                                  <tfoot style={{ background: '#f8fafc' }}>
-                                    <tr style={{ fontWeight: 800 }}>
-                                      <td colSpan={2} style={{ color: '#0369a1', fontSize: '11px' }}>Total :</td>
-                                      <td style={{ textAlign: 'right', fontSize: '11px' }}>56</td>
-                                      <td style={{ textAlign: 'right', fontSize: '11px' }}>1,04,092</td>
-                                    </tr>
-                                  </tfoot>
-                                </table>
-                              </div>
-                            </div>
-
-                            {/* Right: Pie Chart */}
-                            <div style={{ flex: 1, position: 'relative' }}>
-                              <div style={{ height: 260 }}>
-                                <ResponsiveContainer width="100%" height="100%">
-                                  <PieChart>
-                                    <Pie
-                                      data={purchasePieData}
-                                      cx="50%"
-                                      cy="50%"
-                                      innerRadius={40}
-                                      outerRadius={80}
-                                      paddingAngle={2}
-                                      dataKey="value"
-                                      labelLine={true}
-                                      label={(props) => <CustomPieLabel {...props} data={purchasePieData} />}
-                                    >
-                                      {purchasePieData.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={entry.color} />
-                                      ))}
-                                    </Pie>
-                                    <Tooltip />
-                                  </PieChart>
-                                </ResponsiveContainer>
-                              </div>
-                              <div style={{ display: 'flex', justifyContent: 'center', gap: 15, marginTop: 10, fontSize: 11, fontWeight: 700 }}>
-                                <label style={{ display: 'flex', alignItems: 'center', gap: 5 }}><input type="radio" name="ptype" /> Total PO</label>
-                                <label style={{ display: 'flex', alignItems: 'center', gap: 5 }}><input type="radio" name="ptype" defaultChecked /> PO Amount</label>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-
-                      {isOpen && label === "Monthly Purchase" && (
-                        <div className="dn-card-body dn-purchase-body" style={{ padding: 0 }}>
-                          <div className="dn-inner-filter-bar complex" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 16px", background: "#f8fafc", borderBottom: '1px solid #e2e8f0' }}>
-                            <div className="dn-f-left" style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                              <div className="dn-f-item sm" style={{ fontSize: '11px', fontWeight: 700 }}>Plant : <select className="dn-mini-select" style={{ width: 80, border: '1px solid #cbd5e1' }}><option>SHARP</option></select></div>
-                              <div className="dn-f-item sm" style={{ fontSize: '11px', fontWeight: 700 }}>
-                                Year : <select className="dn-mini-select" style={{ width: 100, border: '1px solid #cbd5e1' }}>
-                                  <option>2026-2027</option>
-                                  <option>2025-2026</option>
-                                </select>
-                              </div>
-                              <span style={{ fontSize: '11px', fontWeight: 700, color: '#ef4444', fontStyle: 'italic' }}>* Values are in Lacs (GRN)</span>
-                            </div>
-                            <div className="dn-f-right">
-                              <button className="dn-icon-btn small excel-btn" style={{ background: '#fff', border: '1px solid #cbd5e1', padding: '4px', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#166534" strokeWidth="3"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /></svg>
-                              </button>
-                            </div>
-                          </div>
-
-                          <div style={{ padding: '20px 15px' }}>
-                            <ResponsiveContainer width="100%" height={260}>
-                              <BarChart data={monthlyPurchaseChartData}>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                                <XAxis dataKey="month" angle={-45} textAnchor="end" height={60} tick={{ fontSize: 10, fontWeight: 700, fill: '#1e293b' }} />
-                                <YAxis tick={{ fontSize: 10, fill: '#64748b' }} axisLine={false} tickLine={false} />
-                                <Tooltip cursor={{ fill: '#f8fafc' }} contentStyle={{ borderRadius: 8, border: "none", boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }} />
-                                <Bar dataKey="value" fill="#007bff" barSize={35} radius={[4, 4, 0, 0]}>
-                                  <LabelList dataKey="value" position="top" style={{ fontSize: 10, fontWeight: 800, fill: '#007bff' }} />
-                                </Bar>
-                              </BarChart>
-                            </ResponsiveContainer>
-                          </div>
-
-                          <div className="dn-table-scroll-container MonthlyTable" style={{ margin: '0 15px 15px', border: 'none' }}>
-                            <table className="dn-erp-table high-density narrow-cols">
-                              <thead>
-                                <tr style={{ background: '#007bff', color: '#fff' }}>
-                                  {monthlyPurchaseChartData.map(d => <th key={d.month} style={{ textAlign: 'center', fontSize: '10px', backgroundColor: '#007bff', color: '#fff', padding: '6px 2px', border: '1px solid rgba(255,255,255,0.1)' }}>{d.month}</th>)}
-                                </tr>
-                              </thead>
-                              <tbody>
-                                <tr>
-                                  {monthlyPurchaseChartData.map(d => <td key={d.month} style={{ textAlign: 'center', fontSize: '10px', fontWeight: 800, color: '#334155' }}>{d.value === 0 ? "0" : d.value}</td>)}
-                                </tr>
-                              </tbody>
-                            </table>
-                          </div>
-                        </div>
-                      )}
-
-                      {isOpen && label === "Daily Purchase" && (
-                        <div className="dn-card-body dn-purchase-body" style={{ padding: 0 }}>
-                          <div className="dn-inner-filter-bar complex" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 16px", background: "#f8fafc", borderBottom: '1px solid #e2e8f0' }}>
-                            <div className="dn-f-left" style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                              <div className="dn-f-item sm" style={{ fontSize: '11px', fontWeight: 700 }}>Plant : <select className="dn-mini-select" style={{ width: 80, border: '1px solid #cbd5e1' }}><option>SHARP</option></select></div>
-                              <div className="dn-f-item sm" style={{ fontSize: '11px', fontWeight: 700 }}>Select Month : <select className="dn-mini-select" style={{ width: 100, border: '1px solid #cbd5e1' }}><option>Apr-2026</option></select></div>
-                            </div>
-                            <div className="dn-f-right">
-                              <button className="dn-icon-btn small excel-btn" style={{ background: '#fff', border: '1px solid #cbd5e1', padding: '4px', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#166534" strokeWidth="3"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /></svg>
-                              </button>
-                            </div>
-                          </div>
-
-                          <div style={{ padding: '20px 15px 10px' }}>
-                            <ResponsiveContainer width="100%" height={280}>
-                              <BarChart data={dailyPurchaseChartData} margin={{ top: 20, right: 30, left: 10, bottom: 5 }}>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                                <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 9, fontWeight: 700, fill: '#1e293b' }} />
-                                <YAxis tick={{ fontSize: 10, fill: '#64748b' }} axisLine={false} tickLine={false} />
-                                <Tooltip cursor={{ fill: '#f8fafc' }} contentStyle={{ borderRadius: 8, border: "none", boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }} />
-                                <Bar dataKey="value" fill="#3b82f6" barSize={12} radius={[2, 2, 0, 0]}>
-                                  <LabelList dataKey="value" position="top" style={{ fontSize: 8, fontWeight: 800, fill: '#3b82f6' }} />
-                                </Bar>
-                              </BarChart>
-                            </ResponsiveContainer>
-                          </div>
-
-                          <div style={{ display: 'flex', justifyContent: 'center', paddingBottom: '20px' }}>
-                            <span style={{ background: 'linear-gradient(to right, #4b92db, #1d6ed1)', color: '#fff', padding: '4px 16px', borderRadius: '4px', fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                              Daily Purchase Analysis - Apr-2026
-                            </span>
-                          </div>
-                        </div>
-                      )}
-
-                      {isOpen && label === "Top 5 Suppliers / Top 5 Items" && (
-                        <div className="dn-card-body dn-purchase-body" style={{ padding: 0 }}>
-                          <div className="dn-inner-filter-bar complex" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 16px", background: "#f8fafc", borderBottom: '1px solid #e2e8f0' }}>
-                            <div className="dn-f-left" style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                              <div className="dn-f-item sm" style={{ fontSize: '11px', fontWeight: 700 }}>Plant : <select className="dn-mini-select" style={{ width: 80, border: '1px solid #cbd5e1' }}><option>SHARP</option></select></div>
-                              <div className="dn-f-item sm" style={{ fontSize: '11px', fontWeight: 700 }}>Month : <select className="dn-mini-select" style={{ width: 100, border: '1px solid #cbd5e1' }}><option>ALL</option></select></div>
-                              <div className="dn-f-item sm" style={{ fontSize: '11px', fontWeight: 700 }}>Top : <input type="text" className="dn-mini-select" defaultValue="5" style={{ width: 40, border: '1px solid #cbd5e1', textAlign: 'center' }} /></div>
-                              <div className="dn-f-item sm" style={{ fontSize: '11px', fontWeight: 700 }}>Type : <select className="dn-mini-select" style={{ width: 100, border: '1px solid #cbd5e1' }}><option>Supplier</option></select></div>
-                            </div>
-                            <div className="dn-f-right">
-                              <button className="dn-icon-btn small excel-btn" style={{ background: '#fff', border: '1px solid #cbd5e1', padding: '4px', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#166534" strokeWidth="3"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /></svg>
-                              </button>
-                            </div>
-                          </div>
-
-                          <div style={{ display: 'flex', flexDirection: 'column', padding: '15px' }}>
-                            <div style={{ width: '100%', height: 280, display: 'flex', justifyContent: 'center' }}>
-                              <ResponsiveContainer width="70%" height="100%">
-                                <PieChart>
-                                  <Pie
-                                    data={top5DetailedSuppliers}
-                                    dataKey="amount"
-                                    outerRadius={90}
-                                    labelLine={true}
-                                    label={({ per, name }) => `${per} ${name}`}
-                                    isAnimationActive={false}
-                                  >
-                                    {top5DetailedSuppliers.map((entry, index) => (
-                                      <Cell key={`cell-${index}`} fill={["#3b82f6", "#f59e0b", "#10b981", "#ef4444", "#38bdf8"][index % 5]} />
-                                    ))}
-                                  </Pie>
-                                  <Tooltip contentStyle={{ borderRadius: 8, border: "none" }} formatter={(value) => value.toLocaleString()} />
-                                </PieChart>
-                              </ResponsiveContainer>
-                            </div>
-
-                            <div className="dn-table-scroll-container" style={{ margin: '0', border: 'none' }}>
-                              <table className="dn-erp-table high-density">
-                                <thead>
-                                  <tr style={{ background: '#007bff', color: '#fff' }}>
-                                    <th style={{ width: 40, textAlign: 'center', backgroundColor: '#007bff', color: '#fff', border: '1px solid rgba(255,255,255,0.2)' }}>Sr.</th>
-                                    <th style={{ backgroundColor: '#007bff', color: '#fff', border: '1px solid rgba(255,255,255,0.2)' }}>Supplier / Item</th>
-                                    <th style={{ textAlign: 'center', backgroundColor: '#007bff', color: '#fff', border: '1px solid rgba(255,255,255,0.2)' }}>Qty</th>
-                                    <th style={{ textAlign: 'center', backgroundColor: '#007bff', color: '#fff', border: '1px solid rgba(255,255,255,0.2)' }}>UOM</th>
-                                    <th style={{ textAlign: 'right', backgroundColor: '#007bff', color: '#fff', border: '1px solid rgba(255,255,255,0.2)' }}>Amount</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {top5DetailedSuppliers.map(row => (
-                                    <tr key={row.sr}>
-                                      <td style={{ textAlign: 'center' }}>{row.sr}</td>
-                                      <td style={{ fontWeight: 800, color: '#334155' }}>{row.name}</td>
-                                      <td style={{ textAlign: 'center', fontWeight: 700 }}>{row.qty}</td>
-                                      <td style={{ textAlign: 'center' }}>Nos</td>
-                                      <td style={{ textAlign: 'right', fontWeight: 800, color: '#1d6ed1' }}>{row.amount.toLocaleString()}</td>
-                                    </tr>
-                                  ))}
-                                </tbody>
-                              </table>
-                            </div>
-
-                            <div style={{ marginTop: '10px', fontSize: '9px', fontWeight: 700, color: '#64748b', fontStyle: 'italic' }}>
-                              * Analysis based on PO GRN & Direct GRN Values.
-                            </div>
-                          </div>
-                        </div>
-                      )}
-
-                      {isOpen && label === "GRN Value Summary" && (
-                        <div className="dn-card-body dn-purchase-body" style={{ padding: 0 }}>
-                          <div className="dn-inner-filter-bar complex" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 16px", background: "#f8fafc", borderBottom: '1px solid #e2e8f0' }}>
-                            <div className="dn-f-left" style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                              <div className="dn-f-item sm" style={{ fontSize: '11px', fontWeight: 700 }}>Plant : <select className="dn-mini-select" style={{ width: 80, border: '1px solid #cbd5e1' }}><option>SHARP</option></select></div>
-                              <div className="dn-f-item sm" style={{ fontSize: '11px', fontWeight: 700 }}>From : <input type="text" className="dn-mini-select" defaultValue="12/03/2026" style={{ width: 80, border: '1px solid #cbd5e1' }} /></div>
-                              <div className="dn-f-item sm" style={{ fontSize: '11px', fontWeight: 700 }}>To : <input type="text" className="dn-mini-select" defaultValue="11/04/2026" style={{ width: 80, border: '1px solid #cbd5e1' }} /></div>
-                              <button className="dn-btn-search" style={{ height: 24, padding: '0 12px', background: '#f1f5f9', border: '1px solid #cbd5e1', color: '#334155', fontWeight: 800, fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                                Search
-                              </button>
-                            </div>
-                            <div className="dn-f-right">
-                              <button className="dn-icon-btn small excel-btn" style={{ background: '#fff', border: '1px solid #cbd5e1', padding: '4px', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#166534" strokeWidth="3"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /></svg>
-                              </button>
-                            </div>
-                          </div>
-
-                          <div style={{ display: 'flex', padding: '20px', gap: '30px' }}>
-                            <div style={{ flex: '0 0 45%' }}>
-                              <div className="dn-table-scroll-container" style={{ margin: 0, border: 'none' }}>
-                                <table className="dn-erp-table high-density">
-                                  <thead>
-                                    <tr style={{ background: '#007bff', color: '#fff' }}>
-                                      <th style={{ width: 40, textAlign: 'center', backgroundColor: '#007bff', color: '#fff', fontSize: '10px', border: '1px solid rgba(255,255,255,0.2)' }}>Sr.</th>
-                                      <th style={{ backgroundColor: '#007bff', color: '#fff', fontSize: '10px', border: '1px solid rgba(255,255,255,0.2)' }}>Main Group</th>
-                                      <th style={{ textAlign: 'right', backgroundColor: '#007bff', color: '#fff', fontSize: '10px', border: '1px solid rgba(255,255,255,0.2)' }}>GRN Qty</th>
-                                      <th style={{ textAlign: 'right', backgroundColor: '#007bff', color: '#fff', fontSize: '10px', border: '1px solid rgba(255,255,255,0.2)' }}>GRN Amt</th>
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    {grnValueSummaryData.map(row => (
-                                      <tr key={row.sr}>
-                                        <td style={{ textAlign: 'center' }}>{row.sr}</td>
-                                        <td style={{ fontWeight: 800, color: '#334155' }}>{row.type}</td>
-                                        <td style={{ textAlign: 'right', fontWeight: 700 }}>{row.qty.toLocaleString()}</td>
-                                        <td style={{ textAlign: 'right', fontWeight: 800, color: '#1d6ed1' }}>{row.amount.toLocaleString()}</td>
-                                      </tr>
-                                    ))}
-                                  </tbody>
-                                  <tfoot style={{ background: '#f8fafc' }}>
-                                    <tr style={{ fontWeight: 900 }}>
-                                      <td colSpan={2} style={{ textAlign: 'right', fontSize: '11px', color: '#0369a1' }}>Total :</td>
-                                      <td style={{ textAlign: 'right', fontSize: '11px' }}>1,140,066.64</td>
-                                      <td style={{ textAlign: 'right', fontSize: '11px', color: '#1d6ed1' }}>23,761,368.81</td>
-                                    </tr>
-                                  </tfoot>
-                                </table>
-                              </div>
-                            </div>
-                            <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                              <ResponsiveContainer width="100%" height={260}>
-                                <PieChart>
-                                  <Pie
-                                    data={grnValueSummaryData}
-                                    dataKey="amount"
-                                    outerRadius={90}
-                                    labelLine={true}
-                                    label={({ per, type }) => `${type}( ${per} )`}
-                                    isAnimationActive={false}
-                                  >
-                                    {grnValueSummaryData.map((entry, index) => (
-                                      <Cell key={`cell-${index}`} fill={["#3b82f6", "#f59e0b", "#10b981"][index % 3]} />
-                                    ))}
-                                  </Pie>
-                                  <Tooltip contentStyle={{ borderRadius: 8, border: "none" }} formatter={(value) => value.toLocaleString()} />
-                                </PieChart>
-                              </ResponsiveContainer>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-
-                      {isOpen && label === "GRN Value Details" && (
-                        <div className="dn-card-body dn-purchase-body" style={{ padding: 0 }}>
-                          <div className="dn-inner-filter-bar complex" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 16px", background: "#f8fafc", borderBottom: '1px solid #e2e8f0' }}>
-                            <div className="dn-f-left" style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                              <div className="dn-f-item sm">Plant
-                                <select className="dn-mini-select" style={{ width: 70, marginLeft: 5 }}><option>SHARP</option></select>
-                              </div>
-                              <div className="dn-f-item sm" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 2 }}>
-                                <span style={{ fontSize: 9 }}>From Date</span>
-                                <input type="text" className="dn-mini-input" defaultValue="12/03/2026" style={{ width: 80 }} />
-                              </div>
-                              <div className="dn-f-item sm" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 2 }}>
-                                <span style={{ fontSize: 9 }}>From Date</span>
-                                <input type="text" className="dn-mini-input" defaultValue="11/04/2026" style={{ width: 80 }} />
-                              </div>
-                              <div className="dn-f-item sm" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 2 }}>
-                                <span style={{ fontSize: 9 }}>Main Group</span>
-                                <select className="dn-mini-select" style={{ width: 70 }}><option>ALL</option></select>
-                              </div>
-                              <div className="dn-f-item sm" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 2 }}>
-                                <span style={{ fontSize: 9 }}>Item Group</span>
-                                <select className="dn-mini-select" style={{ width: 70 }}><option>ALL</option></select>
-                              </div>
-                              <div className="dn-f-item sm" style={{ display: 'flex', alignItems: 'center', gap: 2, marginTop: 15 }}>
-                                <input type="checkbox" /> Item : <input type="text" className="dn-mini-input" placeholder="Enter Item.." style={{ width: 140 }} />
-                              </div>
-                              <button className="dn-btn-search" style={{ height: 26, padding: '0 8px', display: 'flex', alignItems: 'center', gap: 4, marginTop: 15 }}>
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg> Search
-                              </button>
-                            </div>
-                            <div className="dn-f-right">
-                              <button className="dn-icon-btn small excel"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /></svg></button>
-                            </div>
-                          </div>
-                          <div className="dn-table-scroll-container" style={{ margin: 0 }}>
-                            <table className="dn-erp-table high-density">
-                              <thead className="erp-th-gradient">
-                                <tr>
-                                  <th style={{ width: 40, textAlign: 'center' }}>Sr.</th>
-                                  <th>Item No</th>
-                                  <th>Item Code</th>
-                                  <th>Item Desc</th>
-                                  <th>Main Group</th>
-                                  <th>Group</th>
-                                  <th>Item Size</th>
-                                  <th style={{ textAlign: 'right' }}>Grn Qty</th>
-                                  <th style={{ textAlign: 'right' }}>Amt</th>
-                                  <th style={{ width: 40, textAlign: 'center' }}>Act</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {grnValueDetailsData.map(row => (
-                                  <tr key={row.sr}>
-                                    <td style={{ textAlign: 'center' }}>{row.sr}</td>
-                                    <td style={{ fontSize: 10 }}>{row.itemNo}</td>
-                                    <td style={{ fontSize: 10 }}></td>
-                                    <td style={{ fontSize: 10 }}>{row.desc}</td>
-                                    <td style={{ fontSize: 10 }}>{row.mgroup}</td>
-                                    <td style={{ fontSize: 10 }}>{row.group}</td>
-                                    <td style={{ fontSize: 10 }}></td>
-                                    <td style={{ textAlign: 'right' }}>{row.qty}</td>
-                                    <td style={{ textAlign: 'right' }}>{row.amt}</td>
-                                    <td style={{ textAlign: 'center' }}>
-                                      <button className="dn-icon-btn small" style={{ padding: '2px 4px' }}><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="3"><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="18" x2="21" y2="18" /></svg></button>
-                                    </td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                              <tfoot style={{ background: '#f1f5f9' }}>
-                                <tr>
-                                  <td colSpan={6}></td>
-                                  <td colSpan={2} style={{ textAlign: 'right', fontSize: 11, fontWeight: 700, color: '#1a2340', paddingRight: 10 }}>Total Qty : 1140066.64</td>
-                                  <td colSpan={2} style={{ textAlign: 'right', fontSize: 11, fontWeight: 700, color: '#1a2340', paddingRight: 10 }}>Total Amt : 23761368.81</td>
-                                </tr>
-                              </tfoot>
-                            </table>
-                          </div>
-                        </div>
-                      )}
-
-
-
-                      {isOpen && !purchaseAccordionList.includes(label) && (
-                        <div className="dn-card-body" style={{ padding: '20px', textAlign: 'center', color: '#64748b', fontSize: '13px' }}>
-                          No data available for {label} at this moment.
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-          {activeDept === "ppc" && (
-            <div className="dn-ppc-view fade-in">
-              <div className="dn-accordion-container">
-                {ppcAccordionList.map((label) => {
-                  const isOpen = expandedSections[label];
-                  return (
-                    <div key={label} className={`dn-accordion-item ${isOpen ? "open" : ""}`}>
-                      <div className="dn-accordion-row" onClick={() => toggleSection(label)}>
-                        <div className="dn-acc-left">
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#007bff" strokeWidth="2.5" style={{ marginRight: 10 }}>
-                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2" /><line x1="12" y1="3" x2="12" y2="21" /><line x1="3" y1="12" x2="21" y2="12" />
-                          </svg>
-                          {label}
-                        </div>
-                        <div className="dn-acc-right">
-                          <span>{isOpen ? "Hide" : "Show"}</span>
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" style={{ marginLeft: 6, transform: isOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
-                            <polyline points="6 9 12 15 18 9" />
-                          </svg>
-                        </div>
-                      </div>
-
-                      {isOpen && label === "Monthly Production Chart" && (
-                        <div className="dn-card-body dn-ppc-body">
-                          <div className="dn-inner-filter-bar complex">
-                            <div className="dn-f-left">
-                              <div className="dn-f-item sm">Plant : <select className="dn-mini-select"><option>SHARP</option></select></div>
-                              <div className="dn-f-item sm">
-                                <input type="checkbox" defaultChecked /> Select Month :
-                                <select className="dn-mini-select" style={{ marginLeft: 5 }}><option>Apr-2026</option></select>
-                              </div>
-                              <div className="dn-f-item sm">
-                                Select Date : <input type="text" className="dn-mini-input" defaultValue="11/04/2026" style={{ width: 80 }} />
-                                <input type="text" className="dn-mini-input" defaultValue="11/04/2026" style={{ width: 80, marginLeft: 5 }} />
-                              </div>
-                              <div className="dn-f-item sm">
-                                Search :
-                                <label style={{ marginLeft: 5, fontSize: 11 }}><input type="radio" name="prodSearch" defaultChecked /> Prod: Mt.</label>
-                                <label style={{ marginLeft: 5, fontSize: 11 }}><input type="radio" name="prodSearch" /> Qty.</label>
-                              </div>
-                            </div>
-                            <div className="dn-f-right">
-                              <button className="dn-icon-btn small excel"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /></svg></button>
-                            </div>
-                          </div>
-
-                          <div className="dn-side-by-side-layout">
-                            <div className="dn-chart-half">
-                              <div style={{ fontSize: 11, fontWeight: 700, color: '#64748b', marginBottom: 10 }}>Production in Mt.</div>
-                              <ResponsiveContainer width="100%" height={260}>
-                                <BarChart data={ppcMonthlyProdChartData} margin={{ left: 20 }}>
-                                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 700 }} />
-                                  <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10 }} />
-                                  <Tooltip />
-                                  <Bar dataKey="mt" fill="#007bff" barSize={35}>
-                                    <LabelList dataKey="mt" position="top" style={{ fontSize: 11, fontWeight: 800, fill: '#1a2340' }} />
-                                  </Bar>
-                                </BarChart>
-                              </ResponsiveContainer>
-                            </div>
-
-                            <div className="dn-table-half">
-                              <table className="dn-erp-table high-density">
-                                <thead>
-                                  <tr>
-                                    <th style={{ width: 40 }}>#</th>
-                                    <th>Machine Group</th>
-                                    <th style={{ textAlign: "right" }}>Qty.</th>
-                                    <th style={{ textAlign: "right" }}>Mt.</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {ppcMonthlyProdData.map(item => (
-                                    <tr key={item.sr}>
-                                      <td style={{ textAlign: "center" }}>{item.sr}</td>
-                                      <td>{item.machineGroup}</td>
-                                      <td style={{ textAlign: "right" }}>{item.qty.toLocaleString()}</td>
-                                      <td style={{ textAlign: "right" }}>{item.mt.toFixed(2)}</td>
-                                    </tr>
-                                  ))}
-                                </tbody>
-                              </table>
-                            </div>
-                          </div>
-
-                          <div className="dn-footer-filter-bar" style={{ marginTop: 16, borderTop: '1px solid #e2e8f0', paddingTop: 12, display: 'flex', justifyContent: 'center', gap: 20 }}>
-                            <label style={{ fontSize: 12, fontWeight: 600 }}><input type="radio" name="grpBy" defaultChecked /> Machine Group</label>
-                            <div className="dn-f-item sm">
-                              <select className="dn-mini-select"><option>ALL</option></select>
-                            </div>
-                            <label style={{ fontSize: 12, fontWeight: 600 }}><input type="radio" name="grpBy" /> User Group</label>
-                          </div>
-                        </div>
-                      )}
-
-                      {isOpen && label === "Delivery Performance" && (
-                        <div className="dn-card-body dn-ppc-body">
-                          <div className="dn-inner-filter-bar">
-                            <div className="dn-f-left">
-                              <div className="dn-f-item sm">Year: <select className="dn-mini-select"><option>2026-2027</option></select></div>
-                              <div className="dn-radio-group mini">
-                                <label><input type="radio" name="ppct" defaultChecked /> Schedule</label>
-                                <label><input type="radio" name="ppct" /> Sales Order</label>
-                              </div>
-                              <div className="dn-f-item sm">Type: <select className="dn-mini-select"><option>Quantity</option></select></div>
-                              <button className="dn-btn-search" style={{ height: 28, padding: '0 12px', display: 'flex', alignItems: 'center', gap: 5, backgroundColor: '#f1f5f9', border: '1px solid #cbd5e1', borderRadius: 4, cursor: 'pointer', fontWeight: 700, fontSize: 11 }}>
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
-                                Search Option
-                              </button>
-                            </div>
-                            <div className="dn-f-right">
-                              <button className="dn-icon-btn small excel"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /></svg></button>
-                            </div>
-                          </div>
-
-                          <div className="dn-chart-content">
-                            <ResponsiveContainer width="100%" height={280}>
-                              <BarChart data={ppcDeliveryData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 700, fill: '#64748b' }} />
-                                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#94a3b8' }} />
-                                <Tooltip cursor={{ fill: '#f8fafc' }} />
-                                <Bar dataKey="schedule" fill="#007bff" radius={[4, 4, 0, 0]} barSize={40} />
-                                <Bar dataKey="dispatch" fill="#f59e0b" radius={[4, 4, 0, 0]} barSize={40} />
-                              </BarChart>
-                            </ResponsiveContainer>
-                            <div className="dn-chart-custom-legend" style={{ display: 'flex', justifyContent: 'center', gap: 15, marginTop: -10, marginBottom: 15 }}>
-                              <div className="dn-legend-item" style={{ backgroundColor: '#007bff', color: '#fff', padding: '4px 12px', borderRadius: 4, fontSize: 11, fontWeight: 700 }}>Schedule / Sales Order</div>
-                              <div className="dn-legend-item" style={{ backgroundColor: '#f59e0b', color: '#fff', padding: '4px 12px', borderRadius: 4, fontSize: 11, fontWeight: 700 }}>Dispatch / Sales</div>
-                            </div>
-                          </div>
-
-                          <div className="dn-table-scroll-container">
-                            <table className="dn-erp-table high-density">
-                              <thead>
-                                <tr>
-                                  <th style={{ width: 40 }}>Sr.</th>
-                                  <th>Type</th>
-                                  <th style={{ textAlign: "right" }}>APR-2026</th>
-                                  <th style={{ textAlign: "right" }}>MAY-2026</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                <tr><td style={{ textAlign: "center" }}>1</td><td>Schedule</td><td style={{ textAlign: "right" }}>13124665</td><td style={{ textAlign: "right" }}>0</td></tr>
-                                <tr><td style={{ textAlign: "center" }}>2</td><td>Invoice</td><td style={{ textAlign: "right" }}>2948140</td><td style={{ textAlign: "right" }}>0</td></tr>
-                                <tr><td style={{ textAlign: "center" }}>3</td><td>Per</td><td style={{ textAlign: "right" }}>22.46</td><td style={{ textAlign: "right" }}>0</td></tr>
-                              </tbody>
-                            </table>
-                          </div>
-                        </div>
-                      )}
-
-                      {isOpen && label === "Monthly Schedule Vs. Dispatch" && (
-                        <div className="dn-card-body dn-ppc-body">
-                          <div className="dn-inner-filter-bar complex">
-                            <div className="dn-f-left">
-                              <div className="dn-f-item sm">Month <select className="dn-mini-select"><option>APR-2026</option></select></div>
-                              <div className="dn-f-item sm">Customer <select className="dn-mini-select"><option>ALL Customer</option></select></div>
-                              <div className="dn-f-item sm">Item Group <select className="dn-mini-select"><option>ALL</option></select></div>
-                              <div className="dn-f-item sm">Type <select className="dn-mini-select"><option>Qty</option></select></div>
-                            </div>
-                            <div className="dn-f-right">
-                              <div className="dn-bp-actions">
-                                <span className="dn-summary-badge blue">Sch : 13124665</span>
-                                <span className="dn-summary-badge green">Dis : 2948140</span>
-                                <span className="dn-status-badge-red" style={{ padding: '4px 8px', borderRadius: 4 }}>Bal : 10176525</span>
-                                <button className="dn-icon-btn small excel"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /></svg></button>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="dn-table-scroll-container">
-                            <table className="dn-erp-table high-density">
-                              <thead>
-                                <tr>
-                                  <th style={{ width: 40 }}>Sr.</th>
-                                  <th>Item No</th>
-                                  <th>Item Code</th>
-                                  <th>Item Desc</th>
-                                  <th style={{ textAlign: "right" }}>Plan Qty</th>
-                                  <th style={{ textAlign: "right" }}>Dispatch Qty</th>
-                                  <th style={{ textAlign: "right" }}>Bal Qty</th>
-                                  <th style={{ textAlign: "right" }}>(%)</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {ppcMonthlySchData.map(item => (
-                                  <tr key={item.sr}>
-                                    <td style={{ textAlign: "center" }}>{item.sr}</td>
-                                    <td>{item.itemNo}</td>
-                                    <td>{item.itemCode}</td>
-                                    <td style={{ fontSize: 10 }}>{item.desc}</td>
-                                    <td style={{ textAlign: "right" }}>{item.planQty.toLocaleString()}</td>
-                                    <td style={{ textAlign: "right" }}>{item.dispatchQty.toLocaleString()}</td>
-                                    <td style={{ textAlign: "right" }}>{item.balQty.toLocaleString()}</td>
-                                    <td style={{ textAlign: "right" }}>{item.per}%</td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-
-                          <div className="dn-ppc-charts-row">
-                            <div className="dn-ppc-main-pie">
-                              <ResponsiveContainer width="100%" height={240}>
-                                <PieChart>
-                                  <Pie
-                                    data={[{ name: 'Dis', value: 2948140, fill: '#007bff' }, { name: 'Bal', value: 10176525, fill: '#f59e0b' }]}
-                                    dataKey="value" innerRadius={0} outerRadius={90} paddingAngle={0} stroke="none"
-                                    labelLine={false}
-                                    label={({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
-                                      const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-                                      const x = cx + radius * Math.cos(-midAngle * Math.PI / 180);
-                                      const y = cy + radius * Math.sin(-midAngle * Math.PI / 180);
-                                      return (
-                                        <text x={x} y={y} fill="white" textAnchor="middle" dominantBaseline="central" style={{ fontSize: 11, fontWeight: 700 }}>
-                                          {`${(percent * 100).toFixed(2)}%`}
-                                        </text>
-                                      );
-                                    }}
-                                  />
-                                  <Tooltip />
-                                </PieChart>
-                              </ResponsiveContainer>
-                              <div className="dn-chart-custom-legend" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, marginBottom: 15 }}>
-                                <div style={{ display: 'flex', gap: 15 }}>
-                                  <div className="dn-legend-item" style={{ fontSize: 11, fontWeight: 700, color: '#334155', display: 'flex', alignItems: 'center', gap: 5 }}>
-                                    <div style={{ width: 12, height: 12, backgroundColor: '#007bff' }}></div> Dis 2948140
-                                  </div>
-                                  <div className="dn-legend-item" style={{ fontSize: 11, fontWeight: 700, color: '#334155', display: 'flex', alignItems: 'center', gap: 5 }}>
-                                    <div style={{ width: 12, height: 12, backgroundColor: '#f59e0b' }}></div> Bal 10176525
-                                  </div>
-                                </div>
-                              </div>
-                              <div className="dn-status-badge-green" style={{ margin: '0 auto', width: 'fit-content' }}>Schedule Completed : 22.46 %</div>
-                            </div>
-                            <div className="dn-ppc-class-pies">
-                              {["A", "B", "C", "D"].map(cls => {
-                                let clsData = [];
-                                let legendText = "";
-                                if (cls === "A") {
-                                  clsData = [{ name: "Empty", value: 100, fill: "#f1f5f9" }];
-                                  legendText = "(Sch : 4992850)";
-                                } else if (cls === "B") {
-                                  clsData = [{ name: 'Dis', value: 358156, fill: '#007bff' }, { name: 'Bal', value: 1029493, fill: '#f59e0b' }];
-                                  legendText = "(Sch : 1387649)";
-                                } else if (cls === "C") {
-                                  clsData = [{ name: 'Dis', value: 256520, fill: '#007bff' }, { name: 'Bal', value: 1109529, fill: '#f59e0b' }];
-                                  legendText = "(Sch : 1365049)";
-                                } else {
-                                  clsData = [{ name: 'Dis', value: 1193200, fill: '#007bff' }, { name: 'Bal', value: 4185917, fill: '#f59e0b' }];
-                                  legendText = "(Sch : 5379117)";
-                                }
-
-                                return (
-                                  <div key={cls} className="dn-class-pie-box" style={{ padding: '8px 4px' }}>
-                                    <div className="dn-f-item sm" style={{ justifyContent: 'center', marginBottom: 5, fontSize: 10, fontWeight: 700 }}>Item Class {cls} {legendText}</div>
-                                    <ResponsiveContainer width={150} height={150}>
-                                      <PieChart>
-                                        <Pie
-                                          data={clsData}
-                                          dataKey="value"
-                                          outerRadius={cls === "A" ? 45 : 60}
-                                          innerRadius={cls === "A" ? 35 : 0}
-                                          stroke="none"
-                                          labelLine={false}
-                                          label={cls === "A" ? null : ({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
-                                            const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-                                            const x = cx + radius * Math.cos(-midAngle * Math.PI / 180);
-                                            const y = cy + radius * Math.sin(-midAngle * Math.PI / 180);
-                                            return (
-                                              <text x={x} y={y} fill="white" textAnchor="middle" dominantBaseline="central" style={{ fontSize: 9, fontWeight: 700 }}>
-                                                {`${(percent * 100).toFixed(1)}%`}
-                                              </text>
-                                            );
-                                          }}
-                                        />
-                                      </PieChart>
-                                    </ResponsiveContainer>
-                                    {cls !== "A" && (
-                                      <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 2 }}>
-                                        <div style={{ fontSize: 9, fontWeight: 700, color: '#334155', display: 'flex', alignItems: 'center', gap: 4 }}>
-                                          <div style={{ width: 8, height: 8, backgroundColor: '#007bff' }}></div> Dis {clsData[0].value}
-                                        </div>
-                                        <div style={{ fontSize: 9, fontWeight: 700, color: '#334155', display: 'flex', alignItems: 'center', gap: 4 }}>
-                                          <div style={{ width: 8, height: 8, backgroundColor: '#f59e0b' }}></div> Bal {clsData[1].value}
-                                        </div>
-                                      </div>
-                                    )}
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        </div>
-                      )}
-
-                      {isOpen && label === "Monthly Sales Order Vs. Dispatch" && (
-                        <div className="dn-card-body dn-ppc-body">
-                          <div className="dn-inner-filter-bar complex" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 16px', background: '#f8fafc' }}>
-                            <div className="dn-f-left">
-                              <div className="dn-f-item sm">From Date <input type="text" className="dn-mini-input" defaultValue="12/03/2026" style={{ width: 80 }} /></div>
-                              <div className="dn-f-item sm">To Date <input type="text" className="dn-mini-input" defaultValue="11/04/2026" style={{ width: 80 }} /></div>
-                              <button className="dn-btn-search" style={{ height: 28, padding: '0 12px', display: 'flex', alignItems: 'center', gap: 4, marginRight: 8, whiteSpace: 'nowrap' }}>
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg> Search
-                              </button>
-                              <div className="dn-f-item sm">Customer <select className="dn-mini-select"><option>ALL Customer</option></select></div>
-                              <div className="dn-f-item sm">Type <select className="dn-mini-select"><option>Quantity</option></select></div>
-                              <div className="dn-f-item sm">Item Group <select className="dn-mini-select"><option>ALL</option></select></div>
-                            </div>
-                            <div className="dn-f-right">
-                              <div className="dn-bp-actions" style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'nowrap' }}>
-                                <span className="dn-summary-badge blue">Sch : 4190</span>
-                                <span className="dn-summary-badge green">Dis : 2100</span>
-                                <span className="dn-status-badge-red" style={{ padding: '4px 8px', borderRadius: 4, display: 'inline-block', lineHeight: 1 }}>Bal : 2090</span>
-                                <button className="dn-icon-btn small excel" style={{ flexShrink: 0 }}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /></svg></button>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="dn-table-scroll-container">
-                            <table className="dn-erp-table high-density">
-                              <thead>
-                                <tr>
-                                  <th style={{ width: 40 }}>#</th>
-                                  <th>Cust PoNo</th>
-                                  <th>Item No</th>
-                                  <th>Item Code</th>
-                                  <th>Description</th>
-                                  <th style={{ textAlign: "right" }}>Po. Qty</th>
-                                  <th style={{ textAlign: "right" }}>Dispatch</th>
-                                  <th style={{ textAlign: "right" }}>Balance</th>
-                                  <th style={{ textAlign: "right" }}>(%)</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {ppcSalesOrderData.map(item => (
-                                  <tr key={item.sr}>
-                                    <td style={{ textAlign: "center" }}>{item.sr}</td>
-                                    <td>{item.custPo}</td>
-                                    <td>{item.itemNo}</td>
-                                    <td>{item.itemCode}</td>
-                                    <td style={{ fontSize: 10 }}>{item.desc}</td>
-                                    <td style={{ textAlign: "right" }}>{item.poQty}</td>
-                                    <td style={{ textAlign: "right" }}>{item.dispatch}</td>
-                                    <td style={{ textAlign: "right" }}>{item.bal}</td>
-                                    <td style={{ textAlign: "right" }}>{item.per}%</td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-
-                          <div className="dn-ppc-charts-row">
-                            <div className="dn-ppc-main-pie">
-                              <ResponsiveContainer width="100%" height={240}>
-                                <PieChart>
-                                  <Pie
-                                    data={[{ name: 'Dis', value: 2100, fill: '#007bff' }, { name: 'Bal', value: 2090, fill: '#f59e0b' }]}
-                                    dataKey="value" innerRadius={0} outerRadius={90} paddingAngle={0} stroke="none"
-                                    labelLine={false}
-                                    label={({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
-                                      const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-                                      const x = cx + radius * Math.cos(-midAngle * Math.PI / 180);
-                                      const y = cy + radius * Math.sin(-midAngle * Math.PI / 180);
-                                      return (
-                                        <text x={x} y={y} fill="white" textAnchor="middle" dominantBaseline="central" style={{ fontSize: 11, fontWeight: 700 }}>
-                                          {`${(percent * 100).toFixed(2)}%`}
-                                        </text>
-                                      );
-                                    }}
-                                  />
-                                  <Tooltip />
-                                </PieChart>
-                              </ResponsiveContainer>
-                              <div className="dn-chart-custom-legend" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, marginBottom: 15 }}>
-                                <div style={{ display: 'flex', gap: 15 }}>
-                                  <div className="dn-legend-item" style={{ fontSize: 11, fontWeight: 700, color: '#334155', display: 'flex', alignItems: 'center', gap: 5 }}>
-                                    <div style={{ width: 12, height: 12, backgroundColor: '#007bff' }}></div> Dispatch 2100
-                                  </div>
-                                  <div className="dn-legend-item" style={{ fontSize: 11, fontWeight: 700, color: '#334155', display: 'flex', alignItems: 'center', gap: 5 }}>
-                                    <div style={{ width: 12, height: 12, backgroundColor: '#f59e0b' }}></div> Balance 2090
-                                  </div>
-                                </div>
-                              </div>
-                              <div className="dn-status-badge-green" style={{ margin: '0 auto', width: 'fit-content' }}>Schedule Completed : 50.12 %</div>
-                            </div>
-                            <div className="dn-ppc-class-pies">
-                              {["A", "B", "C", "D"].map(cls => {
-                                const soQty = cls === "A" ? 4190 : 0;
-                                return (
-                                  <div key={cls} className="dn-class-pie-box" style={{ padding: '8px 4px' }}>
-                                    <div className="dn-f-item sm" style={{ justifyContent: 'center', marginBottom: 5, fontSize: 10, fontWeight: 700 }}>Item Class {cls} (SO Qty : {soQty})</div>
-                                    <ResponsiveContainer width={150} height={150}>
-                                      <PieChart>
-                                        <Pie
-                                          data={[{ name: "Empty", value: 100, fill: "#f1f5f9" }]}
-                                          dataKey="value"
-                                          outerRadius={45}
-                                          innerRadius={35}
-                                          stroke="none"
-                                        />
-                                      </PieChart>
-                                    </ResponsiveContainer>
-                                    <div style={{ marginTop: 8, display: 'flex', justifyContent: 'center', gap: 10 }}>
-                                      <div style={{ fontSize: 9, fontWeight: 700, color: '#334155', display: 'flex', alignItems: 'center', gap: 4 }}>
-                                        <div style={{ width: 8, height: 8, backgroundColor: '#007bff' }}></div> Dis 0
-                                      </div>
-                                      <div style={{ fontSize: 9, fontWeight: 700, color: '#334155', display: 'flex', alignItems: 'center', gap: 4 }}>
-                                        <div style={{ width: 8, height: 8, backgroundColor: '#f59e0b' }}></div> Bal 0
-                                      </div>
-                                    </div>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        </div>
-                      )}
-
-                      {isOpen && label === "Daily Production" && (
-                        <div className="dn-card-body dn-ppc-body">
-                          <div className="dn-inner-filter-bar complex">
-                            <div className="dn-f-left">
-                              <div className="dn-f-item sm">Plant: <select className="dn-mini-select"><option>SHARP</option></select></div>
-                              <div className="dn-f-item sm">From Date <input type="text" className="dn-mini-input" defaultValue="10/04/2026" style={{ width: 80 }} /></div>
-                              <div className="dn-f-item sm">to Date <select className="dn-mini-select"><option>11/04/2026</option></select></div>
-                              <select className="dn-mini-select"><option>ALL</option></select>
-                              <span className="dn-f-item sm" style={{ marginLeft: 8 }}>Item Code / Desc : <input type="text" className="dn-mini-input" style={{ width: 100 }} /></span>
-                              <button className="dn-btn-search">Search</button>
-                            </div>
-                            <div className="dn-f-right">
-                            </div>
-                          </div>
-
-                          <div className="dn-table-scroll-container">
-                            <table className="dn-erp-table high-density">
-                              <thead>
-                                <tr>
-                                  <th style={{ width: 40 }}>Sr.</th>
-                                  <th>Date</th>
-                                  <th>Machine</th>
-                                  <th>Shift</th>
-                                  <th>Item</th>
-                                  <th style={{ textAlign: "right" }}>Prod Qty</th>
-                                  <th style={{ textAlign: "right" }}>Rework Qty</th>
-                                  <th style={{ textAlign: "right" }}>Reject Qty</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {ppcDailyProdData.map(item => (
-                                  <tr key={item.sr}>
-                                    <td style={{ textAlign: "center" }}>{item.sr}</td>
-                                    <td style={{ fontSize: 10 }}>{item.date}</td>
-                                    <td style={{ fontSize: 10 }}>{item.machine}</td>
-                                    <td style={{ fontSize: 10 }}>{item.shift}</td>
-                                    <td style={{ fontSize: 10 }}>{item.item}</td>
-                                    <td style={{ textAlign: "right" }}>{item.prodQty.toLocaleString()}</td>
-                                    <td style={{ textAlign: "right" }}>{item.rework}</td>
-                                    <td style={{ textAlign: "right" }}>{item.reject}</td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-                        </div>
-                      )}
-                      {isOpen && label === "Today's Dispatch Plan" && (
-                        <div className="dn-card-body dn-ppc-body">
-                          <div className="dn-inner-filter-bar">
-                            <div className="dn-f-left">
-                              <span className="dn-f-item sm">Date: <input type="text" className="dn-mini-input" defaultValue="11/04/2026" style={{ width: 80 }} /></span>
-                              <button className="dn-btn-search">Search</button>
-                            </div>
-                            <div className="dn-f-right">
-                              <div className="dn-bp-actions" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                                <span className="dn-summary-badge blue">Sch : 0</span>
-                                <span className="dn-summary-badge green">Dis : 0</span>
-                                <span className="dn-status-badge-red" style={{ padding: '4px 8px', borderRadius: 4, display: 'inline-block', lineHeight: 1 }}>Bal : 0</span>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div style={{ padding: '10px 15px', color: '#94a3b8', fontSize: 11, borderBottom: '1px solid #e2e8f0' }}>
-                            No Data Found !!
-                          </div>
-
-                          <div style={{ height: 260, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end', paddingBottom: 20 }}>
-                            <div style={{ display: 'flex', justifyContent: 'center', gap: 15, marginBottom: 8 }}>
-                              <div className="dn-legend-item" style={{ fontSize: 11, fontWeight: 700, color: '#334155', display: 'flex', alignItems: 'center', gap: 5 }}>
-                                <div style={{ width: 12, height: 12, backgroundColor: '#007bff' }}></div> Dispatch Qty 0
-                              </div>
-                              <div className="dn-legend-item" style={{ fontSize: 11, fontWeight: 700, color: '#334155', display: 'flex', alignItems: 'center', gap: 5 }}>
-                                <div style={{ width: 12, height: 12, backgroundColor: '#f59e0b' }}></div> Bal Qty 0
-                              </div>
-                            </div>
-                            <div className="dn-status-badge-green" style={{ margin: '0 auto', width: 'fit-content', padding: '4px 10px', borderRadius: 12, fontSize: 11, fontWeight: 700 }}>00</div>
-                          </div>
-                        </div>
-                      )}
-
-                      {isOpen && label === "Upcoming Dispatch" && (
-                        <div className="dn-card-body dn-ppc-body">
-                          <div className="dn-inner-filter-bar complex" style={{ paddingBottom: 10 }}>
-                            <div className="dn-f-left" style={{ alignItems: 'flex-end', gap: 15 }}>
-                              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 10, fontWeight: 600 }}>
-                                  <input type="radio" name="dateType" defaultChecked style={{ margin: 0 }} /> Plan Date
-                                  <input type="radio" name="dateType" style={{ margin: 0, marginLeft: 4 }} /> Due Date
-                                </div>
-                                <div style={{ display: 'flex', gap: 4 }}>
-                                  <input type="text" className="dn-mini-input" defaultValue="10/04/2026" style={{ width: 80 }} />
-                                  <input type="text" className="dn-mini-input" defaultValue="11/04/2026" style={{ width: 80 }} />
-                                </div>
-                              </div>
-
-                              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                                <div style={{ fontSize: 10, fontWeight: 600, color: '#334155' }}>Type</div>
-                                <select className="dn-mini-select" style={{ width: 60 }}><option>ALL</option></select>
-                              </div>
-
-                              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                                <div style={{ fontSize: 10, fontWeight: 600, color: '#334155' }}>Filter By</div>
-                                <select className="dn-mini-select" style={{ width: 60 }}><option>ALL</option></select>
-                              </div>
-
-                              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 600, color: '#334155' }}>
-                                  <input type="checkbox" style={{ margin: 0 }} /> Customer :
-                                </div>
-                                <input type="text" className="dn-mini-input" placeholder="Name..." style={{ width: 140 }} />
-                              </div>
-
-                              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 600, color: '#334155' }}>
-                                  <input type="checkbox" style={{ margin: 0 }} /> Item
-                                </div>
-                                <div style={{ display: 'flex', gap: 4 }}>
-                                  <input type="text" className="dn-mini-input" placeholder="Enter Item Code..." style={{ width: 140 }} />
-                                  <button className="dn-btn-search" style={{ height: 24, padding: '0 8px', display: 'flex', alignItems: 'center', gap: 4 }}>
-                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg> Search
-                                  </button>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="dn-table-scroll-container" style={{ minHeight: 250 }}>
-                            <table className="dn-erp-table high-density" style={{ width: '100%' }}>
-                              <thead>
-                                <tr>
-                                  <th style={{ width: 40, textAlign: 'center', whiteSpace: 'nowrap' }}>Sr.</th>
-                                  <th>Type</th>
-                                  <th>Item No</th>
-                                  <th>Item Desc</th>
-                                  <th>Customer</th>
-                                  <th>PO No</th>
-                                  <th style={{ textAlign: "right" }}>Plan Qty</th>
-                                  <th style={{ textAlign: "right" }}>Dis Qty</th>
-                                  <th style={{ textAlign: "right" }}>Bal Qty</th>
-                                  <th style={{ textAlign: "center" }}>Plan Date</th>
-                                  <th style={{ textAlign: "center" }}>Due Date</th>
-                                  <th style={{ textAlign: "center" }}>Delay Days</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {/* Empty Data Placeholder from screenshot */}
-                              </tbody>
-                            </table>
-                          </div>
-
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', backgroundColor: '#f8fafc', borderTop: '1px solid #e2e8f0' }}>
-                            <div style={{ fontSize: 11, fontWeight: 700, color: '#38bdf8' }}>Total Records :0</div>
-                            <button className="dn-icon-btn small excel" style={{ gap: 6, padding: '4px 10px', borderRadius: 4, border: '1px solid #cbd5e1', backgroundColor: '#fff', fontSize: 11, fontWeight: 600, width: 'auto' }}>
-                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /></svg> Export to Excel
-                            </button>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-
-          {activeDept === "oee" && (
-            <div className="dn-oee-view fade-in">
-              <div className="dn-accordion-container">
-                {oeeAccordionList.map((label) => {
-                  const isOpen = expandedSections[label];
-                  return (
-                    <div key={label} className={`dn-accordion-item ${isOpen ? "open" : ""}`}>
-                      <div className="dn-accordion-row" onClick={() => toggleSection(label)}>
-                        <div className="dn-acc-left">
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#007bff" strokeWidth="2.5" style={{ marginRight: 10 }}>
-                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2" /><line x1="12" y1="3" x2="12" y2="21" /><line x1="3" y1="12" x2="21" y2="12" />
-                          </svg>
-                          {label}
-                        </div>
-                        <div className="dn-acc-right">
-                          <span>{isOpen ? "Hide" : "Show"}</span>
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" style={{ marginLeft: 6, transform: isOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
-                            <polyline points="6 9 12 15 18 9" />
-                          </svg>
-                        </div>
-                      </div>
-
-                      {isOpen && label === "Machine Utilization (Groupwise)" && (
-                        <div className="dn-card-body dn-oee-body" style={{ background: '#fff' }}>
-                          {/* Filter Bar */}
-                          <div className="dn-inner-filter-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 16px', background: '#fff', borderBottom: '1px solid #e2e8f0' }}>
-                            <div className="dn-f-left" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                              <div className="dn-f-item">Plant : <select className="dn-mini-select" defaultValue="SHARP"><option>SHARP</option></select></div>
-                              <span className="dn-badge-orange" style={{ background: '#d35400', color: '#fff', padding: '2px 10px', borderRadius: 4, fontSize: 11, fontWeight: 700 }}>April-2026</span>
-                            </div>
-                            <div className="dn-f-right" style={{ display: 'flex', gap: 15, fontSize: 11, fontWeight: 700 }}>
-                              <a href="#" style={{ color: '#007bff' }}>OEE Report V2</a>
-                              <a href="#" style={{ color: '#007bff' }}>View More...</a>
-                            </div>
-                          </div>
-
-                          {/* Charts Visualization Area (Scrollable Grid) */}
-                          <div className="dn-oee-scroll-area" style={{ maxHeight: 600, overflowY: 'auto', padding: '10px 0' }}>
-                            <div className="dn-oee-charts-grid" style={{ display: 'flex', flexWrap: 'wrap', width: '100%' }}>
-                              {oeeMachineGroups.map((group, idx) => (
-                                <div key={group} className="dn-oee-chart-box" style={{
-                                  width: '50%',
-                                  textAlign: 'center',
-                                  padding: '30px 0',
-                                  borderBottom: '1px solid #f1f5f9',
-                                  borderRight: idx % 2 === 0 ? '1px solid #f1f5f9' : 'none'
-                                }}>
-                                  <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 20, color: '#1a2340' }}>{group}</h3>
-                                  <ResponsiveContainer width="100%" height={250}>
-                                    <PieChart>
-                                      <Pie
-                                        data={oeePieData}
-                                        cx="50%"
-                                        cy="45%"
-                                        innerRadius={0}
-                                        outerRadius={80}
-                                        dataKey="value"
-                                        stroke="none"
-                                      >
-                                        {oeePieData.map((entry, index) => (
-                                          <Cell key={`cell-${index}`} fill={entry.color} />
-                                        ))}
-                                        <Label
-                                          value="100.00 %"
-                                          position="outside"
-                                          offset={20}
-                                          style={{ fontSize: 10, fontWeight: 700, fill: '#64748b' }}
-                                        />
-                                      </Pie>
-                                      <Tooltip />
-                                    </PieChart>
-                                  </ResponsiveContainer>
-                                  <div className="dn-oee-legend-wrapper" style={{ display: 'flex', justifyContent: 'center' }}>
-                                    <div className="dn-oee-legend" style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: -10 }}>
-                                      <span style={{ width: 14, height: 8, background: '#16a34a', borderRadius: 2 }}></span>
-                                      <span style={{ fontSize: 11, fontWeight: 700, color: '#334155' }}>PRODUCTION - (100.00 %)</span>
-                                    </div>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                      )}
-
-                      {isOpen && label === "Operator Efficiency" && (
-                        <div className="dn-card-body dn-oee-body" style={{ background: '#fff', padding: 0 }}>
-                          {/* Filter Bar */}
-                          <div className="dn-inner-filter-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 16px', background: '#fff', borderBottom: '1px solid #e2e8f0' }}>
-                            <div className="dn-f-left" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                              <div style={{ width: 15, height: 15, background: '#d35400', borderRadius: 2 }}></div>
-                              <div className="dn-f-item">Plant : <select className="dn-mini-select" defaultValue="SHARP"><option>SHARP</option></select></div>
-                              <div className="dn-f-item">&nbsp; Select Month : <select className="dn-mini-select" defaultValue="Apr-2026"><option>Apr-2026</option></select></div>
-                            </div>
-                            <div className="dn-f-right">
-                              <a href="#" style={{ color: '#007bff', fontSize: 11, fontWeight: 700 }}>View More...</a>
-                            </div>
-                          </div>
-
-                          <div className="dn-oee-scroll-x" style={{ overflowX: 'auto', padding: '20px 16px' }}>
-                            <div style={{ minWidth: 2600 }}>
-                              <ResponsiveContainer width="100%" height={320}>
-                                <BarChart data={operatorEfficiencyData} margin={{ top: 20, right: 30, left: 20, bottom: 90 }} barCategoryGap={10}>
-                                  <defs>
-                                    <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
-                                      <stop offset="0%" stopColor="#7db4ff" />
-                                      <stop offset="100%" stopColor="#007bff" />
-                                    </linearGradient>
-                                  </defs>
-                                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                                  <XAxis
-                                    dataKey="name"
-                                    axisLine={{ stroke: '#cbd5e1' }}
-                                    tickLine={false}
-                                    tick={<CustomXAxisTick />}
-                                    interval={0}
-                                    height={90}
-                                    label={{ value: 'Operator Name', position: 'insideBottom', offset: -5, fontSize: 10, fontWeight: 700, fill: '#64748b' }}
-                                  />
-                                  <YAxis
-                                    domain={[0, 300]}
-                                    axisLine={{ stroke: '#cbd5e1' }}
-                                    tickLine={false}
-                                    tick={{ fontSize: 10, fontWeight: 700, fill: '#64748b' }}
-                                    label={{ value: 'OP. Eff %', angle: -90, position: 'insideLeft', fontSize: 10, fontWeight: 700, fill: '#64748b' }}
-                                  />
-                                  <Tooltip cursor={{ fill: '#f1f5f9' }} />
-                                  <Bar dataKey="efficiency" fill="url(#barGradient)" radius={[4, 4, 0, 0]} barSize={28}>
-                                    <LabelList dataKey="efficiency" position="top" style={{ fontSize: 10, fontWeight: 800, fill: '#0369a1' }} />
-                                  </Bar>
-                                </BarChart>
-                              </ResponsiveContainer>
-                            </div>
-                          </div>
-
-                          {/* Average Efficiency Footer */}
-                          <div className="dn-oee-footer" style={{ padding: '10px', display: 'flex', justifyContent: 'center', borderTop: '1px solid #f1f5f9' }}>
-                            <div className="dn-average-badge" style={{ background: '#007bff', color: '#fff', padding: '4px 20px', borderRadius: '4px', fontSize: 11, fontWeight: 700, boxShadow: '0 2px 4px rgba(0,123,255,0.2)' }}>
-                              Average Efficiency : 110.35
-                            </div>
-                          </div>
-                        </div>
-                      )}
-
-                      {isOpen && label === "OEE Graph" && (
-                        <div className="dn-card-body dn-oee-body" style={{ background: '#fff', padding: 0 }}>
-                          {/* OEE Graph Filter Bar */}
-                          <div className="dn-inner-filter-bar complex" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 16px", background: "#f8fafc", borderBottom: '1px solid #e2e8f0', gap: '15px' }}>
-                            <div className="dn-f-left" style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                              <div className="dn-f-item sm">Plant : <select className="dn-mini-select" style={{ width: 80 }}><option>SHARP</option></select></div>
-                              <div className="dn-f-item sm">From Date : <input type="date" className="dn-mini-select" defaultValue="2026-04-01" style={{ width: 130 }} /></div>
-                              <div className="dn-f-item sm">To Date : <input type="date" className="dn-mini-select" defaultValue="2026-04-11" style={{ width: 130 }} /></div>
-                              <button className="dn-btn-search" style={{ background: '#f1f5f9', border: '1px solid #cbd5e1', padding: '2px 10px', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1e293b" strokeWidth="3"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
-                                <span style={{ fontSize: '11px', fontWeight: 700 }}>Search</span>
-                              </button>
-                            </div>
-                          </div>
-
-                          {/* 2x2 Grid of Charts */}
-                          <div className="dn-oee-graph-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', borderTop: 'none' }}>
-                            {/* Availability Graph */}
-                            <div className="dn-graph-quadrant" style={{ borderRight: '1px solid #e2e8f0', borderBottom: '1px solid #e2e8f0' }}>
-                              <div className="dn-quadrant-header" style={{ background: '#f1f5f9', padding: '6px 12px', fontSize: '11px', fontWeight: 700, color: '#475569', borderBottom: '1px solid #e2e8f0' }}>Machine Availability Graph :</div>
-                              <div style={{ padding: '20px 10px' }}>
-                                <ResponsiveContainer width="100%" height={260}>
-                                  <BarChart data={machineOeeData}>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                                    <XAxis dataKey="name" interval={0} angle={-65} textAnchor="end" height={80} tick={{ fontSize: 8, fill: '#166534', fontWeight: 600 }} />
-                                    <YAxis domain={[0, 100]} tick={{ fontSize: 10, fill: '#ef4444', fontWeight: 700 }} label={{ value: 'Availab. in %', angle: -90, position: 'insideLeft', fontSize: 10 }} />
-                                    <Tooltip />
-                                    <Bar dataKey="avail" fill="url(#barGradient)" />
-                                  </BarChart>
-                                </ResponsiveContainer>
-                                <div style={{ textAlign: 'center', fontSize: 11, fontWeight: 700, color: '#475569', marginTop: -15 }}>Machine Name</div>
-                              </div>
-                            </div>
-
-                            {/* Quality Graph */}
-                            <div className="dn-graph-quadrant" style={{ borderBottom: '1px solid #e2e8f0' }}>
-                              <div className="dn-quadrant-header" style={{ background: '#f1f5f9', padding: '6px 12px', fontSize: '11px', fontWeight: 700, color: '#475569', borderBottom: '1px solid #e2e8f0' }}>Production Quality Graph :</div>
-                              <div style={{ padding: '20px 10px' }}>
-                                <ResponsiveContainer width="100%" height={260}>
-                                  <BarChart data={machineOeeData}>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                                    <XAxis dataKey="name" interval={0} angle={-65} textAnchor="end" height={80} tick={{ fontSize: 8, fill: '#166534', fontWeight: 600 }} />
-                                    <YAxis domain={[0, 100]} tick={{ fontSize: 10, fill: '#ef4444', fontWeight: 700 }} label={{ value: 'Quality in %', angle: -90, position: 'insideLeft', fontSize: 10 }} />
-                                    <Tooltip />
-                                    <Bar dataKey="quality" fill="url(#barGradient)" />
-                                  </BarChart>
-                                </ResponsiveContainer>
-                                <div style={{ textAlign: 'center', fontSize: 11, fontWeight: 700, color: '#475569', marginTop: -15 }}>Machine Name</div>
-                              </div>
-                            </div>
-
-                            {/* Performance Graph */}
-                            <div className="dn-graph-quadrant" style={{ borderRight: '1px solid #e2e8f0' }}>
-                              <div className="dn-quadrant-header" style={{ background: '#f1f5f9', padding: '6px 12px', fontSize: '11px', fontWeight: 700, color: '#475569', borderBottom: '1px solid #e2e8f0' }}>Machine Performance Report :</div>
-                              <div style={{ padding: '20px 10px' }}>
-                                <ResponsiveContainer width="100%" height={260}>
-                                  <BarChart data={machineOeeData}>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                                    <XAxis dataKey="name" interval={0} angle={-65} textAnchor="end" height={80} tick={{ fontSize: 8, fill: '#166534', fontWeight: 600 }} />
-                                    <YAxis domain={[0, 400]} tick={{ fontSize: 10, fill: '#ef4444', fontWeight: 700 }} label={{ value: 'Performance in %', angle: -90, position: 'insideLeft', fontSize: 10 }} />
-                                    <Tooltip />
-                                    <Bar dataKey="perf" fill="url(#barGradient)" />
-                                  </BarChart>
-                                </ResponsiveContainer>
-                                <div style={{ textAlign: 'center', fontSize: 11, fontWeight: 700, color: '#475569', marginTop: -15 }}>Machine Name</div>
-                              </div>
-                            </div>
-
-                            {/* Summary Graph */}
-                            <div className="dn-graph-quadrant">
-                              <div className="dn-quadrant-header" style={{ background: '#f1f5f9', padding: '6px 12px', fontSize: '11px', fontWeight: 700, color: '#475569', borderBottom: '1px solid #e2e8f0' }}>OEE Summary Graph :</div>
-                              <div style={{ padding: '20px 10px' }}>
-                                <ResponsiveContainer width="100%" height={260}>
-                                  <BarChart data={machineOeeData}>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                                    <XAxis dataKey="name" interval={0} angle={-65} textAnchor="end" height={80} tick={{ fontSize: 8, fill: '#166534', fontWeight: 600 }} />
-                                    <YAxis domain={[0, 100]} tick={{ fontSize: 10, fill: '#ef4444', fontWeight: 700 }} label={{ value: 'Availab. in %', angle: -90, position: 'insideLeft', fontSize: 10 }} />
-                                    <Tooltip />
-                                    <Bar dataKey="oee" fill="url(#barGradient)" />
-                                  </BarChart>
-                                </ResponsiveContainer>
-                                <div style={{ textAlign: 'center', fontSize: 11, fontWeight: 700, color: '#475569', marginTop: -15 }}>Machine Name</div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-
-                      {isOpen && label === "Shiftwise OEE" && (
-                        <div className="dn-card-body dn-oee-body" style={{ padding: 0 }}>
-                          {/* Standardized Filter Bar Strip */}
-                          <div className="dn-inner-filter-bar" style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', background: '#ffffff', borderBottom: '1px solid #e2e8f0', flexWrap: 'nowrap' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: '#64748b' }}>
-                              Plant : <select className="dn-mini-select" defaultValue="SHARP" style={{ width: 80, border: '1px solid #cbd5e1', fontSize: '10.5px', fontWeight: 700 }}><option>SHARP</option></select>
-                            </div>
-                            
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginLeft: '5px' }}>
-                              <div style={{ fontSize: '11px', color: '#64748b' }}>From Date :</div>
-                              <input type="text" className="dn-mini-input" defaultValue="11/04/2026" style={{ width: 85, border: '1px solid #cbd5e1', padding: '1px 4px', fontSize: '10.5px' }} />
-                              <button style={{ background: 'transparent', border: 'none', padding: 0 }}><svg width="14" height="14" fill="#64748b" viewBox="0 0 24 24"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM5 8V6h14v2H5z"/></svg></button>
-                            </div>
-
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginLeft: '5px' }}>
-                              <div style={{ fontSize: '11px', color: '#64748b' }}>To Date :</div>
-                              <input type="text" className="dn-mini-input" defaultValue="11/04/2026" style={{ width: 85, border: '1px solid #cbd5e1', padding: '1px 4px', fontSize: '10.5px' }} />
-                              <button style={{ background: 'transparent', border: 'none', padding: 0 }}><svg width="14" height="14" fill="#64748b" viewBox="0 0 24 24"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM5 8V6h14v2H5z"/></svg></button>
-                            </div>
-
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: '#64748b', marginLeft: '5px' }}>
-                              Group : <select className="dn-mini-select" defaultValue="Select" style={{ width: 80, border: '1px solid #cbd5e1', fontSize: '10.5px' }}><option>Select</option></select>
-                            </div>
-
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: '#64748b', marginLeft: '5px' }}>
-                              Shift : <select className="dn-mini-select" defaultValue="ALL" style={{ width: 60, border: '1px solid #cbd5e1', fontSize: '10.5px' }}><option>ALL</option></select>
-                            </div>
-
-                            <button className="dn-btn-search" style={{ height: '24px', padding: '0 12px', fontSize: '10.5px', background: '#f1f5f9', border: '1px solid #cbd5e1', color: '#334155', fontWeight: 700, marginLeft: '10px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                              Search
-                            </button>
-
-                            <a href="#" style={{ fontSize: '11px', fontWeight: 700, color: '#38bdf8', marginLeft: '10px', textDecoration: 'none' }}>OEE Report V2</a>
-                          </div>
-
-                          {/* Horizontal Scrollable High-Density Table */}
-                          <div className="dn-table-scroll-container oee-shift-scroll" style={{ overflowX: 'auto', maxHeight: '500px', border: '1px solid #e2e8f0' }}>
-                            <table className="dn-erp-table high-density" style={{ width: 'max-content', borderCollapse: 'separate', borderSpacing: 0 }}>
-                              <thead>
-                                <tr>
-                                  <th style={{ width: '45px', minWidth: '45px', backgroundColor: '#007bff', color: '#fff', fontSize: '10px', textAlign: 'center', border: '1px solid rgba(255,255,255,0.3)', position: 'sticky', left: 0, zIndex: 12, transform: 'translateZ(0)' }}>Sr.No</th>
-                                  <th style={{ width: '145px', minWidth: '145px', backgroundColor: '#007bff', color: '#fff', fontSize: '10px', textAlign: 'left', border: '1px solid rgba(255,255,255,0.3)', position: 'sticky', left: 45, zIndex: 12, borderRight: '2px solid #0056b3', transform: 'translateZ(0)' }}>LOSSES</th>
-                                  {shiftwiseOeeMachines.map((machine, mIdx) => (
-                                    <th key={mIdx} style={{ 
-                                      minWidth: '85px', 
-                                      background: 'linear-gradient(to bottom, #4b92db, #1d6ed1)', 
-                                      color: '#fff', 
-                                      fontSize: '9px', 
-                                      textAlign: 'center', 
-                                      padding: '4px 2px',
-                                      border: '1px solid rgba(255,255,255,0.2)',
-                                      lineHeight: '1.2'
-                                    }}>
-                                      {machine}
-                                    </th>
-                                  ))}
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {shiftwiseOeeRowLabels.map((label, rIdx) => {
-                                  const rowBg = rIdx % 2 === 1 ? '#f8fafc' : '#ffffff';
-                                  return (
-                                    <tr key={rIdx} style={{ background: rowBg }}>
-                                      <td style={{ 
-                                        textAlign: 'center', 
-                                        fontSize: '10.5px', 
-                                        fontWeight: 600, 
-                                        border: '1px solid #e2e8f0', 
-                                        position: 'sticky', 
-                                        left: 0,
-                                        backgroundColor: rowBg, 
-                                        zIndex: 7,
-                                        transform: 'translateZ(0)'
-                                      }}>
-                                        {rIdx + 1}
-                                      </td>
-                                      <td style={{ 
-                                        textAlign: 'left', 
-                                        fontSize: '9px', 
-                                        fontWeight: 800, 
-                                        color: '#334155', 
-                                        border: '1px solid #e2e8f0', 
-                                        borderRight: '2px solid #cbd5e1',
-                                        position: 'sticky', 
-                                        left: 45, 
-                                        backgroundColor: rowBg, 
-                                        zIndex: 7, 
-                                        padding: '4px 8px',
-                                        transform: 'translateZ(0)'
-                                      }}>
-                                        {label}
-                                      </td>
-                                      {shiftwiseOeeMachines.map((_, cIdx) => (
-                                        <td key={cIdx} style={{ textAlign: 'center', fontSize: '10.5px', border: '1px solid #e2e8f0', color: '#64748b' }}>0</td>
-                                      ))}
-                                    </tr>
-                                  );
-                                })}
-                              </tbody>
-                            </table>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {activeDept === "stores" && (
-            <div className="dn-stores-view fade-in">
-              {/* --- STORES DASHBOARD HEADER SECTION --- */}
-              <div className="dn-purchase-hero-section" style={{ marginBottom: '10px' }}>
-                <div className="dn-hero-card" style={{ padding: '8px 20px', minHeight: 'auto' }}>
-                  <div className="dn-hero-left">
-                    <h2 className="dn-hero-title" style={{ fontSize: '16px', marginBottom: '0' }}>Stores & WMS Dynamics</h2>
-                    <p className="dn-hero-subtitle" style={{ fontSize: '11px', margin: 0, opacity: 0.7 }}>Enterprise Warehouse Management System tracking Live Inventory limits & Material Logs.</p>
-                  </div>
-                  <div className="dn-hero-right">
-                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                        <select className="dn-chart-select-sm" style={{ 
-                          width: '180px', 
-                          height: '28px', 
-                          fontSize: '12px', 
-                          fontWeight: 600, 
-                          borderRadius: '6px', 
-                          border: '1px solid #cbd5e1',
-                          padding: '0 10px',
-                          cursor: 'pointer',
-                          backgroundColor: '#fff',
-                          appearance: 'none',
-                          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23475569'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
-                          backgroundRepeat: 'no-repeat',
-                          backgroundPosition: 'right 8px center',
-                          backgroundSize: '12px'
-                        }}>
-                           <option>All Warehouses</option>
-                        </select>
-                        <button className="dn-master-export-btn" style={{ 
-                          background: '#10b981', 
-                          borderColor: '#10b981',
-                          height: '28px',
-                          padding: '0 10px',
-                          fontSize: '10px',
-                          fontWeight: 700,
-                          borderRadius: '6px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '4px'
-                        }}>
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" />
-                          </svg>
-                          Export
-                        </button>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="dn-purchase-top-charts">
-                  <div className="dn-top-chart-card">
-                    <div className="dn-chart-header-row" style={{ padding: '15px 20px 0' }}>
-                      <h3 className="dn-chart-title-sm" style={{ fontSize: '12px', fontWeight: 800, color: '#1e293b', display: 'flex', alignItems: 'center' }}>
-                        <span className="dn-title-accent" style={{ background: '#f59e0b', height: '14px', width: '3px', marginRight: '8px' }}>|</span>
-                        INWARD STOCK DIST.
-                      </h3>
-                    </div>
-                    <div className="dn-chart-body-sm" style={{ height: '300px' }}>
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                          <Pie
-                            data={inwardStockData}
-                            cx="50%"
-                            cy="50%"
-                            innerRadius={60}
-                            outerRadius={90}
-                            dataKey="value"
-                            paddingAngle={2}
-                          >
-                            {inwardStockData.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={entry.color} />
-                            ))}
-                          </Pie>
-                          <Tooltip />
-                        </PieChart>
-                      </ResponsiveContainer>
-                      <div className="dn-pie-legend-grid" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'center', marginTop: '-20px' }}>
-                         {inwardStockData.map((d, i) => (
-                           <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10px', fontWeight: 600 }}>
-                              <div style={{ width: 8, height: 8, background: d.color }}></div>
-                              {d.name}
-                           </div>
-                         ))}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="dn-top-chart-card">
-                    <div className="dn-chart-header-row" style={{ padding: '15px 20px 0' }}>
-                      <h3 className="dn-chart-title-sm" style={{ fontSize: '12px', fontWeight: 800, color: '#1e293b', display: 'flex', alignItems: 'center' }}>
-                        <span className="dn-title-accent" style={{ background: '#8b5cf6', height: '14px', width: '3px', marginRight: '8px' }}>|</span>
-                        OUTWARD STOCK DIST.
-                      </h3>
-                    </div>
-                    <div className="dn-chart-body-sm" style={{ height: '300px' }}>
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                          <Pie
-                            data={outwardStockData}
-                            cx="50%"
-                            cy="50%"
-                            innerRadius={60}
-                            outerRadius={90}
-                            dataKey="value"
-                            paddingAngle={2}
-                          >
-                            {outwardStockData.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={entry.color} />
-                            ))}
-                          </Pie>
-                          <Tooltip />
-                        </PieChart>
-                      </ResponsiveContainer>
-                      <div className="dn-pie-legend-grid" style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'center', marginTop: '-20px' }}>
-                         {outwardStockData.map((d, i) => (
-                           <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10px', fontWeight: 600 }}>
-                              <div style={{ width: 8, height: 8, background: d.color }}></div>
-                              {d.name}
-                           </div>
-                         ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="dn-top-chart-card" style={{ marginTop: '20px', padding: 0 }}>
-                    <div className="dn-chart-header-row" style={{ padding: '20px 20px 10px', alignItems: 'center' }}>
-                        <h3 className="dn-chart-title-sm" style={{ margin: 0, color: '#1e293b' }}>
-                        <span className="dn-title-accent" style={{ background: '#0ea5e9' }}>|</span> MIN / MAX AUTO-REORDER ALERTS
-                        </h3>
-                        <div style={{ display: 'flex', gap: '15px', alignItems: 'center', marginLeft: 'auto' }}>
-                            <label style={{ fontSize: '12px', fontWeight: 600, color: '#64748b', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                <input type="checkbox" /> Show Critical Only
-                            </label>
-                            <div className="dn-search-pill" style={{ position: 'relative' }}>
-                                <input type="text" placeholder="Locate Code..." style={{ padding: '6px 12px 6px 32px', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '12px', width: '180px', background: '#f8fafc' }} />
-                                <svg style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)' }} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="3"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
-                            </div>
-                            <button className="dn-icon-btn" style={{ padding: '6px 12px', borderRadius: '8px', border: '1px solid #e2e8f0', background: '#fff', fontSize: '12px', fontWeight: 700, color: '#1e293b', display: 'flex', alignItems: 'center', gap: '6px', width: 'auto' }}>
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="4" y1="21" x2="4" y2="14" /><line x1="4" y1="10" x2="4" y2="3" /><line x1="12" y1="21" x2="12" y2="12" /><line x1="12" y1="8" x2="12" y2="3" /><line x1="20" y1="21" x2="20" y2="16" /><line x1="20" y1="12" x2="20" y2="3" /><line x1="1" y1="14" x2="7" y2="14" /><line x1="9" y1="8" x2="15" y2="8" /><line x1="17" y1="16" x2="23" y2="16" /></svg>
-                                Filters
-                            </button>
-                        </div>
-                    </div>
-                    <div className="dn-table-scroll-container" style={{ margin: 0 }}>
-                        <table className="dn-erp-table high-density">
-                            <thead style={{ background: '#f8fafc' }}>
-                                <tr>
-                                    <th style={{ width: 40, textAlign: 'center' }}><input type="checkbox" /></th>
-                                    <th style={{ color: '#1e293b', fontSize: '11px' }}>LOCATION GRP</th>
-                                    <th style={{ color: '#1e293b', fontSize: '11px' }}>ITEM CODE</th>
-                                    <th style={{ color: '#1e293b', fontSize: '11px' }}>DESCRIPTION DETAILS</th>
-                                    <th style={{ color: '#1e293b', fontSize: '11px', textAlign: 'center' }}>MIN LVL</th>
-                                    <th style={{ color: '#1e293b', fontSize: '11px', textAlign: 'center' }}>REORDER LVL</th>
-                                    <th style={{ color: '#1e293b', fontSize: '11px', textAlign: 'center' }}>MAX LVL</th>
-                                    <th style={{ color: '#1e293b', fontSize: '11px', textAlign: 'center' }}>CURR STOCK</th>
-                                    <th style={{ color: '#1e293b', fontSize: '11px', textAlign: 'center' }}>WO QTY</th>
-                                    <th style={{ color: '#1e293b', fontSize: '11px', textAlign: 'center' }}>VARIANCE</th>
-                                    <th style={{ color: '#1e293b', fontSize: '11px', textAlign: 'center' }}>STATUS</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {minMaxAlertsData.map((row, idx) => (
-                                    <tr key={idx} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                                        <td style={{ textAlign: 'center' }}><input type="checkbox" /></td>
-                                        <td style={{ fontWeight: 700 }}>{row.location}</td>
-                                        <td style={{ fontWeight: 700 }}>{row.itemCode}</td>
-                                        <td style={{ fontSize: '10.5px', color: '#64748b' }}>{row.desc}</td>
-                                        <td style={{ textAlign: 'center', fontWeight: 600 }}>{row.min}</td>
-                                        <td style={{ textAlign: 'center', fontWeight: 600, background: '#f8fafc' }}>{row.reorder}</td>
-                                        <td style={{ textAlign: 'center', fontWeight: 600 }}>{row.max}</td>
-                                        <td style={{ textAlign: 'center', fontWeight: 700 }}>{row.stock}</td>
-                                        <td style={{ textAlign: 'center' }}>{row.wo}</td>
-                                        <td style={{ textAlign: 'center', fontWeight: 700, color: row.variance < 0 ? '#ef4444' : '#1e293b' }}>{row.variance}</td>
-                                        <td style={{ textAlign: 'center' }}>
-                                            <span className={`dn-status-badge-${row.status === 'OVERSTOCK' ? 'yellow' : row.status === 'HEALTHY' ? 'green' : 'red'}`} style={{ padding: '4px 10px', fontSize: '9px', fontWeight: 800, borderRadius: '8px' }}>
-                                                {row.status}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <div className="dn-top-chart-card" style={{ marginTop: '20px', padding: 0 }}>
-                    <div className="dn-chart-header-row" style={{ padding: '15px 20px 10px', alignItems: 'center' }}>
-                        <h3 className="dn-chart-title-sm" style={{ margin: 0, color: '#1e293b', display: 'flex', alignItems: 'center' }}>
-                            <span className="dn-title-accent" style={{ background: '#0ea5e9', height: '18px', width: '3px', marginRight: '10px' }}>|</span> 
-                            LIVE MATERIAL ISSUE CHALLAN LOGS
-                        </h3>
-                        <button className="dn-icon-btn" style={{ padding: '6px 15px', borderRadius: '8px', border: '1px solid #e2e8f0', background: '#fff', fontSize: '12px', fontWeight: 700, color: '#1e293b', display: 'flex', alignItems: 'center', gap: '6px', width: 'auto', marginLeft: 'auto' }}>
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
-                            New Issue
-                        </button>
-                    </div>
-                    <div className="dn-table-scroll-container" style={{ margin: 0 }}>
-                        <table className="dn-erp-table high-density">
-                            <thead style={{ background: '#f8fafc' }}>
-                                <tr>
-                                    <th style={{ width: 40, textAlign: 'center' }}><input type="checkbox" /></th>
-                                    <th style={{ color: '#64748b', fontSize: '10px', fontWeight: 800 }}>CHALLAN / LOG NO.</th>
-                                    <th style={{ color: '#64748b', fontSize: '10px', fontWeight: 800 }}>ITEM SYSTEM NO.</th>
-                                    <th style={{ color: '#64748b', fontSize: '10px', fontWeight: 800 }}>DISPATCH TARGET DESC</th>
-                                    <th style={{ color: '#64748b', fontSize: '10px', fontWeight: 800, textAlign: 'center' }}>GRP</th>
-                                    <th style={{ color: '#64748b', fontSize: '10px', fontWeight: 800, textAlign: 'center' }}>QTY</th>
-                                    <th style={{ color: '#64748b', fontSize: '10px', fontWeight: 800, textAlign: 'center' }}>BASE RATE</th>
-                                    <th style={{ color: '#64748b', fontSize: '10px', fontWeight: 800, textAlign: 'center' }}>TOTAL EXPORT VALUE</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {materialChallanLogs.map((row, idx) => (
-                                    <tr key={idx} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                                        <td style={{ textAlign: 'center' }}><input type="checkbox" /></td>
-                                        <td style={{ fontWeight: 700, fontSize: '11px', color: '#1a2340' }}>{row.no}</td>
-                                        <td style={{ fontWeight: 700, fontSize: '11px' }}>{row.itemNo}</td>
-                                        <td style={{ fontSize: '10.5px', color: '#64748b' }}>{row.target}</td>
-                                        <td style={{ textAlign: 'center' }}>
-                                            <span style={{ 
-                                                padding: '2px 8px', 
-                                                fontSize: '9px', 
-                                                fontWeight: 800, 
-                                                borderRadius: '6px', 
-                                                background: row.grp === 'CONSUMABLE' ? '#e0f2fe' : row.grp === 'HARDWARE' ? '#f1f5f9' : '#fff7ed', 
-                                                color: row.grp === 'CONSUMABLE' ? '#0369a1' : row.grp === 'HARDWARE' ? '#475569' : '#c2410c' 
-                                            }}>
-                                                {row.grp}
-                                            </span>
-                                        </td>
-                                        <td style={{ textAlign: 'center', fontWeight: 700, fontSize: '11px' }}>{row.qty}</td>
-                                        <td style={{ textAlign: 'center', fontWeight: 700, fontSize: '11px' }}>{row.rate}</td>
-                                        <td style={{ textAlign: 'center', fontWeight: 700, fontSize: '11px', color: '#1a2340' }}>{row.value}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                    <div className="dn-table-footer" style={{ padding: '10px 20px', borderTop: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#fff', borderBottomLeftRadius: '12px', borderBottomRightRadius: '12px' }}>
-                        <div style={{ fontSize: '11px', color: '#64748b', fontWeight: 600 }}>Showing 1 to 5 of 422 delivery challans</div>
-                        <div style={{ display: 'flex', gap: '8px' }}>
-                            <button style={{ padding: '4px 12px', borderRadius: '6px', border: '1px solid #e2e8f0', background: '#fff', fontSize: '11px', fontWeight: 700, color: '#64748b', cursor: 'pointer' }}>Previous</button>
-                            <button style={{ padding: '4px 12px', borderRadius: '6px', border: '1px solid #e2e8f0', background: '#fff', fontSize: '11px', fontWeight: 700, color: '#64748b', cursor: 'pointer' }}>Next</button>
-                        </div>
-                    </div>
-                </div>
-              </div>
-            </div>
-          )}
-          {activeDept === "subcon" && (
-            <div className="dn-subcon-view fade-in">
-              <div className="dn-accordion-container">
-                {subconAccordionList.map((label) => {
-                  const isOpen = expandedSections[label];
-                  return (
-                    <div key={label} className={`dn-accordion-item ${isOpen ? "open" : ""}`}>
-                      <div className="dn-accordion-row" onClick={() => toggleSection(label)}>
-                        <div className="dn-acc-left">
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#007bff" strokeWidth="2.5" style={{ marginRight: 10 }}>
-                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2" /><line x1="12" y1="3" x2="12" y2="21" /><line x1="3" y1="12" x2="21" y2="12" />
-                          </svg>
-                          {label}
-                        </div>
-                        <div className="dn-acc-right">
-                          <span>{isOpen ? "Hide" : "Show"}</span>
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" style={{ marginLeft: 6, transform: isOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
-                            <polyline points="6 9 12 15 18 9" />
-                          </svg>
-                        </div>
-                      </div>
-
-                      {isOpen && label === "57F4 Challan Ageing" && (
-                        <div className="dn-card-body dn-subcon-body" style={{ padding: 0 }}>
-                          {/* Inner Filter Bar */}
-                          <div className="dn-inner-filter-bar complex" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 16px", background: "#f8fafc", borderBottom: '1px solid #e2e8f0', flexWrap: 'nowrap' }}>
-                            <div className="dn-f-left" style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                              <div className="dn-f-item sm">Plant : <select className="dn-mini-select" style={{ width: 80 }}><option>SHARP</option></select></div>
-                              <div className="dn-f-item sm" style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                                <input type="checkbox" id="subconSupp" />
-                                <label htmlFor="subconSupp" style={{ fontSize: 11, fontWeight: 700 }}>Supplier:</label>
-                                <input type="text" className="dn-mini-input" placeholder="Vendor / Supplier Name.." style={{ width: 180 }} />
-                              </div>
-                              <button className="dn-btn-search">
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" style={{ marginRight: 5 }}><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
-                                Search
-                              </button>
-                            </div>
-                          </div>
-
-                          {/* Ageing Buckets row */}
-                          <div className="dn-ageing-buckets-row" style={{ display: 'flex', gap: '8px', padding: '12px 16px', background: '#fff', borderBottom: '1px solid #e2e8f0', flexWrap: 'nowrap', justifyContent: 'space-between' }}>
-                            <div className="dn-ageing-box"><span>[Under 0-30]:</span> <div className="count-badge blue">224</div></div>
-                            <div className="dn-ageing-box"><span>[Under 31-60]:</span> <div className="count-badge dark-blue">0</div></div>
-                            <div className="dn-ageing-box"><span>[Under 61-90]:</span> <div className="count-badge blue">0</div></div>
-                            <div className="dn-ageing-box"><span>[Under 91-120]:</span> <div className="count-badge blue">0</div></div>
-                            <div className="dn-ageing-box"><span>[Under 121-150]:</span> <div className="count-badge blue">0</div></div>
-                            <div className="dn-ageing-box"><span>[Under 151-180]:</span> <div className="count-badge blue">0</div></div>
-                            <div className="dn-ageing-box"><span>[Above &gt; 180]:</span> <div className="count-badge red">0</div></div>
-                            <div className="dn-ageing-box all"><span>View ALL</span> <div className="count-badge light-blue">224</div></div>
-                          </div>
-
-                          <div className="dn-table-scroll-container" style={{ margin: 0, padding: 0, border: 'none' }}>
-                            <table className="dn-erp-table high-density" style={{ width: '100%', borderCollapse: 'collapse' }}>
-                              <thead>
-                                <tr style={{ background: '#007bff', color: '#fff' }}>
-                                  <th style={{ width: 40, textAlign: 'center', color: '#fff' }}>Sr.</th>
-                                  <th style={{ color: '#fff' }}>Out No</th>
-                                  <th style={{ color: '#fff' }}>Out Date</th>
-                                  <th style={{ color: '#fff' }}>Series</th>
-                                  <th style={{ color: '#fff' }}>Supp Code</th>
-                                  <th style={{ color: '#fff' }}>Supplier Name</th>
-                                  <th style={{ color: '#fff' }}>Status</th>
-                                  <th style={{ color: '#fff', textAlign: 'right' }}>Out</th>
-                                  <th style={{ color: '#fff', textAlign: 'right' }}>Inn</th>
-                                  <th style={{ color: '#fff', textAlign: 'right' }}>Bal.</th>
-                                  <th style={{ color: '#fff' }}>Unit</th>
-                                  <th style={{ color: '#fff', textAlign: 'center' }}>Age Days</th>
-                                  <th style={{ color: '#fff', textAlign: 'center' }}>View</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {subconAgeingTableData.map((item, idx) => (
-                                  <tr key={idx}>
-                                    <td style={{ textAlign: "center" }}>{item.sr}</td>
-                                    <td style={{ color: '#007bff', fontWeight: 700 }}>{item.outNo}</td>
-                                    <td>{item.outDate}</td>
-                                    <td>{item.series}</td>
-                                    <td>{item.suppCode}</td>
-                                    <td style={{ fontWeight: 700, fontSize: 11 }}>{item.supplierName}</td>
-                                    <td>{item.status}</td>
-                                    <td style={{ textAlign: "right", fontWeight: 700 }}>{item.out}</td>
-                                    <td style={{ textAlign: "right", fontWeight: 700 }}>{item.inn}</td>
-                                    <td style={{ textAlign: "right", fontWeight: 700, color: '#ef4444' }}>{item.bal}</td>
-                                    <td>{item.unit}</td>
-                                    <td style={{ textAlign: "center", fontWeight: 700 }}>{item.ageDays}</td>
-                                    <td style={{ textAlign: "center" }}>
-                                      <button style={{ background: 'none', border: 'none', color: '#007bff', textDecoration: 'underline', cursor: 'pointer', fontSize: 11, fontWeight: 700 }}>{item.view}</button>
-                                    </td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-
-                          <div className="dn-subcon-footer" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 16px', background: '#f8fafc', borderTop: '1px solid #e2e8f0' }}>
-                            <div style={{ fontSize: 12, fontWeight: 800, color: '#334155' }}>Total Records : 01</div>
-                            <div style={{ display: 'flex', gap: 10 }}>
-                              <button className="dn-icon-btn small excel" style={{ border: '1px solid #cbd5e1', color: '#16a34a', background: '#fff', width: 'auto', padding: '4px 12px', borderRadius: 4, display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 800 }}>
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /></svg>
-                                Export (ItemWise)
-                              </button>
-                              <button className="dn-icon-btn small excel" style={{ border: '1px solid #cbd5e1', color: '#16a34a', background: '#fff', width: 'auto', padding: '4px 12px', borderRadius: 4, display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 800 }}>
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /></svg>
-                                Export
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-
-
-          {activeDept === "quality" && (
-            <div className="dn-ppc-view fade-in">
-              <div className="dn-accordion-container">
-                {qcAccordionList.map((label) => {
-                  const isOpen = expandedSections[label];
-                  return (
-                    <div key={label} className={`dn-accordion-item ${isOpen ? "open" : ""}`}>
-                      <div className="dn-accordion-row" onClick={() => toggleSection(label)}>
-                        <div className="dn-acc-left">
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#007bff" strokeWidth="2.5" style={{ marginRight: 10 }}>
-                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2" /><line x1="12" y1="3" x2="12" y2="21" /><line x1="3" y1="12" x2="21" y2="12" />
-                          </svg>
-                          {label}
-                        </div>
-                        <div className="dn-acc-right">
-                          <span>{isOpen ? "Hide" : "Show"}</span>
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" style={{ marginLeft: 6, transform: isOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
-                            <polyline points="6 9 12 15 18 9" />
-                          </svg>
-                        </div>
-                      </div>
-
-
-                      {isOpen && label === "Trend of Rejection % at Operation Level" && (
-                        <div className="dn-card-body dn-ppc-body">
-                          <div className="dn-inner-filter-bar complex" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 16px", background: "#f8fafc" }}>
-                            <div className="dn-f-left">
-                              <div className="dn-f-item sm">Plant : <select className="dn-mini-select"><option>SHARP</option></select></div>
-                              <div className="dn-f-item sm">Month : <select className="dn-mini-select"><option>Apr-2026</option></select></div>
-                              <button className="dn-icon-btn small excel" style={{ flexShrink: 0 }}>
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /></svg> Excel
-                              </button>
-                              <div className="dn-f-item sm" style={{ marginLeft: 8 }}>
-                                <input type="radio" name="qcChartType" defaultChecked style={{ margin: 0 }} /> Production
-                              </div>
-                            </div>
-                            <div className="dn-f-right">
-                              <div style={{ display: 'flex', gap: 12, fontSize: 11, fontWeight: 600 }}>
-                                <a href="#" style={{ color: '#007bff', textDecoration: 'underline' }}>Item Wise Rejection..</a>
-                                <a href="#" style={{ color: '#007bff', textDecoration: 'underline' }}>View Operatorwise Rejection...</a>
-                                <a href="#" style={{ color: '#007bff', textDecoration: 'underline' }}>View More...</a>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div style={{ padding: '10px 15px' }}>
-                            <ResponsiveContainer width="100%" height={300}>
-                              <LineChart data={qcRejectionTrendData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                                <XAxis dataKey="date" tick={{ fontSize: 10 }} label={{ value: 'Date', position: 'insideBottom', offset: -5, style: { fontSize: 11, fontWeight: 600 } }} />
-                                <YAxis yAxisId="left" tick={{ fontSize: 10 }} label={{ value: 'Percentage', angle: -90, position: 'insideLeft', style: { fontSize: 11, fontWeight: 600 } }} domain={[0, 0.8]} />
-                                <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 10 }} label={{ value: 'PPM', angle: 90, position: 'insideRight', style: { fontSize: 11, fontWeight: 600 } }} domain={[0, 8000]} />
-                                <Tooltip contentStyle={{ fontSize: 11, borderRadius: 6 }} />
-                                <Line yAxisId="left" type="monotone" dataKey="percentage" stroke="#10b981" strokeWidth={2} dot={{ r: 3 }} name="Rejection %" />
-                                <Line yAxisId="right" type="monotone" dataKey="ppm" stroke="#000000" strokeWidth={2} dot={{ r: 3 }} name="PPM" />
-                              </LineChart>
-                            </ResponsiveContainer>
-                          </div>
-
-                          <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: 10, padding: '8px 15px', fontSize: 10, borderTop: '1px solid #e2e8f0' }}>
-                            <span style={{ fontWeight: 600 }}>* Reject / Rework Qty as per Prod Entry and Inprocess QC</span>
-                            <span style={{ background: '#334155', color: '#fff', padding: '3px 12px', borderRadius: 4, fontWeight: 700 }}>Reject / Material Defect (MD)</span>
-                            <span style={{ background: '#10b981', color: '#fff', padding: '3px 12px', borderRadius: 4, fontWeight: 700 }}>Rework / Process Defect (PD)</span>
-                          </div>
-                          <div style={{ textAlign: 'center', fontSize: 10, padding: '4px 0 10px', color: '#ef4444', fontWeight: 700 }}>
-                            * PPM=(Prod Qty / (MDQty OR PDQty))*100
-                          </div>
-                        </div>
-                      )}
-
-                      {isOpen && label === "Itemwise Reject" && (
-                        <div className="dn-card-body dn-ppc-body">
-                          <div className="dn-inner-filter-bar complex" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: '6px 16px', background: '#f1f5f9' }}>
-                            <div className="dn-f-left" style={{ gap: 15, flexWrap: 'wrap', alignItems: 'center' }}>
-                              <div className="dn-f-item sm">Type: <label style={{ display: 'inline-flex', alignItems: 'center', gap: 4, margin: 0, fontWeight: 700 }}><input type="radio" name="itRType" defaultChecked style={{ margin: 0 }} /> Production</label></div>
-                              <div className="dn-f-item sm">Plant : <select className="dn-mini-select" style={{ width: 80 }}><option>SHARP</option></select></div>
-                              <div className="dn-f-item sm">From Date : <input type="text" className="dn-mini-input" defaultValue="09/04/2026" style={{ width: 80 }} /></div>
-                              <div className="dn-f-item sm">To Date : <input type="text" className="dn-mini-input" defaultValue="11/04/2026" style={{ width: 80 }} /></div>
-                              <div className="dn-f-item sm">Reason : <select className="dn-mini-select" style={{ width: 80 }}><option>ALL</option></select></div>
-                              <button className="dn-btn-search" style={{ height: 24, padding: '0 12px' }}>Search</button>
-                              <div style={{ display: 'flex', gap: 6 }}>
-                                <button className="dn-icon-btn small excel" style={{ gap: 4, padding: '4px 8px', borderRadius: 4, border: '1px solid #cbd5e1', backgroundColor: '#fff', fontSize: 10, fontWeight: 700, width: 'auto' }}>
-                                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /></svg> Item-Wise
-                                </button>
-                                <button className="dn-icon-btn small excel" style={{ gap: 4, padding: '4px 8px', borderRadius: 4, border: '1px solid #cbd5e1', backgroundColor: '#fff', fontSize: 10, fontWeight: 700, width: 'auto' }}>
-                                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /></svg> Reason-Wise
-                                </button>
-                              </div>
-                              <div style={{ fontSize: 10, fontWeight: 600, color: '#334155', display: 'flex', alignItems: 'center', gap: 10, marginLeft: 'auto' }}>
-                                <span>Reason : <span style={{ color: '#ef4444' }}>* Rejection Qty as per Prod Entry and Inprocess QC</span> <a href="#" style={{ color: '#007bff', marginLeft: 4 }}>View More</a></span>
-                                <a href="#" style={{ color: '#007bff', borderLeft: '1px solid #cbd5e1', paddingLeft: 10, fontWeight: 700 }}>Rejection Pareto Chart</a>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="dn-table-scroll-container">
-                            <table className="dn-erp-table high-density">
-                              <thead>
-                                <tr style={{ background: '#007bff', color: '#fff' }}>
-                                  <th style={{ width: 30, background: '#007bff', color: '#fff', textAlign: 'center' }}>Sr.</th>
-                                  <th style={{ background: '#007bff', color: '#fff' }}>Item No</th>
-                                  <th style={{ background: '#007bff', color: '#fff' }}>Item Code</th>
-                                  <th style={{ background: '#007bff', color: '#fff' }}>Part No</th>
-                                  <th style={{ background: '#007bff', color: '#fff' }}>Item Desc</th>
-                                  <th style={{ background: '#007bff', color: '#fff', textAlign: 'center' }}>OP.No</th>
-                                  <th style={{ background: '#007bff', color: '#fff', textAlign: 'right' }}>Prod. Qty</th>
-                                  <th style={{ background: '#007bff', color: '#fff', textAlign: 'right' }}>Rej. Qty</th>
-                                  <th style={{ background: '#007bff', color: '#fff', textAlign: 'right' }}>%</th>
-                                  <th style={{ background: '#007bff', color: '#fff', textAlign: 'right' }}>PPM (10000 %)</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {qcItemWiseRejectData.map(item => (
-                                  <tr key={item.sr}>
-                                    <td style={{ textAlign: 'center' }}>{item.sr}</td>
-                                    <td>{item.itemNo}</td>
-                                    <td>{item.itemCode}</td>
-                                    <td>{item.partNo}</td>
-                                    <td style={{ fontSize: 9 }}>{item.desc}</td>
-                                    <td style={{ textAlign: 'center' }}>{item.opNo}</td>
-                                    <td style={{ textAlign: 'right' }}>{item.prodQty}</td>
-                                    <td style={{ textAlign: 'right' }}>{item.rejQty}</td>
-                                    <td style={{ textAlign: 'right' }}>{item.per}</td>
-                                    <td style={{ textAlign: 'right' }}>{item.ppm}</td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-
-                          <div style={{ background: '#fff', padding: '15px 0' }}>
-                            <ResponsiveContainer width="100%" height={260}>
-                              <PieChart>
-                                <Pie
-                                  data={qcRejectPieData}
-                                  cx="50%"
-                                  cy="50%"
-                                  innerRadius={0}
-                                  outerRadius={65}
-                                  paddingAngle={0}
-                                  dataKey="value"
-                                  labelLine={false}
-                                  label={(props) => <CustomPieLabel {...props} data={qcRejectPieData} />}
-                                >
-                                  {qcRejectPieData.map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={entry.color} />
-                                  ))}
-                                </Pie>
-                              </PieChart>
-                            </ResponsiveContainer>
-
-                            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 15, padding: '10px 0', borderTop: '1px solid #e2e8f0', background: '#f8fafc' }}>
-                              <div style={{ fontSize: 10, fontWeight: 700 }}>View Top : <input type="text" className="dn-mini-input" defaultValue="100" style={{ width: 40, height: 20 }} /></div>
-                              <div style={{ display: 'flex', gap: 10, fontSize: 10, fontWeight: 700 }}>
-                                <label style={{ display: 'flex', alignItems: 'center', gap: 3, margin: 0 }}><input type="radio" name="qcChartW" defaultChecked style={{ margin: 0 }} /> Qty Wise</label>
-                                <label style={{ display: 'flex', alignItems: 'center', gap: 3, margin: 0 }}><input type="radio" name="qcChartW" style={{ margin: 0 }} /> % Wise</label>
-                              </div>
-                              <div className="dn-status-badge-green" style={{ padding: '3px 12px', fontSize: 10, fontWeight: 700, borderRadius: 12 }}>Total Qty : 723</div>
-                            </div>
-                          </div>
-
-                          <div className="dn-table-scroll-container">
-                            <table className="dn-erp-table high-density">
-                              <thead>
-                                <tr style={{ background: '#007bff', color: '#fff' }}>
-                                  <th style={{ width: 30, background: '#007bff', color: '#fff', textAlign: 'center' }}>Sr.</th>
-                                  <th style={{ background: '#007bff', color: '#fff' }}>Reject Reason</th>
-                                  <th style={{ background: '#007bff', color: '#fff', textAlign: 'right' }}>Prod Qty</th>
-                                  <th style={{ background: '#007bff', color: '#fff', textAlign: 'right' }}>Rej Qty</th>
-                                  <th style={{ background: '#007bff', color: '#fff', textAlign: 'right' }}>%</th>
-                                  <th style={{ background: '#007bff', color: '#fff', textAlign: 'right' }}>PPM (* 10000)</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {qcReasonWiseRejectData.map(item => (
-                                  <tr key={item.sr}>
-                                    <td style={{ textAlign: 'center' }}>{item.sr}</td>
-                                    <td style={{ fontWeight: 600 }}>{item.reason}</td>
-                                    <td style={{ textAlign: 'right' }}>{item.prodQty}</td>
-                                    <td style={{ textAlign: 'right' }}>{item.rejQty}</td>
-                                    <td style={{ textAlign: 'right' }}>{item.per}</td>
-                                    <td style={{ textAlign: 'right' }}>{item.ppm}</td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-                        </div>
-                      )}
-
-                      {isOpen && label === "Itemwise Rework" && (
-                        <div className="dn-card-body dn-ppc-body">
-                          <div className="dn-inner-filter-bar complex" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 16px', background: '#f1f5f9' }}>
-                            <div className="dn-f-left" style={{ gap: 15, flexWrap: 'nowrap', alignItems: 'center' }}>
-                              <div className="dn-f-item sm">Plant : <select className="dn-mini-select" style={{ width: 80 }}><option>SHARP</option></select></div>
-                              <div className="dn-f-item sm">From Date : <input type="text" className="dn-mini-input" defaultValue="09/04/2026" style={{ width: 80 }} /></div>
-                              <div className="dn-f-item sm">To Date : <input type="text" className="dn-mini-input" defaultValue="11/04/2026" style={{ width: 80 }} /></div>
-                              <div className="dn-f-item sm"><label style={{ display: 'inline-flex', alignItems: 'center', gap: 4, margin: 0, fontWeight: 700 }}><input type="radio" name="itRWType" defaultChecked style={{ margin: 0 }} /> Production</label></div>
-                              <button className="dn-btn-search" style={{ height: 24, padding: '0 12px' }}>Search</button>
-                              <div style={{ display: 'flex', gap: 6 }}>
-                                <button className="dn-icon-btn small excel" style={{ gap: 4, padding: '4px 8px', borderRadius: 4, border: '1px solid #cbd5e1', backgroundColor: '#fff', fontSize: 10, fontWeight: 700, width: 'auto' }}>
-                                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /></svg> Item-Wise
-                                </button>
-                                <button className="dn-icon-btn small excel" style={{ gap: 4, padding: '4px 8px', borderRadius: 4, border: '1px solid #cbd5e1', backgroundColor: '#fff', fontSize: 10, fontWeight: 700, width: 'auto' }}>
-                                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /></svg> Reason-Wise
-                                </button>
-                              </div>
-                              <div style={{ fontSize: 10, fontWeight: 600, color: '#334155', marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 10 }}>
-                                <span style={{ color: '#007bff' }}>* Rework Qty as per Prod Entry and Inprocess QC</span>
-                                <a href="#" style={{ color: '#007bff', borderLeft: '1px solid #cbd5e1', paddingLeft: 10, fontWeight: 700 }}>Rework Pareto Chart</a>
-                              </div>
-                            </div>
-                          </div>
-
-                          <div className="dn-table-scroll-container">
-                            <table className="dn-erp-table high-density">
-                              <thead>
-                                <tr style={{ background: '#007bff', color: '#fff' }}>
-                                  <th style={{ width: 30, background: '#007bff', color: '#fff', textAlign: 'center' }}>Sr.</th>
-                                  <th style={{ background: '#007bff', color: '#fff' }}>Item No</th>
-                                  <th style={{ background: '#007bff', color: '#fff' }}>Part No</th>
-                                  <th style={{ background: '#007bff', color: '#fff' }}>Item Desc</th>
-                                  <th style={{ background: '#007bff', color: '#fff', textAlign: 'center' }}>OP.No</th>
-                                  <th style={{ background: '#007bff', color: '#fff', textAlign: 'right' }}>Prod. Qty</th>
-                                  <th style={{ background: '#007bff', color: '#fff', textAlign: 'right' }}>Rew. Qty</th>
-                                  <th style={{ background: '#007bff', color: '#fff', textAlign: 'right' }}>%</th>
-                                  <th style={{ background: '#007bff', color: '#fff', textAlign: 'right' }}>PPM (% * 10000)</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                <tr><td colSpan="9" style={{ textAlign: 'center', color: '#94a3b8', padding: 20 }}>No Data Found !!</td></tr>
-                              </tbody>
-                            </table>
-                          </div>
-
-                          <div style={{ background: '#fff', padding: '15px 0' }}>
-                            <ResponsiveContainer width="100%" height={260}>
-                              <PieChart>
-                                <Pie
-                                  data={qcReworkPieData}
-                                  cx="50%"
-                                  cy="50%"
-                                  innerRadius={0}
-                                  outerRadius={65}
-                                  paddingAngle={0}
-                                  dataKey="value"
-                                  labelLine={false}
-                                  label={(props) => <CustomPieLabel {...props} data={qcReworkPieData} />}
-                                >
-                                  {qcReworkPieData.map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={entry.color} />
-                                  ))}
-                                </Pie>
-                              </PieChart>
-                            </ResponsiveContainer>
-
-                            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 15, padding: '10px 0', borderTop: '1px solid #e2e8f0', background: '#f8fafc' }}>
-                              <div style={{ display: 'flex', gap: 10, fontSize: 10, fontWeight: 700 }}>
-                                <label style={{ display: 'flex', alignItems: 'center', gap: 3, margin: 0 }}><input type="radio" name="qcRWChartW" defaultChecked style={{ margin: 0 }} /> Qty Wise</label>
-                                <label style={{ display: 'flex', alignItems: 'center', gap: 3, margin: 0 }}><input type="radio" name="qcRWChartW" style={{ margin: 0 }} /> % Wise</label>
-                              </div>
-                              <div className="dn-status-badge-green" style={{ padding: '3px 12px', fontSize: 10, fontWeight: 700, borderRadius: 12 }}>Total Qty : 981</div>
-                            </div>
-                          </div>
-
-                          <div className="dn-table-scroll-container">
-                            <table className="dn-erp-table high-density">
-                              <thead>
-                                <tr style={{ background: '#007bff', color: '#fff' }}>
-                                  <th style={{ width: 30, background: '#007bff', color: '#fff', textAlign: 'center' }}>Sr.</th>
-                                  <th style={{ background: '#007bff', color: '#fff' }}>Rework Reason</th>
-                                  <th style={{ background: '#007bff', color: '#fff', textAlign: 'right' }}>Prod Qty</th>
-                                  <th style={{ background: '#007bff', color: '#fff', textAlign: 'right' }}>Rew Qty</th>
-                                  <th style={{ background: '#007bff', color: '#fff', textAlign: 'right' }}>%</th>
-                                  <th style={{ background: '#007bff', color: '#fff', textAlign: 'right' }}>PPM (% * 10000)</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {qcReasonWiseReworkData.map(item => (
-                                  <tr key={item.sr}>
-                                    <td style={{ textAlign: 'center' }}>{item.sr}</td>
-                                    <td style={{ fontWeight: 600 }}>{item.reason}</td>
-                                    <td style={{ textAlign: 'right' }}>{item.prodQty}</td>
-                                    <td style={{ textAlign: 'right' }}>{item.rewQty}</td>
-                                    <td style={{ textAlign: 'right' }}>{item.per}</td>
-                                    <td style={{ textAlign: 'right' }}>{item.ppm}</td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-                        </div>
-                      )}
-
-                      {isOpen && label === "Scrap Value Report" && (
-                        <div className="dn-card-body dn-ppc-body erp-style-content" style={{ padding: 0 }}>
-                          <div className="dn-inner-filter-bar erp-filters" style={{ padding: '8px 16px', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'flex-start', borderBottom: '1px solid #e2e8f0', gap: 20 }}>
-                            <div style={{ fontSize: 13, fontWeight: 500, color: '#334155' }}>Plant :
-                              <select className="dn-mini-select" style={{ border: 'none', borderBottom: '2px solid #000', borderRadius: 0, paddingLeft: 0, minWidth: 60, fontWeight: 700, marginLeft: 5 }}>
-                                <option>SHARP</option>
-                              </select>
-                            </div>
-                            <div style={{ fontSize: 13, fontWeight: 500, color: '#334155' }}>Month :
-                              <select className="dn-mini-select" style={{ border: '1px solid #000', borderRadius: 4, height: 26, minWidth: 100, fontWeight: 700, marginLeft: 5 }}>
-                                <option>Apr-2026</option>
-                              </select>
-                            </div>
-                            <div style={{ marginLeft: 'auto' }}>
-                              <a href="#" style={{ fontSize: 12, color: '#007bff', fontWeight: 600 }}>View More...</a>
-                            </div>
-                          </div>
-
-                          <div className="dn-table-scroll-container erp-report-area" style={{ height: 350, background: '#fff', display: 'flex', alignItems: 'flex-end' }}>
-                            {/* Empty area as per screenshot, using height to match visual space */}
-                            <div style={{ width: '100%', height: 20, background: '#f8fafc', borderTop: '1px solid #e2e8f0', position: 'relative' }}>
-                              <div style={{ position: 'absolute', left: 0, top: -1, width: 20, height: '100%', background: '#fff', borderRight: '1px solid #e2e8f0' }}></div>
-                            </div>
-                          </div>
-
-                          <div style={{ padding: '6px 16px', borderTop: '1px solid #e2e8f0', background: '#fff' }}>
-                            <p style={{ margin: 0, fontSize: 11, fontWeight: 700, color: '#007bff', display: 'flex', alignItems: 'center', gap: 5 }}>
-                              <span style={{ color: '#000' }}>&laquo;</span>
-                              Values &rarr; Production &rarr; Scrap/Rejection &rarr; FG Scrap Rejection Entry : Note Type = 'Scrap', Rate=Sales Order
-                              <span style={{ color: '#000', marginLeft: 'auto' }}>&raquo;</span>
-                            </p>
-                          </div>
-                        </div>
-                      )}
-
-                      {isOpen && label === "Sales Return (Customer)" && (
-                        <div className="dn-card-body dn-ppc-body">
-                          <div style={{ padding: '15px', background: '#fff' }}>
-                            <ResponsiveContainer width="100%" height={280}>
-                              <LineChart data={qcSalesReturnData} margin={{ top: 10, right: 30, left: 20, bottom: 45 }}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="#c0c0c0" />
-                                <XAxis dataKey="month" tick={{ fontSize: 9, angle: -45, textAnchor: 'end' }} label={{ value: '- M o n t h -', position: 'insideBottom', offset: -35, style: { fontSize: 11, fontWeight: 600 } }} />
-                                <YAxis tick={{ fontSize: 10 }} label={{ value: 'ItemQty', angle: -90, position: 'insideLeft', offset: -5, style: { fontSize: 11, fontWeight: 600 } }} domain={[0, 1000]} />
-                                <Tooltip contentStyle={{ fontSize: 11, borderRadius: 6 }} />
-                                <Line type="monotone" dataKey="qty" stroke="#ef4444" strokeWidth={2} dot={{ r: 3, fill: '#ef4444' }} name="Item Qty" />
-                              </LineChart>
-                            </ResponsiveContainer>
-                          </div>
-
-                          <div className="dn-inner-filter-bar complex" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: '#f1f5f9', padding: '6px 16px', flexWrap: 'wrap' }}>
-                            <div className="dn-f-left" style={{ gap: 8, flexWrap: 'wrap' }}>
-                              <div className="dn-f-item sm">Year : <select className="dn-mini-select"><option>2026-2027</option></select></div>
-                              <div className="dn-f-item sm">plant : <select className="dn-mini-select"><option>SHARP</option></select></div>
-                              <span style={{ fontSize: 10, fontWeight: 600, color: '#334155' }}>Search Option :</span>
-                              <label style={{ fontSize: 10, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 3 }}><input type="radio" name="qcSearchOption" style={{ margin: 0 }} /> Customer Count</label>
-                              <label style={{ fontSize: 10, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 3 }}><input type="radio" name="qcSearchOption" style={{ margin: 0 }} /> Item Count</label>
-                              <label style={{ fontSize: 10, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 3 }}><input type="radio" name="qcSearchOption" defaultChecked style={{ margin: 0 }} /> Item Qty</label>
-                              <label style={{ fontSize: 10, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 3 }}><input type="radio" name="qcSearchOption" style={{ margin: 0 }} /> Item Value</label>
-                            </div>
-                            <div className="dn-f-right">
-                              <button className="dn-icon-btn small excel" style={{ gap: 4, padding: '4px 10px', borderRadius: 4, border: '1px solid #cbd5e1', backgroundColor: '#fff', fontSize: 11, fontWeight: 600, width: 'auto' }}>
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /></svg> Export To Excel
-                              </button>
-                            </div>
-                          </div>
-
-                          <div style={{ padding: '4px 16px 0', fontSize: 10, fontWeight: 700, color: '#ef4444' }}>** Values GST Sales Return</div>
-
-                          <div className="dn-table-scroll-container">
-                            <table className="dn-erp-table high-density">
-                              <thead>
-                                <tr style={{ background: '#007bff', color: '#fff' }}>
-                                  <th style={{ width: 40, background: '#007bff', color: '#fff', textAlign: 'center' }}>Sr.</th>
-                                  <th style={{ background: '#007bff', color: '#fff' }}>Month</th>
-                                  <th style={{ background: '#007bff', color: '#fff', textAlign: 'right' }}>CustCount</th>
-                                  <th style={{ background: '#007bff', color: '#fff', textAlign: 'right' }}>ItemCount</th>
-                                  <th style={{ background: '#007bff', color: '#fff', textAlign: 'right' }}>ItemQty</th>
-                                  <th style={{ background: '#007bff', color: '#fff', textAlign: 'right' }}>ItemValue</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {qcSalesReturnTableData.map(item => (
-                                  <tr key={item.sr}>
-                                    <td style={{ textAlign: 'center' }}>{item.sr}</td>
-                                    <td>{item.month}</td>
-                                    <td style={{ textAlign: 'right' }}>{item.custCount}</td>
-                                    <td style={{ textAlign: 'right' }}>{item.itemCount}</td>
-                                    <td style={{ textAlign: 'right' }}>{item.itemQty}</td>
-                                    <td style={{ textAlign: 'right' }}>{item.itemValue}</td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-                        </div>
-                      )}
-
-                      {isOpen && label === "Customer Complaint CAPA" && (
-                        <div className="dn-card-body dn-ppc-body">
-                          <div className="dn-inner-filter-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 16px', background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
-                            <div className="dn-f-left">
-                              <div className="dn-f-item sm">Year :
-                                <select className="dn-mini-select" style={{ marginLeft: 5 }}>
-                                  <option>2026-2027</option>
-                                </select>
-                              </div>
-                              <button className="dn-btn-search" style={{ height: 28, padding: '0 12px', display: 'flex', alignItems: 'center', gap: 5, backgroundColor: '#f1f5f9', border: '1px solid #cbd5e1', borderRadius: 4, cursor: 'pointer', fontWeight: 700, fontSize: 11 }}>
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
-                                Search
-                              </button>
-                            </div>
-                            <div className="dn-f-right">
-                              <button
-                                className="dn-icon-btn small excel"
-                                style={{ width: 32, height: 32, border: '1px solid #cbd5e1', backgroundColor: '#fff', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                              >
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                                  <polyline points="14 2 14 8 20 8" />
-                                  <line x1="16" y1="13" x2="8" y2="13" />
-                                  <line x1="16" y1="17" x2="8" y2="17" />
-                                </svg>
-                              </button>
-                            </div>
-                          </div>
-
-                          <div className="dn-chart-content" style={{ padding: '20px 0' }}>
-                            <ResponsiveContainer width="100%" height={320}>
-                              <BarChart data={qcComplaintCapaData} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#cbd5e1" />
-                                <XAxis
-                                  dataKey="month"
-                                  axisLine={false}
-                                  tickLine={false}
-                                  tick={{ fontSize: 10, fontWeight: 700, fill: '#334155' }}
-                                  angle={-45}
-                                  textAnchor="end"
-                                  interval={0}
-                                />
-                                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#64748b' }} />
-                                <Tooltip cursor={{ fill: '#f1f5f9' }} />
-                                <Bar dataKey="total" fill="#3b82f6" radius={[2, 2, 0, 0]} barSize={40} />
-                                <Bar dataKey="completed" fill="#f59e0b" radius={[2, 2, 0, 0]} barSize={40} />
-                              </BarChart>
-                            </ResponsiveContainer>
-
-                            <div className="dn-chart-custom-legend" style={{ display: 'flex', justifyContent: 'center', gap: 10, marginTop: -30, marginBottom: 20 }}>
-                              <div style={{ backgroundColor: '#3b82f6', color: '#fff', padding: '4px 12px', borderRadius: 4, fontSize: 11, fontWeight: 700 }}>Total complaint</div>
-                              <div style={{ backgroundColor: '#f59e0b', color: '#fff', padding: '4px 12px', borderRadius: 4, fontSize: 11, fontWeight: 700 }}>Completed complaint</div>
-                            </div>
-                          </div>
-
-                          <div className="dn-table-scroll-container">
-                            <table className="dn-erp-table high-density">
-                              <thead>
-                                <tr className="erp-th-gradient">
-                                  <th style={{ width: 40, textAlign: 'center' }}>Sr.</th>
-                                  <th>Type</th>
-                                  <th style={{ textAlign: 'right' }}>APR-2026</th>
-                                  <th style={{ textAlign: 'right' }}>MAY-2026</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {qcComplaintTableData.map((row) => (
-                                  <tr key={row.sr}>
-                                    <td style={{ textAlign: 'center' }}>{row.sr}</td>
-                                    <td>{row.type}</td>
-                                    <td style={{ textAlign: 'right' }}>{row.apr}</td>
-                                    <td style={{ textAlign: 'right' }}>{row.may}</td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
+          {activeDept === "quality" && <QualityView />}
         </main>
       </div>
       {/* --- Add Favorite Item Modal --- */}

@@ -1,0 +1,1010 @@
+import React, { useState } from 'react';
+import { Box, Typography, Button, MenuItem, Select, FormControl, Grid, Radio, FormControlLabel } from '@mui/material';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import TableChartIcon from '@mui/icons-material/TableChart';
+import {
+  ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip,
+  ResponsiveContainer, Legend, RadialBarChart, RadialBar, LineChart
+} from 'recharts';
+import SearchIcon from '@mui/icons-material/Search';
+import GridOnIcon from '@mui/icons-material/GridOn';
+
+const rejectionTrendData = [
+  { date: 1, percentage: 0.57, ppm: 4200 },
+  { date: 2, percentage: 0.44, ppm: 6500 },
+  { date: 3, percentage: 0.65, ppm: 4400 },
+  { date: 4, percentage: 0.42, ppm: 3900 },
+  { date: 5, percentage: 0.17, ppm: 2900 },
+  { date: 6, percentage: 0.16, ppm: 5500 },
+  { date: 7, percentage: 0.36, ppm: 3700 },
+  { date: 8, percentage: 0.21, ppm: 6200 },
+  { date: 9, percentage: 0.15, ppm: 6300 },
+  { date: 10, percentage: 0.45, ppm: 5100 },
+  { date: 11, percentage: 0.41, ppm: 4600 },
+  { date: 12, percentage: 0.08, ppm: 1200 },
+  { date: 13, percentage: 0.20, ppm: 4800 },
+  { date: 14, percentage: 0.11, ppm: 5100 },
+  { date: 15, percentage: 0.60, ppm: 3000 },
+  { date: 16, percentage: 0.54, ppm: 4100 },
+  { date: 17, percentage: 0.17, ppm: 2400 },
+  { date: 18, percentage: 0.59, ppm: 4500 },
+  { date: 19, percentage: 0.47, ppm: 6000 },
+  { date: 20, percentage: 0.19, ppm: 1500 },
+  { date: 21, percentage: 0.45, ppm: 1800 },
+  { date: 22, percentage: 0.69, ppm: 3500 },
+  { date: 23, percentage: 0.62, ppm: 1400 },
+  { date: 24, percentage: 0.47, ppm: 5500 },
+  { date: 25, percentage: 0.23, ppm: 2300 },
+  { date: 26, percentage: 0.31, ppm: 5600 },
+  { date: 27, percentage: 0.57, ppm: 2400 },
+  { date: 28, percentage: 0.06, ppm: 4000 },
+  { date: 29, percentage: 0.51, ppm: 1600 },
+  { date: 30, percentage: 0.56, ppm: 3700 },
+  { date: 31, percentage: 0.70, ppm: 3600 },
+];
+
+const CustomPieLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, index, name, qty, data, payload }) => {
+  const RADIAN = Math.PI / 180;
+  const sin = Math.sin(-RADIAN * midAngle);
+  const cos = Math.cos(-RADIAN * midAngle);
+  const sx = cx + (outerRadius + 10) * cos;
+  const sy = cy + (outerRadius + 10) * sin;
+  const mx = cx + (outerRadius + 30) * cos;
+  const my = cy + (outerRadius + 30) * sin;
+  const ex = mx + (cos >= 0 ? 1 : -1) * 22;
+  const ey = my;
+  const textAnchor = cos >= 0 ? 'start' : 'end';
+
+  const strokeColor = (data && data[index] && data[index].color) || (payload && (payload.color || payload.fill)) || "#8884d8";
+  const displayQty = qty !== undefined ? qty : (payload && payload.qty !== undefined ? payload.qty : payload?.value || 0);
+
+  return (
+    <g>
+      <path d={`M${sx},${sy}L${mx},${my}L${ex},${ey}`} stroke={strokeColor} fill="none" />
+      <circle cx={ex} cy={ey} r={2} fill={strokeColor} stroke="none" />
+      <text x={ex + (cos >= 0 ? 1 : -1) * 12} y={ey} textAnchor={textAnchor} fill="#333" style={{ fontSize: '10px', fontWeight: 700 }}>
+        {`${(percent * 100).toFixed(2)}% (Qty : ${displayQty}) - ${name}`}
+      </text>
+    </g>
+  );
+};
+
+const Quality = () => {
+  const [fy, setFy] = useState('2026-2027');
+  const [plant, setPlant] = useState('Sharp');
+  const [month, setMonth] = useState('April 2026');
+
+  return (
+    <Box className="p-8 max-w-[1600px] mx-auto bg-[#f8fafc] min-h-screen">
+      {/* Top Header Section (OEE Style) */}
+      <Box className="bg-white rounded-[20px] border border-[#eef2f6] p-7 shadow-md flex items-center justify-between mb-8 transition-all hover:shadow-lg hover:-translate-y-0.5 duration-300">
+        <Box>
+          <Typography className="text-[26px] font-black text-[#1e293b] leading-tight mb-1" sx={{ fontWeight: 900 }}>
+            Quality Control & Assurance
+          </Typography>
+          <Typography className="text-[14px] text-[#2563eb] font-bold">
+            Enterprise module for tracking inspections, rejection rates, and supplier quality ratings.
+          </Typography>
+        </Box>
+
+        <Box className="flex items-center gap-4">
+          <FormControl size="small" className="min-w-[150px]">
+            <Select
+              value={fy}
+              onChange={(e) => setFy(e.target.value)}
+              className="bg-[#f8fafc] rounded-[10px]"
+              sx={{
+                '& .MuiOutlinedInput-notchedOutline': { borderColor: '#e2e8f0' },
+                fontSize: '13px',
+                height: '38px',
+                fontWeight: 900,
+                color: '#475569'
+              }}
+            >
+              <MenuItem value="2026-2027">FY 2026-2027</MenuItem>
+            </Select>
+          </FormControl>
+
+          <Button
+            variant="contained"
+            startIcon={<FileDownloadIcon sx={{ fontSize: 18 }} />}
+            className="bg-[#2563eb] hover:bg-[#1d4ed8] text-white px-6 h-[42px] rounded-[12px] font-black shadow-lg shadow-blue-500/20 normal-case text-[14px] transition-all hover:-translate-y-0.5 active:translate-y-0"
+          >
+            Export Sheet
+          </Button>
+        </Box>
+      </Box>
+
+      {/* TREND OF REJECTION SECTION */}
+      <Box className="bg-white rounded-[20px] border border-[#eef2f6] p-7 shadow-md mb-8">
+        <Box className="mb-8">
+          {/* Row 1: Title */}
+          <Box className="flex items-center gap-3 mb-6">
+            <div className="w-[4px] h-6 bg-[#2563eb] rounded-full" />
+            <Typography className="text-[#1e293b] text-[18px] tracking-tight uppercase" sx={{ fontWeight: 900 }}>
+              TREND OF REJECTION % AT OPERATION LEVEL
+            </Typography>
+          </Box>
+
+          {/* Row 2: Filters & Links */}
+          <Box className="flex items-center justify-between bg-[#f8fafc] p-4 rounded-xl border border-[#eef2f6]">
+            <Box className="flex items-center gap-6">
+              <Box className="flex items-center gap-2">
+                <Typography className="text-[13px] font-black text-[#64748b]">Plant:</Typography>
+                <Select value={plant} onChange={(e) => setPlant(e.target.value)} size="small" sx={{ height: '38px', fontSize: '13px', fontWeight: 900, borderRadius: '10px', minWidth: '100px', bgcolor: 'white', '& .MuiOutlinedInput-notchedOutline': { borderColor: '#e2e8f0' } }}>
+                  <MenuItem value="Sharp">Sharp</MenuItem>
+                </Select>
+              </Box>
+
+              <Box className="flex items-center gap-2">
+                <Typography className="text-[13px] font-black text-[#64748b]">Month:</Typography>
+                <Select value={month} onChange={(e) => setMonth(e.target.value)} size="small" sx={{ height: '38px', fontSize: '13px', fontWeight: 900, borderRadius: '10px', minWidth: '150px', bgcolor: 'white', '& .MuiOutlinedInput-notchedOutline': { borderColor: '#e2e8f0' } }}>
+                  <MenuItem value="April 2026">April 2026</MenuItem>
+                </Select>
+              </Box>
+
+              <Box className="w-[38px] h-[38px] bg-[#00a36c] flex items-center justify-center rounded-[10px] cursor-pointer hover:bg-[#008f5d] transition-all shadow-sm">
+                <TableChartIcon sx={{ fontSize: 18, color: 'white' }} />
+              </Box>
+
+              <FormControlLabel
+                control={<Radio checked={true} size="small" sx={{ color: '#2563eb', '&.Mui-checked': { color: '#2563eb' } }} />}
+                label={<Typography className="text-[13px] font-black text-[#1e293b]">Production</Typography>}
+              />
+            </Box>
+
+            <Box className="flex items-center gap-4">
+              <Typography className="text-[#2563eb] text-[12px] font-black cursor-pointer hover:underline uppercase tracking-tight">Itemwise Rejection View</Typography>
+              <Typography className="text-[#e2e8f0] text-[14px]">|</Typography>
+              <Typography className="text-[#2563eb] text-[12px] font-black cursor-pointer hover:underline uppercase tracking-tight">Operatorwise Rejection View</Typography>
+              <Typography className="text-[#e2e8f0] text-[14px]">|</Typography>
+              <Typography className="text-[#64748b] text-[12px] font-black cursor-pointer hover:underline uppercase tracking-tight">More..</Typography>
+            </Box>
+          </Box>
+        </Box>
+
+        <Box className="h-[450px] w-full pt-4">
+          <ResponsiveContainer width="100%" height="100%">
+            <ComposedChart data={rejectionTrendData} margin={{ top: 10, right: 30, left: 10, bottom: 20 }}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+              <XAxis
+                dataKey="date"
+                axisLine={false}
+                tickLine={false}
+                tick={{ fill: '#64748b', fontSize: 11, fontWeight: 900 }}
+                label={{ value: 'Date', position: 'bottom', offset: 0, style: { fontSize: '11px', fontWeight: 900, fill: '#64748b' } }}
+              />
+              <YAxis
+                yAxisId="left"
+                axisLine={false}
+                tickLine={false}
+                tick={{ fill: '#1e293b', fontSize: 11, fontWeight: 900 }}
+                domain={[0, 0.8]}
+                ticks={[0, 0.2, 0.4, 0.6, 0.8]}
+                label={{ value: 'Percentage', angle: -90, position: 'insideLeft', offset: 0, style: { fontSize: '11px', fontWeight: 900, fill: '#64748b' } }}
+              />
+              <YAxis
+                yAxisId="right"
+                orientation="right"
+                axisLine={false}
+                tickLine={false}
+                tick={{ fill: '#1e293b', fontSize: 11, fontWeight: 900 }}
+                domain={[0, 8000]}
+                ticks={[0, 2000, 4000, 6000, 8000]}
+                label={{ value: 'PPM', angle: 90, position: 'insideRight', offset: 0, style: { fontSize: '11px', fontWeight: 900, fill: '#64748b' } }}
+              />
+              <Tooltip
+                contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+              />
+              <Bar
+                yAxisId="left"
+                dataKey="percentage"
+                fill="#6366f1"
+                barSize={20}
+                radius={[4, 4, 0, 0]}
+              />
+              <Line
+                yAxisId="right"
+                type="monotone"
+                dataKey="ppm"
+                stroke="#f59e0b"
+                strokeWidth={3}
+                dot={{ r: 4, fill: '#fff', stroke: '#f59e0b', strokeWidth: 2 }}
+                activeDot={{ r: 6, strokeWidth: 0 }}
+              />
+            </ComposedChart>
+          </ResponsiveContainer>
+        </Box>
+      </Box>
+
+      {/* ITEMWISE REJECT SECTION */}
+      <Box className="bg-white rounded-[20px] border border-[#eef2f6] p-7 shadow-md mb-8">
+        <Box className="flex items-center justify-between mb-8">
+          <Box className="flex items-center gap-3">
+            <div className="w-[4px] h-6 bg-[#ef4444] rounded-full" />
+            <Typography className="text-[#1e293b] text-[18px] tracking-tight uppercase" sx={{ fontWeight: 900 }}>
+              ITEMWISE REJECT
+            </Typography>
+          </Box>
+
+          <Box className="flex items-center gap-4">
+            <Typography className="text-[#2563eb] text-[11px] font-black italic">
+              *Rejection QTY as per Prod. entry and inprocess QC
+            </Typography>
+            <Box className="flex items-center gap-4 border-l border-[#e2e8f0] pl-4">
+              <Typography className="text-[#2563eb] text-[11px] font-black cursor-pointer hover:underline">View More...</Typography>
+              <Typography className="text-[#e2e8f0] text-[14px]">|</Typography>
+              <Typography className="text-[#2563eb] text-[11px] font-black cursor-pointer hover:underline">Rejection Pareto Chart</Typography>
+            </Box>
+          </Box>
+        </Box>
+
+        {/* Filter Bar */}
+        <Box className="flex items-center justify-between mb-8 bg-[#f8fafc] p-4 rounded-xl border border-[#eef2f6]">
+          <Box className="flex items-center gap-4">
+            <FormControlLabel
+              control={<Radio checked={true} size="small" sx={{ color: '#2563eb', '&.Mui-checked': { color: '#2563eb' } }} />}
+              label={<Typography className="text-[13px] font-black text-[#1e293b]">Production</Typography>}
+              sx={{ mr: 1 }}
+            />
+            
+            <Box className="flex items-center gap-1.5">
+              <Typography className="text-[12px] font-black text-[#64748b]">Plant:</Typography>
+              <Select value={plant} onChange={(e) => setPlant(e.target.value)} size="small" sx={{ height: '34px', fontSize: '12px', fontWeight: 900, borderRadius: '8px', minWidth: '90px', bgcolor: 'white', '& .MuiOutlinedInput-notchedOutline': { borderColor: '#e2e8f0' } }}>
+                <MenuItem value="Sharp">SHARP</MenuItem>
+              </Select>
+            </Box>
+
+            <Box className="flex items-center bg-white border border-[#e2e8f0] rounded-[8px] px-3 h-[34px] gap-2">
+              <Typography className="text-[11px] font-black text-[#64748b]">From</Typography>
+              <Typography className="text-[12px] font-black text-[#1e293b]">01-04-2026</Typography>
+              <Typography className="text-[11px] font-black text-[#64748b] ml-2">To</Typography>
+              <Typography className="text-[12px] font-black text-[#1e293b]">30-04-2026</Typography>
+            </Box>
+
+            <Box className="flex items-center gap-1.5">
+              <Typography className="text-[12px] font-black text-[#64748b]">Reason:</Typography>
+              <Select value="All" size="small" sx={{ height: '34px', fontSize: '12px', fontWeight: 900, borderRadius: '8px', minWidth: '90px', bgcolor: 'white', '& .MuiOutlinedInput-notchedOutline': { borderColor: '#e2e8f0' } }}>
+                <MenuItem value="All">All</MenuItem>
+              </Select>
+            </Box>
+
+            <Button variant="contained" size="small" sx={{ height: '34px', bgcolor: '#2563eb', borderRadius: '8px', fontWeight: 900, textTransform: 'none', px: 4 }}>
+              Search
+            </Button>
+          </Box>
+
+          <Box className="flex items-center gap-3">
+            <Button variant="contained" startIcon={<TableChartIcon />} sx={{ height: '34px', bgcolor: '#00a36c', borderRadius: '8px', fontWeight: 900, textTransform: 'none', '&:hover': { bgcolor: '#008f5d' } }}>
+              Item-wise
+            </Button>
+            <Button variant="contained" startIcon={<TableChartIcon />} sx={{ height: '34px', bgcolor: '#00a36c', borderRadius: '8px', fontWeight: 900, textTransform: 'none', '&:hover': { bgcolor: '#008f5d' } }}>
+              Reason-wise
+            </Button>
+          </Box>
+        </Box>
+
+        {/* Data Table with Scroll */}
+        <Box className="overflow-hidden rounded-xl border border-[#f1f5f9]">
+          <Box className="max-h-[350px] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-200">
+            <table className="w-full text-left border-collapse">
+              <thead className="sticky top-0 z-10 bg-[#f8fafc]">
+                <tr className="border-b border-[#f1f5f9]">
+                  <th className="px-4 py-4 text-[11px] font-black text-[#64748b] uppercase tracking-wider">SR.</th>
+                  <th className="px-4 py-4 text-[11px] font-black text-[#64748b] uppercase tracking-wider">ITEM NO</th>
+                  <th className="px-4 py-4 text-[11px] font-black text-[#64748b] uppercase tracking-wider">ITEM CODE</th>
+                  <th className="px-4 py-4 text-[11px] font-black text-[#64748b] uppercase tracking-wider">PART NO</th>
+                  <th className="px-4 py-4 text-[11px] font-black text-[#64748b] uppercase tracking-wider">ITEM DESC.</th>
+                  <th className="px-4 py-4 text-[11px] font-black text-[#64748b] uppercase tracking-wider">OP. NO</th>
+                  <th className="px-4 py-4 text-[11px] font-black text-[#64748b] uppercase tracking-wider text-right">PROD. QTY</th>
+                  <th className="px-4 py-4 text-[11px] font-black text-[#64748b] uppercase tracking-wider text-right">%</th>
+                  <th className="px-4 py-4 text-[11px] font-black text-[#64748b] uppercase tracking-wider text-right">PPM (%*1000)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  { sr: 1, itemNo: 'RM-01', code: 'C-100', part: 'PT-991', desc: 'Steel Rod 10mm', op: 'OP-10', qty: '4500', pct: '1.2%', ppm: '12,000' },
+                  { sr: 2, itemNo: 'RM-02', code: 'C-102', part: 'PT-992', desc: 'Aluminum Sheet', op: 'OP-20', qty: '3200', pct: '0.8%', ppm: '8,000' },
+                  { sr: 3, itemNo: 'RM-03', code: 'C-105', part: 'PT-993', desc: 'Copper Wire', op: 'OP-10', qty: '15000', pct: '2.1%', ppm: '21,000' },
+                  { sr: 4, itemNo: 'RM-04', code: 'C-110', part: 'PT-994', desc: 'Rubber Gasket', op: 'OP-30', qty: '5400', pct: '1.5%', ppm: '15,000' },
+                  { sr: 5, itemNo: 'RM-05', code: 'C-112', part: 'PT-995', desc: 'Carbon Fiber Plate', op: 'OP-40', qty: '120', pct: '4.2%', ppm: '42,000' },
+                  { sr: 6, itemNo: 'RM-06', code: 'C-115', part: 'PT-996', desc: 'Hex Bolt M8', op: 'OP-10', qty: '12000', pct: '0.9%', ppm: '9,000' },
+                  { sr: 7, itemNo: 'RM-07', code: 'C-120', part: 'PT-997', desc: 'Flange Adapter', op: 'OP-20', qty: '540', pct: '3.1%', ppm: '31,000' },
+                  { sr: 8, itemNo: 'RM-08', code: 'C-125', part: 'PT-998', desc: 'Shaft Spindle', op: 'OP-50', qty: '2100', pct: '1.5%', ppm: '15,000' },
+                  { sr: 9, itemNo: 'RM-09', code: 'C-130', part: 'PT-999', desc: 'Bearing Housing', op: 'OP-30', qty: '3300', pct: '2.4%', ppm: '24,000' },
+                  { sr: 10, itemNo: 'RM-10', code: 'C-140', part: 'PT-1000', desc: 'Nylon Washer', op: 'OP-10', qty: '8900', pct: '0.5%', ppm: '5,000' },
+                ].map((row, index) => (
+                  <tr key={index} className="border-b border-[#f1f5f9] hover:bg-gray-50 transition-colors">
+                    <td className="px-4 py-4 text-[13px] font-bold text-[#475569]">{row.sr}</td>
+                    <td className="px-4 py-4 text-[14px] font-black text-[#1e293b]">{row.itemNo}</td>
+                    <td className="px-4 py-4 text-[14px] font-black text-[#1e293b]">{row.code}</td>
+                    <td className="px-4 py-4 text-[14px] font-black text-[#1e293b]">{row.part}</td>
+                    <td className="px-4 py-4 text-[13px] font-bold text-[#475569]">{row.desc}</td>
+                    <td className="px-4 py-4 text-[14px] font-black text-[#1e293b]">{row.op}</td>
+                    <td className="px-4 py-4 text-[14px] font-black text-[#1e293b] text-right">{row.qty}</td>
+                    <td className="px-4 py-4 text-[14px] font-black text-[#2563eb] text-right">{row.pct}</td>
+                    <td className="px-4 py-4 text-[14px] font-black text-[#1e293b] text-right">{row.ppm}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </Box>
+        </Box>
+
+        {/* Reason-wise Analysis Sub-section */}
+        <Box className="mt-8 flex gap-8">
+          {/* Left: Radial Chart Analysis */}
+          <Box className="w-[40%] bg-white border border-[#eef2f6] rounded-[20px] p-6 flex flex-col shadow-sm">
+            <Box className="flex-1 flex items-center justify-center relative min-h-[300px]">
+              <ResponsiveContainer width="100%" height={300}>
+                <RadialBarChart 
+                  innerRadius="30%" 
+                  outerRadius="100%" 
+                  barSize={12}
+                  data={[
+                    { name: 'INCORRECT COATING', value: 85, fill: '#10b981' },
+                    { name: 'MATERIAL WARPAGE', value: 75, fill: '#3b82f6' },
+                    { name: 'SURFACE SCRATCH', value: 45, fill: '#f59e0b' },
+                    { name: 'DIMENSIONAL ERROR', value: 35, fill: '#ef4444' },
+                    { name: 'CRACKING', value: 25, fill: '#ec4899' },
+                    { name: 'CASTING VOID', value: 15, fill: '#8b5cf6' },
+                  ]} 
+                  startAngle={90} 
+                  endAngle={450}
+                >
+                  <RadialBar 
+                    background={{ fill: '#f1f5f9' }} 
+                    dataKey="value" 
+                    cornerRadius={10}
+                  />
+                  <Legend 
+                    iconSize={0} 
+                    layout="vertical" 
+                    verticalAlign="middle" 
+                    align="right"
+                    content={({ payload }) => (
+                      <ul style={{ listStyle: 'none', margin: 0, padding: 0, paddingLeft: '40px' }}>
+                        {payload.map((entry, index) => (
+                          <li key={`item-${index}`} style={{ 
+                            fontSize: '9px', 
+                            fontWeight: 900, 
+                            color: entry.color, 
+                            textTransform: 'uppercase',
+                            marginBottom: '4px',
+                            textAlign: 'left'
+                          }}>
+                            {entry.value}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  />
+                </RadialBarChart>
+              </ResponsiveContainer>
+            </Box>
+
+            <Box className="mt-4 pt-4 border-t border-[#f1f5f9]">
+              <Box className="flex items-center justify-between mb-4">
+                <Box className="flex items-center gap-2">
+                  <Typography className="text-[11px] font-black text-[#64748b] uppercase">View Top:</Typography>
+                  <Box className="px-3 py-1 bg-[#f8fafc] border border-[#e2e8f0] rounded-md text-[11px] font-black text-[#1e293b]">5</Box>
+                </Box>
+                <Box className="flex items-center gap-4">
+                  <FormControlLabel
+                    control={<Radio checked={true} size="small" sx={{ p: 0.5 }} />}
+                    label={<Typography className="text-[11px] font-black text-[#1e293b]">QTY Wise</Typography>}
+                    sx={{ m: 0 }}
+                  />
+                  <FormControlLabel
+                    control={<Radio checked={false} size="small" sx={{ p: 0.5 }} />}
+                    label={<Typography className="text-[11px] font-black text-[#64748b]">% Wise</Typography>}
+                    sx={{ m: 0 }}
+                  />
+                </Box>
+              </Box>
+              <Box className="w-full bg-red-50 border border-red-100 py-2.5 rounded-lg flex items-center justify-center">
+                <Typography className="text-red-600 text-[11px] font-black uppercase tracking-wider">
+                  High Rejection Categories Analysis
+                </Typography>
+              </Box>
+            </Box>
+          </Box>
+
+          {/* Right: Detailed Reason Table */}
+          <Box className="w-[60%] bg-white border border-[#eef2f6] rounded-[20px] overflow-hidden shadow-sm">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-[#f8fafc] border-b border-[#f1f5f9]">
+                  <th className="px-4 py-4 text-[10px] font-black text-[#64748b] uppercase tracking-wider">SR.</th>
+                  <th className="px-4 py-4 text-[10px] font-black text-[#64748b] uppercase tracking-wider">REJECT REASON</th>
+                  <th className="px-4 py-4 text-[10px] font-black text-[#64748b] uppercase tracking-wider text-right">PROD. QTY</th>
+                  <th className="px-4 py-4 text-[10px] font-black text-[#64748b] uppercase tracking-wider text-right">REJ. QTY</th>
+                  <th className="px-4 py-4 text-[10px] font-black text-[#64748b] uppercase tracking-wider text-right">%</th>
+                  <th className="px-4 py-4 text-[10px] font-black text-[#64748b] uppercase tracking-wider text-right">PPM (%*1000)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  { sr: 1, reason: 'Dimensional Error', color: '#ef4444', prod: '4500', rej: '54', pct: '1.2%', ppm: '12,000' },
+                  { sr: 2, reason: 'Surface Scratch', color: '#f59e0b', prod: '3200', rej: '25', pct: '0.8%', ppm: '8,000' },
+                  { sr: 3, reason: 'Material Warpage', color: '#3b82f6', prod: '15000', rej: '315', pct: '2.1%', ppm: '21,000' },
+                  { sr: 4, reason: 'Casting Void', color: '#8b5cf6', prod: '850', rej: '4', pct: '0.5%', ppm: '5,000' },
+                  { sr: 5, reason: 'Cracking', color: '#ec4899', prod: '120', rej: '5', pct: '4.2%', ppm: '42,000' },
+                  { sr: 6, reason: 'Incorrect Coating', color: '#10b981', prod: '12000', rej: '108', pct: '0.9%', ppm: '9,000' },
+                ].map((row, index) => (
+                  <tr key={index} className="border-b border-[#f1f5f9] hover:bg-gray-50 transition-colors">
+                    <td className="px-4 py-4 text-[12px] font-bold text-[#475569]">{row.sr}</td>
+                    <td className="px-4 py-4 flex items-center gap-3">
+                      <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: row.color }} />
+                      <Typography className="text-[13px] font-black text-[#1e293b]">{row.reason}</Typography>
+                    </td>
+                    <td className="px-4 py-4 text-[13px] font-bold text-[#475569] text-right">{row.prod}</td>
+                    <td className="px-4 py-4 text-[13px] font-bold text-[#475569] text-right">{row.rej}</td>
+                    <td className="px-4 py-4 text-[13px] font-black text-[#2563eb] text-right">{row.pct}</td>
+                    <td className="px-4 py-4 text-[13px] font-black text-[#1e293b] text-right">{row.ppm}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </Box>
+        </Box>
+      </Box>
+
+      {/* ITEMWISE REWORK SECTION */}
+      <Box className="bg-white rounded-[20px] border border-[#eef2f6] p-7 shadow-md mb-8">
+        <Box className="flex items-center justify-between mb-8">
+          <Box className="flex items-center gap-3">
+            <div className="w-[4px] h-6 bg-[#f59e0b] rounded-full" />
+            <Typography className="text-[#1e293b] text-[18px] tracking-tight uppercase" sx={{ fontWeight: 900 }}>
+              ITEMWISE REWORK
+            </Typography>
+          </Box>
+
+          <Box className="flex items-center gap-4">
+            <Typography className="text-[#2563eb] text-[11px] font-black italic">
+              *Rework QTY as per Prod. entry and inprocess QC
+            </Typography>
+            <Box className="flex items-center gap-4 border-l border-[#e2e8f0] pl-4">
+              <Typography className="text-[#2563eb] text-[11px] font-black cursor-pointer hover:underline">View More...</Typography>
+              <Typography className="text-[#e2e8f0] text-[14px]">|</Typography>
+              <Typography className="text-[#2563eb] text-[11px] font-black cursor-pointer hover:underline">Rework Pareto Chart</Typography>
+            </Box>
+          </Box>
+        </Box>
+
+        {/* Filter Bar */}
+        <Box className="flex items-center justify-between mb-8 bg-[#f8fafc] p-4 rounded-xl border border-[#eef2f6]">
+          <Box className="flex items-center gap-4">
+            <FormControlLabel
+              control={<Radio checked={true} size="small" sx={{ color: '#2563eb', '&.Mui-checked': { color: '#2563eb' } }} />}
+              label={<Typography className="text-[13px] font-black text-[#1e293b]">Production</Typography>}
+              sx={{ mr: 1 }}
+            />
+            
+            <Box className="flex items-center gap-1.5">
+              <Typography className="text-[12px] font-black text-[#64748b]">Plant:</Typography>
+              <Select value={plant} onChange={(e) => setPlant(e.target.value)} size="small" sx={{ height: '34px', fontSize: '12px', fontWeight: 900, borderRadius: '8px', minWidth: '90px', bgcolor: 'white', '& .MuiOutlinedInput-notchedOutline': { borderColor: '#e2e8f0' } }}>
+                <MenuItem value="Sharp">SHARP</MenuItem>
+              </Select>
+            </Box>
+
+            <Box className="flex items-center bg-white border border-[#e2e8f0] rounded-[8px] px-3 h-[34px] gap-2">
+              <Typography className="text-[11px] font-black text-[#64748b]">From</Typography>
+              <Typography className="text-[12px] font-black text-[#1e293b]">01-04-2026</Typography>
+              <Typography className="text-[11px] font-black text-[#64748b] ml-2">To</Typography>
+              <Typography className="text-[12px] font-black text-[#1e293b]">30-04-2026</Typography>
+            </Box>
+
+            <Button variant="contained" size="small" sx={{ height: '34px', bgcolor: '#2563eb', borderRadius: '8px', fontWeight: 900, textTransform: 'none', px: 4 }}>
+              Search
+            </Button>
+          </Box>
+
+          <Box className="flex items-center gap-3">
+            <Button variant="contained" startIcon={<TableChartIcon />} sx={{ height: '34px', bgcolor: '#00a36c', borderRadius: '8px', fontWeight: 900, textTransform: 'none', '&:hover': { bgcolor: '#008f5d' } }}>
+              Item-wise Rework
+            </Button>
+            <Button variant="contained" startIcon={<TableChartIcon />} sx={{ height: '34px', bgcolor: '#00a36c', borderRadius: '8px', fontWeight: 900, textTransform: 'none', '&:hover': { bgcolor: '#008f5d' } }}>
+              Reason-wise Rework
+            </Button>
+          </Box>
+        </Box>
+
+        {/* Data Table */}
+        <Box className="overflow-y-auto max-h-[350px] rounded-xl border border-[#f1f5f9] mb-8 scrollbar-thin scrollbar-thumb-gray-200">
+          <table className="w-full text-left border-collapse">
+            <thead className="sticky top-0 z-10 bg-[#f8fafc]">
+              <tr className="border-b border-[#f1f5f9]">
+                <th className="px-4 py-4 text-[11px] font-black text-[#64748b] uppercase tracking-wider">SR.</th>
+                <th className="px-4 py-4 text-[11px] font-black text-[#64748b] uppercase tracking-wider">ITEM NO</th>
+                <th className="px-4 py-4 text-[11px] font-black text-[#64748b] uppercase tracking-wider">PART NO</th>
+                <th className="px-4 py-4 text-[11px] font-black text-[#64748b] uppercase tracking-wider">ITEM DESC.</th>
+                <th className="px-4 py-4 text-[11px] font-black text-[#64748b] uppercase tracking-wider">OP. NO</th>
+                <th className="px-4 py-4 text-[11px] font-black text-[#64748b] uppercase tracking-wider text-right">PROD. QTY</th>
+                <th className="px-4 py-4 text-[11px] font-black text-[#64748b] uppercase tracking-wider text-right">REW. QTY</th>
+                <th className="px-4 py-4 text-[11px] font-black text-[#64748b] uppercase tracking-wider text-right">%</th>
+                <th className="px-4 py-4 text-[11px] font-black text-[#64748b] uppercase tracking-wider text-right">PPM (%*1000)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                { sr: 1, itemNo: 'RW-01', part: 'PT-771', desc: 'Welded Joint A', op: 'OP-35', prod: '5000', rew: '45', pct: '0.9%', ppm: '9,000' },
+                { sr: 2, itemNo: 'RW-02', part: 'PT-772', desc: 'Casting Frame', op: 'OP-15', prod: '1200', rew: '18', pct: '1.5%', ppm: '15,000' },
+                { sr: 3, itemNo: 'RW-03', part: 'PT-773', desc: 'Hydraulic Pump', op: 'OP-60', prod: '850', rew: '12', pct: '1.4%', ppm: '14,000' },
+                { sr: 4, itemNo: 'RW-04', part: 'PT-774', desc: 'Valve Stem', op: 'OP-20', prod: '12000', rew: '84', pct: '0.7%', ppm: '7,000' },
+                { sr: 5, itemNo: 'RW-05', part: 'PT-775', desc: 'Sealing Ring', op: 'OP-10', prod: '45000', rew: '315', pct: '0.7%', ppm: '7,000' },
+                { sr: 6, itemNo: 'RW-06', part: 'PT-776', desc: 'Bearing Housing', op: 'OP-40', prod: '2400', rew: '28', pct: '1.2%', ppm: '12,000' },
+                { sr: 7, itemNo: 'RW-07', part: 'PT-777', desc: 'Drive Shaft', op: 'OP-25', prod: '1500', rew: '15', pct: '1.0%', ppm: '10,000' },
+                { sr: 8, itemNo: 'RW-08', part: 'PT-778', desc: 'Control Valve', op: 'OP-55', prod: '900', rew: '14', pct: '1.6%', ppm: '16,000' },
+                { sr: 9, itemNo: 'RW-09', part: 'PT-779', desc: 'Connector Hub', op: 'OP-12', prod: '11000', rew: '77', pct: '0.7%', ppm: '7,000' },
+                { sr: 10, itemNo: 'RW-10', part: 'PT-780', desc: 'Seal Plate', op: 'OP-30', prod: '6500', rew: '32', pct: '0.5%', ppm: '5,000' },
+              ].map((row, index) => (
+                <tr key={index} className="border-b border-[#f1f5f9] hover:bg-gray-50 transition-colors">
+                  <td className="px-4 py-4 text-[13px] font-bold text-[#475569]">{row.sr}</td>
+                  <td className="px-4 py-4 text-[14px] font-black text-[#1e293b]">{row.itemNo}</td>
+                  <td className="px-4 py-4 text-[14px] font-black text-[#1e293b]">{row.part}</td>
+                  <td className="px-4 py-4 text-[13px] font-bold text-[#475569]">{row.desc}</td>
+                  <td className="px-4 py-4 text-[14px] font-black text-[#1e293b]">{row.op}</td>
+                  <td className="px-4 py-4 text-[14px] font-black text-[#1e293b] text-right">{row.prod}</td>
+                  <td className="px-4 py-4 text-[14px] font-black text-[#1e293b] text-right">{row.rew}</td>
+                  <td className="px-4 py-4 text-[14px] font-black text-[#2563eb] text-right">{row.pct}</td>
+                  <td className="px-4 py-4 text-[14px] font-black text-[#1e293b] text-right">{row.ppm}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Box>
+
+        {/* Reason-wise Rework Analysis */}
+        <Box className="flex gap-8">
+          {/* Left: Radial Chart Analysis */}
+          <Box className="w-[40%] bg-white border border-[#eef2f6] rounded-[20px] p-6 flex flex-col shadow-sm">
+            <Box className="flex-1 flex items-center justify-center relative min-h-[300px]">
+              <ResponsiveContainer width="100%" height={300}>
+                <RadialBarChart 
+                  innerRadius="30%" 
+                  outerRadius="100%" 
+                  barSize={12}
+                  data={[
+                    { name: 'FLASH REMOVAL', value: 90, fill: '#6366f1' },
+                    { name: 'PAINT TOUCHUP', value: 75, fill: '#8b5cf6' },
+                    { name: 'THREAD TAPPING', value: 60, fill: '#a855f7' },
+                  ].reverse()} 
+                  startAngle={90} 
+                  endAngle={450}
+                >
+                  <RadialBar 
+                    background={{ fill: '#f1f5f9' }} 
+                    dataKey="value" 
+                    cornerRadius={10}
+                  />
+                  <Legend 
+                    iconSize={10} 
+                    layout="vertical" 
+                    verticalAlign="middle" 
+                    align="right"
+                    wrapperStyle={{ fontSize: '9px', fontWeight: 900, textTransform: 'uppercase' }}
+                  />
+                </RadialBarChart>
+              </ResponsiveContainer>
+            </Box>
+
+            <Box className="mt-4 pt-4 border-t border-[#f1f5f9]">
+              <Box className="flex items-center justify-between mb-4">
+                <Box className="flex items-center gap-2">
+                  <Typography className="text-[11px] font-black text-[#64748b] uppercase">View Top:</Typography>
+                  <Box className="px-3 py-1 bg-[#f8fafc] border border-[#e2e8f0] rounded-md text-[11px] font-black text-[#1e293b]">5</Box>
+                </Box>
+                <Box className="flex items-center gap-4">
+                  <FormControlLabel
+                    control={<Radio checked={true} size="small" sx={{ p: 0.5 }} />}
+                    label={<Typography className="text-[11px] font-black text-[#1e293b]">QTY Wise</Typography>}
+                    sx={{ m: 0 }}
+                  />
+                  <FormControlLabel
+                    control={<Radio checked={false} size="small" sx={{ p: 0.5 }} />}
+                    label={<Typography className="text-[11px] font-black text-[#64748b]">% Wise</Typography>}
+                    sx={{ m: 0 }}
+                  />
+                </Box>
+              </Box>
+              <Box className="w-full bg-orange-50 border border-orange-100 py-2.5 rounded-lg flex items-center justify-center">
+                <Typography className="text-orange-600 text-[11px] font-black uppercase tracking-wider">
+                  Critical Rework Categories Monitor
+                </Typography>
+              </Box>
+            </Box>
+          </Box>
+
+          {/* Right: Detailed Reason Table */}
+          <Box className="w-[60%] bg-white border border-[#eef2f6] rounded-[20px] overflow-hidden shadow-sm">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-[#f8fafc] border-b border-[#f1f5f9]">
+                  <th className="px-4 py-4 text-[10px] font-black text-[#64748b] uppercase tracking-wider">SR.</th>
+                  <th className="px-4 py-4 text-[10px] font-black text-[#64748b] uppercase tracking-wider">REWORK REASON</th>
+                  <th className="px-4 py-4 text-[10px] font-black text-[#64748b] uppercase tracking-wider text-right">PROD. QTY</th>
+                  <th className="px-4 py-4 text-[10px] font-black text-[#64748b] uppercase tracking-wider text-right">REW. QTY</th>
+                  <th className="px-4 py-4 text-[10px] font-black text-[#64748b] uppercase tracking-wider text-right">%</th>
+                  <th className="px-4 py-4 text-[10px] font-black text-[#64748b] uppercase tracking-wider text-right">PPM (%*1000)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  { sr: 1, reason: 'Flash Removal', color: '#6366f1', prod: '5000', rew: '45', pct: '0.9%', ppm: '9,000' },
+                  { sr: 2, reason: 'Paint Touchup', color: '#8b5cf6', prod: '1200', rew: '18', pct: '1.5%', ppm: '15,000' },
+                  { sr: 3, reason: 'Thread Tapping', color: '#a855f7', prod: '850', rew: '12', pct: '1.4%', ppm: '14,000' },
+                ].map((row, index) => (
+                  <tr key={index} className="border-b border-[#f1f5f9] hover:bg-gray-50 transition-colors">
+                    <td className="px-4 py-4 text-[12px] font-bold text-[#475569]">{row.sr}</td>
+                    <td className="px-4 py-4 flex items-center gap-3">
+                      <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: row.color }} />
+                      <Typography className="text-[13px] font-black text-[#1e293b]">{row.reason}</Typography>
+                    </td>
+                    <td className="px-4 py-4 text-[13px] font-bold text-[#475569] text-right">{row.prod}</td>
+                    <td className="px-4 py-4 text-[13px] font-bold text-[#475569] text-right">{row.rew}</td>
+                    <td className="px-4 py-4 text-[13px] font-black text-[#2563eb] text-right">{row.pct}</td>
+                    <td className="px-4 py-4 text-[13px] font-black text-[#1e293b] text-right">{row.ppm}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </Box>
+        </Box>
+      </Box>
+
+      {/* SCRAP VALUE REPORT SECTION */}
+      <Box className="bg-white rounded-[20px] border border-[#eef2f6] p-7 shadow-md mb-8">
+        <Box className="flex items-center justify-between mb-8">
+          <Box className="flex items-center gap-3">
+            <div className="w-[4px] h-6 bg-[#2563eb] rounded-full" />
+            <Typography className="text-[#1e293b] text-[18px] tracking-tight uppercase" sx={{ fontWeight: 900 }}>
+              SCRAP VALUE REPORT
+            </Typography>
+          </Box>
+
+          <Box className="flex items-center gap-6">
+            <Box className="flex items-center gap-2">
+              <Typography className="text-[12px] font-black text-[#64748b]">Plant:</Typography>
+              <Select 
+                value="Sharp" 
+                size="small" 
+                sx={{ 
+                  height: '32px', 
+                  fontSize: '11px', 
+                  fontWeight: 900, 
+                  borderRadius: '6px', 
+                  minWidth: '90px', 
+                  bgcolor: '#f8fafc',
+                  '& .MuiOutlinedInput-notchedOutline': { borderColor: '#e2e8f0' } 
+                }}
+              >
+                <MenuItem value="Sharp" sx={{ fontSize: '11px', fontWeight: 900 }}>SHARP</MenuItem>
+              </Select>
+            </Box>
+
+            <Box className="flex items-center gap-2">
+              <Typography className="text-[12px] font-black text-[#64748b]">Month:</Typography>
+              <Select 
+                value="April 2026" 
+                size="small" 
+                sx={{ 
+                  height: '32px', 
+                  fontSize: '11px', 
+                  fontWeight: 900, 
+                  borderRadius: '6px', 
+                  minWidth: '120px', 
+                  bgcolor: '#f8fafc',
+                  '& .MuiOutlinedInput-notchedOutline': { borderColor: '#e2e8f0' } 
+                }}
+              >
+                <MenuItem value="April 2026" sx={{ fontSize: '11px', fontWeight: 900 }}>April 2026</MenuItem>
+              </Select>
+            </Box>
+
+            <Typography className="text-[#2563eb] text-[11px] font-black cursor-pointer hover:underline uppercase tracking-tighter">
+              View More...
+            </Typography>
+          </Box>
+        </Box>
+
+        {/* Placeholder for Table Data */}
+        <Box className="min-h-[250px] flex items-center justify-center border-2 border-dashed border-[#e2e8f0] rounded-[20px] bg-[#f8fafc]">
+          <Typography className="text-[#94a3b8] text-[14px] font-black uppercase tracking-[3px] italic">
+            TABLE DATA AREA - PENDING DEFINITION
+          </Typography>
+        </Box>
+
+        {/* Footer Note */}
+        <Box className="mt-8 pt-4 border-t border-[#f1f5f9]">
+          <Typography className="text-[#1e293b] text-[11px] font-black italic opacity-80">
+            **Value = Production {"->"} Scrap/Rejection {"->"} Fg Scrap Rejection Entry: Note Type='Scrap' Rate=Sales Order
+          </Typography>
+        </Box>
+      </Box>
+
+      {/* SALES RETURN CUSTOMER SECTION */}
+      <Box className="bg-white rounded-[20px] border border-[#eef2f6] p-7 shadow-md mb-8">
+        <Box className="flex items-center justify-between mb-8">
+          <Box className="flex items-center gap-3">
+            <div className="w-[4px] h-6 bg-[#2563eb] rounded-full" />
+            <Typography className="text-[#1e293b] text-[18px] tracking-tight uppercase" sx={{ fontWeight: 900 }}>
+              SALES RETURN CUSTOMER
+            </Typography>
+          </Box>
+
+          <Box className="flex items-center gap-4">
+            <Box className="flex items-center gap-1.5">
+              <Typography className="text-[12px] font-black text-[#64748b]">Year:</Typography>
+              <Select value="2026-2027" size="small" sx={{ height: '34px', fontSize: '11px', fontWeight: 900, borderRadius: '8px', minWidth: '100px', bgcolor: 'white' }}>
+                <MenuItem value="2026-2027">2026-2027</MenuItem>
+              </Select>
+            </Box>
+
+            <Box className="flex items-center gap-1.5 border-l border-[#e2e8f0] pl-4">
+              <Typography className="text-[12px] font-black text-[#64748b]">Plant:</Typography>
+              <Select value="Sharp" size="small" sx={{ height: '34px', fontSize: '11px', fontWeight: 900, borderRadius: '8px', minWidth: '90px', bgcolor: 'white' }}>
+                <MenuItem value="Sharp">SHARP</MenuItem>
+              </Select>
+            </Box>
+
+            <Box className="flex items-center gap-4 border-l border-[#e2e8f0] pl-4">
+              {['Customer Count', 'Item Count', 'Item Qty', 'Item Value'].map((label) => (
+                <FormControlLabel
+                  key={label}
+                  control={<Radio checked={label === 'Item Qty'} size="small" sx={{ p: 0.5 }} />}
+                  label={<Typography className="text-[11px] font-black text-[#1e293b] whitespace-nowrap">{label}</Typography>}
+                  sx={{ m: 0 }}
+                />
+              ))}
+            </Box>
+
+            <Button 
+              variant="contained" 
+              startIcon={<SearchIcon sx={{ fontSize: '16px !important' }} />} 
+              sx={{ height: '34px', bgcolor: '#2563eb', borderRadius: '8px', fontWeight: 900, fontSize: '11px', textTransform: 'uppercase', px: 3 }}
+            >
+              Search
+            </Button>
+            <Button 
+              variant="contained" 
+              sx={{ height: '34px', minWidth: '34px', p: 0, bgcolor: '#10b981', borderRadius: '8px', '&:hover': { bgcolor: '#059669' } }}
+            >
+              <GridOnIcon sx={{ fontSize: '18px' }} />
+            </Button>
+          </Box>
+        </Box>
+
+        {/* Line Chart Area */}
+        <Box className="h-[350px] w-full mb-12 px-4">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart
+              data={[
+                { month: 'April-2026', qty: 520 },
+                { month: 'May-2026', qty: 440 },
+                { month: 'June-2026', qty: 525 },
+                { month: 'July-2026', qty: 275 },
+                { month: 'August-2026', qty: 495 },
+                { month: 'September-2026', qty: 811 },
+                { month: 'October-2026', qty: 707 },
+                { month: 'November-2026', qty: 286 },
+                { month: 'December-2026', qty: 380 },
+                { month: 'January-2027', qty: 446 },
+                { month: 'February-2027', qty: 657 },
+                { month: 'March-2027', qty: 703 },
+              ]}
+              margin={{ top: 20, right: 30, left: 20, bottom: 40 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+              <XAxis 
+                dataKey="month" 
+                axisLine={false} 
+                tickLine={false} 
+                tick={{ fontSize: 10, fontWeight: 900, fill: '#64748b' }}
+                dy={10}
+                padding={{ left: 30, right: 30 }}
+                label={{ 
+                  value: 'Months', 
+                  position: 'bottom', 
+                  offset: 20, 
+                  style: { fontSize: '12px', fontWeight: 900, fill: '#1e293b', textTransform: 'uppercase', letterSpacing: '2px' } 
+                }}
+              />
+              <YAxis 
+                axisLine={false} 
+                tickLine={false} 
+                tick={{ fontSize: 10, fontWeight: 900, fill: '#64748b' }}
+                label={{ 
+                  value: 'Item Qty', 
+                  angle: -90, 
+                  position: 'insideLeft', 
+                  offset: -10, 
+                  style: { fontSize: '12px', fontWeight: 900, fill: '#1e293b' } 
+                }}
+              />
+              <Tooltip 
+                contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+              />
+              <Line 
+                type="monotone" 
+                dataKey="qty" 
+                stroke="#5c67f2" 
+                strokeWidth={3} 
+                dot={{ r: 5, fill: '#5c67f2', strokeWidth: 2, stroke: '#fff' }}
+                activeDot={{ r: 7, strokeWidth: 0 }}
+                name="Item Qty"
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </Box>
+
+        {/* Data Table */}
+        <Box className="overflow-y-auto max-h-[400px] rounded-xl border border-[#f1f5f9] mb-8 scrollbar-thin scrollbar-thumb-gray-200">
+          <table className="w-full text-left border-collapse">
+            <thead className="sticky top-0 z-10 bg-[#f8fafc]">
+              <tr className="border-b border-[#f1f5f9]">
+                <th className="px-6 py-4 text-[10px] font-black text-[#64748b] uppercase tracking-wider">SR.</th>
+                <th className="px-6 py-4 text-[10px] font-black text-[#64748b] uppercase tracking-wider">MONTHS</th>
+                <th className="px-6 py-4 text-[10px] font-black text-[#64748b] uppercase tracking-wider text-center">CUST. COUNT</th>
+                <th className="px-6 py-4 text-[10px] font-black text-[#64748b] uppercase tracking-wider text-center">ITEM COUNT</th>
+                <th className="px-6 py-4 text-[10px] font-black text-[#64748b] uppercase tracking-wider text-center">ITEM QTY</th>
+                <th className="px-6 py-4 text-[10px] font-black text-[#64748b] uppercase tracking-wider text-right">ITEM VALUE</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                { sr: 1, month: 'April-2026', cust: 15, items: 42, qty: 520, value: '₹4,12,300' },
+                { sr: 2, month: 'May-2026', cust: 12, items: 38, qty: 440, value: '₹3,45,200' },
+                { sr: 3, month: 'June-2026', cust: 18, items: 55, qty: 525, value: '₹5,10,000' },
+                { sr: 4, month: 'July-2026', cust: 14, items: 47, qty: 275, value: '₹2,62,993' },
+                { sr: 5, month: 'August-2026', cust: 18, items: 31, qty: 495, value: '₹4,10,330' },
+                { sr: 6, month: 'September-2026', cust: 20, items: 55, qty: 811, value: '₹8,34,401' },
+                { sr: 7, month: 'October-2026', cust: 20, items: 57, qty: 707, value: '₹7,74,266' },
+                { sr: 8, month: 'November-2026', cust: 11, items: 36, qty: 286, value: '₹2,47,223' },
+                { sr: 9, month: 'December-2026', cust: 22, items: 25, qty: 380, value: '₹3,75,667' },
+                { sr: 10, month: 'January-2027', cust: 20, items: 32, qty: 446, value: '₹4,16,949' },
+                { sr: 11, month: 'February-2027', cust: 15, items: 17, qty: 657, value: '₹6,43,723' },
+                { sr: 12, month: 'March-2027', cust: 9, items: 42, qty: 703, value: '₹7,17,806' },
+              ].map((row, index) => (
+                <tr key={index} className="border-b border-[#f1f5f9] hover:bg-gray-50 transition-colors">
+                  <td className="px-6 py-4 text-[13px] font-bold text-[#475569]">{row.sr}</td>
+                  <td className="px-6 py-4 text-[13px] font-black text-[#1e293b]">{row.month}</td>
+                  <td className="px-6 py-4 text-[13px] font-bold text-[#475569] text-center">{row.cust}</td>
+                  <td className="px-6 py-4 text-[13px] font-bold text-[#475569] text-center">{row.items}</td>
+                  <td className="px-6 py-4 text-[13px] font-black text-[#1e293b] text-center">{row.qty}</td>
+                  <td className="px-6 py-4 text-[13px] font-black text-[#1e293b] text-right">{row.value}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Box>
+
+        {/* Footer Note */}
+        <Box className="mt-8 pt-4 border-t border-[#f1f5f9]">
+          <Typography className="text-[#1e293b] text-[11px] font-black italic opacity-80">
+            **Values Gst Sales Return
+          </Typography>
+        </Box>
+      </Box>
+
+      {/* CUSTOMER COMPLAINTS (CAPA) SECTION */}
+      <Box className="bg-white rounded-[20px] border border-[#eef2f6] p-7 shadow-md mb-8">
+        <Box className="flex items-center justify-between mb-8">
+          <Box className="flex items-center gap-3">
+            <div className="w-[4px] h-6 bg-[#2563eb] rounded-full" />
+            <Typography className="text-[#1e293b] text-[18px] tracking-tight uppercase" sx={{ fontWeight: 900 }}>
+              CUSTOMER COMPLAINTS (CAPA)
+            </Typography>
+          </Box>
+
+          <Box className="flex items-center gap-2">
+            <Typography className="text-[12px] font-black text-[#64748b]">Year:</Typography>
+            <Select 
+              value="2026-2027" 
+              size="small" 
+              sx={{ 
+                height: '32px', 
+                fontSize: '11px', 
+                fontWeight: 900, 
+                borderRadius: '6px', 
+                minWidth: '100px', 
+                bgcolor: '#f8fafc',
+                '& .MuiOutlinedInput-notchedOutline': { borderColor: '#e2e8f0' } 
+              }}
+            >
+              <MenuItem value="2026-2027" sx={{ fontSize: '11px', fontWeight: 900 }}>2026-2027</MenuItem>
+            </Select>
+          </Box>
+        </Box>
+
+        {/* Line Chart Area */}
+        <Box className="h-[300px] w-full mb-8">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart
+              data={[
+                { month: 'APRIL-2026', total: 9, completed: 10 },
+                { month: 'MAY-2026', total: 4, completed: 3 },
+                { month: 'JUNE-2026', total: 6, completed: 7 },
+                { month: 'JULY-2026', total: 16, completed: 4 },
+                { month: 'AUGUST-2026', total: 5, completed: 7 },
+                { month: 'SEPTEMBER-2026', total: 4, completed: 1 },
+                { month: 'OCTOBER-2026', total: 9, completed: 5 },
+                { month: 'NOVEMBER-2026', total: 8, completed: 1 },
+                { month: 'DECEMBER-2026', total: 5, completed: 4 },
+                { month: 'JANUARY-2027', total: 12, completed: 9 },
+                { month: 'FEBRUARY-2027', total: 5, completed: 4 },
+                { month: 'MARCH-2027', total: 7, completed: 6 },
+              ]}
+              margin={{ top: 10, right: 30, left: 0, bottom: 20 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+              <XAxis 
+                dataKey="month" 
+                axisLine={false} 
+                tickLine={false} 
+                tick={{ fontSize: 9, fontWeight: 900, fill: '#64748b' }}
+                dy={10}
+                padding={{ left: 30, right: 30 }}
+              />
+              <YAxis 
+                axisLine={false} 
+                tickLine={false} 
+                tick={{ fontSize: 10, fontWeight: 900, fill: '#64748b' }}
+              />
+              <Tooltip 
+                contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+              />
+              <Line type="monotone" dataKey="total" stroke="#2563eb" strokeWidth={3} dot={{ r: 4, fill: '#2563eb' }} activeDot={{ r: 6 }} />
+              <Line type="monotone" dataKey="completed" stroke="#f97316" strokeWidth={3} dot={{ r: 4, fill: '#f97316' }} activeDot={{ r: 6 }} />
+            </LineChart>
+          </ResponsiveContainer>
+        </Box>
+
+        {/* Indicators Bar */}
+        <Box className="flex justify-center gap-4 mb-8">
+          <Box className="px-6 py-2 bg-[#2563eb] rounded-full flex items-center gap-2 shadow-md">
+            <div className="w-2 h-2 rounded-full bg-white opacity-80" />
+            <Typography className="text-white text-[11px] font-black uppercase tracking-wider">Total Complaints</Typography>
+          </Box>
+          <Box className="px-6 py-2 bg-[#f97316] rounded-full flex items-center gap-2 shadow-md">
+            <div className="w-2 h-2 rounded-full bg-white opacity-80" />
+            <Typography className="text-white text-[11px] font-black uppercase tracking-wider">Completed Complaints</Typography>
+          </Box>
+        </Box>
+
+        {/* Scrollable Table */}
+        <Box className="overflow-x-auto rounded-xl border border-[#f1f5f9] scrollbar-thin scrollbar-thumb-gray-200">
+          <table className="w-full text-left border-collapse min-w-[1400px]">
+            <thead>
+              <tr className="bg-[#f8fafc] border-b border-[#f1f5f9]">
+                <th className="px-6 py-4 text-[11px] font-black text-[#64748b] uppercase tracking-wider">SR.</th>
+                <th className="px-6 py-4 text-[11px] font-black text-[#64748b] uppercase tracking-wider">TYPE</th>
+                {['APRIL-2026', 'MAY-2026', 'JUNE-2026', 'JULY-2026', 'AUGUST-2026', 'SEPTEMBER-2026', 'OCTOBER-2026', 'NOVEMBER-2026', 'DECEMBER-2026', 'JANUARY-2027', 'FEBRUARY-2027', 'MARCH-2027'].map(month => (
+                  <th key={month} className="px-4 py-4 text-[11px] font-black text-[#64748b] uppercase tracking-wider text-center">{month}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-b border-[#f1f5f9] hover:bg-gray-50 transition-colors">
+                <td className="px-6 py-5 text-[13px] font-bold text-[#475569]">1</td>
+                <td className="px-6 py-5 text-[13px] font-black text-[#1e293b]">Total complaints</td>
+                {[9, 4, 6, 16, 5, 4, 9, 8, 5, 12, 5, 7].map((val, idx) => (
+                  <td key={idx} className="px-4 py-5 text-[14px] font-black text-[#1e293b] text-center">{val}</td>
+                ))}
+              </tr>
+              <tr className="border-b border-[#f1f5f9] hover:bg-gray-50 transition-colors">
+                <td className="px-6 py-5 text-[13px] font-bold text-[#475569]">2</td>
+                <td className="px-6 py-5 text-[13px] font-black text-[#1e293b]">Completed complaints</td>
+                {[10, 3, 7, 4, 7, 1, 5, 1, 4, 9, 4, 6].map((val, idx) => (
+                  <td key={idx} className="px-4 py-5 text-[14px] font-black text-[#1e293b] text-center">{val}</td>
+                ))}
+              </tr>
+            </tbody>
+          </table>
+        </Box>
+      </Box>
+    </Box>
+  );
+};
+
+export default Quality;

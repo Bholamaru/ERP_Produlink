@@ -45,14 +45,13 @@ const DashboardPermission = () => {
                                     </div>
                                     <div className="col-md-3 col-sm-9">
                                         <select className="form-select">
-                                            <option value='Admin'>Admin</option>
+                                            <option value='Financial'>Financial</option>
                                             <option value='Purchase'>Purchase</option>
-                                            <option value='Store'>Store</option>
+                                            <option value='PPC'>PPC</option>
+                                            <option value='OEE'>OEE</option>
                                             <option value='Quality'>Quality</option>
-                                            <option value='Planning'>Planning</option>
-                                            <option value='Sales'>Sales</option>
-                                            <option value='Account'>Account</option>
-                                            <option value='CRM'>CRM</option>
+                                            <option value='Stores'>Stores</option>
+                                            <option value='Subcon'>Subcon</option>
                                         </select>
                                     </div>
                                     <div className="col-md-3 col-sm-6 d-flex align-items-center">
