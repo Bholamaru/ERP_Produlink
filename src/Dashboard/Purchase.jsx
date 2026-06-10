@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, Typography, Button, MenuItem, Select, FormControl } from '@mui/material';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import TableIcon from '@mui/icons-material/TableChart';
@@ -15,6 +15,170 @@ const Purchase = () => {
     view: 'AMOUNT'
   });
 
+  const [poMonthSelectOpen, setPoMonthSelectOpen] = useState(false);
+
+  useEffect(() => {
+    if (poMonthSelectOpen) {
+      const handleScroll = () => {
+        setPoMonthSelectOpen(false);
+      };
+      window.addEventListener('scroll', handleScroll, true);
+      return () => {
+        window.removeEventListener('scroll', handleScroll, true);
+      };
+    }
+  }, [poMonthSelectOpen]);
+
+  const [monthlyPurchaseYear, setMonthlyPurchaseYear] = useState('2026-2027');
+  const [monthlyPurchaseData, setMonthlyPurchaseData] = useState(() => {
+    const startYear = 2026;
+    const months = [
+      { name: 'Apr', yr: startYear },
+      { name: 'May', yr: startYear },
+      { name: 'Jun', yr: startYear },
+      { name: 'Jul', yr: startYear },
+      { name: 'Aug', yr: startYear },
+      { name: 'Sep', yr: startYear },
+      { name: 'Oct', yr: startYear },
+      { name: 'Nov', yr: startYear },
+      { name: 'Dec', yr: startYear },
+      { name: 'Jan', yr: startYear + 1 },
+      { name: 'Feb', yr: startYear + 1 },
+      { name: 'Mar', yr: startYear + 1 }
+    ];
+    return months.map(m => ({ month: `${m.name}-${m.yr}`, value: 0 }));
+  });
+
+  useEffect(() => {
+    const getDefaultMonthlyData = (yearStr) => {
+      const startYear = parseInt(yearStr.split('-')[0]) || 2026;
+      const months = [
+        { name: 'Apr', yr: startYear },
+        { name: 'May', yr: startYear },
+        { name: 'Jun', yr: startYear },
+        { name: 'Jul', yr: startYear },
+        { name: 'Aug', yr: startYear },
+        { name: 'Sep', yr: startYear },
+        { name: 'Oct', yr: startYear },
+        { name: 'Nov', yr: startYear },
+        { name: 'Dec', yr: startYear },
+        { name: 'Jan', yr: startYear + 1 },
+        { name: 'Feb', yr: startYear + 1 },
+        { name: 'Mar', yr: startYear + 1 }
+      ];
+      return months.map(m => ({ month: `${m.name}-${m.yr}`, value: 0 }));
+    };
+
+    const fetchMonthlyPurchaseData = async () => {
+      const apiYear = monthlyPurchaseYear.split('-')[0];
+      try {
+        const response = await fetch(`https://erp-render.onrender.com/Dashboard/financial-grn-total/?year=${apiYear}`);
+        if (!response.ok) throw new Error("Failed to fetch monthly purchase data");
+        const result = await response.json();
+        if (Array.isArray(result.data) && result.data.length > 0) {
+          const monthShortNames = {
+            "January": "Jan", "February": "Feb", "March": "Mar", "April": "Apr",
+            "May": "May", "June": "Jun", "July": "Jul", "August": "Aug",
+            "September": "Sep", "October": "Oct", "November": "Nov", "December": "Dec"
+          };
+          const mapped = result.data.map((item) => {
+            const shortMonth = monthShortNames[item.month] || item.month.slice(0, 3);
+            return {
+              month: `${shortMonth}-${item.year}`,
+              value: Number((item.total / 100000).toFixed(2))
+            };
+          });
+          setMonthlyPurchaseData(mapped);
+        } else {
+          setMonthlyPurchaseData(getDefaultMonthlyData(monthlyPurchaseYear));
+        }
+      } catch (error) {
+        console.error("Error fetching monthly purchase data:", error);
+        setMonthlyPurchaseData(getDefaultMonthlyData(monthlyPurchaseYear));
+      }
+    };
+    fetchMonthlyPurchaseData();
+  }, [monthlyPurchaseYear]);
+
+  const [dailyPurchaseFilters, setDailyPurchaseFilters] = useState({
+    month: 'april',
+    year: 2026
+  });
+
+  const [dailyMonthSelectOpen, setDailyMonthSelectOpen] = useState(false);
+
+  useEffect(() => {
+    if (dailyMonthSelectOpen) {
+      const handleScroll = () => {
+        setDailyMonthSelectOpen(false);
+      };
+      window.addEventListener('scroll', handleScroll, true);
+      return () => {
+        window.removeEventListener('scroll', handleScroll, true);
+      };
+    }
+  }, [dailyMonthSelectOpen]);
+
+  const [dailyPurchaseData, setDailyPurchaseData] = useState(() => {
+    const daysInMonth = new Date(2026, 4, 0).getDate(); // April has 30 days
+    return Array.from({ length: daysInMonth }, (_, i) => ({
+      day: `${(i + 1).toString().padStart(2, '0')}-Apr`,
+      value: 0
+    }));
+  });
+
+  useEffect(() => {
+    const financialYearStart = parseInt(monthlyPurchaseYear.split('-')[0]) || 2026;
+    setDailyPurchaseFilters(prev => ({ ...prev, year: financialYearStart }));
+  }, [monthlyPurchaseYear]);
+
+  useEffect(() => {
+    const getDefaultDailyData = (monthName, yearVal) => {
+      const monthMapping = {
+        january: 1, february: 2, march: 3, april: 4, may: 5, june: 6,
+        july: 7, august: 8, september: 9, october: 10, november: 11, december: 12
+      };
+      const monthNum = monthMapping[monthName.toLowerCase()] || 4;
+      const daysInMonth = new Date(yearVal, monthNum, 0).getDate();
+      const monthShort = monthName.charAt(0).toUpperCase() + monthName.slice(1, 3);
+      return Array.from({ length: daysInMonth }, (_, i) => ({
+        day: `${(i + 1).toString().padStart(2, '0')}-${monthShort}`,
+        value: 0
+      }));
+    };
+
+    const fetchDailyPurchaseData = async () => {
+      const monthMapping = {
+        january: 1, february: 2, march: 3, april: 4, may: 5, june: 6,
+        july: 7, august: 8, september: 9, october: 10, november: 11, december: 12
+      };
+      const monthNum = monthMapping[dailyPurchaseFilters.month.toLowerCase()] || 4;
+      const targetYear = ['january', 'february', 'march'].includes(dailyPurchaseFilters.month.toLowerCase())
+        ? dailyPurchaseFilters.year + 1
+        : dailyPurchaseFilters.year;
+
+      try {
+        const response = await fetch(`https://erp-render.onrender.com/Dashboard/Purchase/grn-monthly-total/?month=${monthNum}&year=${targetYear}`);
+        if (!response.ok) throw new Error("Failed to fetch daily purchase data");
+        const result = await response.json();
+        if (Array.isArray(result.data) && result.data.length > 0) {
+          const monthShort = dailyPurchaseFilters.month.charAt(0).toUpperCase() + dailyPurchaseFilters.month.slice(1, 3);
+          const mapped = result.data.map((item) => ({
+            day: `${item.day.toString().padStart(2, '0')}-${monthShort}`,
+            value: item.total || 0
+          }));
+          setDailyPurchaseData(mapped);
+        } else {
+          setDailyPurchaseData(getDefaultDailyData(dailyPurchaseFilters.month, targetYear));
+        }
+      } catch (error) {
+        console.error("Error fetching daily purchase data:", error);
+        setDailyPurchaseData(getDefaultDailyData(dailyPurchaseFilters.month, targetYear));
+      }
+    };
+    fetchDailyPurchaseData();
+  }, [dailyPurchaseFilters]);
+
   const [top5Filters, setTop5Filters] = useState({
     plant: 'sharp',
     month: 'april2026',
@@ -22,26 +186,210 @@ const Purchase = () => {
     type: 'supplier'
   });
 
-  const poData = [
-    { id: 1, name: 'Raw Material', count: 25, amount: 45000, color: '#6366f1' },
-    { id: 2, name: 'Consumable', count: 42, amount: 12000, color: '#f59e0b' },
-    { id: 3, name: 'Hardware', count: 15, amount: 8500, color: '#10b981' },
-    { id: 4, name: 'Packaging', count: 10, amount: 2500, color: '#ef4444' },
-    { id: 5, name: 'Asset/Equip', count: 4, amount: 32000, color: '#06b6d4' },
-  ];
+  const [poData, setPoData] = useState([
+    { id: 1, name: 'Raw Material', count: 0, amount: 0, color: '#6366f1' },
+    { id: 2, name: 'Consumable', count: 0, amount: 0, color: '#f59e0b' },
+    { id: 3, name: 'Service', count: 0, amount: 0, color: '#10b981' },
+    { id: 4, name: 'Asset/Equip', count: 0, amount: 0, color: '#06b6d4' },
+    { id: 5, name: 'Import', count: 0, amount: 0, color: '#ef4444' },
+    { id: 6, name: 'Jobwork', count: 0, amount: 0, color: '#8b5cf6' }
+  ]);
 
-  const top5Data = [
+  useEffect(() => {
+    const monthMapping = {
+      january: 1, february: 2, march: 3, april: 4, may: 5, june: 6,
+      july: 7, august: 8, september: 9, october: 10, november: 11, december: 12
+    };
+
+    const match = poFilters.month.match(/^([a-z]+)(\d{4})$/i);
+    let month = 4;
+    let year = 2026;
+    if (match) {
+      const monthName = match[1].toLowerCase();
+      month = monthMapping[monthName] || 4;
+      year = parseInt(match[2]) || 2026;
+    }
+
+    const fetchPoData = async () => {
+      try {
+        const response = await fetch(`https://erp-render.onrender.com/Dashboard/purchase/purchase-po-summary/?month=${month}&year=${year}`);
+        if (!response.ok) throw new Error("Failed to fetch PO summary");
+        const result = await response.json();
+        if (result.status && Array.isArray(result.data)) {
+          const seriesConfig = {
+            'RM': { name: 'Raw Material', color: '#6366f1' },
+            'CONSUMABLE': { name: 'Consumable', color: '#f59e0b' },
+            'SERVICE': { name: 'Service', color: '#10b981' },
+            'ASSET': { name: 'Asset/Equip', color: '#06b6d4' },
+            'IMPORT': { name: 'Import', color: '#ef4444' },
+            'JOBWORK': { name: 'Jobwork', color: '#8b5cf6' }
+          };
+          const mapped = result.data.map((item, idx) => {
+            const config = seriesConfig[item.series] || { name: item.series, color: '#64748b' };
+            return {
+              id: idx + 1,
+              name: config.name,
+              count: item.count || 0,
+              amount: item.assessable_value || 0,
+              color: config.color
+            };
+          });
+          setPoData(mapped);
+        }
+      } catch (error) {
+        console.error("Error fetching PO data:", error);
+      }
+    };
+
+    fetchPoData();
+  }, [poFilters.month]);
+
+  const [top5MonthSelectOpen, setTop5MonthSelectOpen] = useState(false);
+
+  useEffect(() => {
+    if (top5MonthSelectOpen) {
+      const handleScroll = () => {
+        setTop5MonthSelectOpen(false);
+      };
+      window.addEventListener('scroll', handleScroll, true);
+      return () => {
+        window.removeEventListener('scroll', handleScroll, true);
+      };
+    }
+  }, [top5MonthSelectOpen]);
+
+  const [top5Data, setTop5Data] = useState([
     { id: 1, name: 'Alpha Steel Forging Ltd.', qty: 15200, uom: 'KG', amount: 125000, color: '#6366f1' },
     { id: 2, name: 'Gamma Plastics', qty: 4500, uom: 'KG', amount: 65000, color: '#f59e0b' },
     { id: 3, name: 'Mega Electronics', qty: 850, uom: 'PCS', amount: 45000, color: '#10b981' },
     { id: 4, name: 'Delta Fasteners', qty: 22000, uom: 'PCS', amount: 35000, color: '#ef4444' },
     { id: 5, name: 'Omega Tools INC', qty: 120, uom: 'BX', amount: 22000, color: '#06b6d4' },
-  ];
+  ]);
+
+  useEffect(() => {
+    const fetchTop5Data = async () => {
+      const monthMapping = {
+        january: 1, february: 2, march: 3, april: 4, may: 5, june: 6,
+        july: 7, august: 8, september: 9, october: 10, november: 11, december: 12
+      };
+
+      const match = top5Filters.month.match(/^([a-z]+)(\d{4})$/i);
+      let month = 4;
+      let year = 2026;
+      if (match) {
+        const monthName = match[1].toLowerCase();
+        month = monthMapping[monthName] || 4;
+        year = parseInt(match[2]) || 2026;
+      }
+
+      try {
+        const response = await fetch(`https://erp-render.onrender.com/Dashboard/top-five-suppliers/?month=${month}&year=${year}`);
+        if (!response.ok) throw new Error("Failed to fetch top 5 suppliers");
+        const result = await response.json();
+        if (result.status && Array.isArray(result.data)) {
+          const colors = ['#6366f1', '#f59e0b', '#10b981', '#ef4444', '#06b6d4'];
+          const mapped = result.data.map((item, idx) => ({
+            id: idx + 1,
+            name: item.supplier,
+            qty: item.grn_qty || 0,
+            uom: '-',
+            amount: item.total || 0,
+            color: colors[idx % colors.length]
+          }));
+          setTop5Data(mapped);
+        }
+      } catch (error) {
+        console.error("Error fetching top 5 data:", error);
+      }
+    };
+
+    fetchTop5Data();
+  }, [top5Filters.month]);
+
+  const [grnDetailsFilters, setGrnDetailsFilters] = useState({
+    fromDate: '',
+    toDate: '',
+    partNo: ''
+  });
+  const [grnDetailsData, setGrnDetailsData] = useState([]);
+
+  const fetchGrnDetails = async () => {
+    if (!grnDetailsFilters.fromDate || !grnDetailsFilters.toDate) {
+      alert("Please select both From and To dates.");
+      return;
+    }
+    try {
+      const token = localStorage.getItem("accessToken");
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      const response = await fetch(`https://erp-render.onrender.com/Dashboard/item-wise-grn-report/?from_date=${grnDetailsFilters.fromDate}&to_date=${grnDetailsFilters.toDate}&part_no=${grnDetailsFilters.partNo}`, {
+        headers
+      });
+      if (!response.ok) throw new Error("Failed to fetch GRN details");
+      const result = await response.json();
+      if (result.status && Array.isArray(result.data)) {
+        setGrnDetailsData(result.data);
+      } else {
+        setGrnDetailsData([]);
+      }
+    } catch (error) {
+      console.error("Error fetching GRN details:", error);
+      setGrnDetailsData([]);
+    }
+  };
+
+  const totalGrnQty = grnDetailsData.reduce((sum, item) => sum + (item.total_grn_qty || 0), 0);
+  const totalGrnAmount = grnDetailsData.reduce((sum, item) => sum + (item.total_ass_value || 0), 0);
+
+  const [grnSummaryFilters, setGrnSummaryFilters] = useState({
+    fromDate: '',
+    toDate: ''
+  });
+  const [grnSummaryData, setGrnSummaryData] = useState([]);
+
+  const fetchGrnSummary = async () => {
+    if (!grnSummaryFilters.fromDate || !grnSummaryFilters.toDate) {
+      alert("Please select both From and To dates.");
+      return;
+    }
+    try {
+      const token = localStorage.getItem("accessToken");
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      const response = await fetch(`https://erp-render.onrender.com/Dashboard/main-group-wise-grn-report/?from_date=${grnSummaryFilters.fromDate}&to_date=${grnSummaryFilters.toDate}`, {
+        headers
+      });
+      if (!response.ok) throw new Error("Failed to fetch GRN summary");
+      const result = await response.json();
+      if (result.status && Array.isArray(result.data)) {
+        const colors = ['#6366f1', '#f59e0b', '#10b981', '#ef4444', '#06b6d4'];
+        const mapped = result.data.map((item, idx) => ({
+          id: idx + 1,
+          name: item.main_group || '-',
+          qty: item.total_grn_qty || 0,
+          amount: item.total_ass_value || 0,
+          color: colors[idx % colors.length]
+        }));
+        setGrnSummaryData(mapped);
+      } else {
+        setGrnSummaryData([]);
+      }
+    } catch (error) {
+      console.error("Error fetching GRN summary:", error);
+      setGrnSummaryData([]);
+    }
+  };
 
   const chartData = poData.map(item => ({
     ...item,
     value: poFilters.view === 'AMOUNT' ? item.amount : item.count
-  }));
+  })).filter(item => item.value > 0);
+
+  const displayedTop5Data = (top5Filters.type === 'items' ? [
+    { id: 1, name: 'Steel Sheet 5mm', qty: 12000, uom: 'KG', amount: 95000, color: '#6366f1' },
+    { id: 2, name: 'Gear Oil Lubricant', qty: 350, uom: 'LTR', amount: 45000, color: '#f59e0b' },
+    { id: 3, name: 'HEX Bolt M12', qty: 25000, uom: 'PCS', amount: 30000, color: '#10b981' },
+    { id: 4, name: 'Copper Wire 2mm', qty: 800, uom: 'MTR', amount: 25000, color: '#ef4444' },
+    { id: 5, name: 'Aluminium Bar 10mm', qty: 1200, uom: 'KG', amount: 18000, color: '#06b6d4' },
+  ] : top5Data).slice(0, Number(top5Filters.top) || 5);
 
   return (
     <Box className="p-8 max-w-[1600px] mx-auto bg-[#f8fafc] min-h-screen">
@@ -108,7 +456,13 @@ const Purchase = () => {
               </div>
               <div className="flex items-center gap-2">
                 <Typography className="text-[13px] font-black text-[#64748b]">Year:</Typography>
-                <Select value="2026-2027" size="small" sx={{ height: '32px', fontSize: '13px', fontWeight: 900, borderRadius: '6px', minWidth: '120px', bgcolor: 'white' }}>
+                <Select 
+                  value={monthlyPurchaseYear} 
+                  onChange={(e) => setMonthlyPurchaseYear(e.target.value)}
+                  size="small" 
+                  sx={{ height: '32px', fontSize: '13px', fontWeight: 900, borderRadius: '6px', minWidth: '120px', bgcolor: 'white' }}
+                >
+                  <MenuItem value="2025-2026">2025-2026</MenuItem>
                   <MenuItem value="2026-2027">2026-2027</MenuItem>
                 </Select>
               </div>
@@ -123,20 +477,7 @@ const Purchase = () => {
             <div style={{ width: '200%', height: '350px' }}>
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart 
-                  data={[
-                    { month: 'Apr-2026', value: 110.2 },
-                    { month: 'May-2026', value: 135.5 },
-                    { month: 'Jun-2026', value: 180.1 },
-                    { month: 'Jul-2026', value: 237.6 },
-                    { month: 'Aug-2026', value: 145.0 },
-                    { month: 'Sep-2026', value: 201.2 },
-                    { month: 'Oct-2026', value: 220.4 },
-                    { month: 'Nov-2026', value: 195.8 },
-                    { month: 'Dec-2026', value: 175.2 },
-                    { month: 'Jan-2027', value: 205.5 },
-                    { month: 'Feb-2027', value: 190.3 },
-                    { month: 'Mar-2027', value: 250.0 }
-                  ]} 
+                  data={monthlyPurchaseData} 
                   margin={{ top: 20, right: 30, left: 0, bottom: 0 }}
                 >
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -176,18 +517,18 @@ const Purchase = () => {
             <table className="w-full border-collapse">
               <thead>
                 <tr className="bg-[#f8fafc] border-b border-[#e2e8f0]">
-                  {['APR-2026', 'MAY-2026', 'JUN-2026', 'JUL-2026', 'AUG-2026', 'SEP-2026', 'OCT-2026', 'NOV-2026', 'DEC-2026', 'JAN-2027', 'FEB-2027', 'MAR-2027'].map(m => (
-                    <th key={m} className="px-5 py-3 text-[10px] font-black text-[#64748b] border-r border-[#e2e8f0] last:border-r-0 uppercase tracking-tighter whitespace-nowrap">
-                      {m}
+                  {monthlyPurchaseData.map((d, idx) => (
+                    <th key={idx} className="px-5 py-3 text-[10px] font-black text-[#64748b] border-r border-[#e2e8f0] last:border-r-0 uppercase tracking-tighter whitespace-nowrap">
+                      {d.month}
                     </th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 <tr className="hover:bg-[#f8fafc] transition-colors">
-                  {[110.2, 135.5, 180.1, 237.6, 145.0, 201.2, 220.4, 195.8, 175.2, 205.5, 190.3, 250.0].map((v, i) => (
-                    <td key={i} className="px-5 py-4 text-center border-r border-[#e2e8f0] last:border-r-0">
-                      <Typography className="text-[13px] font-black text-[#1e293b]">{v.toFixed(1)}</Typography>
+                  {monthlyPurchaseData.map((d, idx) => (
+                    <td key={idx} className="px-5 py-4 text-center border-r border-[#e2e8f0] last:border-r-0">
+                      <Typography className="text-[13px] font-black text-[#1e293b]">{d.value.toFixed(1)}</Typography>
                     </td>
                   ))}
                 </tr>
@@ -212,8 +553,28 @@ const Purchase = () => {
               </div>
               <div className="flex items-center gap-2 pr-2 border-r border-[#cbd5e1]">
                 <Typography className="text-[13px] font-black text-[#64748b]">Month:</Typography>
-                <Select value="april" size="small" sx={{ height: '32px', fontSize: '13px', fontWeight: 900, borderRadius: '6px', minWidth: '100px', bgcolor: 'white' }}>
+                <Select 
+                  open={dailyMonthSelectOpen}
+                  onOpen={() => setDailyMonthSelectOpen(true)}
+                  onClose={() => setDailyMonthSelectOpen(false)}
+                  value={dailyPurchaseFilters.month} 
+                  onChange={(e) => setDailyPurchaseFilters(prev => ({ ...prev, month: e.target.value }))}
+                  size="small" 
+                  sx={{ height: '32px', fontSize: '13px', fontWeight: 900, borderRadius: '6px', minWidth: '110px', bgcolor: 'white' }}
+                  MenuProps={{ disableScrollLock: true }}
+                >
                   <MenuItem value="april">April</MenuItem>
+                  <MenuItem value="may">May</MenuItem>
+                  <MenuItem value="june">June</MenuItem>
+                  <MenuItem value="july">July</MenuItem>
+                  <MenuItem value="august">August</MenuItem>
+                  <MenuItem value="september">September</MenuItem>
+                  <MenuItem value="october">October</MenuItem>
+                  <MenuItem value="november">November</MenuItem>
+                  <MenuItem value="december">December</MenuItem>
+                  <MenuItem value="january">January</MenuItem>
+                  <MenuItem value="february">February</MenuItem>
+                  <MenuItem value="march">March</MenuItem>
                 </Select>
               </div>
               <div className="w-9 h-9 bg-[#00a36c] flex items-center justify-center rounded-lg cursor-pointer hover:bg-[#008f5d] transition-all shadow-sm">
@@ -224,7 +585,9 @@ const Purchase = () => {
 
           <div className="flex justify-center mb-6">
             <div className="bg-[#fff7ed] border border-[#ffedd5] px-6 py-1.5 rounded-full shadow-sm">
-              <Typography className="text-[#9a3412] text-[13px] font-black tracking-tight">Daily Purchase: April-2026</Typography>
+              <Typography className="text-[#9a3412] text-[13px] font-black tracking-tight">
+                Daily Purchase: {dailyPurchaseFilters.month.charAt(0).toUpperCase() + dailyPurchaseFilters.month.slice(1)}-{['january', 'february', 'march'].includes(dailyPurchaseFilters.month.toLowerCase()) ? dailyPurchaseFilters.year + 1 : dailyPurchaseFilters.year}
+              </Typography>
             </div>
           </div>
 
@@ -232,10 +595,7 @@ const Purchase = () => {
             <div style={{ width: '230.77%', height: '350px' }}>
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart 
-                  data={Array.from({ length: 30 }, (_, i) => ({
-                    day: `${(i + 1).toString().padStart(2, '0')}-Apr`,
-                    value: [580000, 520000, 180000, 390000, 120000, 560000, 350000, 300000, 310000, 190000, 360000, 600000, 300000, 430000][i % 14] || Math.floor(Math.random() * 400000) + 100000
-                  }))} 
+                  data={dailyPurchaseData} 
                   margin={{ top: 20, right: 30, left: 30, bottom: 0 }}
                 >
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -296,12 +656,27 @@ const Purchase = () => {
             <div className="flex items-center gap-2 pr-2 border-r border-[#cbd5e1]">
               <Typography className="text-[13px] font-black text-[#64748b]">Month:</Typography>
               <Select 
+                open={poMonthSelectOpen}
+                onOpen={() => setPoMonthSelectOpen(true)}
+                onClose={() => setPoMonthSelectOpen(false)}
                 value={poFilters.month} 
                 onChange={(e) => setPoFilters(prev => ({ ...prev, month: e.target.value }))}
                 size="small" 
                 sx={{ height: '32px', fontSize: '13px', fontWeight: 900, borderRadius: '6px', minWidth: '130px', bgcolor: 'white' }}
+                MenuProps={{ disableScrollLock: true }}
               >
                 <MenuItem value="april2026">April 2026</MenuItem>
+                <MenuItem value="may2026">May 2026</MenuItem>
+                <MenuItem value="june2026">June 2026</MenuItem>
+                <MenuItem value="july2026">July 2026</MenuItem>
+                <MenuItem value="august2026">August 2026</MenuItem>
+                <MenuItem value="september2026">September 2026</MenuItem>
+                <MenuItem value="october2026">October 2026</MenuItem>
+                <MenuItem value="november2026">November 2026</MenuItem>
+                <MenuItem value="december2026">December 2026</MenuItem>
+                <MenuItem value="january2027">January 2027</MenuItem>
+                <MenuItem value="february2027">February 2027</MenuItem>
+                <MenuItem value="march2027">March 2027</MenuItem>
               </Select>
             </div>
             <div className="w-9 h-9 bg-[#00a36c] flex items-center justify-center rounded-lg cursor-pointer hover:bg-[#008f5d] transition-all shadow-sm">
@@ -337,8 +712,8 @@ const Purchase = () => {
                 ))}
                 <tr className="bg-[#f8fafc] font-black">
                   <td colSpan={2} className="px-6 py-6 text-[14px] font-black text-[#1e293b] text-center uppercase tracking-widest">TOTAL</td>
-                  <td className="px-6 py-6 text-[14px] font-black text-[#1e293b] text-center">96</td>
-                  <td className="px-6 py-6 text-[14px] font-black text-[#1e293b] text-right">₹1,00,000</td>
+                  <td className="px-6 py-6 text-[14px] font-black text-[#1e293b] text-center">{poData.reduce((acc, row) => acc + row.count, 0)}</td>
+                  <td className="px-6 py-6 text-[14px] font-black text-[#1e293b] text-right">₹{poData.reduce((acc, row) => acc + row.amount, 0).toLocaleString()}</td>
                 </tr>
               </tbody>
             </table>
@@ -427,8 +802,28 @@ const Purchase = () => {
             </div>
             <div className="flex items-center gap-2">
               <Typography className="text-[13px] font-black text-[#64748b]">Select Months:</Typography>
-              <Select value={top5Filters.month} onChange={(e) => setTop5Filters(prev => ({ ...prev, month: e.target.value }))} size="small" sx={{ height: '32px', fontSize: '13px', fontWeight: 900, borderRadius: '6px', minWidth: '120px', bgcolor: 'white' }}>
+              <Select 
+                open={top5MonthSelectOpen}
+                onOpen={() => setTop5MonthSelectOpen(true)}
+                onClose={() => setTop5MonthSelectOpen(false)}
+                value={top5Filters.month} 
+                onChange={(e) => setTop5Filters(prev => ({ ...prev, month: e.target.value }))} 
+                size="small" 
+                sx={{ height: '32px', fontSize: '13px', fontWeight: 900, borderRadius: '6px', minWidth: '120px', bgcolor: 'white' }}
+                MenuProps={{ disableScrollLock: true }}
+              >
                 <MenuItem value="april2026">April 2026</MenuItem>
+                <MenuItem value="may2026">May 2026</MenuItem>
+                <MenuItem value="june2026">June 2026</MenuItem>
+                <MenuItem value="july2026">July 2026</MenuItem>
+                <MenuItem value="august2026">August 2026</MenuItem>
+                <MenuItem value="september2026">September 2026</MenuItem>
+                <MenuItem value="october2026">October 2026</MenuItem>
+                <MenuItem value="november2026">November 2026</MenuItem>
+                <MenuItem value="december2026">December 2026</MenuItem>
+                <MenuItem value="january2027">January 2027</MenuItem>
+                <MenuItem value="february2027">February 2027</MenuItem>
+                <MenuItem value="march2027">March 2027</MenuItem>
               </Select>
             </div>
             <div className="flex items-center gap-2">
@@ -454,7 +849,7 @@ const Purchase = () => {
               <div style={{ transform: 'rotateX(35deg) translateY(20px)', width: '100%', height: '100%' }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
-                    <Pie data={top5Data} cx="50%" cy="50%" innerRadius={0} outerRadius={110} paddingAngle={2} dataKey="amount" stroke="rgba(255,255,255,0.2)" strokeWidth={1} filter="url(#3dShadow)" label={({ cx, cy, midAngle, innerRadius, outerRadius, value, name, color }) => {
+                    <Pie data={displayedTop5Data} cx="50%" cy="50%" innerRadius={0} outerRadius={110} paddingAngle={2} dataKey="amount" stroke="rgba(255,255,255,0.2)" strokeWidth={1} filter="url(#3dShadow)" label={({ cx, cy, midAngle, innerRadius, outerRadius, value, name, color }) => {
                       const RADIAN = Math.PI / 180;
                       const radius = outerRadius * 1.5;
                       const x = cx + radius * Math.cos(-midAngle * RADIAN);
@@ -466,7 +861,7 @@ const Purchase = () => {
                         </text>
                       );
                     }}>
-                      {top5Data.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} />)}
+                      {displayedTop5Data.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} />)}
                     </Pie>
                   </PieChart>
                 </ResponsiveContainer>
@@ -486,7 +881,7 @@ const Purchase = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#f1f5f9]">
-                {top5Data.map((row) => (
+                {displayedTop5Data.map((row) => (
                   <tr key={row.id} className="hover:bg-white transition-colors group cursor-pointer">
                     <td className="px-6 py-5 text-[13px] font-black text-[#475569]">{row.id}</td>
                     <td className="px-6 py-5">
@@ -534,15 +929,26 @@ const Purchase = () => {
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2">
                 <Typography className="text-[13px] font-black text-[#64748b]">From</Typography>
-                <input type="date" defaultValue="2026-04-01" className="h-[36px] border border-[#e2e8f0] rounded-[8px] px-3 text-[13px] font-black text-[#1e293b] focus:outline-none focus:border-[#2563eb]" />
+                <input 
+                  type="date" 
+                  value={grnSummaryFilters.fromDate} 
+                  onChange={(e) => setGrnSummaryFilters(prev => ({ ...prev, fromDate: e.target.value }))}
+                  className="h-[36px] border border-[#e2e8f0] rounded-[8px] px-3 text-[13px] font-black text-[#1e293b] focus:outline-none focus:border-[#2563eb]" 
+                />
               </div>
               <div className="flex items-center gap-2">
                 <Typography className="text-[13px] font-black text-[#64748b]">To</Typography>
-                <input type="date" defaultValue="2026-04-30" className="h-[36px] border border-[#e2e8f0] rounded-[8px] px-3 text-[13px] font-black text-[#1e293b] focus:outline-none focus:border-[#2563eb]" />
+                <input 
+                  type="date" 
+                  value={grnSummaryFilters.toDate} 
+                  onChange={(e) => setGrnSummaryFilters(prev => ({ ...prev, toDate: e.target.value }))}
+                  className="h-[36px] border border-[#e2e8f0] rounded-[8px] px-3 text-[13px] font-black text-[#1e293b] focus:outline-none focus:border-[#2563eb]" 
+                />
               </div>
             </div>
             <Button 
               variant="contained" 
+              onClick={fetchGrnSummary}
               className="bg-[#2563eb] hover:bg-[#1d4ed8] text-white px-5 h-[36px] rounded-[8px] font-black normal-case text-[13px] shadow-lg shadow-blue-500/20"
               startIcon={<TableIcon sx={{ fontSize: 16 }} />}
             >
@@ -567,12 +973,7 @@ const Purchase = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#f1f5f9]">
-                {[
-                  { id: 1, name: 'Raw Material', qty: 45020, amount: 2150000, color: '#6366f1' },
-                  { id: 2, name: 'Consumable', qty: 12500, amount: 45000, color: '#f59e0b' },
-                  { id: 3, name: 'Hardware', qty: 85000, amount: 35000, color: '#10b981' },
-                  { id: 4, name: 'Spares', qty: 520, amount: 155000, color: '#ef4444' },
-                ].map((row) => (
+                {grnSummaryData.map((row) => (
                   <tr key={row.id} className="hover:bg-white transition-colors group cursor-pointer">
                     <td className="px-6 py-5 text-[13px] font-black text-[#475569]">{row.id}</td>
                     <td className="px-6 py-5">
@@ -587,8 +988,8 @@ const Purchase = () => {
                 ))}
                 <tr className="bg-[#f8fafc] font-black">
                   <td colSpan={2} className="px-6 py-6 text-[14px] font-black text-[#1e293b] text-center uppercase tracking-widest">TOTAL</td>
-                  <td className="px-6 py-6 text-[14px] font-black text-[#1e293b] text-center">143,040</td>
-                  <td className="px-6 py-6 text-[14px] font-black text-[#1e293b] text-right">₹2,385,000</td>
+                  <td className="px-6 py-6 text-[14px] font-black text-[#1e293b] text-center">{grnSummaryData.reduce((acc, row) => acc + row.qty, 0).toLocaleString()}</td>
+                  <td className="px-6 py-6 text-[14px] font-black text-[#1e293b] text-right">₹{grnSummaryData.reduce((acc, row) => acc + row.amount, 0).toLocaleString()}</td>
                 </tr>
               </tbody>
             </table>
@@ -601,18 +1002,13 @@ const Purchase = () => {
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
-                      data={[
-                        { name: 'Raw Material', value: 2150000, color: '#6366f1' },
-                        { name: 'Consumable', value: 45000, color: '#f59e0b' },
-                        { name: 'Hardware', value: 35000, color: '#10b981' },
-                        { name: 'Spares', value: 155000, color: '#ef4444' },
-                      ]}
+                      data={grnSummaryData}
                       cx="50%"
                       cy="50%"
                       innerRadius={0}
                       outerRadius={100}
                       paddingAngle={2}
-                      dataKey="value"
+                      dataKey="amount"
                       stroke="rgba(255,255,255,0.2)"
                       strokeWidth={1}
                       filter="url(#3dShadow)"
@@ -629,12 +1025,7 @@ const Purchase = () => {
                         );
                       }}
                     >
-                      {[
-                        { color: '#6366f1' },
-                        { color: '#f59e0b' },
-                        { color: '#10b981' },
-                        { color: '#ef4444' },
-                      ].map((entry, index) => (
+                      {grnSummaryData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
                     </Pie>
@@ -661,9 +1052,19 @@ const Purchase = () => {
             </div>
             <div className="flex items-center gap-2">
               <Typography className="text-[13px] font-black text-[#64748b]">From</Typography>
-              <input type="date" defaultValue="2026-04-01" className="h-[36px] border border-[#e2e8f0] rounded-[8px] px-3 text-[12px] font-black text-[#1e293b] focus:outline-none focus:border-[#2563eb]" />
+              <input 
+                type="date" 
+                value={grnDetailsFilters.fromDate} 
+                onChange={(e) => setGrnDetailsFilters(prev => ({ ...prev, fromDate: e.target.value }))}
+                className="h-[36px] border border-[#e2e8f0] rounded-[8px] px-3 text-[12px] font-black text-[#1e293b] focus:outline-none focus:border-[#2563eb]" 
+              />
               <Typography className="text-[13px] font-black text-[#64748b]">To</Typography>
-              <input type="date" defaultValue="2026-04-30" className="h-[36px] border border-[#e2e8f0] rounded-[8px] px-3 text-[12px] font-black text-[#1e293b] focus:outline-none focus:border-[#2563eb]" />
+              <input 
+                type="date" 
+                value={grnDetailsFilters.toDate} 
+                onChange={(e) => setGrnDetailsFilters(prev => ({ ...prev, toDate: e.target.value }))}
+                className="h-[36px] border border-[#e2e8f0] rounded-[8px] px-3 text-[12px] font-black text-[#1e293b] focus:outline-none focus:border-[#2563eb]" 
+              />
             </div>
             <div className="flex items-center gap-2">
               <Typography className="text-[13px] font-black text-[#64748b]">Main Group:</Typography>
@@ -680,10 +1081,17 @@ const Purchase = () => {
             <div className="flex items-center gap-2">
               <input type="checkbox" className="w-4 h-4 rounded border-[#e2e8f0]" />
               <Typography className="text-[13px] font-black text-[#64748b]">Item:</Typography>
-              <input type="text" placeholder="Enter Item" className="w-[140px] h-[36px] border border-[#e2e8f0] rounded-[8px] px-3 text-[13px] font-medium text-[#1e293b] focus:outline-none focus:border-[#2563eb]" />
+              <input 
+                type="text" 
+                placeholder="Enter Item No" 
+                value={grnDetailsFilters.partNo} 
+                onChange={(e) => setGrnDetailsFilters(prev => ({ ...prev, partNo: e.target.value }))}
+                className="w-[140px] h-[36px] border border-[#e2e8f0] rounded-[8px] px-3 text-[13px] font-medium text-[#1e293b] focus:outline-none focus:border-[#2563eb]" 
+              />
             </div>
             <Button 
               variant="contained" 
+              onClick={fetchGrnDetails}
               className="bg-[#2563eb] hover:bg-[#1d4ed8] text-white px-5 h-[36px] rounded-[8px] font-black normal-case text-[13px] shadow-lg shadow-blue-500/20"
             >
               Search
@@ -711,27 +1119,18 @@ const Purchase = () => {
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse min-w-[1200px]">
                 <tbody className="divide-y divide-[#f1f5f9]">
-                  {[
-                    { id: 1, no: 'IT001', code: 'CD-1000', desc: 'Industrial Material Type A', main: 'RM', group: 'Metals', size: '10MM', qty: 82, amt: 22731, act: 'GRN' },
-                    { id: 2, no: 'IT002', code: 'CD-1001', desc: 'Industrial Material Type B', main: 'RM', group: 'Metals', size: '10MM', qty: 190, amt: 2945, act: 'GRN' },
-                    { id: 3, no: 'IT003', code: 'CD-1002', desc: 'Industrial Material Type C', main: 'RM', group: 'Metals', size: '10MM', qty: 202, amt: 27639, act: 'GRN' },
-                    { id: 4, no: 'IT004', code: 'CD-1003', desc: 'Industrial Material Type D', main: 'RM', group: 'Metals', size: '10MM', qty: 130, amt: 42501, act: 'GRN' },
-                    { id: 5, no: 'IT005', code: 'CD-1004', desc: 'Industrial Material Type E', main: 'RM', group: 'Metals', size: '10MM', qty: 501, amt: 46194, act: 'GRN' },
-                    { id: 6, no: 'IT006', code: 'CD-1005', desc: 'Industrial Material Type F', main: 'RM', group: 'Metals', size: '10MM', qty: 220, amt: 31475, act: 'GRN' },
-                    { id: 7, no: 'IT007', code: 'CD-1006', desc: 'Industrial Material Type G', main: 'RM', group: 'Metals', size: '10MM', qty: 450, amt: 12500, act: 'GRN' },
-                    { id: 8, no: 'IT008', code: 'CD-1007', desc: 'Industrial Material Type H', main: 'RM', group: 'Metals', size: '10MM', qty: 112, amt: 8900, act: 'GRN' },
-                  ].map((row) => (
-                    <tr key={row.id} className="hover:bg-[#f8fafc] transition-colors group cursor-pointer">
-                      <td className="px-5 py-5 text-[13px] font-black text-[#475569]">{row.id}</td>
-                      <td className="px-5 py-5 text-[13px] font-black text-[#1e293b]">{row.no}</td>
-                      <td className="px-5 py-5 text-[13px] font-semibold text-[#1e293b]">{row.code}</td>
-                      <td className="px-5 py-5 text-[13px] font-black text-[#1e293b]">{row.desc}</td>
-                      <td className="px-5 py-5 text-[13px] font-black text-[#1e293b] uppercase">{row.main}</td>
-                      <td className="px-5 py-5 text-[13px] font-black text-[#1e293b]">{row.group}</td>
-                      <td className="px-5 py-5 text-[13px] font-black text-[#1e293b]">{row.size}</td>
-                      <td className="px-5 py-5 text-[13px] font-black text-[#1e293b]">{row.qty}</td>
-                      <td className="px-5 py-5 text-[13px] font-black text-[#1e293b]">₹{row.amt.toLocaleString()}</td>
-                      <td className="px-5 py-5 text-[13px] font-black text-[#1e293b] uppercase tracking-tighter">{row.act}</td>
+                  {grnDetailsData.map((row, idx) => (
+                    <tr key={idx} className="hover:bg-[#f8fafc] transition-colors group cursor-pointer">
+                      <td className="px-5 py-5 text-[13px] font-black text-[#475569]">{idx + 1}</td>
+                      <td className="px-5 py-5 text-[13px] font-black text-[#1e293b]">{row.part_no || '-'}</td>
+                      <td className="px-5 py-5 text-[13px] font-semibold text-[#1e293b]">{row.Part_Code || '-'}</td>
+                      <td className="px-5 py-5 text-[13px] font-black text-[#1e293b]">{row.Name_Description || '-'}</td>
+                      <td className="px-5 py-5 text-[13px] font-black text-[#1e293b] uppercase">{row.main_group || '-'}</td>
+                      <td className="px-5 py-5 text-[13px] font-black text-[#1e293b]">{row.item_group || '-'}</td>
+                      <td className="px-5 py-5 text-[13px] font-black text-[#1e293b]">{'-'}</td>
+                      <td className="px-5 py-5 text-[13px] font-black text-[#1e293b]">{row.total_grn_qty || 0}</td>
+                      <td className="px-5 py-5 text-[13px] font-black text-[#1e293b]">₹{(row.total_ass_value || 0).toLocaleString()}</td>
+                      <td className="px-5 py-5 text-[13px] font-black text-[#1e293b] uppercase tracking-tighter">GRN</td>
                     </tr>
                   ))}
                 </tbody>
@@ -744,11 +1143,11 @@ const Purchase = () => {
         <div className="mt-4 flex items-center justify-end gap-10 bg-[#f8fafc] px-8 py-4 border border-[#eef2f6] rounded-[12px]">
           <div className="flex items-center gap-2">
             <Typography className="text-[14px] font-black text-[#64748b]">Total Qty:</Typography>
-            <Typography className="text-[16px] font-black text-[#1e293b]">2,214</Typography>
+            <Typography className="text-[16px] font-black text-[#1e293b]">{totalGrnQty.toLocaleString()}</Typography>
           </div>
           <div className="flex items-center gap-2">
             <Typography className="text-[14px] font-black text-[#64748b]">Total Amount:</Typography>
-            <Typography className="text-[18px] font-black text-[#2563eb]">₹211,073</Typography>
+            <Typography className="text-[18px] font-black text-[#2563eb]">₹{totalGrnAmount.toLocaleString()}</Typography>
           </div>
         </div>
       </Box>

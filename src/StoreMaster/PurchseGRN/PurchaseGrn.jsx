@@ -159,8 +159,34 @@ const PurchaseGrn = () => {
 
             // Populate GST details if available
             if (data.GrnGst && data.GrnGst.length > 0) {
-              setGstDetails(data.GrnGst);
-              setOriginalGstDetails(JSON.parse(JSON.stringify(data.GrnGst)));
+              const mergedGst = data.GrnGst.map((gst) => ({
+                ...gst,
+                Rate: gst.Rate !== undefined ? gst.Rate : gst.PoRate,
+                Packing: gst.Packing !== undefined ? gst.Packing : gst.PackAmt,
+                Transport: gst.Transport !== undefined ? gst.Transport : gst.TransAmt,
+                Vat: gst.Vat !== undefined ? gst.Vat : gst.VAT,
+                Cess: gst.Cess !== undefined ? gst.Cess : gst.CESS,
+              }));
+              if (data.GrnGstTDC && data.GrnGstTDC.length > 0) {
+                mergedGst[0] = {
+                  ...mergedGst[0],
+                  TOC_AssableValue: data.GrnGstTDC[0].assessable_value,
+                  TOC_PackCharges: data.GrnGstTDC[0].packing_forwarding_charges,
+                  TOC_TransportCost: data.GrnGstTDC[0].transport_charges,
+                  TOC_Insurance: data.GrnGstTDC[0].insurance,
+                  TOC_InstallationCharges: data.GrnGstTDC[0].installation_charges,
+                  TOC_OtherCharges: data.GrnGstTDC[0].other_charges,
+                  TOC_TDS: data.GrnGstTDC[0].Tds,
+                  TOC_CGST: data.GrnGstTDC[0].cgst,
+                  TOC_SGST: data.GrnGstTDC[0].sgst,
+                  TOC_IGST: data.GrnGstTDC[0].igst,
+                  TOC_VAT: data.GrnGstTDC[0].vat,
+                  TOC_CESS: data.GrnGstTDC[0].cess_amount,
+                  GR_Total: data.GrnGstTDC[0].grand_total,
+                };
+              }
+              setGstDetails(mergedGst);
+              setOriginalGstDetails(JSON.parse(JSON.stringify(mergedGst)));
             }
 
             // Populate RefTC details if available
@@ -325,6 +351,74 @@ const PurchaseGrn = () => {
     }
   };
 
+  const getGstTotals = () => {
+    if (!gstDetails || gstDetails.length === 0) {
+      return {
+        assessableValue: "0.00",
+        packCharges: "0.00",
+        transportCost: "0.00",
+        insurance: "0.00",
+        installationCharges: "0.00",
+        otherCharges: "0.00",
+        tds: "0.00",
+        cgst: "0.00",
+        sgst: "0.00",
+        igst: "0.00",
+        vat: "0.00",
+        cess: "0.00",
+        grandTotal: "0.00"
+      };
+    }
+
+    let assessableValue = 0;
+    let packCharges = 0;
+    let transportCost = 0;
+    let cgst = 0;
+    let sgst = 0;
+    let igst = 0;
+    let vat = 0;
+    let cess = 0;
+    let itemTotalSum = 0;
+
+    gstDetails.forEach((item) => {
+      assessableValue += parseFloat(item.AssValue || 0);
+      packCharges += parseFloat(item.Packing || 0);
+      transportCost += parseFloat(item.Transport || 0);
+      cgst += parseFloat(item.CGST || 0);
+      sgst += parseFloat(item.SGST || 0);
+      igst += parseFloat(item.IGST || 0);
+      vat += parseFloat(item.Vat || 0);
+      cess += parseFloat(item.Cess || 0);
+      itemTotalSum += parseFloat(item.Total || 0);
+    });
+
+    const firstItem = gstDetails[0] || {};
+    const insurance = parseFloat(firstItem.TOC_Insurance || 0);
+    const installationCharges = parseFloat(firstItem.TOC_InstallationCharges || 0);
+    const otherCharges = parseFloat(firstItem.TOC_OtherCharges || 0);
+    const tds = parseFloat(firstItem.TOC_TDS || 0);
+
+    const grandTotal = itemTotalSum + insurance + installationCharges + otherCharges - tds;
+
+    return {
+      assessableValue: assessableValue.toFixed(2),
+      packCharges: packCharges.toFixed(2),
+      transportCost: transportCost.toFixed(2),
+      insurance: insurance.toFixed(2),
+      installationCharges: installationCharges.toFixed(2),
+      otherCharges: otherCharges.toFixed(2),
+      tds: tds.toFixed(2),
+      cgst: cgst.toFixed(2),
+      sgst: sgst.toFixed(2),
+      igst: igst.toFixed(2),
+      vat: vat.toFixed(2),
+      cess: cess.toFixed(2),
+      grandTotal: grandTotal.toFixed(2)
+    };
+  };
+
+  const gstTotals = getGstTotals();
+
   const handleSubmitGRN = async () => {
     try {
       const payload = {
@@ -365,26 +459,25 @@ const PurchaseGrn = () => {
           IGST: gst.IGST, // Recalculated
           VAT: gst.Vat, // Recalculated
           CESS: gst.Cess, // Recalculated
+          total: gst.Total, // Table's item total value
         })),
 
         GrnGstTDC: [
           {
-            assessable_value: gstDetails[0]?.TOC_AssableValue || "0.00",
-            packing_forwarding_charges:
-              gstDetails[0]?.TOC_PackCharges || "0.00",
-            transport_charges: gstDetails[0]?.TOC_TransportCost || "0.00",
-            insurance: gstDetails[0]?.TOC_Insurance || "0.00",
-            installation_charges:
-              gstDetails[0]?.TOC_InstallationCharges || "0.00",
-            other_charges: gstDetails[0]?.TOC_OtherCharges || "0.00",
-            Tds: gstDetails[0]?.TOC_TDS || "0.00",
-            cgst: gstDetails[0]?.TOC_CGST || "0.00",
-            sgst: gstDetails[0]?.TOC_SGST || "0.00",
-            igst: gstDetails[0]?.TOC_IGST || "0.00",
-            vat: gstDetails[0]?.TOC_VAT || "0.00",
-            cess_amount: gstDetails[0]?.TOC_CESS || "0.00",
+            assessable_value: gstTotals.assessableValue,
+            packing_forwarding_charges: gstTotals.packCharges,
+            transport_charges: gstTotals.transportCost,
+            insurance: gstTotals.insurance,
+            installation_charges: gstTotals.installationCharges,
+            other_charges: gstTotals.otherCharges,
+            Tds: gstTotals.tds,
+            cgst: gstTotals.cgst,
+            sgst: gstTotals.sgst,
+            igst: gstTotals.igst,
+            vat: gstTotals.vat,
+            cess_amount: gstTotals.cess,
             tcs_amount: "0.00",
-            grand_total: gstDetails[0]?.GR_Total || "0.00",
+            grand_total: gstTotals.grandTotal,
           },
         ],
 
@@ -758,15 +851,15 @@ const PurchaseGrn = () => {
                                           newCalculatedGstItem = {
                                             ...originalGstItem,
                                             Qty: newGrnQtyValue,
-                                            Discount: "0.00",
+                                            Discount: originalGstItem.Discount || "0.00",
                                             Packing: "0.00",
                                             Transport: "0.00",
                                             AssValue: "0.00",
-                                            CGST: "0.00",
-                                            SGST: "0.00",
-                                            IGST: "0.00",
-                                            Vat: "0.00",
-                                            Cess: "0.00",
+                                            CGST: originalGstItem.CGST || "0.00",
+                                            SGST: originalGstItem.SGST || "0.00",
+                                            IGST: originalGstItem.IGST || "0.00",
+                                            Vat: originalGstItem.Vat || "0.00",
+                                            Cess: originalGstItem.Cess || "0.00",
                                             Total: "0.00",
                                             SubTotal: "0.00",
                                           };
@@ -784,9 +877,7 @@ const PurchaseGrn = () => {
                                           newCalculatedGstItem = {
                                             ...originalGstItem,
                                             Qty: newGrnQtyValue,
-                                            Discount: calc(
-                                              originalGstItem.Discount
-                                            ),
+                                            Discount: originalGstItem.Discount || "0.00",
                                             Packing: calc(
                                               originalGstItem.Packing
                                             ),
@@ -796,11 +887,11 @@ const PurchaseGrn = () => {
                                             AssValue: calc(
                                               originalGstItem.AssValue
                                             ),
-                                            CGST: calc(originalGstItem.CGST),
-                                            SGST: calc(originalGstItem.SGST),
-                                            IGST: calc(originalGstItem.IGST),
-                                            Vat: calc(originalGstItem.Vat),
-                                            Cess: calc(originalGstItem.Cess),
+                                            CGST: originalGstItem.CGST || "0.00",
+                                            SGST: originalGstItem.SGST || "0.00",
+                                            IGST: originalGstItem.IGST || "0.00",
+                                            Vat: originalGstItem.Vat || "0.00",
+                                            Cess: originalGstItem.Cess || "0.00",
                                             Total: calc(originalGstItem.Total),
                                             SubTotal: calc(
                                               originalGstItem.SubTotal
@@ -1360,10 +1451,7 @@ const PurchaseGrn = () => {
                                             <input
                                               type="text"
                                               className="form-control"
-                                              value={
-                                                gstDetails[1]
-                                                  ?.TOC_AssableValue || ""
-                                              }
+                                              value={gstTotals.assessableValue}
                                               readOnly
                                             />
                                           </td>
@@ -1376,10 +1464,7 @@ const PurchaseGrn = () => {
                                             <input
                                               type="text"
                                               className="form-control"
-                                              value={
-                                                gstDetails[1]
-                                                  ?.TOC_PackCharges || ""
-                                              }
+                                              value={gstTotals.packCharges}
                                               readOnly
                                             />
                                           </td>
@@ -1390,10 +1475,7 @@ const PurchaseGrn = () => {
                                             <input
                                               type="text"
                                               className="form-control"
-                                              value={
-                                                gstDetails[1]
-                                                  ?.TOC_TransportCost || ""
-                                              }
+                                              value={gstTotals.transportCost}
                                               readOnly
                                             />
                                           </td>
@@ -1404,10 +1486,7 @@ const PurchaseGrn = () => {
                                             <input
                                               type="text"
                                               className="form-control"
-                                              value={
-                                                gstDetails[1]?.TOC_Insurance ||
-                                                ""
-                                              }
+                                              value={gstTotals.insurance}
                                               readOnly
                                             />
                                           </td>
@@ -1418,11 +1497,7 @@ const PurchaseGrn = () => {
                                             <input
                                               type="text"
                                               className="form-control"
-                                              value={
-                                                gstDetails[1]
-                                                  ?.TOC_InstallationCharges ||
-                                                ""
-                                              }
+                                              value={gstTotals.installationCharges}
                                               readOnly
                                             />
                                           </td>
@@ -1433,10 +1508,7 @@ const PurchaseGrn = () => {
                                             <input
                                               type="text"
                                               className="form-control"
-                                              value={
-                                                gstDetails[1]
-                                                  ?.TOC_OtherCharges || ""
-                                              }
+                                              value={gstTotals.otherCharges}
                                               readOnly
                                             />
                                           </td>
@@ -1447,9 +1519,7 @@ const PurchaseGrn = () => {
                                             <input
                                               type="text"
                                               className="form-control"
-                                              value={
-                                                gstDetails[1]?.TOC_TDS || ""
-                                              }
+                                              value={gstTotals.tds}
                                               readOnly
                                             />
                                           </td>
@@ -1471,9 +1541,7 @@ const PurchaseGrn = () => {
                                             <input
                                               type="text"
                                               className="form-control"
-                                              value={
-                                                gstDetails[0]?.TOC_CGST || ""
-                                              }
+                                              value={gstTotals.cgst}
                                               readOnly
                                             />
                                           </td>
@@ -1486,9 +1554,7 @@ const PurchaseGrn = () => {
                                             <input
                                               type="text"
                                               className="form-control"
-                                              value={
-                                                gstDetails[0]?.TOC_SGST || ""
-                                              }
+                                              value={gstTotals.sgst}
                                               readOnly
                                             />
                                           </td>
@@ -1499,9 +1565,7 @@ const PurchaseGrn = () => {
                                             <input
                                               type="text"
                                               className="form-control"
-                                              value={
-                                                gstDetails[0]?.TOC_IGST || ""
-                                              }
+                                              value={gstTotals.igst}
                                               readOnly
                                             />
                                           </td>
@@ -1512,9 +1576,7 @@ const PurchaseGrn = () => {
                                             <input
                                               type="text"
                                               className="form-control"
-                                              value={
-                                                gstDetails[0]?.TOC_VAT || ""
-                                              }
+                                              value={gstTotals.vat}
                                               readOnly
                                             />
                                           </td>
@@ -1525,9 +1587,7 @@ const PurchaseGrn = () => {
                                             <input
                                               type="text"
                                               className="form-control"
-                                              value={
-                                                gstDetails[0]?.TOC_CESS || ""
-                                              }
+                                              value={gstTotals.cess}
                                               readOnly
                                             />
                                           </td>
@@ -1538,9 +1598,7 @@ const PurchaseGrn = () => {
                                             <input
                                               type="text"
                                               className="form-control"
-                                              value={
-                                                gstDetails[0]?.TOC_TDS || ""
-                                              }
+                                              value="0.00"
                                               readOnly
                                             />
                                           </td>
@@ -1551,9 +1609,7 @@ const PurchaseGrn = () => {
                                             <input
                                               type="text"
                                               className="form-control"
-                                              value={
-                                                gstDetails[0]?.GR_Total || ""
-                                              }
+                                              value={gstTotals.grandTotal}
                                               readOnly
                                             />
                                           </td>
