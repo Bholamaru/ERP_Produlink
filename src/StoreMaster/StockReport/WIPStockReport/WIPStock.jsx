@@ -9,6 +9,7 @@ import { Link } from "react-router-dom";
 import "./WIPStock.css";
 import axios from "axios";
 import { FaEye } from "react-icons/fa";
+import * as XLSX from "xlsx";
 
 const WIPStock = () => {
   const [sideNavOpen, setSideNavOpen] = useState(false);
@@ -131,6 +132,65 @@ const WIPStock = () => {
     setSelectedItem(null);
   };
 
+  const handleExportExcel = () => {
+    if (items.length === 0) {
+      alert("No records available to export");
+      return;
+    }
+
+    const exportData = items.map((item, index) => ({
+      "Sr": index + 1,
+      "Item No": item.part_no || "",
+      "Item Code": item.part_code || "",
+      "Item Description": item.Name_Description || "",
+      "OP No": item.OPNo || "",
+      "Operation": item.Operation || "-",
+      "Part Code": item.PartCode || "",
+      "OK Qty": item.prod_qty || 0,
+      "Rework Qty": item.rework_qty || 0,
+      "Reject Qty": item.reject_qty || 0,
+      "Pending QC": item.pending_qc || 0,
+      "Subcon": item.subcon || 0,
+      "Total": item.Total || 0,
+      "Rate": item.WipRate || 0,
+      "WipWt": item.WipWt || 0,
+      "TotalWt": item.totalwt || 0,
+    }));
+
+    if (totals && Object.keys(totals).length > 0) {
+      exportData.push({
+        "Sr": "",
+        "Item No": "",
+        "Item Code": "",
+        "Item Description": "Totals",
+        "OP No": "",
+        "Operation": "",
+        "Part Code": "",
+        "OK Qty": totals.total_prod || 0,
+        "Rework Qty": totals.total_rework || 0,
+        "Reject Qty": totals.total_reject || 0,
+        "Pending QC": totals.total_pending_qc || 0,
+        "Subcon": totals.total_subcon || 0,
+        "Total": totals.total_total || 0,
+        "Rate": "",
+        "WipWt": "",
+        "TotalWt": "",
+      });
+    }
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "WIP Stock Report");
+
+    // Adjust column widths
+    const wscols = Object.keys(exportData[0]).map(key => ({
+      wch: Math.max(key.length, ...exportData.map(row => row[key] ? row[key].toString().length : 0)) + 2
+    }));
+    worksheet["!cols"] = wscols;
+
+    XLSX.writeFile(workbook, "WIP_Stock_Report.xlsx");
+  };
+
   return (
     <div className="WIPStock">
       <div className="container-fluid">
@@ -154,13 +214,13 @@ const WIPStock = () => {
                     <div className="col-md-9 text-end">
                       {/* <div className="row justify-content-end">
                         <div className="col-md-3 d-flex align-items-end"> */}
-                      <Link type="button" className="vndrbtn">
+                      <button className="vndrbtn" onClick={handleExportExcel}>
                         Export To Excel
-                      </Link>
-                      <Link type="button" className="vndrbtn">
+                      </button>
+                      <Link type="button" className="vndrbtn" to="">
                         WIP-Under Decaration Stock
                       </Link>
-                      <Link type="button" className="vndrbtn">
+                      <Link type="button" className="vndrbtn" to="">
                         WIP Delewise Stock
                       </Link>
                       {/* </div>

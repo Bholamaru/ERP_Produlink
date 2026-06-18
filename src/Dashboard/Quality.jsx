@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Box, Typography, Button, MenuItem, Select, FormControl, Grid, Radio, FormControlLabel } from '@mui/material';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import TableChartIcon from '@mui/icons-material/TableChart';
+import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import {
   ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Legend, RadialBarChart, RadialBar, LineChart
@@ -73,6 +74,93 @@ const Quality = () => {
   const [fy, setFy] = useState('2026-2027');
   const [plant, setPlant] = useState('Sharp');
   const [month, setMonth] = useState('April 2026');
+  const [reworkData, setReworkData] = useState([]);
+  const [fromDate, setFromDate] = useState('');
+  const [toDate, setToDate] = useState('');
+
+  const [rejectData, setRejectData] = useState([]);
+  const [rejectFromDate, setRejectFromDate] = useState('');
+  const [rejectToDate, setRejectToDate] = useState('');
+
+  const fromRef = useRef(null);
+  const toRef = useRef(null);
+  const rejectFromRef = useRef(null);
+  const rejectToRef = useRef(null);
+
+  const handleOpenFromPicker = () => {
+    if (fromRef.current) {
+      fromRef.current.showPicker();
+    }
+  };
+
+  const handleOpenToPicker = () => {
+    if (toRef.current) {
+      toRef.current.showPicker();
+    }
+  };
+
+  const handleOpenRejectFromPicker = () => {
+    if (rejectFromRef.current) {
+      rejectFromRef.current.showPicker();
+    }
+  };
+
+  const handleOpenRejectToPicker = () => {
+    if (rejectToRef.current) {
+      rejectToRef.current.showPicker();
+    }
+  };
+
+  const formatDateDisplay = (dateStr) => {
+    if (!dateStr) return '';
+    const parts = dateStr.split('-');
+    if (parts.length === 3) {
+      return `${parts[2]}-${parts[1]}-${parts[0]}`;
+    }
+    return dateStr;
+  };
+
+  const fetchReworkData = async (from, to) => {
+    try {
+      const response = await fetch(`https://erp-render.onrender.com/Dashboard/Quality/rework_qty/?from_date=${from}&to_date=${to}`);
+      if (!response.ok) throw new Error("Failed to fetch rework data");
+      const result = await response.json();
+      setReworkData(Array.isArray(result) ? result : (result?.data || []));
+    } catch (error) {
+      console.error("Error fetching rework data:", error);
+    }
+  };
+
+  const fetchRejectData = async (from, to) => {
+    try {
+      const response = await fetch(`https://erp-render.onrender.com/Dashboard/Quality/reject_qty/?from_date=${from}&to_date=${to}`);
+      if (!response.ok) throw new Error("Failed to fetch reject data");
+      const result = await response.json();
+      setRejectData(Array.isArray(result) ? result : (result?.data || []));
+    } catch (error) {
+      console.error("Error fetching reject data:", error);
+    }
+  };
+
+  useEffect(() => {
+    // Dates are not pre-selected. Data will be fetched when the user manually enters dates and clicks Search.
+  }, []);
+
+  const handleSearch = () => {
+    if (!fromDate || !toDate) {
+      alert("Please select both From and To dates");
+      return;
+    }
+    fetchReworkData(fromDate, toDate);
+  };
+
+  const handleRejectSearch = () => {
+    if (!rejectFromDate || !rejectToDate) {
+      alert("Please select both From and To dates");
+      return;
+    }
+    fetchRejectData(rejectFromDate, rejectToDate);
+  };
 
   return (
     <Box className="p-8 max-w-[1600px] mx-auto bg-[#f8fafc] min-h-screen">
@@ -240,48 +328,74 @@ const Quality = () => {
         </Box>
 
         {/* Filter Bar */}
-        <Box className="flex items-center justify-between mb-8 bg-[#f8fafc] p-4 rounded-xl border border-[#eef2f6]">
-          <Box className="flex items-center gap-4">
-            <FormControlLabel
-              control={<Radio checked={true} size="small" sx={{ color: '#2563eb', '&.Mui-checked': { color: '#2563eb' } }} />}
-              label={<Typography className="text-[13px] font-black text-[#1e293b]">Production</Typography>}
-              sx={{ mr: 1 }}
-            />
-            
-            <Box className="flex items-center gap-1.5">
-              <Typography className="text-[12px] font-black text-[#64748b]">Plant:</Typography>
-              <Select value={plant} onChange={(e) => setPlant(e.target.value)} size="small" sx={{ height: '34px', fontSize: '12px', fontWeight: 900, borderRadius: '8px', minWidth: '90px', bgcolor: 'white', '& .MuiOutlinedInput-notchedOutline': { borderColor: '#e2e8f0' } }}>
-                <MenuItem value="Sharp">SHARP</MenuItem>
-              </Select>
-            </Box>
-
-            <Box className="flex items-center bg-white border border-[#e2e8f0] rounded-[8px] px-3 h-[34px] gap-2">
-              <Typography className="text-[11px] font-black text-[#64748b]">From</Typography>
-              <Typography className="text-[12px] font-black text-[#1e293b]">01-04-2026</Typography>
-              <Typography className="text-[11px] font-black text-[#64748b] ml-2">To</Typography>
-              <Typography className="text-[12px] font-black text-[#1e293b]">30-04-2026</Typography>
-            </Box>
-
-            <Box className="flex items-center gap-1.5">
-              <Typography className="text-[12px] font-black text-[#64748b]">Reason:</Typography>
-              <Select value="All" size="small" sx={{ height: '34px', fontSize: '12px', fontWeight: 900, borderRadius: '8px', minWidth: '90px', bgcolor: 'white', '& .MuiOutlinedInput-notchedOutline': { borderColor: '#e2e8f0' } }}>
-                <MenuItem value="All">All</MenuItem>
-              </Select>
-            </Box>
-
-            <Button variant="contained" size="small" sx={{ height: '34px', bgcolor: '#2563eb', borderRadius: '8px', fontWeight: 900, textTransform: 'none', px: 4 }}>
-              Search
-            </Button>
+        <Box 
+          className="items-center gap-2 mb-8 bg-[#f8fafc] p-3 rounded-xl border border-[#eef2f6]"
+          style={{ display: 'flex', flexWrap: 'nowrap', overflowX: 'auto' }}
+        >
+          <FormControlLabel
+            control={<Radio checked={true} size="small" sx={{ color: '#2563eb', '&.Mui-checked': { color: '#2563eb' } }} />}
+            label={<Typography className="text-[13px] font-black text-[#1e293b]">Production</Typography>}
+            sx={{ mr: 0.5 }}
+          />
+          
+          <Box className="flex items-center gap-1">
+            <Typography className="text-[12px] font-black text-[#64748b]">Plant:</Typography>
+            <Select value={plant} onChange={(e) => setPlant(e.target.value)} size="small" sx={{ height: '34px', fontSize: '12px', fontWeight: 900, borderRadius: '8px', minWidth: '80px', bgcolor: 'white', '& .MuiOutlinedInput-notchedOutline': { borderColor: '#e2e8f0' } }}>
+              <MenuItem value="Sharp">SHARP</MenuItem>
+            </Select>
           </Box>
 
-          <Box className="flex items-center gap-3">
-            <Button variant="contained" startIcon={<TableChartIcon />} sx={{ height: '34px', bgcolor: '#00a36c', borderRadius: '8px', fontWeight: 900, textTransform: 'none', '&:hover': { bgcolor: '#008f5d' } }}>
-              Item-wise
-            </Button>
-            <Button variant="contained" startIcon={<TableChartIcon />} sx={{ height: '34px', bgcolor: '#00a36c', borderRadius: '8px', fontWeight: 900, textTransform: 'none', '&:hover': { bgcolor: '#008f5d' } }}>
-              Reason-wise
-            </Button>
+          <Box 
+            className="items-center bg-white border border-[#e2e8f0] rounded-[6px] px-1.5 h-[28px] gap-1"
+            style={{ display: 'flex', flexWrap: 'nowrap' }}
+          >
+            <Typography className="text-[10px] font-black text-[#64748b]">From</Typography>
+            <Box onClick={handleOpenRejectFromPicker} className="flex items-center cursor-pointer gap-1">
+              <Typography className="text-[10px] font-black text-[#1e293b]">
+                {rejectFromDate ? formatDateDisplay(rejectFromDate) : 'DD-MM-YYYY'}
+              </Typography>
+              <CalendarTodayIcon sx={{ fontSize: 11, color: '#64748b', cursor: 'pointer' }} />
+              <input 
+                ref={rejectFromRef}
+                type="date" 
+                value={rejectFromDate} 
+                onChange={(e) => setRejectFromDate(e.target.value)} 
+                style={{ opacity: 0, width: 0, height: 0, position: 'absolute', pointerEvents: 'none' }} 
+              />
+            </Box>
+            <Typography className="text-[10px] font-black text-[#64748b] ml-1">To</Typography>
+            <Box onClick={handleOpenRejectToPicker} className="flex items-center cursor-pointer gap-1">
+              <Typography className="text-[10px] font-black text-[#1e293b]">
+                {rejectToDate ? formatDateDisplay(rejectToDate) : 'DD-MM-YYYY'}
+              </Typography>
+              <CalendarTodayIcon sx={{ fontSize: 11, color: '#64748b', cursor: 'pointer' }} />
+              <input 
+                ref={rejectToRef}
+                type="date" 
+                value={rejectToDate} 
+                onChange={(e) => setRejectToDate(e.target.value)} 
+                style={{ opacity: 0, width: 0, height: 0, position: 'absolute', pointerEvents: 'none' }} 
+              />
+            </Box>
           </Box>
+
+          <Box className="flex items-center gap-1">
+            <Typography className="text-[12px] font-black text-[#64748b]">Reason:</Typography>
+            <Select value="All" size="small" sx={{ height: '34px', fontSize: '12px', fontWeight: 900, borderRadius: '8px', minWidth: '80px', bgcolor: 'white', '& .MuiOutlinedInput-notchedOutline': { borderColor: '#e2e8f0' } }}>
+              <MenuItem value="All">All</MenuItem>
+            </Select>
+          </Box>
+
+          <Button onClick={handleRejectSearch} variant="contained" size="small" sx={{ height: '34px', bgcolor: '#2563eb', borderRadius: '8px', fontWeight: 900, textTransform: 'none', px: 2.5 }}>
+            Search
+          </Button>
+
+          <Button variant="contained" startIcon={<TableChartIcon />} sx={{ height: '34px', bgcolor: '#00a36c', borderRadius: '8px', fontWeight: 900, textTransform: 'none', '&:hover': { bgcolor: '#008f5d' } }}>
+            Item-wise
+          </Button>
+          <Button variant="contained" startIcon={<TableChartIcon />} sx={{ height: '34px', bgcolor: '#00a36c', borderRadius: '8px', fontWeight: 900, textTransform: 'none', '&:hover': { bgcolor: '#008f5d' } }}>
+            Reason-wise
+          </Button>
         </Box>
 
         {/* Data Table with Scroll */}
@@ -302,30 +416,25 @@ const Quality = () => {
                 </tr>
               </thead>
               <tbody>
-                {[
-                  { sr: 1, itemNo: 'RM-01', code: 'C-100', part: 'PT-991', desc: 'Steel Rod 10mm', op: 'OP-10', qty: '4500', pct: '1.2%', ppm: '12,000' },
-                  { sr: 2, itemNo: 'RM-02', code: 'C-102', part: 'PT-992', desc: 'Aluminum Sheet', op: 'OP-20', qty: '3200', pct: '0.8%', ppm: '8,000' },
-                  { sr: 3, itemNo: 'RM-03', code: 'C-105', part: 'PT-993', desc: 'Copper Wire', op: 'OP-10', qty: '15000', pct: '2.1%', ppm: '21,000' },
-                  { sr: 4, itemNo: 'RM-04', code: 'C-110', part: 'PT-994', desc: 'Rubber Gasket', op: 'OP-30', qty: '5400', pct: '1.5%', ppm: '15,000' },
-                  { sr: 5, itemNo: 'RM-05', code: 'C-112', part: 'PT-995', desc: 'Carbon Fiber Plate', op: 'OP-40', qty: '120', pct: '4.2%', ppm: '42,000' },
-                  { sr: 6, itemNo: 'RM-06', code: 'C-115', part: 'PT-996', desc: 'Hex Bolt M8', op: 'OP-10', qty: '12000', pct: '0.9%', ppm: '9,000' },
-                  { sr: 7, itemNo: 'RM-07', code: 'C-120', part: 'PT-997', desc: 'Flange Adapter', op: 'OP-20', qty: '540', pct: '3.1%', ppm: '31,000' },
-                  { sr: 8, itemNo: 'RM-08', code: 'C-125', part: 'PT-998', desc: 'Shaft Spindle', op: 'OP-50', qty: '2100', pct: '1.5%', ppm: '15,000' },
-                  { sr: 9, itemNo: 'RM-09', code: 'C-130', part: 'PT-999', desc: 'Bearing Housing', op: 'OP-30', qty: '3300', pct: '2.4%', ppm: '24,000' },
-                  { sr: 10, itemNo: 'RM-10', code: 'C-140', part: 'PT-1000', desc: 'Nylon Washer', op: 'OP-10', qty: '8900', pct: '0.5%', ppm: '5,000' },
-                ].map((row, index) => (
-                  <tr key={index} className="border-b border-[#f1f5f9] hover:bg-gray-50 transition-colors">
-                    <td className="px-4 py-4 text-[13px] font-bold text-[#475569]">{row.sr}</td>
-                    <td className="px-4 py-4 text-[14px] font-black text-[#1e293b]">{row.itemNo}</td>
-                    <td className="px-4 py-4 text-[14px] font-black text-[#1e293b]">{row.code}</td>
-                    <td className="px-4 py-4 text-[14px] font-black text-[#1e293b]">{row.part}</td>
-                    <td className="px-4 py-4 text-[13px] font-bold text-[#475569]">{row.desc}</td>
-                    <td className="px-4 py-4 text-[14px] font-black text-[#1e293b]">{row.op}</td>
-                    <td className="px-4 py-4 text-[14px] font-black text-[#1e293b] text-right">{row.qty}</td>
-                    <td className="px-4 py-4 text-[14px] font-black text-[#2563eb] text-right">{row.pct}</td>
-                    <td className="px-4 py-4 text-[14px] font-black text-[#1e293b] text-right">{row.ppm}</td>
-                  </tr>
-                ))}
+                {rejectData.map((row, index) => {
+                  const prodQty = row.prod_qty !== null && row.prod_qty !== undefined ? row.prod_qty : 0;
+                  const percentage = row.percentage !== null && row.percentage !== undefined ? row.percentage : 0;
+                  const ppmVal = (percentage * 1000).toLocaleString(undefined, { maximumFractionDigits: 0 });
+                  
+                  return (
+                    <tr key={row.id || index} className="border-b border-[#f1f5f9] hover:bg-gray-50 transition-colors">
+                      <td className="px-4 py-4 text-[13px] font-bold text-[#475569]">{index + 1}</td>
+                      <td className="px-4 py-4 text-[14px] font-black text-[#1e293b]">{row.item_no || '-'}</td>
+                      <td className="px-4 py-4 text-[14px] font-black text-[#1e293b]">{row.item_code || '-'}</td>
+                      <td className="px-4 py-4 text-[14px] font-black text-[#1e293b]">{row.part_no || '-'}</td>
+                      <td className="px-4 py-4 text-[13px] font-bold text-[#475569]">{row.item_description || '-'}</td>
+                      <td className="px-4 py-4 text-[14px] font-black text-[#1e293b]">{row.operation || '-'}</td>
+                      <td className="px-4 py-4 text-[14px] font-black text-[#1e293b] text-right">{prodQty}</td>
+                      <td className="px-4 py-4 text-[14px] font-black text-[#2563eb] text-right">{percentage}%</td>
+                      <td className="px-4 py-4 text-[14px] font-black text-[#1e293b] text-right">{ppmVal}</td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </Box>
@@ -473,41 +582,67 @@ const Quality = () => {
         </Box>
 
         {/* Filter Bar */}
-        <Box className="flex items-center justify-between mb-8 bg-[#f8fafc] p-4 rounded-xl border border-[#eef2f6]">
-          <Box className="flex items-center gap-4">
-            <FormControlLabel
-              control={<Radio checked={true} size="small" sx={{ color: '#2563eb', '&.Mui-checked': { color: '#2563eb' } }} />}
-              label={<Typography className="text-[13px] font-black text-[#1e293b]">Production</Typography>}
-              sx={{ mr: 1 }}
-            />
-            
-            <Box className="flex items-center gap-1.5">
-              <Typography className="text-[12px] font-black text-[#64748b]">Plant:</Typography>
-              <Select value={plant} onChange={(e) => setPlant(e.target.value)} size="small" sx={{ height: '34px', fontSize: '12px', fontWeight: 900, borderRadius: '8px', minWidth: '90px', bgcolor: 'white', '& .MuiOutlinedInput-notchedOutline': { borderColor: '#e2e8f0' } }}>
-                <MenuItem value="Sharp">SHARP</MenuItem>
-              </Select>
-            </Box>
-
-            <Box className="flex items-center bg-white border border-[#e2e8f0] rounded-[8px] px-3 h-[34px] gap-2">
-              <Typography className="text-[11px] font-black text-[#64748b]">From</Typography>
-              <Typography className="text-[12px] font-black text-[#1e293b]">01-04-2026</Typography>
-              <Typography className="text-[11px] font-black text-[#64748b] ml-2">To</Typography>
-              <Typography className="text-[12px] font-black text-[#1e293b]">30-04-2026</Typography>
-            </Box>
-
-            <Button variant="contained" size="small" sx={{ height: '34px', bgcolor: '#2563eb', borderRadius: '8px', fontWeight: 900, textTransform: 'none', px: 4 }}>
-              Search
-            </Button>
+        <Box 
+          className="items-center gap-2 mb-8 bg-[#f8fafc] p-3 rounded-xl border border-[#eef2f6]"
+          style={{ display: 'flex', flexWrap: 'nowrap', overflowX: 'auto' }}
+        >
+          <FormControlLabel
+            control={<Radio checked={true} size="small" sx={{ color: '#2563eb', '&.Mui-checked': { color: '#2563eb' } }} />}
+            label={<Typography className="text-[13px] font-black text-[#1e293b]">Production</Typography>}
+            sx={{ mr: 0.5 }}
+          />
+          
+          <Box className="flex items-center gap-1">
+            <Typography className="text-[12px] font-black text-[#64748b]">Plant:</Typography>
+            <Select value={plant} onChange={(e) => setPlant(e.target.value)} size="small" sx={{ height: '34px', fontSize: '12px', fontWeight: 900, borderRadius: '8px', minWidth: '80px', bgcolor: 'white', '& .MuiOutlinedInput-notchedOutline': { borderColor: '#e2e8f0' } }}>
+              <MenuItem value="Sharp">SHARP</MenuItem>
+            </Select>
           </Box>
 
-          <Box className="flex items-center gap-3">
-            <Button variant="contained" startIcon={<TableChartIcon />} sx={{ height: '34px', bgcolor: '#00a36c', borderRadius: '8px', fontWeight: 900, textTransform: 'none', '&:hover': { bgcolor: '#008f5d' } }}>
-              Item-wise Rework
-            </Button>
-            <Button variant="contained" startIcon={<TableChartIcon />} sx={{ height: '34px', bgcolor: '#00a36c', borderRadius: '8px', fontWeight: 900, textTransform: 'none', '&:hover': { bgcolor: '#008f5d' } }}>
-              Reason-wise Rework
-            </Button>
+          <Box 
+            className="items-center bg-white border border-[#e2e8f0] rounded-[6px] px-1.5 h-[28px] gap-1"
+            style={{ display: 'flex', flexWrap: 'nowrap' }}
+          >
+            <Typography className="text-[10px] font-black text-[#64748b]">From</Typography>
+            <Box onClick={handleOpenFromPicker} className="flex items-center cursor-pointer gap-1">
+              <Typography className="text-[10px] font-black text-[#1e293b]">
+                {fromDate ? formatDateDisplay(fromDate) : 'DD-MM-YYYY'}
+              </Typography>
+              <CalendarTodayIcon sx={{ fontSize: 11, color: '#64748b', cursor: 'pointer' }} />
+              <input 
+                ref={fromRef}
+                type="date" 
+                value={fromDate} 
+                onChange={(e) => setFromDate(e.target.value)} 
+                style={{ opacity: 0, width: 0, height: 0, position: 'absolute', pointerEvents: 'none' }} 
+              />
+            </Box>
+            <Typography className="text-[10px] font-black text-[#64748b] ml-1">To</Typography>
+            <Box onClick={handleOpenToPicker} className="flex items-center cursor-pointer gap-1">
+              <Typography className="text-[10px] font-black text-[#1e293b]">
+                {toDate ? formatDateDisplay(toDate) : 'DD-MM-YYYY'}
+              </Typography>
+              <CalendarTodayIcon sx={{ fontSize: 11, color: '#64748b', cursor: 'pointer' }} />
+              <input 
+                ref={toRef}
+                type="date" 
+                value={toDate} 
+                onChange={(e) => setToDate(e.target.value)} 
+                style={{ opacity: 0, width: 0, height: 0, position: 'absolute', pointerEvents: 'none' }} 
+              />
+            </Box>
           </Box>
+
+          <Button onClick={handleSearch} variant="contained" size="small" sx={{ height: '34px', bgcolor: '#2563eb', borderRadius: '8px', fontWeight: 900, textTransform: 'none', px: 2.5 }}>
+            Search
+          </Button>
+
+          <Button variant="contained" startIcon={<TableChartIcon />} sx={{ height: '34px', bgcolor: '#00a36c', borderRadius: '8px', fontWeight: 900, textTransform: 'none', '&:hover': { bgcolor: '#008f5d' } }}>
+            Item-wise Rework
+          </Button>
+          <Button variant="contained" startIcon={<TableChartIcon />} sx={{ height: '34px', bgcolor: '#00a36c', borderRadius: '8px', fontWeight: 900, textTransform: 'none', '&:hover': { bgcolor: '#008f5d' } }}>
+            Reason-wise Rework
+          </Button>
         </Box>
 
         {/* Data Table */}
@@ -527,30 +662,26 @@ const Quality = () => {
               </tr>
             </thead>
             <tbody>
-              {[
-                { sr: 1, itemNo: 'RW-01', part: 'PT-771', desc: 'Welded Joint A', op: 'OP-35', prod: '5000', rew: '45', pct: '0.9%', ppm: '9,000' },
-                { sr: 2, itemNo: 'RW-02', part: 'PT-772', desc: 'Casting Frame', op: 'OP-15', prod: '1200', rew: '18', pct: '1.5%', ppm: '15,000' },
-                { sr: 3, itemNo: 'RW-03', part: 'PT-773', desc: 'Hydraulic Pump', op: 'OP-60', prod: '850', rew: '12', pct: '1.4%', ppm: '14,000' },
-                { sr: 4, itemNo: 'RW-04', part: 'PT-774', desc: 'Valve Stem', op: 'OP-20', prod: '12000', rew: '84', pct: '0.7%', ppm: '7,000' },
-                { sr: 5, itemNo: 'RW-05', part: 'PT-775', desc: 'Sealing Ring', op: 'OP-10', prod: '45000', rew: '315', pct: '0.7%', ppm: '7,000' },
-                { sr: 6, itemNo: 'RW-06', part: 'PT-776', desc: 'Bearing Housing', op: 'OP-40', prod: '2400', rew: '28', pct: '1.2%', ppm: '12,000' },
-                { sr: 7, itemNo: 'RW-07', part: 'PT-777', desc: 'Drive Shaft', op: 'OP-25', prod: '1500', rew: '15', pct: '1.0%', ppm: '10,000' },
-                { sr: 8, itemNo: 'RW-08', part: 'PT-778', desc: 'Control Valve', op: 'OP-55', prod: '900', rew: '14', pct: '1.6%', ppm: '16,000' },
-                { sr: 9, itemNo: 'RW-09', part: 'PT-779', desc: 'Connector Hub', op: 'OP-12', prod: '11000', rew: '77', pct: '0.7%', ppm: '7,000' },
-                { sr: 10, itemNo: 'RW-10', part: 'PT-780', desc: 'Seal Plate', op: 'OP-30', prod: '6500', rew: '32', pct: '0.5%', ppm: '5,000' },
-              ].map((row, index) => (
-                <tr key={index} className="border-b border-[#f1f5f9] hover:bg-gray-50 transition-colors">
-                  <td className="px-4 py-4 text-[13px] font-bold text-[#475569]">{row.sr}</td>
-                  <td className="px-4 py-4 text-[14px] font-black text-[#1e293b]">{row.itemNo}</td>
-                  <td className="px-4 py-4 text-[14px] font-black text-[#1e293b]">{row.part}</td>
-                  <td className="px-4 py-4 text-[13px] font-bold text-[#475569]">{row.desc}</td>
-                  <td className="px-4 py-4 text-[14px] font-black text-[#1e293b]">{row.op}</td>
-                  <td className="px-4 py-4 text-[14px] font-black text-[#1e293b] text-right">{row.prod}</td>
-                  <td className="px-4 py-4 text-[14px] font-black text-[#1e293b] text-right">{row.rew}</td>
-                  <td className="px-4 py-4 text-[14px] font-black text-[#2563eb] text-right">{row.pct}</td>
-                  <td className="px-4 py-4 text-[14px] font-black text-[#1e293b] text-right">{row.ppm}</td>
-                </tr>
-              ))}
+              {reworkData.map((row, index) => {
+                const prodQty = row.prod_qty !== null && row.prod_qty !== undefined ? row.prod_qty : 0;
+                const rewQty = row.rework_qty !== null && row.rework_qty !== undefined ? row.rework_qty : 0;
+                const percentage = row.percentage !== null && row.percentage !== undefined ? row.percentage : 0;
+                const ppmVal = (percentage * 1000).toLocaleString(undefined, { maximumFractionDigits: 0 });
+                
+                return (
+                  <tr key={row.id || index} className="border-b border-[#f1f5f9] hover:bg-gray-50 transition-colors">
+                    <td className="px-4 py-4 text-[13px] font-bold text-[#475569]">{index + 1}</td>
+                    <td className="px-4 py-4 text-[14px] font-black text-[#1e293b]">{row.item_no || '-'}</td>
+                    <td className="px-4 py-4 text-[14px] font-black text-[#1e293b]">{row.part_no || '-'}</td>
+                    <td className="px-4 py-4 text-[13px] font-bold text-[#475569]">{row.item_description || '-'}</td>
+                    <td className="px-4 py-4 text-[14px] font-black text-[#1e293b]">{row.operation || '-'}</td>
+                    <td className="px-4 py-4 text-[14px] font-black text-[#1e293b] text-right">{prodQty}</td>
+                    <td className="px-4 py-4 text-[14px] font-black text-[#1e293b] text-right">{rewQty}</td>
+                    <td className="px-4 py-4 text-[14px] font-black text-[#2563eb] text-right">{percentage}%</td>
+                    <td className="px-4 py-4 text-[14px] font-black text-[#1e293b] text-right">{ppmVal}</td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </Box>

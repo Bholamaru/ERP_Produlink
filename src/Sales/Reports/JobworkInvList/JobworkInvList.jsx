@@ -7,6 +7,7 @@ import SideNav from "../../../SideNav/SideNav.js";
 import "./JobworkInvList.css";
 import { useNavigate } from 'react-router-dom';
 import { Link } from "react-router-dom";
+import * as XLSX from "xlsx";
 
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
@@ -17,6 +18,49 @@ const JobworkInvList = () => {
   const navigate = useNavigate();
   const [invoiceData, setInvoiceData] = useState([]);
   const [loading, setLoading] = useState(false);
+
+  const handleExportExcel = (e) => {
+    if (e) e.preventDefault();
+    if (invoiceData.length === 0) {
+      alert("No records available to export");
+      return;
+    }
+
+    const exportData = invoiceData.map((inv, index) => {
+      const firstItem = inv.items && inv.items.length > 0 ? inv.items[0] : null;
+      const itemDesc = firstItem 
+        ? `${firstItem.item_code} | ${firstItem.description} | Rate : ${firstItem.jobwork_rate} | Qty : ${firstItem.invoice_qty_nos} ${firstItem.rate_type || 'NOS'}` 
+        : '';
+
+      return {
+        "Sr.": index + 1,
+        "Year": "25-26",
+        "Plant": inv.plant || "",
+        "Inv No": inv.invoice_no || "",
+        "Inv Date": inv.invoice_date || "",
+        "Order No": firstItem?.po_no || "",
+        "Order Date": firstItem?.line_podt || "",
+        "Cust Code": inv.addr_code || "",
+        "Cust Name": inv.bill_to_cust || "",
+        "Item NO | Desc | Qty": itemDesc,
+        "Qty": firstItem?.invoice_qty_nos || 0,
+        "Ass Amt": inv.gst_details?.assessable_value || "0.00",
+        "Total Amt": inv.gst_details?.gr_total || "0.00",
+        "User": "prakash"
+      };
+    });
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Jobwork Invoices");
+
+    const wscols = Object.keys(exportData[0]).map(key => ({
+      wch: Math.max(key.length, ...exportData.map(row => row[key] ? row[key].toString().length : 0)) + 2
+    }));
+    worksheet["!cols"] = wscols;
+
+    XLSX.writeFile(workbook, "Jobwork_Invoice_List.xlsx");
+  };
 
   useEffect(() => {
     fetchInvoices();
@@ -134,9 +178,9 @@ const JobworkInvList = () => {
                               }}
                             >
                               <li>
-                                <Link className="vndrbtn dropdown-item" to={"/"}>
+                                <button className="vndrbtn dropdown-item" onClick={handleExportExcel} style={{ border: 'none', background: 'none', width: '100%', textAlign: 'left' }}>
                                   Export-Excel
-                                </Link>
+                                </button>
                               </li>
                               <li>
                                 <Link className="vndrbtn dropdown-item" to={"/JobWorkSalesRegister"}>

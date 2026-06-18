@@ -7,6 +7,7 @@ import SideNav from "../../SideNav/SideNav";
 import "./WorkCenterMaster.css";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import * as XLSX from "xlsx";
 import { getWorkCenters ,updateWorkCenter,deleteWorkCenter} from "../../Service/Api.jsx";
 import AddNewCard from "./AddNewCard/AddNewCard.jsx";
 import { FaEdit, FaTrash } from "react-icons/fa";
@@ -107,6 +108,37 @@ const handleCancel = () => {
   setEditData({});
 };
 
+const handleExportExcel = () => {
+  if (data.length === 0) {
+    toast.info("No records available to export");
+    return;
+  }
+
+  const exportData = data.map((item, index) => ({
+    "Sr.": index + 1,
+    "Plant": item.Plant || "",
+    "Work Center Code": item.WorkCenterCode || "",
+    "Work Center Name": item.WorkCenterName || "",
+    "Machine Type": item.WorkCenterType || "",
+    "Type Group": item.TypeGroup || "",
+    "Category": item.Category || "",
+    "W.Hr.Rate": item.Mhr_Rate || "0",
+    "PPM": item.PPM || "",
+  }));
+
+  const worksheet = XLSX.utils.json_to_sheet(exportData);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Work Center Master");
+
+  // Adjust column widths
+  const wscols = Object.keys(exportData[0]).map(key => ({
+    wch: Math.max(key.length, ...exportData.map(row => row[key] ? row[key].toString().length : 0)) + 2
+  }));
+  worksheet["!cols"] = wscols;
+
+  XLSX.writeFile(workbook, "Work_Center_Master.xlsx");
+};
+
 
 
 const handleChange = (e) => {
@@ -153,7 +185,7 @@ const handleChange = (e) => {
                           >
                             Work Center Type
                           </button>
-                          <button className="btn">Export Report</button>
+                          <button className="btn" onClick={handleExportExcel}>Export Report</button>
                         </div>
                       </div>
                     </div>

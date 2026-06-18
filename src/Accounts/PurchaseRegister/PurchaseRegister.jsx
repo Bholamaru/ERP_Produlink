@@ -6,6 +6,7 @@ import SideNav from "../../SideNav/SideNav.js";
 import "./PurchaseRegister.css";
 import { FaFileExcel, FaSearch, FaEye, FaEdit, FaTrash, FaFileAlt, FaExclamationTriangle, FaCheck, FaTimes } from "react-icons/fa";
 import axios from "axios";
+import * as XLSX from "xlsx";
 
 const PurchaseRegister = () => {
   const [sideNavOpen, setSideNavOpen] = useState(false);
@@ -88,6 +89,43 @@ const PurchaseRegister = () => {
     handleSearch();
   }, []);
 
+  const handleExportExcel = () => {
+    if (data.length === 0) {
+      alert("No records available to export");
+      return;
+    }
+
+    const exportData = data.map((row) => ({
+      "Sr": row.sr,
+      "Year": row.year || "",
+      "Bill (P) No.": row.billNo || "",
+      "Bill (P) Date": row.billDate || "",
+      "Type": row.type || "",
+      "Bill Type": row.billType || "",
+      "Challan No": row.challanNo || "",
+      "Challan Date": row.challanDate || "",
+      "PO No": row.poNo || "",
+      "GRN No": row.grnNo || "",
+      "Code": row.code || "",
+      "Supplier/Vendor Name": row.supplier || "",
+      "Ass Amt.": row.assAmt || "",
+      "Total Amt.": row.totalAmt || "",
+      "User": row.user || "",
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Purchase Register");
+
+    // Adjust column widths
+    const wscols = Object.keys(exportData[0]).map(key => ({
+      wch: Math.max(key.length, ...exportData.map(row => row[key] ? row[key].toString().length : 0)) + 2
+    }));
+    worksheet["!cols"] = wscols;
+
+    XLSX.writeFile(workbook, "Purchase_Register.xlsx");
+  };
+
   useEffect(() => {
     if (sideNavOpen) {
       document.body.classList.add("side-nav-open");
@@ -163,7 +201,7 @@ const PurchaseRegister = () => {
                         >
                           <i className="fa fa-list text-primary"></i> Purchase Register Details
                         </button>
-                        <button className="btn d-inline-flex align-items-center gap-1">
+                        <button className="btn d-inline-flex align-items-center gap-1" onClick={handleExportExcel}>
                           <FaFileExcel className="excel-icon text-success" /> Export To Excel
                         </button>
                       </div>

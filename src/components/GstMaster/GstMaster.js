@@ -14,6 +14,7 @@ import {
 import "./GstMaster.css";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import * as XLSX from "xlsx";
 
 const GstMaster = () => {
   const [sideNavOpen, setSideNavOpen] = useState(false);
@@ -154,6 +155,43 @@ const GstMaster = () => {
     }
   };
 
+  const handleExportExcel = () => {
+    if (records.length === 0) {
+      toast.info("No records available to export");
+      return;
+    }
+
+    const exportData = records.map((record, index) => ({
+      "Sr.": index + 1,
+      "HSN Code": record.HSN_SAC_Code || "",
+      "HSN Code Desc.": record.HSN_SAC_Desc || "",
+      "CGST": record.CGST || "0",
+      "SGST": record.SGST || "0",
+      "IGST": record.IGST || "0",
+      "UTGST": record.UTGST || "0",
+      "Export CGST": record.export_CGST || "0",
+      "Export SGST": record.export_SGST || "0",
+      "Export IGST": record.export_IGST || "0",
+      "Cess": record.Cess || "0",
+      "DBK SrNo": record.DBK_SrNo || "",
+      "Is Exempt": record.Is_Exempt || "",
+      "Type": record.Type || "",
+      "User": record.User || "",
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "GST Rate Master");
+
+    // Adjust column widths
+    const wscols = Object.keys(exportData[0]).map(key => ({
+      wch: Math.max(key.length, ...exportData.map(row => row[key] ? row[key].toString().length : 0)) + 2
+    }));
+    worksheet["!cols"] = wscols;
+
+    XLSX.writeFile(workbook, "GST_Rate_Master.xlsx");
+  };
+
   return (
     <div className="GstMaster">
       <ToastContainer />
@@ -183,7 +221,7 @@ const GstMaster = () => {
                         <Link to="/Customer-Item-Wise-Gst" className="btn">
                           Cut-Wise GST Rate - Excel Upload
                         </Link>
-                        <Link to="/#" className="btn">
+                        <Link to="#" className="btn" onClick={(e) => { e.preventDefault(); handleExportExcel(); }}>
                           Export To Excel
                         </Link>
                       </div>

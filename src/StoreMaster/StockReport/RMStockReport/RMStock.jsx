@@ -7,6 +7,7 @@ import SideNav from "../../../SideNav/SideNav.js";
 import { Link } from "react-router-dom";
 import "./RMStock.css";
 import { FaEye } from "react-icons/fa";
+import * as XLSX from "xlsx";
 
 const OurVendorStock = () => {
   const [sideNavOpen, setSideNavOpen] = useState(false);
@@ -170,6 +171,43 @@ const OurVendorStock = () => {
     }
   };
 
+  const handleExportExcel = () => {
+    if (rows.length === 0) {
+      alert("No records available to export");
+      return;
+    }
+
+    const exportData = rows.map((r, index) => ({
+      "Sr no.": index + 1,
+      "Item Code": r.item_code || "",
+      "Desc": r.description || "",
+      "Size": r.size || "",
+      "Group Name": r.group_name || "",
+      "UnitCode": r.unit_code || "",
+      "Item Type": r.item_type || "",
+      "PO Rat. Qty": r.po_rate_qty || 0,
+      "QC Stock": r.qc_stock || "-",
+      "F4 Stock": r.f4_stock || "-",
+      "ShopFloor": r.shop_floor || "-",
+      "Stock": getTotalStock(r.variants),
+      "Heat No": getHeatCount(r.variants) > 0 ? `${getHeatCount(r.variants)} Heat No(s)` : "N/A",
+      "Rate": r.rate || 0,
+      "Amt": r.amount || 0,
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "RM Stock Report");
+
+    // Adjust column widths
+    const wscols = Object.keys(exportData[0]).map(key => ({
+      wch: Math.max(key.length, ...exportData.map(row => row[key] ? row[key].toString().length : 0)) + 2
+    }));
+    worksheet["!cols"] = wscols;
+
+    XLSX.writeFile(workbook, "RM_Stock_Report.xlsx");
+  };
+
   return (
     <div className="RMStock">
       <div className="container-fluid">
@@ -186,8 +224,8 @@ const OurVendorStock = () => {
                       <h5 className="header-title text-start">RM Stock Report</h5>
                     </div>
                     <div className="col-md-9 text-end">
-                      <Link className="vndrbtn me-2">Export To Excel</Link>
-                      <Link className="vndrbtn">RM DataWise Stock</Link>
+                      <button className="vndrbtn me-2" onClick={handleExportExcel}>Export To Excel</button>
+                      <Link className="vndrbtn" to="/RMDataWiseStock">RM DataWise Stock</Link>
                     </div>
                   </div>
                 </div>

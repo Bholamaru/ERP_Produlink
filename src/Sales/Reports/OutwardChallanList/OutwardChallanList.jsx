@@ -5,6 +5,7 @@ import NavBar from "../../../NavBar/NavBar.js";
 import SideNav from "../../../SideNav/SideNav.js";
 import "./OutwardChallanList.css";
 import { useNavigate } from "react-router-dom";
+import * as XLSX from "xlsx";
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>;
 
@@ -15,6 +16,39 @@ const OutwardChallanList = () => {
 
   const handleButtonClick = () => {
     navigate("/");
+  };
+
+  const handleExportExcel = () => {
+    if (challanList.length === 0) {
+      alert("No records available to export");
+      return;
+    }
+
+    const exportData = challanList.map((challan, index) => ({
+      "Sr.": index + 1,
+      "Challan No": challan.challan_no || "",
+      "Challan Date": challan.challan_date || "",
+      "DC No": challan.DC_no || "",
+      "Transport Name": challan.Transport_name || "",
+      "Vehicle No": challan.vehical_no || "",
+      "Estimated Value": challan.Estimated_value || 0,
+      "EWay Bill No": challan.EWay_bill_no || "",
+      "Vendor Name": challan.vender || "",
+      "Items": formatItemsDisplay(challan.items),
+      "Rev Charges": challan.rev_charges || "",
+      "Remarks": challan.remarks || ""
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Outward Challans");
+
+    const wscols = Object.keys(exportData[0]).map(key => ({
+      wch: Math.max(key.length, ...exportData.map(row => row[key] ? row[key].toString().length : 0)) + 2
+    }));
+    worksheet["!cols"] = wscols;
+
+    XLSX.writeFile(workbook, "Outward_Challan_List.xlsx");
   };
 
   const toggleSideNav = () => {
@@ -81,6 +115,9 @@ const OutwardChallanList = () => {
                       </div>
 
                       <div className="col-md-8 text-end">
+                        <button type="button" className="btn" onClick={handleExportExcel} >
+                          Export Excel
+                        </button>
                         <button type="button" className="btn" to="#/">
                           F7 Outward Report
                         </button>

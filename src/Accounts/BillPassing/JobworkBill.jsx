@@ -7,6 +7,7 @@ import SideNav from "../../SideNav/SideNav.js";
 import "./JobworkBill.css";
 import axios from "axios";
 import { FaEye, FaCheck, FaPlus, FaTrash, FaFileExcel, FaSearch, FaTimes, FaExclamationTriangle } from "react-icons/fa";
+import * as XLSX from "xlsx";
 
 const JobworkBill = () => {
   const navigate = useNavigate();
@@ -192,6 +193,43 @@ const JobworkBill = () => {
     }
   };
 
+  const handleExportExcel = () => {
+    if (!reportData || reportData.length === 0) {
+      alert("No data available to export.");
+      return;
+    }
+
+    const exportData = reportData.map((data, index) => ({
+      "Sr.": index + 1,
+      "Year": data.year || "",
+      "57F4 GRNNo": data.grnNo || "",
+      "GRN Date": data.grnDate || "",
+      "57F4Type": data.type || "",
+      "Vend Ch.No": data.vendChNo || "",
+      "Ch. Date": data.chDate || "",
+      "Code": data.code || "",
+      "Vendor Name": data.vendor || "",
+      "f4 out no": data.f4Out || "",
+      "Item Qty | Desc": data.qtyDesc || "",
+      "User": data.user || ""
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Pending Jobwork Bills");
+
+    // Auto-fit columns
+    const wscols = Object.keys(exportData[0]).map((key) => ({
+      wch: Math.max(
+        key.length,
+        ...exportData.map((row) => (row[key] ? row[key].toString().length : 0))
+      ) + 2,
+    }));
+    worksheet["!cols"] = wscols;
+
+    XLSX.writeFile(workbook, "Pending_Bill_Inward_Challan_List.xlsx");
+  };
+
   const handleVendorChange = (e) => {
     const value = e.target.value;
     setVendorName(value);
@@ -222,7 +260,7 @@ const JobworkBill = () => {
                           <span className="me-2 small fw-bold">Bill Passing (JobWork) :</span>
                           <span className="badge bg-primary">1193</span>
                         </div>
-                        <button className="btn d-inline-flex align-items-center gap-2">
+                        <button className="btn d-inline-flex align-items-center gap-2" onClick={handleExportExcel}>
                           <FaFileExcel /> Export To Excel
                         </button>
                       </div>

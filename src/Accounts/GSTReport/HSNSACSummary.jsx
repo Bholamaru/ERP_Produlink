@@ -5,6 +5,7 @@ import NavBar from "../../NavBar/NavBar.js";
 import SideNav from "../../SideNav/SideNav.js";
 import "./HSNSACSummary.css";
 import { FaSearch, FaFileExcel } from "react-icons/fa";
+import * as XLSX from "xlsx";
 
 const HSNSACSummary = () => {
   const [sideNavOpen, setSideNavOpen] = useState(false);
@@ -47,6 +48,44 @@ const HSNSACSummary = () => {
     }
   };
 
+  const handleExportExcel = () => {
+    if (hsnData.length === 0) {
+      alert("No records available to export");
+      return;
+    }
+
+    const exportData = hsnData.map((row, index) => ({
+      "Sr.": index + 1,
+      "HSN/SAC": row.hsn_sac || "",
+      "Description": row.description || "",
+      "Type Of Supply": row.type_of_supply || "GST Sales",
+      "Group": row.group || "FG",
+      "UOM": row.uom || "NOS",
+      "Total Qty": row.total_qty || 0,
+      "Total Amt": row.total_amt || 0,
+      "GST %": row.gst_percent || 0,
+      "Taxable_Value": row.taxable_value || 0,
+      "IGST Amt": row.igst_amt || 0,
+      "CGST Amt": row.cgst_amt || 0,
+      "SGST Amt": row.sgst_amt || 0,
+      "CESS": row.cess || 0,
+      "TCS Amt": row.tcs_amt || 0,
+      "Total GST Amt": row.total_gst_amt || 0,
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "HSN Wise Summary");
+
+    // Adjust column widths
+    const wscols = Object.keys(exportData[0]).map(key => ({
+      wch: Math.max(key.length, ...exportData.map(row => row[key] ? row[key].toString().length : 0)) + 2
+    }));
+    worksheet["!cols"] = wscols;
+
+    XLSX.writeFile(workbook, "HSN_Wise_Summary.xlsx");
+  };
+
   const formatNum = (num) => new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2 }).format(num || 0);
 
   // Dynamic calculation for footer totals
@@ -77,7 +116,7 @@ const HSNSACSummary = () => {
                       <h5 className="header-title text-start">HSN Wise Summary</h5>
                     </div>
                     <div className="col-md-6 text-end">
-                      <button className="btn">
+                      <button className="btn" onClick={handleExportExcel}>
                         <FaFileExcel className="excel-icon me-1" /> Export To Excel
                       </button>
                     </div>

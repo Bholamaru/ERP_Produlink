@@ -5,6 +5,7 @@ import NavBar from "../../../NavBar/NavBar.js";
 import SideNav from "../../../SideNav/SideNav.js";
 import "./TaxInvoiceList.css";
 import { FaFilePdf, FaFileExcel, FaSearch, FaEye, FaCheck } from "react-icons/fa";
+import * as XLSX from "xlsx";
 
 const TaxInvoiceList = () => {
   const [sideNavOpen, setSideNavOpen] = useState(false);
@@ -43,6 +44,46 @@ const TaxInvoiceList = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleExportExcel = () => {
+    if (invoiceList.length === 0) {
+      alert("No records available to export");
+      return;
+    }
+
+    const exportData = invoiceList.map((row, index) => {
+      const total = calculateInvoiceTotal(row);
+      const itemsText = (row.items || []).map(item =>
+        `Qty: ${item.inv_qty || 0} Rate: ${item.rate || 0} | ${item.part_code || item.hsn_code || "-"} | ${item.description || "-"}`
+      ).join("\n");
+
+      return {
+        "SrNo.": index + 1,
+        "Year": getYear(row.invoice_no),
+        "Invoice No": row.invoice_no || "",
+        "Invoice Date": formatDate(row.invoice_Date),
+        "Cust PO No": row.items && row.items.length > 0 ? row.items[0].po_no || "-" : "-",
+        "Type": "GST",
+        "Customer Name": row.bill_to || "",
+        "TOTAL": total,
+        "Item Qty | Desc": itemsText,
+        "Cancel": "N",
+        "User": "prakash"
+      };
+    });
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Tax Invoices");
+
+    // Adjust column widths
+    const wscols = Object.keys(exportData[0]).map(key => ({
+      wch: Math.max(key.length, ...exportData.map(row => row[key] ? row[key].toString().length : 0)) + 2
+    }));
+    worksheet["!cols"] = wscols;
+
+    XLSX.writeFile(workbook, "Tax_Invoice_List.xlsx");
   };
 
   const calculateInvoiceTotal = (invoice) => {
@@ -109,7 +150,7 @@ const TaxInvoiceList = () => {
                               <button className="btn d-inline-flex align-items-center gap-2" style={{ height: "32px" }}>
                                 <FaFilePdf className="text-danger" /> <span style={{ whiteSpace: "nowrap" }}>PDF</span>
                               </button>
-                              <button className="btn d-inline-flex align-items-center gap-2" style={{ height: "32px" }}>
+                              <button className="btn d-inline-flex align-items-center gap-2" style={{ height: "32px" }} onClick={handleExportExcel}>
                                 <FaFileExcel className="text-success" /> <span style={{ whiteSpace: "nowrap" }}>EXCEL</span>
                               </button>
                             </div>

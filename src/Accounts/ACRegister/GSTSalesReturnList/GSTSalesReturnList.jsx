@@ -5,6 +5,7 @@ import NavBar from "../../../NavBar/NavBar.js";
 import SideNav from "../../../SideNav/SideNav.js";
 import "./GSTSalesReturnList.css";
 import { FaFilePdf, FaFileExcel, FaSearch, FaCheck, FaEye } from "react-icons/fa";
+import * as XLSX from "xlsx";
 
 const GSTSalesReturnList = () => {
   const [sideNavOpen, setSideNavOpen] = useState(false);
@@ -43,6 +44,44 @@ const GSTSalesReturnList = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleExportExcel = () => {
+    if (salesReturns.length === 0) {
+      alert("No records available to export");
+      return;
+    }
+
+    const exportData = salesReturns.map((row, index) => {
+      const totalAmount = calculateTotalAmount(row.items);
+      const itemsText = (row.items || []).map(item =>
+        `Rate: ${item.rate || 0} | Qty: ${item.return_qty || item.inv_qty || 0} | ${item.item_code || "-"} | ${item.reason || ""}`
+      ).join("\n");
+
+      return {
+        "Sr.": index + 1,
+        "Year": getYear(row.sales_return_no),
+        "Series": row.series || "GST SALES RETURN",
+        "No.": row.sales_return_no || "",
+        "Date": formatDate(row.sales_return_date),
+        "Name of Party": row.cust_name || "",
+        "Item Qty | Desc": itemsText,
+        "Amount": totalAmount,
+        "User": "prakash"
+      };
+    });
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Sales Returns");
+
+    // Adjust column widths
+    const wscols = Object.keys(exportData[0]).map(key => ({
+      wch: Math.max(key.length, ...exportData.map(row => row[key] ? row[key].toString().length : 0)) + 2
+    }));
+    worksheet["!cols"] = wscols;
+
+    XLSX.writeFile(workbook, "GST_Sales_Return_List.xlsx");
   };
 
   const formatDate = (dateStr) => {
@@ -93,7 +132,7 @@ const GSTSalesReturnList = () => {
                         <div className="d-inline-flex align-items-center gap-2">
                            <span style={{ fontSize: "12px", fontWeight: "bold" }}>(GST) Sales Return List</span>
                            <button className="btn d-inline-flex align-items-center gap-2"><FaFilePdf className="text-danger" /> PDF</button>
-                           <button className="btn d-inline-flex align-items-center gap-2 ms-1"><FaFileExcel className="text-success" /> EXCEL</button>
+                           <button className="btn d-inline-flex align-items-center gap-2 ms-1" onClick={handleExportExcel}><FaFileExcel className="text-success" /> EXCEL</button>
                         </div>
                       </div>
                     </div>

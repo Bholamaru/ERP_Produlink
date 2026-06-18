@@ -6,6 +6,7 @@ import { FaSearch, FaFileExcel, FaFilter, FaArrowLeft, FaPlus } from "react-icon
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "./MinMaxPlanning.css";
+import * as XLSX from "xlsx";
 
 const MinMaxPlanning = () => {
   const [sideNavOpen, setSideNavOpen] = useState(false);
@@ -34,7 +35,7 @@ const MinMaxPlanning = () => {
     const fetchItemSummary = async () => {
       try {
         const token = localStorage.getItem("accessToken");
-        const response = await fetch("http://127.0.0.1:8000/All_Masters/api/item/summary/", {
+        const response = await fetch("https://erp-render.onrender.com/Planning/update-item-wise-min-max/", {
           headers: { "Authorization": `Bearer ${token}` }
         });
         if (response.ok) {
@@ -80,10 +81,10 @@ const MinMaxPlanning = () => {
     setHasSearched(true);
 
     const filtered = allItems.filter(item => {
-      const matchesMainGroup = searchFilters.mainGroup === "ALL" || (item.main_group || item.subgroup_name) === searchFilters.mainGroup;
-      const matchesItemGroup = searchFilters.itemGroup === "ALL" || (item.item_group || item.group_name) === searchFilters.itemGroup;
+      const matchesMainGroup = searchFilters.mainGroup === "ALL" || (item.main_group || item.subgroup_name || item.main_groups) === searchFilters.mainGroup;
+      const matchesItemGroup = searchFilters.itemGroup === "ALL" || (item.item_group || item.group_name || item.item_groups) === searchFilters.itemGroup;
       const matchesItemCode = !searchFilters.itemCode || 
-        (item.part_no || item.item_code || item.Part_Code || "").toLowerCase().includes(searchFilters.itemCode.toLowerCase());
+        (item.item_no || item.part_no || item.item_code || item.Part_Code || item.part_code || item.itemCode || "").toLowerCase().includes(searchFilters.itemCode.toLowerCase());
       
       return matchesMainGroup && matchesItemGroup && matchesItemCode;
     });
@@ -129,27 +130,27 @@ const MinMaxPlanning = () => {
       // Construct the FULL payload with all fields to prevent null overwrites in backend
       const payload = {
         id: item.id,
-        item_no: item.part_no || item.itemCode || item.item_code,
-        item_code: item.Part_Code || item.item_code || "",
-        description: item.Name_Description || item.itemName || "",
-        item_groups: item.item_group || item.group_name || "",
-        main_groups: item.main_group || item.subgroup_name || "",
-        unit: item.Unit_Code || item.unit || "",
-        tariff_no: item.HSN_SAC_Code || item.TariffNo || "",
+        item_no: item.item_no || item.part_no || item.itemCode || item.item_code || "",
+        item_code: item.item_code || item.Part_Code || item.part_code || "",
+        description: item.description || item.Name_Description || item.itemName || item.item_name || item.item_description || "",
+        item_groups: item.item_groups || item.item_group || item.group_name || "",
+        main_groups: item.main_groups || item.main_group || item.subgroup_name || "",
+        unit: item.unit || item.Unit_Code || "",
+        tariff_no: item.tariff_no || item.HSN_SAC_Code || item.TariffNo || "",
         min_level: item.min_level || item.MinLevel || 0,
-        re_order_level: item.re_order_level || item.ReOrderLevel || 0,
+        re_order_level: item.re_order_level || item.reorder_level || item.ReOrderLevel || 0,
         max_level: item.max_level || item.MaxLevel || 0,
         min_order: item.min_order || item.MinOrder || 0,
         max_order: item.max_order || item.MaxOrder || 0,
-        grn_tol_sub: item.grn_tol_neg || item.GRN_Tol_Neg || 0,
-        grn_tol_add: item.grn_tol_pos || item.GRN_Tol_Pos || 0,
-        user: item.User || ""
+        grn_tol_sub: item.grn_tol_sub || item.grn_tol_neg || item.GRN_Tol_Neg || 0,
+        grn_tol_add: item.grn_tol_add || item.grn_tol_pos || item.GRN_Tol_Pos || 0,
+        user: item.user || item.User || ""
       };
 
       // Overwrite the specific field being updated
       payload[backendField] = updatedValue;
 
-      const response = await fetch("http://127.0.0.1:8000/Planning/update-item-wise-min-max/", {
+      const response = await fetch("https://erp-render.onrender.com/Planning/update-item-wise-min-max/", {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
@@ -169,6 +170,43 @@ const MinMaxPlanning = () => {
       console.error("Error updating item level:", error);
       toast.error("Network error while saving!");
     }
+  };
+
+  const handleExportExcel = () => {
+    if (planningData.length === 0) {
+      alert("No records available to export");
+      return;
+    }
+
+    const exportData = planningData.map((row, index) => ({
+      "Sr.": index + 1,
+      "Item No": row.item_no || row.part_no || row.itemCode || row.item_code || "",
+      "Item Code": row.item_code || row.Part_Code || row.part_code || "",
+      "Desc.": row.description || row.Name_Description || row.itemName || row.item_name || row.item_description || "",
+      "Item Group": row.item_groups || row.item_group || row.group_name || "",
+      "Main Group": row.main_groups || row.main_group || row.subgroup_name || "",
+      "Unit": row.unit || row.Unit_Code || "",
+      "TariffNo": row.tariff_no || row.HSN_SAC_Code || row.TariffNo || "",
+      "MinLevel": row.min_level || row.MinLevel || 0,
+      "ReOrderLevel": row.re_order_level || row.reorder_level || row.ReOrderLevel || 0,
+      "MaxLevel": row.max_level || row.MaxLevel || 0,
+      "MinOrder": row.min_order || row.MinOrder || 0,
+      "MaxOrder": row.max_order || row.MaxOrder || 0,
+      "GRN (%) Tol (-)": row.grn_tol_sub || row.grn_tol_neg || row.GRN_Tol_Neg || 0,
+      "GRN (%) Tol (+)": row.grn_tol_add || row.grn_tol_pos || row.GRN_Tol_Pos || 0,
+      "User": row.user || row.User || ""
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Itemwise Min-Max");
+
+    const wscols = Object.keys(exportData[0]).map(key => ({
+      wch: Math.max(key.length, ...exportData.map(row => row[key] ? row[key].toString().length : 0)) + 2
+    }));
+    worksheet["!cols"] = wscols;
+
+    XLSX.writeFile(workbook, "Update_Itemwise_Min_Max.xlsx");
   };
 
   // Handle browser back button
@@ -212,7 +250,7 @@ const MinMaxPlanning = () => {
                           <button className="erp-btn-cyan d-flex align-items-center gap-1" onClick={() => setCurrentView("movingDays")}>
                              Update Moving Non Moving Days
                           </button>
-                          <button className="erp-btn-cyan d-flex align-items-center gap-1">
+                          <button className="erp-btn-cyan d-flex align-items-center gap-1" onClick={handleExportExcel}>
                              Export Report
                           </button>
                       </div>
@@ -264,9 +302,9 @@ const MinMaxPlanning = () => {
                            />
                            <datalist id="itemSummaryList">
                               {itemSummary
-                                .filter(it => (it.part_no || it.item_code || it.itemCode || "").toLowerCase().includes(searchFilters.itemCode.toLowerCase()))
+                                .filter(it => (it.item_no || it.part_no || it.item_code || it.itemCode || "").toLowerCase().includes(searchFilters.itemCode.toLowerCase()))
                                 .map((it, i) => (
-                                  <option key={i} value={it.part_no || it.item_code || it.itemCode} />
+                                  <option key={i} value={it.item_no || it.part_no || it.item_code || it.itemCode} />
                                 ))
                               }
                            </datalist>
@@ -322,13 +360,13 @@ const MinMaxPlanning = () => {
                                 return (
                                   <tr key={row.id || index}>
                                     <td>{index + 1}</td>
-                                    <td>{row.part_no || row.itemCode || row.item_code}</td>
-                                    <td>{row.Part_Code || ""}</td>
-                                    <td className="text-start">{row.Name_Description || row.itemName || row.item_name || row.item_description}</td>
-                                    <td>{row.item_group || row.group_name}</td>
-                                    <td>{row.main_group || row.subgroup_name}</td>
-                                    <td>{row.Unit_Code || row.unit}</td>
-                                    <td>{row.HSN_SAC_Code || row.TariffNo || ""}</td>
+                                    <td>{row.item_no || row.part_no || row.itemCode || row.item_code || ""}</td>
+                                    <td>{row.item_code || row.Part_Code || row.part_code || ""}</td>
+                                    <td className="text-start">{row.description || row.Name_Description || row.itemName || row.item_name || row.item_description || ""}</td>
+                                    <td>{row.item_groups || row.item_group || row.group_name || ""}</td>
+                                    <td>{row.main_groups || row.main_group || row.subgroup_name || ""}</td>
+                                    <td>{row.unit || row.Unit_Code || ""}</td>
+                                    <td>{row.tariff_no || row.HSN_SAC_Code || row.TariffNo || ""}</td>
                                     <td style={{ width: '70px' }}>
                                       <input 
                                         type="text" 
@@ -342,7 +380,7 @@ const MinMaxPlanning = () => {
                                       <input 
                                         type="text" 
                                         className="form-control form-control-sm text-center px-1" 
-                                        defaultValue={row.reorder_level || row.ReOrderLevel || 0}
+                                        defaultValue={row.re_order_level || row.reorder_level || row.ReOrderLevel || 0}
                                         onFocus={(e) => handleFocus(e.target.value)}
                                         onBlur={(e) => handleUpdate(row, 'ReOrderLevel', e.target.value)}
                                       />
@@ -360,7 +398,7 @@ const MinMaxPlanning = () => {
                                       <input 
                                         type="text" 
                                         className="form-control form-control-sm text-center px-1" 
-                                        defaultValue={row.min_order || row.MinOrder || ""}
+                                        defaultValue={row.min_order || row.MinOrder || 0}
                                         onFocus={(e) => handleFocus(e.target.value)}
                                         onBlur={(e) => handleUpdate(row, 'MinOrder', e.target.value)}
                                       />
@@ -369,7 +407,7 @@ const MinMaxPlanning = () => {
                                       <input 
                                         type="text" 
                                         className="form-control form-control-sm text-center px-1" 
-                                        defaultValue={row.max_order || row.MaxOrder || ""}
+                                        defaultValue={row.max_order || row.MaxOrder || 0}
                                         onFocus={(e) => handleFocus(e.target.value)}
                                         onBlur={(e) => handleUpdate(row, 'MaxOrder', e.target.value)}
                                       />
@@ -378,7 +416,7 @@ const MinMaxPlanning = () => {
                                       <input 
                                         type="text" 
                                         className="form-control form-control-sm text-center px-1" 
-                                        defaultValue={row.grn_tol_neg || row.GRN_Tol_Neg || 0}
+                                        defaultValue={row.grn_tol_sub || row.grn_tol_neg || row.GRN_Tol_Neg || row.grn_tol_sub || 0}
                                         onFocus={(e) => handleFocus(e.target.value)}
                                         onBlur={(e) => handleUpdate(row, 'GRN_Tol_Neg', e.target.value)}
                                       />
@@ -387,12 +425,12 @@ const MinMaxPlanning = () => {
                                       <input 
                                         type="text" 
                                         className="form-control form-control-sm text-center px-1" 
-                                        defaultValue={row.grn_tol_pos || row.GRN_Tol_Pos || 0}
+                                        defaultValue={row.grn_tol_add || row.grn_tol_pos || row.GRN_Tol_Pos || row.grn_tol_add || 0}
                                         onFocus={(e) => handleFocus(e.target.value)}
                                         onBlur={(e) => handleUpdate(row, 'GRN_Tol_Pos', e.target.value)}
                                       />
                                     </td>
-                                    <td>{row.User || ""}</td>
+                                    <td>{row.user || row.User || ""}</td>
                                   </tr>
                                 );
                               }) : (

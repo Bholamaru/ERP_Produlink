@@ -7,6 +7,7 @@ import NavBar from "../../NavBar/NavBar.js";
 import SideNav from "../../SideNav/SideNav.js";
 import "./PurchaseBill.css";
 import { FaEye, FaCheck, FaExclamationTriangle, FaFileExcel, FaSearch, FaCogs } from "react-icons/fa";
+import * as XLSX from "xlsx";
 
 const PurchaseBill = () => {
   const [sideNavOpen, setSideNavOpen] = useState(false);
@@ -67,6 +68,43 @@ const PurchaseBill = () => {
       console.error("Error viewing PDF:", error);
       alert("Failed to load PDF. Make sure you have permission or the record exists.");
     }
+  };
+
+  const handleExportExcel = () => {
+    if (!reportData || reportData.length === 0) {
+      alert("No data available to export.");
+      return;
+    }
+
+    const exportData = reportData.map((data, index) => ({
+      "Sr.": index + 1,
+      "Year": data.year || "",
+      "GRN No.": data.grnNo || "",
+      "GRN Date": data.grnDate || "",
+      "Challan No.": data.challanNo || "",
+      "Challan Date": data.challanDate || "",
+      "Invoice No.": data.invoiceNo || "",
+      "Invoice Date": data.invoiceDate || "",
+      "Supplier Name": data.supplier || "",
+      "PO No.": data.poNo || "",
+      "Total": data.total || "",
+      "User": data.user || ""
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Pending Bills");
+
+    // Auto-fit columns
+    const wscols = Object.keys(exportData[0]).map((key) => ({
+      wch: Math.max(
+        key.length,
+        ...exportData.map((row) => (row[key] ? row[key].toString().length : 0))
+      ) + 2,
+    }));
+    worksheet["!cols"] = wscols;
+
+    XLSX.writeFile(workbook, "Pending_BILL_GRN_List.xlsx");
   };
 
   const handleSearch = async () => {
@@ -225,7 +263,7 @@ const PurchaseBill = () => {
                             <span className="me-2 small">Bill Passing (Purchase) :</span>
                             <span className="badge bg-primary">225</span>
                         </div>
-                        <button className="btn d-inline-flex align-items-center gap-2">
+                        <button className="btn d-inline-flex align-items-center gap-2" onClick={handleExportExcel}>
                            <FaFileExcel /> Export Excel
                         </button>
                       </div>

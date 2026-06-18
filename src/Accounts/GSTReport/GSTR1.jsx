@@ -6,6 +6,7 @@ import NavBar from "../../NavBar/NavBar.js";
 import SideNav from "../../SideNav/SideNav.js";
 import "./GSTR1.css";
 import { FaSearch, FaFileExcel } from "react-icons/fa";
+import * as XLSX from "xlsx";
 
 const GSTR1 = () => {
   const [sideNavOpen, setSideNavOpen] = useState(false);
@@ -82,6 +83,55 @@ const GSTR1 = () => {
     }
   };
 
+  const handleExportExcel = () => {
+    if (reportData.length === 0) {
+      alert("No records available to export");
+      return;
+    }
+
+    const exportData = reportData.map((row) => ({
+      "CustName": row.custName || "",
+      "GSTIN": row.gstin || "",
+      "StateCode": row.stateCode || "",
+      "POS": row.pos || "",
+      "Invoice_No": row.invoiceNo || "",
+      "Invoice_Date": row.invoiceDate || "",
+      "Invoice_Value": row.invoiceValue || "",
+      "HSN/SAC": row.hsn || "",
+      "Goods/Service description": row.description || "",
+      "Taxable_Value": row.taxableValue || "",
+      "Qty": row.qty || "",
+      "UnitCode": row.unitCode || "",
+      "CGST_Per": row.cgstPer || "",
+      "CGSTAmt": row.cgstAmt || "",
+      "SGST_Per": row.sgstPer || "",
+      "SGSTAmt": row.sgstAmt || "",
+      "IGS_Per": row.igstPer || "",
+      "IGSTAmt": row.igstAmt || "",
+      "Cess": row.cess || "",
+      "CessAmt": row.cessAmt || "",
+      "TcsPer": row.tcsPer || "",
+      "TcsAmt": row.tcsAmt || "",
+      "TransportCharges": row.transport || "",
+      "FreightCharges": row.freight || "",
+      "OtherInstallCharges": row.other || "",
+      "PackCharges": row.pack || "",
+      "Cancel": row.cancel || "",
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "GSTR-1");
+
+    // Adjust column widths
+    const wscols = Object.keys(exportData[0]).map(key => ({
+      wch: Math.max(key.length, ...exportData.map(row => row[key] ? row[key].toString().length : 0)) + 2
+    }));
+    worksheet["!cols"] = wscols;
+
+    XLSX.writeFile(workbook, "GSTR1_Report.xlsx");
+  };
+
   const toggleSideNav = () => {
     setSideNavOpen((prevState) => !prevState);
   };
@@ -151,7 +201,7 @@ const GSTR1 = () => {
                       >
                         <FaSearch className="search-icon" /> {loading ? "Searching..." : "Search"}
                       </button>
-                      <button className="btn btn-sm btn-light border px-3 d-inline-flex align-items-center gap-2" style={{ height: "32px" }}>
+                      <button className="btn btn-sm btn-light border px-3 d-inline-flex align-items-center gap-2" style={{ height: "32px" }} onClick={handleExportExcel}>
                         <FaFileExcel className="excel-icon" /> Export Report
                       </button>
                     </div>
