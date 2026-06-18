@@ -398,7 +398,7 @@ export const getNextGrnNo = async (year) => {
 
 export const getGeneralDetails = async () => {
   try {
-    const res = await axios.get(`${Base_Url}general-details/`);
+    const res = await axios.get(`https://erp-render.onrender.com/Store/gate-entry/purchaseGrn/`);
     return res.data;
   } catch (error) {
     console.error("Error fetching general details:", error);
