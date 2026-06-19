@@ -6,6 +6,7 @@ import SideNav from "../../../SideNav/SideNav.js";
 import "./PaddingSalesQC.css";
 import { useNavigate } from "react-router-dom";
 import { fetchSalesReturns } from "../../../Service/Api.jsx";
+import * as XLSX from "xlsx";
 
 const PaddingSalesQC = () => {
   const [sideNavOpen, setSideNavOpen] = useState(false);
@@ -83,6 +84,37 @@ const PaddingSalesQC = () => {
   const handleQCClick = (item) => {
     navigate("/RejectionMaterialQC", { state: item });
   };
+
+  const handleExportExcel = () => {
+    if (qcList.length === 0) {
+      alert("No records available to export");
+      return;
+    }
+
+    const exportData = qcList.map((item, index) => ({
+      "Sr no": index + 1,
+      "Year": item.year || "",
+      "Plant": item.plant || "",
+      "Return No": item.returnNo || "",
+      "Return Date": item.returnDate || "",
+      "Customer Name": item.customerName || "",
+      "Item Code": item.itemCode || "",
+      "Item Desc": item.itemDesc || "",
+      "Return Qty": item.returnQty || "",
+      "User": item.user || "Togre",
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Pending Sales Return QC");
+
+    const wscols = Object.keys(exportData[0]).map(key => ({
+      wch: Math.max(key.length, ...exportData.map(row => row[key] ? row[key].toString().length : 0)) + 2
+    }));
+    worksheet["!cols"] = wscols;
+
+    XLSX.writeFile(workbook, "Pending_Sales_Return_QC_List.xlsx");
+  };
   return (
     <div className="PaddingSalesQCMaster">
       <div className="container-fluid">
@@ -103,7 +135,7 @@ const PaddingSalesQC = () => {
                         <h5 className="header-title">Pending Sales Return QC List </h5>
                       </div>
                       <div className="col-md-8 text-end">
-                        <button type="button" className="btn" to="#/">
+                        <button type="button" className="btn" onClick={handleExportExcel}>
                           Export Excel
                         </button>
                       </div>

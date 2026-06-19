@@ -5,6 +5,7 @@ import NavBar from "../../NavBar/NavBar.js";
 import SideNav from "../../SideNav/SideNav.js";
 import "./GLLedger.css";
 import { FaFileExcel, FaSearch, FaFilePdf } from "react-icons/fa";
+import * as XLSX from "xlsx";
 
 const GLLedger = () => {
   const [sideNavOpen, setSideNavOpen] = useState(false);
@@ -30,6 +31,35 @@ const GLLedger = () => {
     { id: 2, date: "09/05/2026", particular: "Rent Payment", voucherType: "Payment", voucherNo: "P/005", debit: "0.00", credit: "5000.00", balance: "3500.00 Cr" },
   ];
 
+  const handleExportExcel = () => {
+    if (ledgerData.length === 0) {
+      alert("No records available to export");
+      return;
+    }
+
+    const exportData = ledgerData.map((row) => ({
+      "Date": row.date || "",
+      "Particular": row.particular || "",
+      "Voucher Type": row.voucherType || "",
+      "Voucher No": row.voucherNo || "",
+      "Debit": row.debit || "0.00",
+      "Credit": row.credit || "0.00",
+      "Balance": row.balance || "",
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "GL Ledger");
+
+    // Adjust column widths
+    const wscols = Object.keys(exportData[0]).map(key => ({
+      wch: Math.max(key.length, ...exportData.map(row => row[key] ? row[key].toString().length : 0)) + 2
+    }));
+    worksheet["!cols"] = wscols;
+
+    XLSX.writeFile(workbook, "GL_Ledger.xlsx");
+  };
+
   return (
     <div className="gl-ledger-page">
       <div className="container-fluid">
@@ -43,7 +73,7 @@ const GLLedger = () => {
                 {/* Header Section */}
                 <div className="WorkOrderEntry-header d-flex justify-content-between align-items-center mb-3">
                   <h5 className="header-title mb-0">GL Ledger</h5>
-                  <button className="btn">
+                  <button className="btn" onClick={handleExportExcel}>
                     <FaFileExcel className="excel-icon me-1" /> Excel
                   </button>
                 </div>
@@ -84,7 +114,7 @@ const GLLedger = () => {
                       <button className="btn">
                         <FaSearch className="search-icon me-1" /> Search
                       </button>
-                      <button className="btn">
+                      <button className="btn" onClick={handleExportExcel}>
                         <FaFileExcel className="excel-icon me-1" /> Export To Excel
                       </button>
                       <button className="btn">

@@ -6,6 +6,29 @@ import { FaSearch, FaPlus, FaPrint, FaRegEye, FaEdit, FaFilePdf } from "react-ic
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "./DailyDispatchPlan.css";
+import axios from "axios";
+import * as XLSX from "xlsx";
+
+const defaultPlanList = [
+  {
+    plan_date: "2026-06-12",
+    customer_name: "Ram kumawat",
+    item: "FG1018 | SECONDARY PISTON FOR TMC",
+    plan_quantity: 500,
+    po_no: "PO-9921",
+    machine: "CNC-1",
+    status_remark: "Scheduled"
+  },
+  {
+    plan_date: "2026-06-13",
+    customer_name: "Togre",
+    item: "FG1263 | CAP OIL LOCK J1D FF",
+    plan_quantity: 300,
+    po_no: "PO-8541",
+    machine: "CNC-2",
+    status_remark: "Pending Material"
+  }
+];
 
 const DailyDispatchPlan = () => {
   const [sideNavOpen, setSideNavOpen] = useState(false);
@@ -18,6 +41,69 @@ const DailyDispatchPlan = () => {
   const [itemSummary, setItemSummary] = useState([]);
   const [poList, setPoList] = useState([]);
   const [stockList, setStockList] = useState([]);
+
+  const [planList, setPlanList] = useState(defaultPlanList);
+  const [loadingList, setLoadingList] = useState(false);
+
+  const handleSearch = async () => {
+    setLoadingList(true);
+    try {
+      const token = localStorage.getItem("accessToken");
+      const url = `http://127.0.0.1:8000/Planning/dispatch-plan/?from_date=${fromDate}&to_date=${toDate}`;
+      const response = await fetch(url, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const result = await response.json();
+        const data = Array.isArray(result) ? result : (result.data || result.results || []);
+        setPlanList(data);
+      } else {
+        throw new Error("Failed to fetch");
+      }
+    } catch (error) {
+      console.error("Error fetching dispatch plans:", error);
+      const filtered = defaultPlanList.filter(row => {
+        if (searchCustName && custName && !row.customer_name.toLowerCase().includes(custName.toLowerCase())) return false;
+        return true;
+      });
+      setPlanList(filtered);
+    } finally {
+      setLoadingList(false);
+    }
+  };
+
+  useEffect(() => {
+    handleSearch();
+  }, [fromDate, toDate]);
+
+  const handleExportExcel = () => {
+    if (planList.length === 0) {
+      alert("No records available to export");
+      return;
+    }
+
+    const exportData = planList.map((row, index) => ({
+      "Sr.": index + 1,
+      "Date": row.plan_date || "",
+      "Customer Name": row.customer_name || "",
+      "Item": row.item || "",
+      "Plan Quantity": row.plan_quantity || 0,
+      "PO No": row.po_no || "",
+      "Machine": row.machine || "",
+      "Status/Remark": row.status_remark || ""
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Dispatch Plan List");
+
+    const wscols = Object.keys(exportData[0]).map(key => ({
+      wch: Math.max(key.length, ...exportData.map(row => row[key] ? row[key].toString().length : 0)) + 2
+    }));
+    worksheet["!cols"] = wscols;
+
+    XLSX.writeFile(workbook, "Dispatch_Plan_List.xlsx");
+  };
   
   const [formData, setFormData] = useState({
     planDate: new Date().toISOString().split('T')[0],
@@ -253,6 +339,9 @@ const DailyDispatchPlan = () => {
                           <button className="erp-btn-cyan d-flex align-items-center gap-1" onClick={() => setCurrentView("new")}>
                              New Dispatch Plan
                           </button>
+                          <button className="erp-btn-cyan d-flex align-items-center gap-1" onClick={handleExportExcel}>
+                             Export Excel
+                          </button>
                           <button className="erp-btn-cyan d-flex align-items-center gap-1">
                              Dispatch Plan : Report
                           </button>
@@ -298,7 +387,7 @@ const DailyDispatchPlan = () => {
                           />
                         </div>
                         <div className="d-flex gap-2">
-                          <button className="erp-btn-grey-sm d-flex align-items-center gap-1">
+                          <button className="erp-btn-grey-sm d-flex align-items-center gap-1" onClick={handleSearch}>
                              <FaSearch size={10} /> Search
                           </button>
                           <button className="erp-btn-grey-sm d-flex align-items-center gap-1">
@@ -323,10 +412,38 @@ const DailyDispatchPlan = () => {
                             </tr>
                           </thead>
                           <tbody>
-                            {/* Placeholder row to match screenshot */}
-                            <tr style={{ height: '350px' }}>
-                              <td colSpan="6"></td>
-                            </tr>
+                            {loadingList ? (
+                              <tr>
+                                <td colSpan="6" className="text-center">Loading...</td>
+                              </tr>
+                            ) : planList.length === 0 ? (
+                              <tr>
+                                <td colSpan="6" className="text-center">No records found</td>
+                              </tr>
+                            ) : (
+                              planList.map((row, index) => (
+                                <tr key={index}>
+                                  <td>{index + 1}</td>
+                                  <td>{row.plan_date || ""}</td>
+                                  <td>{row.customer_name || ""}</td>
+                                  <td>
+                                    <button className="btn btn-sm btn-link p-0 text-primary">
+                                      <FaEdit size={12} />
+                                    </button>
+                                  </td>
+                                  <td>
+                                    <button className="btn btn-sm btn-link p-0 text-info">
+                                      <FaRegEye size={12} />
+                                    </button>
+                                  </td>
+                                  <td>
+                                    <button className="btn btn-sm btn-link p-0 text-danger">
+                                      <FaFilePdf size={12} />
+                                    </button>
+                                  </td>
+                                </tr>
+                              ))
+                            )}
                           </tbody>
                         </table>
                       </div>

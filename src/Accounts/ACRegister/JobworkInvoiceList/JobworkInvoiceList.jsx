@@ -5,6 +5,7 @@ import NavBar from "../../../NavBar/NavBar.js";
 import SideNav from "../../../SideNav/SideNav.js";
 import "./JobworkInvoiceList.css";
 import { FaFilePdf, FaFileExcel, FaSearch, FaCheck, FaTrashAlt } from "react-icons/fa";
+import * as XLSX from "xlsx";
 
 const JobworkInvoiceList = () => {
   const [sideNavOpen, setSideNavOpen] = useState(false);
@@ -60,9 +61,46 @@ const JobworkInvoiceList = () => {
     return items.reduce((acc, item) => acc + (Number(item.invoice_qty_nos) || 0) + (Number(item.invoice_qty_kg) || 0), 0);
   };
 
+  const handleExportExcel = () => {
+    if (jobworkInvoices.length === 0) {
+      alert("No records available to export");
+      return;
+    }
+
+    const exportData = jobworkInvoices.map((row, index) => {
+      const totalQty = calculateTotalQty(row.items);
+      const gst = row.gst_details || {};
+      return {
+        "SrNo.": index + 1,
+        "Invoice No": row.invoice_no || "",
+        "Date": formatDate(row.invoice_date),
+        "Customer Name": row.bill_to_cust || "",
+        "Total Qty": totalQty,
+        "Assessable Value": Number(gst.assessable_value || 0).toFixed(2),
+        "CGST": Number(gst.cgst_amt || 0).toFixed(2),
+        "SGST": Number(gst.sgst_amt || 0).toFixed(2),
+        "IGST": Number(gst.igst_amt || 0).toFixed(2),
+        "TCS": Number(gst.tcs_amt || 0).toFixed(2),
+        "Net Total": Number(gst.gr_total || 0).toFixed(2),
+        "User": "prakash"
+      };
+    });
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Jobwork Invoices");
+
+    // Adjust column widths
+    const wscols = Object.keys(exportData[0]).map(key => ({
+      wch: Math.max(key.length, ...exportData.map(row => row[key] ? row[key].toString().length : 0)) + 2
+    }));
+    worksheet["!cols"] = wscols;
+
+    XLSX.writeFile(workbook, "Jobwork_Invoice_List.xlsx");
+  };
+
   const totalAssessableValue = jobworkInvoices.reduce((acc, row) => acc + (Number(row.gst_details?.assessable_value) || 0), 0);
   const totalNetTotal = jobworkInvoices.reduce((acc, row) => acc + (Number(row.gst_details?.gr_total) || 0), 0);
-
 
   return (
     <div className="jobwork-invoice-list">
@@ -88,7 +126,7 @@ const JobworkInvoiceList = () => {
                           <option>Job-Work Sales Register</option>
                         </select>
                         <button className="btn d-inline-flex align-items-center gap-2"><FaFilePdf className="text-danger" /> PDF</button>
-                        <button className="btn d-inline-flex align-items-center gap-2 ms-1"><FaFileExcel className="text-success" /> EXCEL</button>
+                        <button className="btn d-inline-flex align-items-center gap-2 ms-1" onClick={handleExportExcel}><FaFileExcel className="text-success" /> EXCEL</button>
                       </div>
                     </div>
                   </div>

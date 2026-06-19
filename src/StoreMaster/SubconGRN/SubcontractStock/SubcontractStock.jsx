@@ -8,6 +8,7 @@ import "./SubcontractStock.css";
 import { FaEye } from "react-icons/fa";
 import { IoDocument } from "react-icons/io5";
 import axios from "axios";
+import * as XLSX from "xlsx";
 
 const SubcontractStock = () => {
   const [sideNavOpen, setSideNavOpen] = useState(false);
@@ -83,6 +84,35 @@ const SubcontractStock = () => {
     ? allChallans.filter((c) => c.supplier === selectedSupplier)
     : allChallans;
 
+  const handleExportExcel = () => {
+    if (filteredChallans.length === 0) {
+      alert("No records available to export");
+      return;
+    }
+
+    const exportData = filteredChallans.map((row, index) => ({
+      "Sr.no": index + 1,
+      "Item type": row.challanType || "",
+      "Challan No": row.challanNo || "",
+      "Item Code": row.itemCode || "",
+      "Supplier": row.supplier || "",
+      "Item Description": row.itemDescription || "",
+      "Stock(NOS)": row.qty || 0,
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Subcontract Stock");
+
+    // Adjust column widths
+    const wscols = Object.keys(exportData[0]).map(key => ({
+      wch: Math.max(key.length, ...exportData.map(row => row[key] ? row[key].toString().length : 0)) + 2
+    }));
+    worksheet["!cols"] = wscols;
+
+    XLSX.writeFile(workbook, "Subcontract_Stock.xlsx");
+  };
+
   return (
     <div className="SubcontractStock">
       <div className="container-fluid">
@@ -118,7 +148,7 @@ const SubcontractStock = () => {
                       <Link className="vndrbtn" to="/OurVendorStock">
                         Data Wise Stock
                       </Link>
-                      <Link className="vndrbtn me-2">Export To Excel</Link>
+                      <button className="vndrbtn me-2" onClick={handleExportExcel}>Export To Excel</button>
                     </div>
                   </div>
                 </div>

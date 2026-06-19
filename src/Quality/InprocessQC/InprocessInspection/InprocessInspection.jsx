@@ -12,6 +12,7 @@ import Cached from "@mui/icons-material/Cached.js";
 import { FaXTwitter } from "react-icons/fa6";
 import "./InprocessInspection.css";
 import axios from "axios";
+import * as XLSX from "xlsx";
 
 const InprocessInspection = () => {
   const navigate = useNavigate();
@@ -56,6 +57,49 @@ const InprocessInspection = () => {
     fetchProductionEntries();
   }, []);
 
+  const handleExportExcel = () => {
+    if (data.length === 0) {
+      alert("No records available to export");
+      return;
+    }
+
+    const exportData = data.map((item, index) => {
+      const formattedDate = item.Date
+        ? new Date(item.Date).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "2-digit" })
+        : "-";
+      return {
+        "Sr.": index + 1,
+        "Type": item.Series || "-",
+        "Prod No": item.Prod_no || "-",
+        "Date": formattedDate,
+        "Item No": item.item || "-",
+        "Item Code": item.ItemCode || "-",
+        "Item Desc": item.ItemDescription || "-",
+        "Dia": "-",
+        "Operation Name": item.operation || "-",
+        "Operation": item.operation || "-",
+        "Shift Name": item.shift || "-",
+        "Machine": item.unit_machine || "-",
+        "Heat No": item.lot_no ? item.lot_no.split('|')[0] : "-",
+        "Prod Qty": item.prod_qty || "0",
+        "QC Pending Qty": "-",
+        "Rework Qty": item.rework_qty || "0",
+        "Reject Qty": item.reject_qty || "0",
+      };
+    });
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Inprocess Inspection");
+
+    const wscols = Object.keys(exportData[0]).map(key => ({
+      wch: Math.max(key.length, ...exportData.map(row => row[key] ? row[key].toString().length : 0)) + 2
+    }));
+    worksheet["!cols"] = wscols;
+
+    XLSX.writeFile(workbook, "Inprocess_Inspection.xlsx");
+  };
+
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = data.slice(indexOfFirstItem, indexOfLastItem);
@@ -82,7 +126,7 @@ const InprocessInspection = () => {
                         <h5 className="header-title">Inprocess Inspection </h5>
                       </div>
                       <div className="col-md-8 text-end">
-                        <button type="button" className="btn" to="#/">
+                        <button type="button" className="btn" onClick={handleExportExcel}>
                           Export Excel
                         </button>
                       </div>

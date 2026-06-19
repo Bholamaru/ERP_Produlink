@@ -72,10 +72,18 @@ const InwardChallan1 = () => {
   const [showBomList, setShowBomList] = useState(false);
   const [searchBomText, setSearchBomText] = useState("");
   const [selectedBomItem, setSelectedBomItem] = useState(null);
+  const [showSelectRow, setShowSelectRow] = useState(false);
+
+  const isRmItem = (item) => {
+    if (!item) return false;
+    const type = (item.type || "").toLowerCase();
+    const code = (item.item_code || "").toLowerCase();
+    return type.includes("rm") || code.includes("rm");
+  };
 
   const fetchGateEntries = async () => {
     try {
-      const res = await fetch("http://127.0.0.1:8000/Store/general-details/");
+      const res = await fetch("https://erp-render.onrender.com/Store/gate-entrydata/inward/");
       const resData = await res.json();
       console.log(resData);
       setGateEntries(resData);
@@ -242,6 +250,7 @@ const InwardChallan1 = () => {
     setSearchItemText(item?.type || "");
     setSelectedItem({ ...item });
     setShowItemList(false);
+    setShowSelectRow(false);
 
     // Reset BOM selection and fetch new BOMs for the selected item
     setBomItems([]);
@@ -345,11 +354,19 @@ const InwardChallan1 = () => {
 
     setSearchBomText("");
     setSelectedBomItem(null);
+    setSearchItemText("");
+    setSelectedItem(getInitialItem());
+    setShowSelectRow(false);
   };
 
 
   const handleAddItem = () => {
     if (!selectedItem || !selectedItem.item_code) return;
+
+    if (isRmItem(selectedItem)) {
+      setShowSelectRow(true);
+      return;
+    }
 
     const itemToAdd = {
       ...selectedItem,
@@ -926,79 +943,81 @@ const InwardChallan1 = () => {
                         </div>
                       </div>
 
-                      <div className="row mt-2 ">
-                        <div className="col-md-6">
-                          <div className="row ">
-                            <div className="col-md-4">Select :</div>
-                            <div className="col-md-6 position-relative">
-                              <input
-                                type="text"
-                                className="form-control"
-                                onChange={handleBomSearchChange}
-                                onFocus={handleBomInputFocus}
-                                onBlur={handleBomInputBlur}
-                                value={searchBomText}
-                                placeholder="Click to select or search..."
-                                disabled={
-                                  !selectedItem || !selectedItem.item_code
-                                }
-                                autoComplete="off"
-                              />
-                              {showBomList && (
-                                <ul
-                                  className="dropdown-menu show"
-                                  style={{
-                                    width: "100%",
-                                    maxHeight: "200px",
-                                    overflowY: "auto",
-                                    border: "1px solid #ccc",
-                                    zIndex: 1000,
-                                  }}
-                                >
-                                  {filteredBomItems.length > 0 ? (
-                                    filteredBomItems.map((bom, index) => (
+                      {showSelectRow && (
+                        <div className="row mt-2 ">
+                          <div className="col-md-6">
+                            <div className="row ">
+                              <div className="col-md-4">Select :</div>
+                              <div className="col-md-6 position-relative">
+                                <input
+                                  type="text"
+                                  className="form-control"
+                                  onChange={handleBomSearchChange}
+                                  onFocus={handleBomInputFocus}
+                                  onBlur={handleBomInputBlur}
+                                  value={searchBomText}
+                                  placeholder="Click to select or search..."
+                                  disabled={
+                                    !selectedItem || !selectedItem.item_code
+                                  }
+                                  autoComplete="off"
+                                />
+                                {showBomList && (
+                                  <ul
+                                    className="dropdown-menu show"
+                                    style={{
+                                      width: "100%",
+                                      maxHeight: "200px",
+                                      overflowY: "auto",
+                                      border: "1px solid #ccc",
+                                      zIndex: 1000,
+                                    }}
+                                  >
+                                    {filteredBomItems.length > 0 ? (
+                                      filteredBomItems.map((bom, index) => (
+                                        <li
+                                          key={bom.id || index} // Use a unique key
+                                          className="dropdown-item"
+                                          onMouseDown={() =>
+                                            handleSelectBomItem(bom)
+                                          }
+                                          style={{
+                                            padding: "8px 12px",
+                                            cursor: "pointer",
+                                            whiteSpace: "normal",
+                                            lineHeight: "1.4",
+                                          }}
+                                        >
+                                          {formatBomItemForDisplay(bom)}
+                                        </li>
+                                      ))
+                                    ) : (
                                       <li
-                                        key={bom.id || index} // Use a unique key
-                                        className="dropdown-item"
-                                        onMouseDown={() =>
-                                          handleSelectBomItem(bom)
-                                        }
-                                        style={{
-                                          padding: "8px 12px",
-                                          cursor: "pointer",
-                                          whiteSpace: "normal",
-                                          lineHeight: "1.4",
-                                        }}
+                                        className="dropdown-item disabled"
+                                        style={{ padding: "8px 12px" }}
                                       >
-                                        {formatBomItemForDisplay(bom)}
+                                        {bomItems.length === 0
+                                          ? "No BOM items found"
+                                          : "No results"}
                                       </li>
-                                    ))
-                                  ) : (
-                                    <li
-                                      className="dropdown-item disabled"
-                                      style={{ padding: "8px 12px" }}
-                                    >
-                                      {bomItems.length === 0
-                                        ? "No BOM items found"
-                                        : "No results"}
-                                    </li>
-                                  )}
-                                </ul>
-                              )}
-                            </div>
-                            <div className="col-md-2">
-                              <button
-                                type="button"
-                                className="vndrbtn"
-                                onClick={handleAddCombinedItem}
-                                disabled={!selectedBomItem}
-                              >
-                                Add
-                              </button>
+                                    )}
+                                  </ul>
+                                )}
+                              </div>
+                              <div className="col-md-2">
+                                <button
+                                  type="button"
+                                  className="vndrbtn"
+                                  onClick={handleAddCombinedItem}
+                                  disabled={!selectedBomItem}
+                                >
+                                  Add
+                                </button>
+                              </div>
                             </div>
                           </div>
                         </div>
-                      </div>
+                      )}
                     </div>
 
                     <div className="StoreSubconstatus mt-5">

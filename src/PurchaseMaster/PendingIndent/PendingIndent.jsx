@@ -4,6 +4,7 @@ import "bootstrap/dist/js/bootstrap.bundle.min";
 import NavBar from "../../NavBar/NavBar.js";
 import SideNav from "../../SideNav/SideNav.js";
 import "./PendingIndent.css";
+import * as XLSX from "xlsx";
 
 const PendingIndent = () => {
   // Side‐nav control
@@ -55,6 +56,46 @@ const PendingIndent = () => {
     } catch (err) {
       console.error("Action failed:", err);
     }
+  };
+
+  const handleExportExcel = () => {
+    if (filteredIndents.length === 0) {
+      alert("No records available to export");
+      return;
+    }
+
+    const exportData = filteredIndents.map((ind, idx) => {
+      const detailsText = (ind.indent_details || []).map(d =>
+        `${d.ItemNoCpcCode} - ${d.Description} x ${d.Qty} (${d.Unit}) [Sch: ${d.SchDate} | Type: ${d.Type}]`
+      ).join("\n");
+
+      return {
+        "Sr.": idx + 1,
+        "Plant": ind.Plant || "",
+        "Series": ind.Series || "",
+        "Indent No": ind.IndentNo || "",
+        "Date": ind.Date || "",
+        "Time": ind.Time || "",
+        "Category": ind.Category || "",
+        "CPC Code": ind.CPCCode || "",
+        "Work Order": ind.WorkOrder || "",
+        "Remark": ind.Remark || "",
+        "Auth": ind.Auth || "",
+        "Details": detailsText,
+      };
+    });
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Pending Indents");
+
+    // Adjust column widths
+    const wscols = Object.keys(exportData[0]).map(key => ({
+      wch: Math.max(key.length, ...exportData.map(row => row[key] ? row[key].toString().length : 0)) + 2
+    }));
+    worksheet["!cols"] = wscols;
+
+    XLSX.writeFile(workbook, "Pending_Indent_Release_List.xlsx");
   };
 
   useEffect(() => {
@@ -125,7 +166,7 @@ const PendingIndent = () => {
                       </h5>
                     </div>
                     <div className="col-md-8 d-flex justify-content-end">
-                      <button className="btn">Export To Excel</button>
+                      <button className="btn" onClick={handleExportExcel}>Export To Excel</button>
                     </div>
                   </div>
                 </div>

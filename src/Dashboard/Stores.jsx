@@ -12,10 +12,234 @@ const Stores = () => {
   const [deptView, setDeptView] = useState('dept');
   const [valueView, setValueView] = useState('qty');
 
+  const [selectedMonthYear, setSelectedMonthYear] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    const m = params.get('month');
+    const y = params.get('year');
+    if (m && y) {
+      const monthNames = [
+        'january', 'february', 'march', 'april', 'may', 'june',
+        'july', 'august', 'september', 'october', 'november', 'december'
+      ];
+      const monthNum = parseInt(m);
+      if (monthNum >= 1 && monthNum <= 12) {
+        return `${monthNames[monthNum - 1]}${y}`;
+      }
+    }
+    return 'april2026';
+  });
+
+  const [inwardData, setInwardData] = useState([
+    { id: 1, name: 'Purchase GRN', value: 1204, color: '#6366f1' },
+    { id: 2, name: 'Return Inward', value: 450, color: '#f59e0b' },
+    { id: 3, name: 'Production', value: 890, color: '#10b981' },
+    { id: 4, name: 'Transfer In', value: 210, color: '#ef4444' },
+    { id: 5, name: 'Opening stock', value: 600, color: '#06b6d4' },
+  ]);
+
+  const [monthSelectOpen, setMonthSelectOpen] = useState(false);
+
+  const [outwardSelectedMonthYear, setOutwardSelectedMonthYear] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    const m = params.get('month');
+    const y = params.get('year');
+    if (m && y) {
+      const monthNames = [
+        'january', 'february', 'march', 'april', 'may', 'june',
+        'july', 'august', 'september', 'october', 'november', 'december'
+      ];
+      const monthNum = parseInt(m);
+      if (monthNum >= 1 && monthNum <= 12) {
+        return `${monthNames[monthNum - 1]}${y}`;
+      }
+    }
+    return 'april2026';
+  });
+
+  const [outwardData, setOutwardData] = useState([
+    { id: 1, name: 'Sales', value: 1100, color: '#6366f1' },
+    { id: 2, name: 'Issue', value: 750, color: '#f59e0b' },
+    { id: 3, name: 'Transfer Out', value: 320, color: '#10b981' },
+    { id: 4, name: 'Damage', value: 45, color: '#ef4444' },
+    { id: 5, name: 'Return', value: 88, color: '#06b6d4' },
+  ]);
+
+  const [outwardMonthSelectOpen, setOutwardMonthSelectOpen] = useState(false);
+  const [minMaxLevelsData, setMinMaxLevelsData] = useState([]);
+
+  useEffect(() => {
+    const fetchMinMaxLevelsData = async () => {
+      try {
+        const response = await fetch("https://erp-render.onrender.com/Dashboard/store/min-max/level");
+        if (!response.ok) throw new Error("Failed to fetch Min/Max levels data");
+        const result = await response.json();
+        const data = result?.data || result || [];
+        setMinMaxLevelsData(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error("Error fetching Min/Max levels data:", error);
+      }
+    };
+    fetchMinMaxLevelsData();
+  }, []);
+
+  useEffect(() => {
+    if (monthSelectOpen) {
+      const handleScroll = () => {
+        setMonthSelectOpen(false);
+      };
+      window.addEventListener('scroll', handleScroll, true);
+      return () => {
+        window.removeEventListener('scroll', handleScroll, true);
+      };
+    }
+  }, [monthSelectOpen]);
+
+  useEffect(() => {
+    if (outwardMonthSelectOpen) {
+      const handleScroll = () => {
+        setOutwardMonthSelectOpen(false);
+      };
+      window.addEventListener('scroll', handleScroll, true);
+      return () => {
+        window.removeEventListener('scroll', handleScroll, true);
+      };
+    }
+  }, [outwardMonthSelectOpen]);
+
   // Ensure the page scrolls to top on mount
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
+  useEffect(() => {
+    const handleUrlChange = () => {
+      const params = new URLSearchParams(window.location.search);
+      const m = params.get('month');
+      const y = params.get('year');
+      if (m && y) {
+        const monthNames = [
+          'january', 'february', 'march', 'april', 'may', 'june',
+          'july', 'august', 'september', 'october', 'november', 'december'
+        ];
+        const monthNum = parseInt(m);
+        if (monthNum >= 1 && monthNum <= 12) {
+          const val = `${monthNames[monthNum - 1]}${y}`;
+          setSelectedMonthYear(val);
+          setOutwardSelectedMonthYear(val);
+        }
+      }
+    };
+    window.addEventListener('popstate', handleUrlChange);
+    return () => window.removeEventListener('popstate', handleUrlChange);
+  }, []);
+
+  useEffect(() => {
+    const fetchInwardData = async () => {
+      const monthMapping = {
+        january: 1, february: 2, march: 3, april: 4, may: 5, june: 6,
+        july: 7, august: 8, september: 9, october: 10, november: 11, december: 12
+      };
+      const match = selectedMonthYear.match(/^([a-z]+)(\d{4})$/i);
+      let month = 4;
+      let year = 2026;
+      if (match) {
+        month = monthMapping[match[1].toLowerCase()] || 4;
+        year = parseInt(match[2]) || 2026;
+      }
+
+      try {
+        const response = await fetch(`https://erp-render.onrender.com/Dashboard/store/inward/?month=${month}&year=${year}`);
+        if (!response.ok) throw new Error("Failed to fetch inward stock distribution data");
+        const result = await response.json();
+        
+        setInwardData([
+          { id: 1, name: 'Purchase GRN', value: result.grn_entries || 0, color: '#6366f1' },
+          { id: 2, name: 'Return Inward', value: result.sales_return_entries || 0, color: '#f59e0b' },
+          { id: 3, name: 'Production', value: result.inward_challan_entries || 0, color: '#10b981' },
+          { id: 4, name: 'Transfer In', value: 0, color: '#ef4444' },
+          { id: 5, name: 'Opening stock', value: 0, color: '#06b6d4' },
+        ]);
+      } catch (error) {
+        console.error("Error fetching inward stock distribution data:", error);
+      }
+    };
+
+    fetchInwardData();
+  }, [selectedMonthYear]);
+
+  useEffect(() => {
+    const fetchOutwardData = async () => {
+      const monthMapping = {
+        january: 1, february: 2, march: 3, april: 4, may: 5, june: 6,
+        july: 7, august: 8, september: 9, october: 10, november: 11, december: 12
+      };
+      const match = outwardSelectedMonthYear.match(/^([a-z]+)(\d{4})$/i);
+      let month = 4;
+      let year = 2026;
+      if (match) {
+        month = monthMapping[match[1].toLowerCase()] || 4;
+        year = parseInt(match[2]) || 2026;
+      }
+
+      try {
+        const response = await fetch(`https://erp-render.onrender.com/Dashboard/store/outward/?month=${month}&year=${year}`);
+        if (!response.ok) throw new Error("Failed to fetch outward stock distribution data");
+        const result = await response.json();
+        
+        setOutwardData([
+          { id: 1, name: 'Sales', value: result.invoice_entries || 0, color: '#6366f1' },
+          { id: 2, name: 'Issue', value: result.material_issue_entries || 0, color: '#f59e0b' },
+          { id: 3, name: 'Transfer Out', value: result.onward_challan_entries || 0, color: '#10b981' },
+          { id: 4, name: 'Damage', value: 0, color: '#ef4444' },
+          { id: 5, name: 'Return', value: 0, color: '#06b6d4' },
+        ]);
+      } catch (error) {
+        console.error("Error fetching outward stock distribution data:", error);
+      }
+    };
+
+    fetchOutwardData();
+  }, [outwardSelectedMonthYear]);
+
+  const handleMonthChange = (e) => {
+    const val = e.target.value;
+    setSelectedMonthYear(val);
+    
+    const match = val.match(/^([a-z]+)(\d{4})$/i);
+    if (match) {
+      const monthNames = [
+        'january', 'february', 'march', 'april', 'may', 'june',
+        'july', 'august', 'september', 'october', 'november', 'december'
+      ];
+      const monthIndex = monthNames.indexOf(match[1].toLowerCase());
+      if (monthIndex !== -1) {
+        const newMonth = monthIndex + 1;
+        const newYear = match[2];
+        const newUrl = `${window.location.pathname}?month=${newMonth}&year=${newYear}`;
+        window.history.pushState({ path: newUrl }, '', newUrl);
+      }
+    }
+  };
+
+  const handleOutwardMonthChange = (e) => {
+    const val = e.target.value;
+    setOutwardSelectedMonthYear(val);
+    
+    const match = val.match(/^([a-z]+)(\d{4})$/i);
+    if (match) {
+      const monthNames = [
+        'january', 'february', 'march', 'april', 'may', 'june',
+        'july', 'august', 'september', 'october', 'november', 'december'
+      ];
+      const monthIndex = monthNames.indexOf(match[1].toLowerCase());
+      if (monthIndex !== -1) {
+        const newMonth = monthIndex + 1;
+        const newYear = match[2];
+        const newUrl = `${window.location.pathname}?month=${newMonth}&year=${newYear}`;
+        window.history.pushState({ path: newUrl }, '', newUrl);
+      }
+    }
+  };
 
   const favoriteStockData = [
     { id: 1, itemNo: 'IT001', desc: 'MS Pipe', group: 'RM', size: '10MM', unit: 'PCS', stock: 120, shopfloor: 40, f4qty: 10, total: 170 },
@@ -192,32 +416,35 @@ const Stores = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#f1f5f9]">
-                {[
-                  { id: 1, main: 'RM', code: 'ITEM-1000', desc: 'Industrial Component 0', min: 50, reorder: 70, max: 150, stock: 12, wo: 2, diff: -38, unit: 'PCS', rate: 147, amt: 1764 },
-                  { id: 2, main: 'Hardware', code: 'ITEM-1001', desc: 'Industrial Component 1', min: 50, reorder: 70, max: 150, stock: 114, wo: 7, diff: 64, unit: 'PCS', rate: 99, amt: 11286 },
-                  { id: 3, main: 'Consumable', code: 'ITEM-1002', desc: 'Industrial Component 2', min: 50, reorder: 70, max: 150, stock: 16, wo: 4, diff: -34, unit: 'PCS', rate: 50, amt: 800 },
-                  { id: 4, main: 'RM', code: 'ITEM-1003', desc: 'Industrial Component 3', min: 50, reorder: 70, max: 150, stock: 120, wo: 7, diff: 70, unit: 'PCS', rate: 64, amt: 7680 },
-                  { id: 5, main: 'Hardware', code: 'ITEM-1004', desc: 'Industrial Component 4', min: 50, reorder: 70, max: 150, stock: 125, wo: 9, diff: 75, unit: 'PCS', rate: 119, amt: 14875 },
-                  { id: 6, main: 'Consumable', code: 'ITEM-1005', desc: 'Industrial Component 5', min: 50, reorder: 70, max: 150, stock: 167, wo: 4, diff: 117, unit: 'PCS', rate: 58, amt: 9686 },
-                  { id: 7, main: 'RM', code: 'ITEM-1006', desc: 'Industrial Component 6', min: 50, reorder: 70, max: 150, stock: 129, wo: 4, diff: 79, unit: 'PCS', rate: 57, amt: 7353 },
-                  { id: 8, main: 'Hardware', code: 'ITEM-1007', desc: 'Industrial Component 7', min: 50, reorder: 70, max: 150, stock: 99, wo: 8, diff: 49, unit: 'PCS', rate: 48, amt: 4752 },
-                ].map((row) => (
-                  <tr key={row.id} className="hover:bg-[#f8fafc] transition-colors group cursor-pointer">
-                    <td className="px-5 py-5 text-[12px] font-black text-[#475569]">{row.id}</td>
-                    <td className="px-5 py-5 text-[12px] font-black text-[#1e293b]">{row.main}</td>
-                    <td className="px-5 py-5 text-[12px] font-black text-[#1e293b]">{row.code}</td>
-                    <td className="px-5 py-5 text-[12px] font-black text-[#1e293b]">{row.desc}</td>
-                    <td className="px-5 py-5 text-[12px] font-black text-[#1e293b] text-center">{row.min}</td>
-                    <td className="px-5 py-5 text-[12px] font-black text-[#1e293b] text-center">{row.reorder}</td>
-                    <td className="px-5 py-5 text-[12px] font-black text-[#1e293b] text-center">{row.max}</td>
-                    <td className="px-5 py-5 text-[12px] font-black text-[#1e293b] text-center">{row.stock}</td>
-                    <td className="px-5 py-5 text-[12px] font-black text-[#1e293b] text-center">{row.wo}</td>
-                    <td className={`px-5 py-5 text-[12px] font-black text-center ${row.diff < 0 ? 'text-[#ef4444]' : 'text-[#1e293b]'}`}>{row.diff}</td>
-                    <td className="px-5 py-5 text-[12px] font-black text-[#64748b] text-center">{row.unit}</td>
-                    <td className="px-5 py-5 text-[12px] font-black text-[#1e293b] text-center">₹{row.rate}</td>
-                    <td className="px-5 py-5 text-[12px] font-black text-[#1e293b] text-right">₹{row.amt.toLocaleString()}</td>
-                  </tr>
-                ))}
+                {minMaxLevelsData.map((row, index) => {
+                  const itemNoCode = row.item_no ? (row.item_code ? `${row.item_no} / ${row.item_code}` : row.item_no) : (row.item_code || '-');
+                  const minVal = row.min_level !== null && row.min_level !== undefined ? row.min_level : 0;
+                  const reorderVal = row.re_order_level !== null && row.re_order_level !== undefined ? row.re_order_level : 0;
+                  const maxVal = row.max_level !== null && row.max_level !== undefined ? row.max_level : 0;
+                  const stockVal = row.stock !== null && row.stock !== undefined ? row.stock : 0;
+                  const woVal = row.wo_qty || row.wo || 0;
+                  const diffVal = stockVal - minVal;
+                  const rateVal = row.rate || 0;
+                  const amtVal = row.amount || row.amt || (stockVal * rateVal);
+                  
+                  return (
+                    <tr key={row.id || index} className="hover:bg-[#f8fafc] transition-colors group cursor-pointer">
+                      <td className="px-5 py-5 text-[12px] font-black text-[#475569]">{index + 1}</td>
+                      <td className="px-5 py-5 text-[12px] font-black text-[#1e293b]">{row.main_groups || row.item_groups || '-'}</td>
+                      <td className="px-5 py-5 text-[12px] font-black text-[#1e293b]">{itemNoCode}</td>
+                      <td className="px-5 py-5 text-[12px] font-black text-[#1e293b]">{row.description || '-'}</td>
+                      <td className="px-5 py-5 text-[12px] font-black text-[#1e293b] text-center">{minVal}</td>
+                      <td className="px-5 py-5 text-[12px] font-black text-[#1e293b] text-center">{reorderVal}</td>
+                      <td className="px-5 py-5 text-[12px] font-black text-[#1e293b] text-center">{maxVal}</td>
+                      <td className="px-5 py-5 text-[12px] font-black text-[#1e293b] text-center">{stockVal}</td>
+                      <td className="px-5 py-5 text-[12px] font-black text-[#1e293b] text-center">{woVal}</td>
+                      <td className={`px-5 py-5 text-[12px] font-black text-center ${diffVal < 0 ? 'text-[#ef4444]' : 'text-[#1e293b]'}`}>{diffVal}</td>
+                      <td className="px-5 py-5 text-[12px] font-black text-[#64748b] text-center">{row.unit || '-'}</td>
+                      <td className="px-5 py-5 text-[12px] font-black text-[#1e293b] text-center">₹{rateVal}</td>
+                      <td className="px-5 py-5 text-[12px] font-black text-[#1e293b] text-right">₹{amtVal.toLocaleString()}</td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -226,7 +453,7 @@ const Stores = () => {
         {/* Footer Legend */}
         <div className="mt-6 flex items-center justify-between bg-[#f8fafc] px-6 py-4 border-t border-[#eef2f6]">
           <div className="flex items-center gap-6">
-            <Typography className="text-[13px] font-black text-[#1e293b] uppercase tracking-tight">TOTAL RECORDS: 8</Typography>
+            <Typography className="text-[13px] font-black text-[#1e293b] uppercase tracking-tight">TOTAL RECORDS: {minMaxLevelsData.length}</Typography>
             <div className="flex items-center gap-3">
               <div className="px-3 py-1 bg-[#fee2e2] text-[#991b1b] text-[11px] font-black rounded-md border border-[#fecaca]">Min Level</div>
               <div className="px-3 py-1 bg-[#ffedd5] text-[#9a3412] text-[11px] font-black rounded-md border border-[#fed7aa]">Min Level To Re-Order Level</div>
@@ -256,8 +483,28 @@ const Stores = () => {
             </div>
             <div className="flex items-center gap-2">
               <Typography className="text-[12px] font-black text-[#64748b] uppercase">Month:</Typography>
-              <Select value="april2026" size="small" sx={{ height: '32px', fontSize: '12px', fontWeight: 900, borderRadius: '6px', minWidth: '120px', bgcolor: 'white' }}>
+              <Select 
+                open={monthSelectOpen}
+                onOpen={() => setMonthSelectOpen(true)}
+                onClose={() => setMonthSelectOpen(false)}
+                value={selectedMonthYear} 
+                onChange={handleMonthChange} 
+                size="small" 
+                sx={{ height: '32px', fontSize: '12px', fontWeight: 900, borderRadius: '6px', minWidth: '120px', bgcolor: 'white' }}
+                MenuProps={{ disableScrollLock: true }}
+              >
                 <MenuItem value="april2026">April 2026</MenuItem>
+                <MenuItem value="may2026">May 2026</MenuItem>
+                <MenuItem value="june2026">June 2026</MenuItem>
+                <MenuItem value="july2026">July 2026</MenuItem>
+                <MenuItem value="august2026">August 2026</MenuItem>
+                <MenuItem value="september2026">September 2026</MenuItem>
+                <MenuItem value="october2026">October 2026</MenuItem>
+                <MenuItem value="november2026">November 2026</MenuItem>
+                <MenuItem value="december2026">December 2026</MenuItem>
+                <MenuItem value="january2027">January 2027</MenuItem>
+                <MenuItem value="february2027">February 2027</MenuItem>
+                <MenuItem value="march2027">March 2027</MenuItem>
               </Select>
             </div>
           </div>
@@ -270,13 +517,7 @@ const Stores = () => {
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
-                    data={[
-                      { name: 'Purchase GRN', value: 1204, color: '#6366f1' },
-                      { name: 'Return Inward', value: 450, color: '#f59e0b' },
-                      { name: 'Production', value: 890, color: '#10b981' },
-                      { name: 'Transfer In', value: 210, color: '#ef4444' },
-                      { name: 'Opening stock', value: 600, color: '#06b6d4' },
-                    ]}
+                    data={inwardData.filter(item => item.value > 0)}
                     cx="50%"
                     cy="50%"
                     innerRadius={60}
@@ -285,6 +526,7 @@ const Stores = () => {
                     dataKey="value"
                     stroke="none"
                     label={({ cx, cy, midAngle, innerRadius, outerRadius, value, color }) => {
+                      if (!value) return null;
                       const RADIAN = Math.PI / 180;
                       const radius = outerRadius + 30;
                       const x = cx + radius * Math.cos(-midAngle * RADIAN);
@@ -296,13 +538,7 @@ const Stores = () => {
                       );
                     }}
                   >
-                    {[
-                      { color: '#6366f1' },
-                      { color: '#f59e0b' },
-                      { color: '#10b981' },
-                      { color: '#ef4444' },
-                      { color: '#06b6d4' },
-                    ].map((entry, index) => (
+                    {inwardData.filter(item => item.value > 0).map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
@@ -322,13 +558,7 @@ const Stores = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#f1f5f9]">
-                {[
-                  { id: 1, name: 'Purchase GRN', value: 1204, color: '#6366f1' },
-                  { id: 2, name: 'Return Inward', value: 450, color: '#f59e0b' },
-                  { id: 3, name: 'Production', value: 890, color: '#10b981' },
-                  { id: 4, name: 'Transfer In', value: 210, color: '#ef4444' },
-                  { id: 5, name: 'Opening stock', value: 600, color: '#06b6d4' },
-                ].map((row) => (
+                {inwardData.map((row) => (
                   <tr key={row.id} className="hover:bg-white transition-colors group cursor-pointer">
                     <td className="px-8 py-6 text-[14px] font-black text-[#475569]">{row.id}</td>
                     <td className="px-8 py-6">
@@ -362,8 +592,28 @@ const Stores = () => {
             </div>
             <div className="flex items-center gap-2">
               <Typography className="text-[12px] font-black text-[#64748b] uppercase">Month:</Typography>
-              <Select value="april2026" size="small" sx={{ height: '32px', fontSize: '12px', fontWeight: 900, borderRadius: '6px', minWidth: '120px', bgcolor: 'white' }}>
+              <Select 
+                open={outwardMonthSelectOpen}
+                onOpen={() => setOutwardMonthSelectOpen(true)}
+                onClose={() => setOutwardMonthSelectOpen(false)}
+                value={outwardSelectedMonthYear} 
+                onChange={handleOutwardMonthChange} 
+                size="small" 
+                sx={{ height: '32px', fontSize: '12px', fontWeight: 900, borderRadius: '6px', minWidth: '120px', bgcolor: 'white' }}
+                MenuProps={{ disableScrollLock: true }}
+              >
                 <MenuItem value="april2026">April 2026</MenuItem>
+                <MenuItem value="may2026">May 2026</MenuItem>
+                <MenuItem value="june2026">June 2026</MenuItem>
+                <MenuItem value="july2026">July 2026</MenuItem>
+                <MenuItem value="august2026">August 2026</MenuItem>
+                <MenuItem value="september2026">September 2026</MenuItem>
+                <MenuItem value="october2026">October 2026</MenuItem>
+                <MenuItem value="november2026">November 2026</MenuItem>
+                <MenuItem value="december2026">December 2026</MenuItem>
+                <MenuItem value="january2027">January 2027</MenuItem>
+                <MenuItem value="february2027">February 2027</MenuItem>
+                <MenuItem value="march2027">March 2027</MenuItem>
               </Select>
             </div>
           </div>
@@ -376,13 +626,7 @@ const Stores = () => {
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
-                    data={[
-                      { name: 'Sales', value: 1100, color: '#6366f1' },
-                      { name: 'Issue', value: 750, color: '#f59e0b' },
-                      { name: 'Transfer Out', value: 320, color: '#10b981' },
-                      { name: 'Damage', value: 45, color: '#ef4444' },
-                      { name: 'Return', value: 88, color: '#06b6d4' },
-                    ]}
+                    data={outwardData.filter(item => item.value > 0)}
                     cx="50%"
                     cy="50%"
                     innerRadius={60}
@@ -391,6 +635,7 @@ const Stores = () => {
                     dataKey="value"
                     stroke="none"
                     label={({ cx, cy, midAngle, innerRadius, outerRadius, value, color }) => {
+                      if (!value) return null;
                       const RADIAN = Math.PI / 180;
                       const radius = outerRadius + 30;
                       const x = cx + radius * Math.cos(-midAngle * RADIAN);
@@ -402,13 +647,7 @@ const Stores = () => {
                       );
                     }}
                   >
-                    {[
-                      { color: '#6366f1' },
-                      { color: '#f59e0b' },
-                      { color: '#10b981' },
-                      { color: '#ef4444' },
-                      { color: '#06b6d4' },
-                    ].map((entry, index) => (
+                    {outwardData.filter(item => item.value > 0).map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
@@ -428,13 +667,7 @@ const Stores = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#f1f5f9]">
-                {[
-                  { id: 1, name: 'Sales', value: 1100, color: '#6366f1' },
-                  { id: 2, name: 'Issue', value: 750, color: '#f59e0b' },
-                  { id: 3, name: 'Transfer Out', value: 320, color: '#10b981' },
-                  { id: 4, name: 'Damage', value: 45, color: '#ef4444' },
-                  { id: 5, name: 'Return', value: 88, color: '#06b6d4' },
-                ].map((row) => (
+                {outwardData.map((row) => (
                   <tr key={row.id} className="hover:bg-white transition-colors group cursor-pointer">
                     <td className="px-8 py-6 text-[14px] font-black text-[#475569]">{row.id}</td>
                     <td className="px-8 py-6">

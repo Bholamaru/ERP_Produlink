@@ -6,6 +6,7 @@ import SideNav from "../../../SideNav/SideNav.js";
 import "./PaddingQCInward.css";
 import { FaEye } from "react-icons/fa";
 import { Link } from "react-router-dom";
+import * as XLSX from "xlsx";
 
 const PaddingQCInward = () => {
   const [sideNavOpen, setSideNavOpen] = useState(false);
@@ -41,6 +42,39 @@ const PaddingQCInward = () => {
     }
   };
 
+  const handleExportExcel = () => {
+    if (pendingQcData.length === 0) {
+      alert("No records available to export");
+      return;
+    }
+
+    const exportData = pendingQcData.map((row, index) => ({
+      "Sr.": index + 1,
+      "57F4 GRN No": row.InwardF4No || "",
+      "57F4 Date": row.InwardDate || "",
+      "Entry Date": (row.InwardDate || "") + " " + (row.InwardTime || ""),
+      "57F4 Type": "Our_F4",
+      "Vendor Ch. No": row.ChallanNo || "",
+      "Ch. Date": row.ChallanDate || "",
+      "Code": "",
+      "Vendor Name": row.SupplierName || "",
+      "F4 Out No": row.InwardChallanTable && row.InwardChallanTable.length > 0 ? row.InwardChallanTable[0].OutNo : "",
+      "Item Qty | Desc": `Total Item : (${row.TotalItem || 0})`,
+      "User": row.PreparedBy || "",
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Pending QC List");
+
+    const wscols = Object.keys(exportData[0]).map(key => ({
+      wch: Math.max(key.length, ...exportData.map(row => row[key] ? row[key].toString().length : 0)) + 2
+    }));
+    worksheet["!cols"] = wscols;
+
+    XLSX.writeFile(workbook, "Subcon_Jobwork_Inward_Pending_QC_List.xlsx");
+  };
+
   return (
     <div className="PaddingQCInwardMaster">
       <div className="container-fluid">
@@ -66,7 +100,7 @@ const PaddingQCInward = () => {
                         </h5>
                       </div>
                       <div className="col-md-6 text-end">
-                        <button type="button" className="btn" to="#/">
+                        <button type="button" className="btn" onClick={handleExportExcel}>
                           Export Report
                         </button>
                       </div>

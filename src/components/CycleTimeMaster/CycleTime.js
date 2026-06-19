@@ -7,6 +7,7 @@ import SideNav from "../../SideNav/SideNav";
 import "./CycleTime.css";
 import { useNavigate } from "react-router-dom";
 import { fetchCycleTimeList, deleteCycleTimeData } from "../../Service/Api.jsx";
+import * as XLSX from "xlsx";
 
 const CycleTime = () => {
   const [sideNavOpen, setSideNavOpen] = useState(false);
@@ -72,6 +73,41 @@ const CycleTime = () => {
     navigate("/add-cycle-time");
   };
 
+  const handleExportExcel = () => {
+    if (filteredRecords.length === 0) {
+      alert("No records available to export");
+      return;
+    }
+
+    const exportData = filteredRecords.map((record, index) => {
+      const partCodeText = record.PartCode && record.PartCode.includes(" | ")
+        ? record.PartCode
+        : `${record.op_no || record.OPNo || ""} | ${record.PartCode || record.part_code || ""} | ${record.operation || ""}`;
+
+      return {
+        "Sr.": index + 1,
+        "Part No": record.part_no || "",
+        "Part Description": record.part_desc || "",
+        "Part Code": partCodeText || "",
+        "Machine Type": record.MachineType || "",
+        "Machine": record.Machine || "",
+        "Total Time": record.Total_Time || "0",
+      };
+    });
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Cycle Time Master");
+
+    // Adjust column widths
+    const wscols = Object.keys(exportData[0]).map(key => ({
+      wch: Math.max(key.length, ...exportData.map(row => row[key] ? row[key].toString().length : 0)) + 2
+    }));
+    worksheet["!cols"] = wscols;
+
+    XLSX.writeFile(workbook, "Cycle_Time_Master.xlsx");
+  };
+
   return (
     <div className="Cycletimecenter">
       <div className="container-fluid">
@@ -99,7 +135,7 @@ const CycleTime = () => {
                             Add New Cycle Time
                           </button>
                           <button className="vndrbtn me-2">Report</button>
-                          <button className="vndrbtn">Export Report</button>
+                          <button className="vndrbtn" onClick={handleExportExcel}>Export Report</button>
                         </div>
                       </div>
                     </div>

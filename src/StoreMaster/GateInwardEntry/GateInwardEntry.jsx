@@ -7,6 +7,7 @@ import { Link } from "react-router-dom";
 import "./GateInwardEntry.css";
 import { getgateInward, deleteGateInward } from "../../Service/StoreApi.jsx";
 import { FaEdit, FaTrash } from "react-icons/fa";
+import * as XLSX from "xlsx";
 
 const GateInwardEntry = () => {
   const [sideNavOpen, setSideNavOpen] = useState(false);
@@ -82,6 +83,43 @@ const GateInwardEntry = () => {
     }
   };
 
+  const handleExportExcel = () => {
+    if (gateInwardData.length === 0) {
+      alert("No records available to export");
+      return;
+    }
+
+    const exportData = gateInwardData.map((item, index) => ({
+      "Sr no.": index + 1,
+      "Year": item.GE_Date ? new Date(item.GE_Date).getFullYear() : "",
+      "Plant": item.Plant || "",
+      "Entry No": item.GE_No || "",
+      "Entry Date": item.GE_Date || "",
+      "Entry Time": item.GE_Time || "",
+      "Type": item.Type || "",
+      "Custo/Supplier Name": item.Supp_Cust || "",
+      "Challan No": item.ChallanNo || "",
+      "Challan Date": item.ChallanDate || "",
+      "Invoice No": item.InVoiceNo || "",
+      "Invoice Date": item.Invoicedate || "",
+      "Ref Doc No": grnDataMap[item.GE_No]?.GrnNo || "-",
+      "Ref Doc Date": grnDataMap[item.GE_No]?.GrnDate || "-",
+      "User": item.User || "-",
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Gate Inward Register");
+
+    // Adjust column widths
+    const wscols = Object.keys(exportData[0]).map(key => ({
+      wch: Math.max(key.length, ...exportData.map(row => row[key] ? row[key].toString().length : 0)) + 2
+    }));
+    worksheet["!cols"] = wscols;
+
+    XLSX.writeFile(workbook, "Gate_Inward_Register.xlsx");
+  };
+
   return (
     <div className="NewStoreGateInward1">
       <div className="container-fluid">
@@ -109,7 +147,7 @@ const GateInwardEntry = () => {
 
                       <Link className="btn">Gate Inward Material Reg</Link>
 
-                      <Link className="btn">Export Excel</Link>
+                      <button className="btn" onClick={handleExportExcel}>Export Excel</button>
 
                       <Link className="btn">Gate Entry Inward - Query</Link>
                     </div>
