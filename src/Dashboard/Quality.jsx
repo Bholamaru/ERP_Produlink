@@ -122,7 +122,7 @@ const Quality = () => {
 
   const fetchReworkData = async (from, to) => {
     try {
-      const response = await fetch(`https://erp-render.onrender.com/Dashboard/Quality/rework_qty/?from_date=${from}&to_date=${to}`);
+      const response = await fetch(`http://127.0.0.1:8000/Dashboard/Quality/rework_qty/?from_date=${from}&to_date=${to}`);
       if (!response.ok) throw new Error("Failed to fetch rework data");
       const result = await response.json();
       setReworkData(Array.isArray(result) ? result : (result?.data || []));
@@ -133,7 +133,7 @@ const Quality = () => {
 
   const fetchRejectData = async (from, to) => {
     try {
-      const response = await fetch(`https://erp-render.onrender.com/Dashboard/Quality/reject_qty/?from_date=${from}&to_date=${to}`);
+      const response = await fetch(`http://127.0.0.1:8000/Dashboard/Quality/reject_qty/?from_date=${from}&to_date=${to}`);
       if (!response.ok) throw new Error("Failed to fetch reject data");
       const result = await response.json();
       setRejectData(Array.isArray(result) ? result : (result?.data || []));

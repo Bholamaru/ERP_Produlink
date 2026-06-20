@@ -1018,8 +1018,8 @@ const Dashboard = () => {
       const fetchYear = bpSelectedMonth >= 4 ? startYear : endYear;
       
       const apiEndpoint = bpSearchBy === "Value"
-        ? `https://erp-render.onrender.com/Dashboard/bussiness-invoice-value/?month=${bpSelectedMonth}&year=${fetchYear}`
-        : `https://erp-render.onrender.com/Dashboard/bussiness-invoice-summary/?month=${bpSelectedMonth}&year=${fetchYear}`;
+        ? `http://127.0.0.1:8000/Dashboard/bussiness-invoice-value/?month=${bpSelectedMonth}&year=${fetchYear}`
+        : `http://127.0.0.1:8000/Dashboard/bussiness-invoice-summary/?month=${bpSelectedMonth}&year=${fetchYear}`;
       
       const response = await fetch(apiEndpoint);
       if (!response.ok) throw new Error("Failed to fetch business plan data");
@@ -1048,7 +1048,7 @@ const Dashboard = () => {
   };
   const fetchStateWiseSalesData = async () => {
     try {
-      const response = await fetch("https://erp-render.onrender.com/Dashboard/top-5-region-sales/");
+      const response = await fetch("http://127.0.0.1:8000/Dashboard/top-5-region-sales/");
       if (!response.ok) throw new Error("Failed to fetch state wise sales data");
       const data = await response.json();
 

@@ -83,7 +83,7 @@ const InwardChallan1 = () => {
 
   const fetchGateEntries = async () => {
     try {
-      const res = await fetch("https://erp-render.onrender.com/Store/gate-entrydata/inward/");
+      const res = await fetch("http://127.0.0.1:8000/Store/gate-entrydata/inward/");
       const resData = await res.json();
       console.log(resData);
       setGateEntries(resData);
