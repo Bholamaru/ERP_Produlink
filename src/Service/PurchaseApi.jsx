@@ -371,7 +371,7 @@ export const updatePurchaseOrder = async (id, data) => {
     console.log("Submitting data to update PO:", data);
 
 
-    const response = await fetch(`${BASE_URL}RegisterPO_All_Series/${id}/`, {
+    const response = await fetch(`https://erp-render.onrender.com/Purchase/RegisterPO_All_Series/${id}/`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -381,7 +381,30 @@ export const updatePurchaseOrder = async (id, data) => {
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      let errorMessage = `HTTP error! status: ${response.status}`;
+      const responseClone = response.clone();
+      try {
+        const errorData = await response.json();
+        if (errorData && errorData.error) {
+          errorMessage = errorData.error;
+        } else if (errorData && typeof errorData === 'object') {
+          errorMessage = JSON.stringify(errorData);
+        }
+      } catch (e) {
+        try {
+          const textError = await responseClone.text();
+          if (textError) {
+            // Extract the exception message if it is a Django debug page
+            const match = textError.match(/<pre class="exception_value">([^<]+)<\/pre>/i) || textError.match(/<h1>([^<]+)<\/h1>/i);
+            if (match) {
+              errorMessage += ` (${match[1].trim()})`;
+            } else {
+              errorMessage += ` - ${textError.substring(0, 100)}...`;
+            }
+          }
+        } catch (err) {}
+      }
+      throw new Error(errorMessage);
     }
 
     return await response.json();
@@ -399,7 +422,7 @@ export const fetchPurchaseOrderById = async (id) => {
       throw new Error("Authentication token not found. Please login again.");
     }
 
-    const response = await fetch(`${BASE_URL}RegisterPO_All_Series/${id}/`, {
+    const response = await fetch(`https://erp-render.onrender.com/Purchase/RegisterPO_All_Series/${id}/`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

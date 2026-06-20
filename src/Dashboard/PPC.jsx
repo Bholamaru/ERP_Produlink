@@ -1,15 +1,112 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, Typography, Button, MenuItem, Select, FormControl } from '@mui/material';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import SearchIcon from '@mui/icons-material/Search';
 import TableIcon from '@mui/icons-material/TableChart';
-import { RadialBarChart, RadialBar, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, PieChart, Pie, Cell } from 'recharts';
+import { RadialBarChart, RadialBar, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, PieChart, Pie, Cell, AreaChart, Area, ReferenceLine, ComposedChart, Line } from 'recharts';
 
 const PPC = () => {
   const [unitType, setUnitType] = useState('mt');
   const [groupType, setGroupType] = useState('machine');
   const [deliveryType, setDeliveryType] = useState('schedule');
+  const [selectedScheduleMonth, setSelectedScheduleMonth] = useState('all');
+
+  const [scheduleData, setScheduleData] = useState([
+    { name: 'April-2026', quantity: 25000 },
+    { name: 'May-2026', quantity: 28500 },
+    { name: 'June-2026', quantity: 32000 },
+    { name: 'July-2026', quantity: 35500 },
+    { name: 'August-2026', quantity: 31000 },
+    { name: 'September-2026', quantity: 38000 },
+    { name: 'October-2026', quantity: 40500 },
+    { name: 'November-2026', quantity: 42000 },
+    { name: 'December-2026', quantity: 45000 },
+    { name: 'January-2027', quantity: 41500 },
+    { name: 'February-2027', quantity: 43000 },
+    { name: 'March-2027', quantity: 48000 },
+  ]);
+
+  useEffect(() => {
+    const fetchScheduleData = async () => {
+      try {
+        let yearParam = '2026';
+        if (selectedScheduleMonth !== 'all') {
+          const parts = selectedScheduleMonth.split('-');
+          if (parts.length > 1) {
+            const monthName = parts[0];
+            const yearNum = parseInt(parts[1], 10);
+            const isQ4 = ['January', 'February', 'March'].includes(monthName);
+            yearParam = String(isQ4 ? yearNum - 1 : yearNum);
+          }
+        }
+        
+        const response = await fetch(`http://127.0.0.1:8000/Dashboard/ppc/schqty/month/wise/?month=all&year=${yearParam}`);
+        if (response.ok) {
+          const data = await response.json();
+          if (Array.isArray(data) && data.length > 0) {
+            setScheduleData(data);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching schedule data:', error);
+      }
+    };
+
+    fetchScheduleData();
+  }, [selectedScheduleMonth]);
+
+  const filteredScheduleData = selectedScheduleMonth === 'all' 
+    ? scheduleData 
+    : scheduleData.filter(d => d.name === selectedScheduleMonth);
+
+  const totalScheduleQty = filteredScheduleData.reduce((acc, curr) => acc + curr.quantity, 0);
+
+  const renderCustomDot = (props) => {
+    const { cx, cy, payload } = props;
+    if (payload.name === selectedScheduleMonth) {
+      return (
+        <circle 
+          key={`dot-${payload.name}`}
+          cx={cx} 
+          cy={cy} 
+          r={7} 
+          fill="#10b981" 
+          stroke="#ffffff" 
+          strokeWidth={2.5} 
+          style={{ filter: 'drop-shadow(0px 2px 4px rgba(0,0,0,0.25))' }}
+        />
+      );
+    }
+    return (
+      <circle 
+        key={`dot-${payload.name}`}
+        cx={cx} 
+        cy={cy} 
+        r={4} 
+        fill="#6366f1" 
+        stroke="#ffffff" 
+        strokeWidth={1.5} 
+      />
+    );
+  };
+
+  const CustomXAxisTick = (props) => {
+    const { x, y, payload } = props;
+    if (!payload || !payload.value) return null;
+    const parts = payload.value.split('-');
+    const month = parts[0];
+    const year = parts[1];
+    
+    return (
+      <g transform={`translate(${x},${y})`}>
+        <text x={0} y={0} textAnchor="middle" fill="#64748b" fontSize={11} fontWeight={900}>
+          <tspan x={0} dy={28}>{month}</tspan>
+          <tspan x={0} dy={14}>{year}</tspan>
+        </text>
+      </g>
+    );
+  };
 
   return (
     <Box className="p-8 max-w-[1600px] mx-auto bg-[#f8fafc]">
@@ -33,6 +130,163 @@ const PPC = () => {
           >
             Master Export
           </Button>
+        </Box>
+      </Box>
+
+      {/* Schedule Quantity Month Wise Section */}
+      <Box className="bg-white rounded-[20px] border border-[#eef2f6] p-7 shadow-md transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 mb-8">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-2">
+            <div className="w-[4px] h-6 bg-[#6366f1] rounded-full" />
+            <Typography className="text-[#1e293b] tracking-tight uppercase" sx={{ fontWeight: 900, fontSize: '18px' }}>
+              SCHEDULE QUANTITY MONTH WISE
+            </Typography>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Typography className="text-[12px] font-black text-[#64748b] uppercase">Select Month:</Typography>
+              <Select 
+                value={selectedScheduleMonth} 
+                onChange={(e) => setSelectedScheduleMonth(e.target.value)}
+                size="small" 
+                sx={{ height: '36px', fontSize: '12px', fontWeight: 900, borderRadius: '8px', minWidth: '130px', bgcolor: 'white' }}
+              >
+                <MenuItem value="all">All Months</MenuItem>
+                <MenuItem value="April-2026">April-2026</MenuItem>
+                <MenuItem value="May-2026">May-2026</MenuItem>
+                <MenuItem value="June-2026">June-2026</MenuItem>
+                <MenuItem value="July-2026">July-2026</MenuItem>
+                <MenuItem value="August-2026">August-2026</MenuItem>
+                <MenuItem value="September-2026">September-2026</MenuItem>
+                <MenuItem value="October-2026">October-2026</MenuItem>
+                <MenuItem value="November-2026">November-2026</MenuItem>
+                <MenuItem value="December-2026">December-2026</MenuItem>
+                <MenuItem value="January-2027">January-2027</MenuItem>
+                <MenuItem value="February-2027">February-2027</MenuItem>
+                <MenuItem value="March-2027">March-2027</MenuItem>
+              </Select>
+            </div>
+            <Box 
+              sx={{ 
+                bgcolor: 'primary.main', 
+                color: 'white', 
+                px: 3, 
+                py: 0.8, 
+                borderRadius: '50px', 
+                fontSize: '12px', 
+                fontWeight: 900 
+              }}
+            >
+              TOTAL SCHEDULE QTY: {totalScheduleQty.toLocaleString()} Qty
+            </Box>
+          </div>
+        </div>
+
+        {/* High-Fidelity Area Chart Container with Highlight */}
+        <Box className="bg-white rounded-[20px] p-6 border border-[#f1f5f9] shadow-sm">
+          <div className="h-[300px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <ComposedChart
+                data={scheduleData}
+                margin={{ top: 15, right: 30, left: 10, bottom: 60 }}
+              >
+                <defs>
+                  {/* Area fill gradient */}
+                  <linearGradient id="colorQty" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#6366f1" stopOpacity={0.2}/>
+                    <stop offset="95%" stopColor="#6366f1" stopOpacity={0.01}/>
+                  </linearGradient>
+                  {/* Line stroke color transition gradient */}
+                  <linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stopColor="#6366f1" />
+                    <stop offset="40%" stopColor="#8b5cf6" />
+                    <stop offset="70%" stopColor="#ec4899" />
+                    <stop offset="100%" stopColor="#10b981" />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                
+                {/* Background transparent guide bars */}
+                <Bar 
+                  dataKey="quantity" 
+                  barSize={20} 
+                  radius={[10, 10, 0, 0]}
+                  tooltipType="none"
+                >
+                  {scheduleData.map((entry, index) => {
+                    const isSelected = selectedScheduleMonth === 'all' || entry.name === selectedScheduleMonth;
+                    return (
+                      <Cell 
+                        key={`bg-cell-${index}`} 
+                        fill={entry.name === selectedScheduleMonth ? '#10b981' : '#6366f1'} 
+                        opacity={entry.name === selectedScheduleMonth ? 0.2 : 0.04} 
+                      />
+                    );
+                  })}
+                </Bar>
+
+                {/* Stepped Area fill */}
+                <Area 
+                  type="stepAfter" 
+                  dataKey="quantity" 
+                  fill="url(#colorQty)" 
+                  stroke="none" 
+                  tooltipType="none"
+                />
+
+                {/* Glowing stepped shadow overlay line */}
+                <Line 
+                  type="stepAfter" 
+                  dataKey="quantity" 
+                  stroke="url(#lineGrad)" 
+                  strokeWidth={10}
+                  opacity={0.15}
+                  dot={false}
+                  activeDot={false}
+                  tooltipType="none"
+                />
+
+                {/* Main stepped line overlay with color gradient transition */}
+                <Line 
+                  type="stepAfter" 
+                  dataKey="quantity" 
+                  stroke="url(#lineGrad)" 
+                  strokeWidth={3.5}
+                  dot={renderCustomDot}
+                  activeDot={{ r: 8 }}
+                />
+
+                {selectedScheduleMonth !== 'all' && (
+                  <ReferenceLine 
+                    x={selectedScheduleMonth} 
+                    stroke="#10b981" 
+                    strokeWidth={2} 
+                    strokeDasharray="4 4" 
+                  />
+                )}
+
+                <XAxis 
+                  dataKey="name" 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={<CustomXAxisTick />} 
+                  padding={{ left: 30, right: 30 }}
+                  interval={0}
+                  height={60}
+                />
+                <YAxis 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{ fill: '#64748b', fontSize: 12, fontWeight: 900 }}
+                  tickFormatter={(val) => val.toLocaleString()}
+                />
+                <Tooltip 
+                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1)' }}
+                  formatter={(value) => [value.toLocaleString(), 'Quantity']}
+                />
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
         </Box>
       </Box>
 

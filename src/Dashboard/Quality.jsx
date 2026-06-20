@@ -73,7 +73,29 @@ const CustomPieLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, i
 const Quality = () => {
   const [fy, setFy] = useState('2026-2027');
   const [plant, setPlant] = useState('Sharp');
-  const [month, setMonth] = useState('April 2026');
+  const [month, setMonth] = useState('04-2026');
+  const [monthSelectOpen, setMonthSelectOpen] = useState(false);
+  const [rejectionTrend, setRejectionTrend] = useState(rejectionTrendData);
+  const [scrapMonth, setScrapMonth] = useState('06-2026');
+  const [scrapMonthSelectOpen, setScrapMonthSelectOpen] = useState(false);
+  const [scrapData, setScrapData] = useState(null);
+  const [salesReturnYear, setSalesReturnYear] = useState('2025-2026');
+  const [salesReturnYearSelectOpen, setSalesReturnYearSelectOpen] = useState(false);
+  const [salesReturnMetric, setSalesReturnMetric] = useState('Item Qty');
+  const [salesReturnData, setSalesReturnData] = useState([
+    { month: 'April-2026', cust: 15, items: 42, qty: 520, value: '₹4,12,300', raw_value: 412300 },
+    { month: 'May-2026', cust: 12, items: 38, qty: 440, value: '₹3,45,200', raw_value: 345200 },
+    { month: 'June-2026', cust: 18, items: 55, qty: 525, value: '₹5,10,000', raw_value: 510000 },
+    { month: 'July-2026', cust: 14, items: 47, qty: 275, value: '₹2,62,993', raw_value: 262993 },
+    { month: 'August-2026', cust: 18, items: 31, qty: 495, value: '₹4,10,330', raw_value: 410330 },
+    { month: 'September-2026', cust: 20, items: 55, qty: 811, value: '₹8,34,401', raw_value: 834401 },
+    { month: 'October-2026', cust: 20, items: 57, qty: 707, value: '₹7,74,266', raw_value: 774266 },
+    { month: 'November-2026', cust: 11, items: 36, qty: 286, value: '₹2,47,223', raw_value: 247223 },
+    { month: 'December-2026', cust: 22, items: 25, qty: 380, value: '₹3,75,667', raw_value: 375667 },
+    { month: 'January-2027', cust: 20, items: 32, qty: 446, value: '₹4,16,949', raw_value: 416949 },
+    { month: 'February-2027', cust: 15, items: 17, qty: 657, value: '₹6,43,723', raw_value: 643723 },
+    { month: 'March-2027', cust: 9, items: 42, qty: 703, value: '₹7,17,806', raw_value: 717806 },
+  ]);
   const [reworkData, setReworkData] = useState([]);
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
@@ -145,6 +167,115 @@ const Quality = () => {
   useEffect(() => {
     // Dates are not pre-selected. Data will be fetched when the user manually enters dates and clicks Search.
   }, []);
+
+  useEffect(() => {
+    const fetchRejectionTrend = async () => {
+      try {
+        const [mVal, yVal] = month.split('-');
+        const response = await fetch(`https://erp-render.onrender.com/Dashboard/Quality/trend_rejection/?month=${mVal}&year=${yVal}`);
+        if (response.ok) {
+          const data = await response.json();
+          if (Array.isArray(data) && data.length > 0) {
+            const mapped = data.map(item => {
+              const day = parseInt(item.date.split('-')[2], 10);
+              return {
+                date: day,
+                percentage: item.reject_qty,
+                ppm: item.reject_qty
+              };
+            });
+            setRejectionTrend(mapped);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching rejection trend data:", error);
+      }
+    };
+
+    fetchRejectionTrend();
+  }, [month]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setMonthSelectOpen(false);
+    };
+    if (monthSelectOpen) {
+      window.addEventListener('scroll', handleScroll, { capture: true, passive: true });
+    }
+    return () => {
+      window.removeEventListener('scroll', handleScroll, { capture: true });
+    };
+  }, [monthSelectOpen]);
+
+  useEffect(() => {
+    const fetchScrapData = async () => {
+      try {
+        const [mVal, yVal] = scrapMonth.split('-');
+        const response = await fetch(`https://erp-render.onrender.com/Dashboard/Quality/scrap/qty/?month=${mVal}&year=${yVal}`);
+        if (response.ok) {
+          const data = await response.json();
+          setScrapData(data);
+        }
+      } catch (error) {
+        console.error("Error fetching scrap quantity data:", error);
+      }
+    };
+    fetchScrapData();
+  }, [scrapMonth]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrapMonthSelectOpen(false);
+    };
+    if (scrapMonthSelectOpen) {
+      window.addEventListener('scroll', handleScroll, { capture: true, passive: true });
+    }
+    return () => {
+      window.removeEventListener('scroll', handleScroll, { capture: true });
+    };
+  }, [scrapMonthSelectOpen]);
+
+  useEffect(() => {
+    const fetchSalesReturnData = async () => {
+      try {
+        const response = await fetch(`https://erp-render.onrender.com/Dashboard/Quality/sales-return/?financial_year=${salesReturnYear}`);
+        if (response.ok) {
+          const data = await response.json();
+          if (Array.isArray(data) && data.length > 0) {
+            const [startYear, endYear] = salesReturnYear.split('-');
+            const mapped = data.map(item => {
+              const isQ4 = ['January', 'February', 'March'].includes(item.month);
+              const yearStr = isQ4 ? endYear : startYear;
+              return {
+                month: `${item.month}-${yearStr}`,
+                cust: item.customer_count,
+                items: item.item_count,
+                qty: item.return_qty,
+                raw_value: item.grand_total,
+                value: `₹${item.grand_total.toLocaleString()}`
+              };
+            });
+            setSalesReturnData(mapped);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching sales return customer data:", error);
+      }
+    };
+    fetchSalesReturnData();
+  }, [salesReturnYear]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setSalesReturnYearSelectOpen(false);
+    };
+    if (salesReturnYearSelectOpen) {
+      window.addEventListener('scroll', handleScroll, { capture: true, passive: true });
+    }
+    return () => {
+      window.removeEventListener('scroll', handleScroll, { capture: true });
+    };
+  }, [salesReturnYearSelectOpen]);
 
   const handleSearch = () => {
     if (!fromDate || !toDate) {
@@ -226,8 +357,28 @@ const Quality = () => {
 
               <Box className="flex items-center gap-2">
                 <Typography className="text-[13px] font-black text-[#64748b]">Month:</Typography>
-                <Select value={month} onChange={(e) => setMonth(e.target.value)} size="small" sx={{ height: '38px', fontSize: '13px', fontWeight: 900, borderRadius: '10px', minWidth: '150px', bgcolor: 'white', '& .MuiOutlinedInput-notchedOutline': { borderColor: '#e2e8f0' } }}>
-                  <MenuItem value="April 2026">April 2026</MenuItem>
+                <Select 
+                  value={month} 
+                  onChange={(e) => setMonth(e.target.value)} 
+                  open={monthSelectOpen}
+                  onOpen={() => setMonthSelectOpen(true)}
+                  onClose={() => setMonthSelectOpen(false)}
+                  size="small" 
+                  sx={{ height: '38px', fontSize: '13px', fontWeight: 900, borderRadius: '10px', minWidth: '150px', bgcolor: 'white', '& .MuiOutlinedInput-notchedOutline': { borderColor: '#e2e8f0' } }}
+                  MenuProps={{ disableScrollLock: true }}
+                >
+                  <MenuItem value="04-2026">April 2026</MenuItem>
+                  <MenuItem value="05-2026">May 2026</MenuItem>
+                  <MenuItem value="06-2026">June 2026</MenuItem>
+                  <MenuItem value="07-2026">July 2026</MenuItem>
+                  <MenuItem value="08-2026">August 2026</MenuItem>
+                  <MenuItem value="09-2026">September 2026</MenuItem>
+                  <MenuItem value="10-2026">October 2026</MenuItem>
+                  <MenuItem value="11-2026">November 2026</MenuItem>
+                  <MenuItem value="12-2026">December 2026</MenuItem>
+                  <MenuItem value="01-2027">January 2027</MenuItem>
+                  <MenuItem value="02-2027">February 2027</MenuItem>
+                  <MenuItem value="03-2027">March 2027</MenuItem>
                 </Select>
               </Box>
 
@@ -253,7 +404,7 @@ const Quality = () => {
 
         <Box className="h-[450px] w-full pt-4">
           <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart data={rejectionTrendData} margin={{ top: 10, right: 30, left: 10, bottom: 20 }}>
+            <ComposedChart data={rejectionTrend} margin={{ top: 10, right: 30, left: 10, bottom: 20 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
               <XAxis
                 dataKey="date"
@@ -267,8 +418,6 @@ const Quality = () => {
                 axisLine={false}
                 tickLine={false}
                 tick={{ fill: '#1e293b', fontSize: 11, fontWeight: 900 }}
-                domain={[0, 0.8]}
-                ticks={[0, 0.2, 0.4, 0.6, 0.8]}
                 label={{ value: 'Percentage', angle: -90, position: 'insideLeft', offset: 0, style: { fontSize: '11px', fontWeight: 900, fill: '#64748b' } }}
               />
               <YAxis
@@ -277,8 +426,6 @@ const Quality = () => {
                 axisLine={false}
                 tickLine={false}
                 tick={{ fill: '#1e293b', fontSize: 11, fontWeight: 900 }}
-                domain={[0, 8000]}
-                ticks={[0, 2000, 4000, 6000, 8000]}
                 label={{ value: 'PPM', angle: 90, position: 'insideRight', offset: 0, style: { fontSize: '11px', fontWeight: 900, fill: '#64748b' } }}
               />
               <Tooltip
@@ -817,7 +964,11 @@ const Quality = () => {
             <Box className="flex items-center gap-2">
               <Typography className="text-[12px] font-black text-[#64748b]">Month:</Typography>
               <Select 
-                value="April 2026" 
+                value={scrapMonth} 
+                onChange={(e) => setScrapMonth(e.target.value)} 
+                open={scrapMonthSelectOpen}
+                onOpen={() => setScrapMonthSelectOpen(true)}
+                onClose={() => setScrapMonthSelectOpen(false)}
                 size="small" 
                 sx={{ 
                   height: '32px', 
@@ -828,8 +979,20 @@ const Quality = () => {
                   bgcolor: '#f8fafc',
                   '& .MuiOutlinedInput-notchedOutline': { borderColor: '#e2e8f0' } 
                 }}
+                MenuProps={{ disableScrollLock: true }}
               >
-                <MenuItem value="April 2026" sx={{ fontSize: '11px', fontWeight: 900 }}>April 2026</MenuItem>
+                <MenuItem value="04-2026" sx={{ fontSize: '11px', fontWeight: 900 }}>April 2026</MenuItem>
+                <MenuItem value="05-2026" sx={{ fontSize: '11px', fontWeight: 900 }}>May 2026</MenuItem>
+                <MenuItem value="06-2026" sx={{ fontSize: '11px', fontWeight: 900 }}>June 2026</MenuItem>
+                <MenuItem value="07-2026" sx={{ fontSize: '11px', fontWeight: 900 }}>July 2026</MenuItem>
+                <MenuItem value="08-2026" sx={{ fontSize: '11px', fontWeight: 900 }}>August 2026</MenuItem>
+                <MenuItem value="09-2026" sx={{ fontSize: '11px', fontWeight: 900 }}>September 2026</MenuItem>
+                <MenuItem value="10-2026" sx={{ fontSize: '11px', fontWeight: 900 }}>October 2026</MenuItem>
+                <MenuItem value="11-2026" sx={{ fontSize: '11px', fontWeight: 900 }}>November 2026</MenuItem>
+                <MenuItem value="12-2026" sx={{ fontSize: '11px', fontWeight: 900 }}>December 2026</MenuItem>
+                <MenuItem value="01-2027" sx={{ fontSize: '11px', fontWeight: 900 }}>January 2027</MenuItem>
+                <MenuItem value="02-2027" sx={{ fontSize: '11px', fontWeight: 900 }}>February 2027</MenuItem>
+                <MenuItem value="03-2027" sx={{ fontSize: '11px', fontWeight: 900 }}>March 2027</MenuItem>
               </Select>
             </Box>
 
@@ -839,12 +1002,29 @@ const Quality = () => {
           </Box>
         </Box>
 
-        {/* Placeholder for Table Data */}
-        <Box className="min-h-[250px] flex items-center justify-center border-2 border-dashed border-[#e2e8f0] rounded-[20px] bg-[#f8fafc]">
-          <Typography className="text-[#94a3b8] text-[14px] font-black uppercase tracking-[3px] italic">
-            TABLE DATA AREA - PENDING DEFINITION
-          </Typography>
-        </Box>
+        {/* Scrap Data Cards View */}
+        {scrapData ? (
+          <Box className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2 pb-4">
+            <Box className="bg-[#f8fafc] border border-[#eef2f6] rounded-[16px] p-6 flex flex-col justify-between shadow-sm transition-all hover:shadow-md">
+              <Typography className="text-[12px] font-black text-[#64748b] uppercase tracking-wider mb-2">Month</Typography>
+              <Typography className="text-[20px] font-black text-[#1e293b]">{scrapData.month || '-'}</Typography>
+            </Box>
+            <Box className="bg-white border border-[#2563eb]/20 rounded-[16px] p-6 flex flex-col justify-between shadow-sm transition-all hover:shadow-md border-l-[4px] border-l-[#2563eb]">
+              <Typography className="text-[12px] font-black text-[#2563eb] uppercase tracking-wider mb-2">Total Scrap / Rejection Qty</Typography>
+              <Typography className="text-[28px] font-black text-[#1e293b]">{scrapData.total_scrap_rej_qty !== undefined && scrapData.total_scrap_rej_qty !== null ? scrapData.total_scrap_rej_qty.toLocaleString() : '0'} Qty</Typography>
+            </Box>
+            <Box className="bg-[#f8fafc] border border-[#eef2f6] rounded-[16px] p-6 flex flex-col justify-between shadow-sm transition-all hover:shadow-md">
+              <Typography className="text-[12px] font-black text-[#64748b] uppercase tracking-wider mb-2">Remark</Typography>
+              <Typography className="text-[15px] font-bold text-[#475569] italic">{scrapData.remark || 'No remarks recorded'}</Typography>
+            </Box>
+          </Box>
+        ) : (
+          <Box className="min-h-[250px] flex items-center justify-center border-2 border-dashed border-[#e2e8f0] rounded-[20px] bg-[#f8fafc]">
+            <Typography className="text-[#94a3b8] text-[14px] font-black uppercase tracking-[3px] italic">
+              Loading Scrap Data...
+            </Typography>
+          </Box>
+        )}
 
         {/* Footer Note */}
         <Box className="mt-8 pt-4 border-t border-[#f1f5f9]">
@@ -867,8 +1047,19 @@ const Quality = () => {
           <Box className="flex items-center gap-4">
             <Box className="flex items-center gap-1.5">
               <Typography className="text-[12px] font-black text-[#64748b]">Year:</Typography>
-              <Select value="2026-2027" size="small" sx={{ height: '34px', fontSize: '11px', fontWeight: 900, borderRadius: '8px', minWidth: '100px', bgcolor: 'white' }}>
+              <Select 
+                value={salesReturnYear} 
+                onChange={(e) => setSalesReturnYear(e.target.value)}
+                open={salesReturnYearSelectOpen}
+                onOpen={() => setSalesReturnYearSelectOpen(true)}
+                onClose={() => setSalesReturnYearSelectOpen(false)}
+                size="small" 
+                sx={{ height: '34px', fontSize: '11px', fontWeight: 900, borderRadius: '8px', minWidth: '100px', bgcolor: 'white' }}
+                MenuProps={{ disableScrollLock: true }}
+              >
+                <MenuItem value="2025-2026">2025-2026</MenuItem>
                 <MenuItem value="2026-2027">2026-2027</MenuItem>
+                <MenuItem value="2027-2028">2027-2028</MenuItem>
               </Select>
             </Box>
 
@@ -883,7 +1074,14 @@ const Quality = () => {
               {['Customer Count', 'Item Count', 'Item Qty', 'Item Value'].map((label) => (
                 <FormControlLabel
                   key={label}
-                  control={<Radio checked={label === 'Item Qty'} size="small" sx={{ p: 0.5 }} />}
+                  control={
+                    <Radio 
+                      checked={salesReturnMetric === label} 
+                      onChange={() => setSalesReturnMetric(label)}
+                      size="small" 
+                      sx={{ p: 0.5 }} 
+                    />
+                  }
                   label={<Typography className="text-[11px] font-black text-[#1e293b] whitespace-nowrap">{label}</Typography>}
                   sx={{ m: 0 }}
                 />
@@ -910,20 +1108,7 @@ const Quality = () => {
         <Box className="h-[350px] w-full mb-12 px-4">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
-              data={[
-                { month: 'April-2026', qty: 520 },
-                { month: 'May-2026', qty: 440 },
-                { month: 'June-2026', qty: 525 },
-                { month: 'July-2026', qty: 275 },
-                { month: 'August-2026', qty: 495 },
-                { month: 'September-2026', qty: 811 },
-                { month: 'October-2026', qty: 707 },
-                { month: 'November-2026', qty: 286 },
-                { month: 'December-2026', qty: 380 },
-                { month: 'January-2027', qty: 446 },
-                { month: 'February-2027', qty: 657 },
-                { month: 'March-2027', qty: 703 },
-              ]}
+              data={salesReturnData}
               margin={{ top: 20, right: 30, left: 20, bottom: 40 }}
             >
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
@@ -946,7 +1131,7 @@ const Quality = () => {
                 tickLine={false} 
                 tick={{ fontSize: 10, fontWeight: 900, fill: '#64748b' }}
                 label={{ 
-                  value: 'Item Qty', 
+                  value: salesReturnMetric, 
                   angle: -90, 
                   position: 'insideLeft', 
                   offset: -10, 
@@ -958,12 +1143,16 @@ const Quality = () => {
               />
               <Line 
                 type="monotone" 
-                dataKey="qty" 
+                dataKey={
+                  salesReturnMetric === 'Customer Count' ? 'cust' :
+                  salesReturnMetric === 'Item Count' ? 'items' :
+                  salesReturnMetric === 'Item Value' ? 'raw_value' : 'qty'
+                } 
                 stroke="#5c67f2" 
                 strokeWidth={3} 
                 dot={{ r: 5, fill: '#5c67f2', strokeWidth: 2, stroke: '#fff' }}
                 activeDot={{ r: 7, strokeWidth: 0 }}
-                name="Item Qty"
+                name={salesReturnMetric}
               />
             </LineChart>
           </ResponsiveContainer>
@@ -983,22 +1172,9 @@ const Quality = () => {
               </tr>
             </thead>
             <tbody>
-              {[
-                { sr: 1, month: 'April-2026', cust: 15, items: 42, qty: 520, value: '₹4,12,300' },
-                { sr: 2, month: 'May-2026', cust: 12, items: 38, qty: 440, value: '₹3,45,200' },
-                { sr: 3, month: 'June-2026', cust: 18, items: 55, qty: 525, value: '₹5,10,000' },
-                { sr: 4, month: 'July-2026', cust: 14, items: 47, qty: 275, value: '₹2,62,993' },
-                { sr: 5, month: 'August-2026', cust: 18, items: 31, qty: 495, value: '₹4,10,330' },
-                { sr: 6, month: 'September-2026', cust: 20, items: 55, qty: 811, value: '₹8,34,401' },
-                { sr: 7, month: 'October-2026', cust: 20, items: 57, qty: 707, value: '₹7,74,266' },
-                { sr: 8, month: 'November-2026', cust: 11, items: 36, qty: 286, value: '₹2,47,223' },
-                { sr: 9, month: 'December-2026', cust: 22, items: 25, qty: 380, value: '₹3,75,667' },
-                { sr: 10, month: 'January-2027', cust: 20, items: 32, qty: 446, value: '₹4,16,949' },
-                { sr: 11, month: 'February-2027', cust: 15, items: 17, qty: 657, value: '₹6,43,723' },
-                { sr: 12, month: 'March-2027', cust: 9, items: 42, qty: 703, value: '₹7,17,806' },
-              ].map((row, index) => (
+              {salesReturnData.map((row, index) => (
                 <tr key={index} className="border-b border-[#f1f5f9] hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 text-[13px] font-bold text-[#475569]">{row.sr}</td>
+                  <td className="px-6 py-4 text-[13px] font-bold text-[#475569]">{index + 1}</td>
                   <td className="px-6 py-4 text-[13px] font-black text-[#1e293b]">{row.month}</td>
                   <td className="px-6 py-4 text-[13px] font-bold text-[#475569] text-center">{row.cust}</td>
                   <td className="px-6 py-4 text-[13px] font-bold text-[#475569] text-center">{row.items}</td>

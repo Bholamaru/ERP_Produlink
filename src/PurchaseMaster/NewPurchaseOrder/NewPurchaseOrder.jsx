@@ -250,23 +250,58 @@ const NewPurchaseOrder = () => {
         ...item,
         ItemCode: item.ItemCode ? item.ItemCode.substring(0, 30).trim() : "", // 🔹 Ensure max 30 characters
       })),
-      Item_Detail_Enter: finalFormData.Item_Detail_Enter.map((item) => ({
-        ...item,
-        Item: (item.Item || "").substring(0, 30).trim(),
-        Rate: Number(item.Rate) || 0,
-        Qty: Number(item.Qty) || 0,
-        Disc: Number(item.Disc) || 0,
-        Particular: item.Particular === "I" ? "Item" : item.Particular,
-      })),
-      Gst_Details: finalFormData.Gst_Details.map((gst) => ({
-        ...gst,
-        ItemCode: (gst.ItemCode || "").substring(0, 30).trim(),
-        Rate: Number(gst.Rate) || 0,
-        Qty: Number(gst.Qty) || 0,
-        CGST: Number(gst.CGST) || 0,
-        SGST: Number(gst.SGST) || 0,
-        IGST: Number(gst.IGST) || 0,
-      })),
+      Item_Detail_Enter: finalFormData.Item_Detail_Enter.map((item) => {
+        const {
+          HSN_SAC_Code,
+          Number: supplierNumber,
+          PartCode,
+          CGST,
+          IGST,
+          SGST,
+          UTGST,
+          GST_Details,
+          Schedule_Line,
+          ...validFields
+        } = item;
+
+        // If the ID is a temporary local timestamp, remove it so the backend doesn't crash/reject it
+        if (validFields.id && validFields.id > 1000000000000) {
+          delete validFields.id;
+        }
+
+        return {
+          ...validFields,
+          Item: (item.Item || "").substring(0, 30).trim(),
+          Rate: window.Number(item.Rate) || 0,
+          Qty: window.Number(item.Qty) || 0,
+          Disc: window.Number(item.Disc) || 0,
+          Particular: item.Particular === "I" ? "Item" : (item.Particular || ""),
+        };
+      }),
+      Gst_Details: finalFormData.Gst_Details.map((gst) => {
+        const {
+          DiscountAmt,
+          CGSTAmt,
+          SGSTAmt,
+          IGSTAmt,
+          ...validGstFields
+        } = gst;
+
+        // If the ID is a temporary local timestamp, remove it so the backend doesn't crash/reject it
+        if (validGstFields.id && validGstFields.id > 1000000000000) {
+          delete validGstFields.id;
+        }
+
+        return {
+          ...validGstFields,
+          ItemCode: (gst.ItemCode || "").substring(0, 30).trim(),
+          Rate: window.Number(gst.Rate) || 0,
+          Qty: window.Number(gst.Qty) || 0,
+          CGST: window.Number(gst.CGST) || 0,
+          SGST: window.Number(gst.SGST) || 0,
+          IGST: window.Number(gst.IGST) || 0,
+        };
+      }),
     }
 
     console.log("Final Data Being Sent:", formattedData) // Debug ke liye
@@ -292,8 +327,10 @@ const NewPurchaseOrder = () => {
       }, 2000)
     } catch (error) {
       console.error("Error saving purchase order:", error)
-      if (error.response && error.response.data.error) {
+      if (error.response && error.response.data && error.response.data.error) {
         toast.error(error.response.data.error)
+      } else if (error.message) {
+        toast.error(`Error: ${error.message}`)
       } else {
         toast.error("An unexpected error occurred.")
       }
