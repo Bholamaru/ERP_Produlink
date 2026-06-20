@@ -5,8 +5,11 @@ import NavBar from "../../../NavBar/NavBar.js";
 import SideNav from "../../../SideNav/SideNav.js";
 import "./PurchaseOderList.css"
 import { Link } from "react-router-dom";
+import { fetchPurchaseOrders } from "../../../Service/PurchaseApi.jsx";
+
 const PurchseOderList = () => {
     const [sideNavOpen, setSideNavOpen] = useState(false);
+    const [purchaseOrders, setPurchaseOrders] = useState([]);
 
     const toggleSideNav = () => {
       setSideNavOpen((prevState) => !prevState);
@@ -19,6 +22,19 @@ const PurchseOderList = () => {
         document.body.classList.remove("side-nav-open");
       }
     }, [sideNavOpen]);
+
+    useEffect(() => {
+      const getPurchaseOrders = async () => {
+        try {
+          const data = await fetchPurchaseOrders();
+          setPurchaseOrders(data);
+        } catch (error) {
+          console.error("Error fetching purchase orders:", error);
+        }
+      };
+      getPurchaseOrders();
+    }, []);
+
   return (
     <div className="NewPurchseOrderList">
     <div className="container-fluid">
@@ -171,7 +187,40 @@ const PurchseOderList = () => {
                           </tr>
                         </thead>
                         <tbody>
-                          <tr>{/* Data rows will go here */}</tr>
+                          {purchaseOrders.map((order, index) => (
+                            <tr key={order.id || index}>
+                              <td>{index + 1}</td>
+                              <td>{order.PoDate ? new Date(order.PoDate).getFullYear() : "N/A"}</td>
+                              <td>{order.Plant}</td>
+                              <td>{order.PoNo}</td>
+                              <td>{order.PoDate}</td>
+                              <td>{order.Type}</td>
+                              <td>{order.CodeNo}</td>
+                              <td>{order.Supplier}</td>
+                              <td>{order.User}</td>
+                              <td>{order.Info || ""}</td>
+                              <td>{order.AuthStatus || "Pending"}</td>
+                              <td>{order.PoStatus || "Open"}</td>
+                              <td>{order.Email || ""}</td>
+                              <td>{order.Docs || ""}</td>
+                              <td>{order.Disc || 0}</td>
+                              <td>
+                                <Link to={`/new-purchase-order/${order.id}`} className="btn btn-sm btn-primary">
+                                  Edit
+                                </Link>
+                              </td>
+                              <td>
+                                <a
+                                  href={`http://127.0.0.1:8000/${order.View}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="btn btn-sm btn-secondary"
+                                >
+                                  View
+                                </a>
+                              </td>
+                            </tr>
+                          ))}
                         </tbody>
                       </table>
                     </div>

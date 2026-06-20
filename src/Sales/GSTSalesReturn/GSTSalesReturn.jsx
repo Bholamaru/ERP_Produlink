@@ -287,7 +287,7 @@ const GSTSalesReturn = () => {
       const itemsData = invoiceItems.map((item, index) => ({
         inv_no: selectedInvoiceData?.invoice_no || "",
         inv_date: selectedInvoiceData?.invoice_Date || "",
-        item_code: item.id || "",
+        item_code: item.part_no && item.part_code ? `${item.part_no} / ${item.part_code}` : (item.part_no || item.part_code || ""),
         hsn_code: item.hsn_code || "",
         rate: parseFloat(item.rate) || 0,
         discount: parseFloat(item.discount_percent) || 0,
@@ -721,7 +721,7 @@ const GSTSalesReturn = () => {
                                           <tr key={`${invIndex}-${itemIndex}`}>
                                             <td>{invoice.invoice_no}</td>
                                             <td>{invoice.invoice_Date || "N/A"}</td>
-                                            <td>{item.id || "N/A"}</td>
+                                            <td>{item.part_no && item.part_code ? `${item.part_no} / ${item.part_code}` : (item.part_no || item.part_code || "")}</td>
                                             <td>{item.description || "N/A"}</td>
                                             <td>{item.hsn_code || "N/A"}</td>
                                             <td>{item.inv_qty || item.po_qty || "N/A"}</td>
@@ -859,7 +859,7 @@ const GSTSalesReturn = () => {
                                                 <td>{index + 1}</td>
                                                 <td>{selectedInvoiceData.invoice_no}</td>
                                                 <td>{selectedInvoiceData.invoice_Date || "N/A"}</td>
-                                                <td>{item.id || "N/A"}</td>
+                                                <td>{item.part_no && item.part_code ? `${item.part_no} / ${item.part_code}` : (item.part_no || item.part_code || "")}</td>
                                                 <td>{item.description || "N/A"}</td>
                                                 <td>{item.hsn_code || "N/A"}</td>
                                                 <td>{item.rate || "N/A"}</td>
