@@ -468,7 +468,8 @@
 
 /* ─── Sidebar Records Card overrides ─── */
 .dn-records-table-container.scrollable {
-  /* Scrollbar removed to allow single side scrollbar as requested */
+  max-height: 350px;
+  overflow-y: auto;
 }
 
 /* ─── Sales & Purchase Card specialized styling ─── */
