@@ -40,6 +40,7 @@ import { getRMItems, getComItems } from "../../../Service/Api.jsx"
 const BillMaterial = () => {
   const [sideNavOpen, setSideNavOpen] = useState(false)
   const [activeTab, setActiveTab] = useState("BOM")
+  const [isManual, setIsManual] = useState(true)
 
   const toggleSideNav = () => {
     setSideNavOpen(!sideNavOpen)
@@ -1041,12 +1042,11 @@ const BillMaterial = () => {
                       )} */}
 
                       <div className="d-flex align-items-center justify-content-between rounded p-1 mb-2 bg-light shadow-sm" style={{ fontSize: "12px" }}>
-                        <div className="d-flex align-items-center gap-1">
-                          <select className="form-select">
-                            <option>ALL</option>
-                          </select>
+                        <div className="d-flex align-items-center gap-2 flex-wrap w-100">
+                          <span className="fw-normal text-dark ms-1" style={{ fontSize: '12px' }}>Select Item:</span>
+                          
                           <div className="position-relative" ref={dropdownRef} style={{ minWidth: '280px' }}>
-                            <input type="text" className="form-control" placeholder="Search by part number" value={searchTerm} onChange={handleSearchChange} onKeyPress={(e) => { if (e.key === "Enter") handleSearch(); }} />
+                            <input type="text" className="form-control form-control-sm" placeholder="Search by part number" value={searchTerm} onChange={handleSearchChange} onKeyPress={(e) => { if (e.key === "Enter") handleSearch(); }} style={{ fontSize: '12px', height: '30px' }} />
                             {showDropdown && searchResults.length > 0 && (
                               <div className="position-absolute w-100 bg-white border rounded shadow-sm z-10" style={{ maxHeight: "200px", overflowY: "auto" }}>
                                 {searchResults.map((item) => (
@@ -1057,21 +1057,21 @@ const BillMaterial = () => {
                               </div>
                             )}
                           </div>
-                          <button className="btn d-inline-flex align-items-center gap-2" onClick={(e) => handleSearch(e)}>Search</button>
-                          <button className="btn d-inline-flex align-items-center gap-2" onClick={handleClear}>Clear</button>
+
+                          <button className="btn btn-sm btn-light border px-3" onClick={(e) => handleSearch(e)} style={{ height: '30px', fontSize: '12px' }}>Search</button>
+                          <button className="btn btn-sm btn-light border px-3" onClick={handleClear} style={{ height: '30px', fontSize: '12px' }}>Clear</button>
+                          
                           <div className="d-flex align-items-center ms-2">
-                            <span className="me-1" style={{ fontSize: '12px' }}>Bom Authorise:</span>
-                            <i className="fas fa-check-circle text-success fs-6 me-1"></i>
-                            <select className="form-select form-select-sm" style={{ width: '60px', padding: '2px', fontSize: '12px' }}>
-                              <option>Yes</option>
+                            <span className="me-2 text-dark" style={{ fontSize: '12px' }}>Born Authorise</span>
+                            <select className="form-select form-select-sm" style={{ width: '60px', padding: '2px', fontSize: '12px', height: '30px', border: '1px solid #ccc', borderRadius: '4px' }}>
                               <option>No</option>
+                              <option>Yes</option>
                             </select>
                           </div>
-                        </div>
-                        <div className="d-flex align-items-center gap-3">
-                          <button className="btn d-inline-flex align-items-center gap-2">Copy BOM</button>
-                          <button className="btn d-inline-flex align-items-center gap-2">Calculate RM Wt</button>
-                          <button className="btn d-inline-flex align-items-center gap-2"><i className="fas fa-file-excel text-success"></i> Export Excel</button>
+
+                          <button className="btn btn-sm btn-light border px-3 ms-2" style={{ height: '30px', fontSize: '12px' }}>Copy BOM</button>
+                          
+                          <button className="btn btn-sm btn-link text-primary text-decoration-none fw-normal p-0 ms-2" style={{ fontSize: '12px' }}>Calculate RM Wt</button>
                         </div>
                       </div>
 
@@ -1089,14 +1089,35 @@ const BillMaterial = () => {
                             <ul className="nav nav-tabs border-bottom-0" style={{ gap: '2px' }}>
                               <li className="nav-item">
                                 <button
-                                  className={`nav-link ${activeTab === "BOM" ? "active fw-bold" : ""}`} onClick={() => setActiveTab("BOM")}
+                                  className={`nav-link ${activeTab === "BOM" ? "active fw-bold" : ""}`}
+                                  onClick={() => setActiveTab("BOM")}
+                                  style={{
+                                    backgroundColor: activeTab === "BOM" ? "#007bff" : "#fff",
+                                    color: activeTab === "BOM" ? "#fff" : "#999",
+                                    border: "1px solid #ddd",
+                                    borderBottom: activeTab === "BOM" ? "none" : "1px solid #ddd",
+                                    borderRadius: "4px 4px 0 0",
+                                    padding: "8px 16px",
+                                    fontSize: "12px",
+                                    marginRight: "2px"
+                                  }}
                                 >
                                   BOM
                                 </button>
                               </li>
                               <li className="nav-item">
                                 <button
-                                  className={`nav-link ${activeTab === "BOM History" ? "active fw-bold" : ""}`} onClick={() => setActiveTab("BOM History")}
+                                  className={`nav-link ${activeTab === "BOM History" ? "active fw-bold" : ""}`}
+                                  onClick={() => setActiveTab("BOM History")}
+                                  style={{
+                                    backgroundColor: activeTab === "BOM History" ? "#007bff" : "#fff",
+                                    color: activeTab === "BOM History" ? "#fff" : "#999",
+                                    border: "1px solid #ddd",
+                                    borderBottom: activeTab === "BOM History" ? "none" : "1px solid #ddd",
+                                    borderRadius: "4px 4px 0 0",
+                                    padding: "8px 16px",
+                                    fontSize: "12px"
+                                  }}
                                 >
                                   BOM History
                                 </button>
@@ -1106,213 +1127,363 @@ const BillMaterial = () => {
                             <div className="tab-content mt-2">
                               {activeTab === "BOM" && (
                                 <div className="tab-pane fade show active">
-
-                                  {/* Manual / Standard Routing */}
-                                  <div className="d-flex align-items-center mb-1" style={{ fontSize: '11px' }}>
-                                    <div className="form-check form-check-inline me-2">
-                                      <input type="radio" className="form-check-input" name="routeType" id="manualRadio" style={{ width: '12px', height: '12px', marginTop: '2px' }} defaultChecked />
-                                      <label className="form-check-label fw-bold" htmlFor="manualRadio">Manual</label>
+                                  <div style={{ border: '1.5px solid #00a2e8', padding: '20px', borderRadius: '4px', marginTop: '-1px', backgroundColor: '#fff' }}>
+                                    
+                                    {/* Manual / Standard Routing */}
+                                    <div className="d-flex align-items-center mb-3">
+                                      <div className="d-flex flex-column align-items-start me-4">
+                                        <input
+                                          type="checkbox"
+                                          className="form-check-input"
+                                          name="routeType"
+                                          id="manualRadio"
+                                          checked={isManual}
+                                          onChange={() => setIsManual(true)}
+                                          style={{ width: '14px', height: '14px', margin: '0 0 4px 0' }}
+                                        />
+                                        <label className="form-check-label text-muted" htmlFor="manualRadio" style={{ fontSize: '11px' }}>
+                                          Manual
+                                        </label>
+                                      </div>
+                                      <div className="d-flex align-items-center" style={{ marginTop: '-8px' }}>
+                                        <input
+                                          type="checkbox"
+                                          className="form-check-input me-2"
+                                          name="routeType"
+                                          id="stdRadio"
+                                          checked={!isManual}
+                                          onChange={() => setIsManual(false)}
+                                          style={{ width: '14px', height: '14px', margin: 0 }}
+                                        />
+                                        <label className="form-check-label text-muted fw-bold" htmlFor="stdRadio" style={{ fontSize: '11px' }}>
+                                          Standard Routing
+                                        </label>
+                                      </div>
                                     </div>
-                                    <div className="form-check form-check-inline">
-                                      <input type="radio" className="form-check-input" name="routeType" id="stdRadio" style={{ width: '12px', height: '12px', marginTop: '2px' }} />
-                                      <label className="form-check-label fw-bold" htmlFor="stdRadio">Standard Routing</label>
-                                    </div>
-                                  </div>
 
-                                  {/* Table-like Single Row Form */}
-                                  <div className="w-100" style={{ fontSize: "11px", overflow: "hidden" }}>
-                                    <table className="table table-bordered mb-0" style={{ width: '100%', tableLayout: 'fixed' }}>
-                                      <thead>
-                                        <tr style={{ background: '#f8f9fa', color: '#666' }}>
-                                          <th style={{ padding: '2px 4px', fontWeight: 'normal', width: '5%', borderBottom: 'none' }}>OP No :</th>
-                                          <th style={{ padding: '2px 4px', fontWeight: 'normal', width: '14%', borderBottom: 'none' }}>Part Code :</th>
-                                          <th style={{ padding: '2px 4px', fontWeight: 'normal', width: '15%', borderBottom: 'none' }}>BOM Part Type :</th>
-                                          <th style={{ padding: '2px 4px', fontWeight: 'normal', width: '15%', borderBottom: 'none' }}>Bom Part Code :</th>
-                                          <th style={{ padding: '2px 4px', fontWeight: 'normal', width: '7%', borderBottom: 'none' }}>Qty : Kg</th>
-                                          <th style={{ padding: '2px 4px', fontWeight: 'normal', width: '15%', borderBottom: 'none' }}><input type="checkbox" id="scrapChkTop" style={{ verticalAlign: 'middle', marginRight: '2px' }} /> Scrap Code:</th>
-                                          <th style={{ padding: '2px 4px', fontWeight: 'normal', width: '8%', borderBottom: 'none' }}>Scrap Qty :</th>
-                                          <th style={{ padding: '2px 4px', fontWeight: 'normal', width: '3%', borderBottom: 'none' }}>QC</th>
-                                          <th style={{ padding: '2px 4px', fontWeight: 'normal', width: '5%', borderBottom: 'none' }}>Ass Prod</th>
-                                          <th style={{ padding: '2px 4px', fontWeight: 'normal', width: '13%', borderBottom: 'none' }}></th>
-                                        </tr>
-                                      </thead>
-                                      <tbody>
-                                        <tr>
-                                          <td style={{ padding: '2px 4px' }}><input type="text" className="form-control form-control-sm" name="OPNo" value={formData1.OPNo} onChange={handleChange} style={{ padding: '1px 4px', fontSize: '11px' }} /></td>
-                                          <td style={{ padding: '2px 4px' }}>
-                                            <div className="d-flex">
-                                              <select className="form-select form-select-sm" name="PartCode" value={formData1.PartCode} onChange={handleChange} style={{ padding: '1px 4px', fontSize: '11px', width: 'calc(100% - 24px)' }}>
-                                                <option value="">Select</option>
-                                                {partCodeDropdownData.map((item, index) => (<option key={index} value={item.PartCode}>{item.PartCode}</option>))}
-                                              </select>
-                                              <button className="btn btn-sm btn-light border ms-1 p-0 d-flex align-items-center justify-content-center" onClick={toggleCardPlus1} style={{ width: '20px', height: '20px' }}><i className="fas fa-plus" style={{ fontSize: '10px' }}></i></button>
+                                    {/* Table-like Single Row Form - Row 1 */}
+                                    <div className="d-flex flex-wrap align-items-start gap-3 mb-3">
+                                      {/* BOM Part Type */}
+                                      <div className="d-flex flex-column" style={{ minWidth: '150px' }}>
+                                        <span className="fw-bold text-muted mb-1" style={{ fontSize: '11px' }}>BOM Part Type:</span>
+                                        <div className="d-flex align-items-center" style={{ height: '30px' }}>
+                                          {["RM", "COM", "BOM"].map((type) => (
+                                            <div key={type} className="form-check form-check-inline mb-0 me-2 d-flex align-items-center">
+                                              <input
+                                                className="form-check-input m-0 me-1"
+                                                type="checkbox"
+                                                name="BOMPartTypeRadio"
+                                                id={type}
+                                                value={type}
+                                                checked={formData1.BOMPartType.includes(type)}
+                                                onChange={() => handleBOMPartTypeChange(type)}
+                                                style={{ width: '12px', height: '12px' }}
+                                              />
+                                              <label className="form-check-label text-muted" htmlFor={type} style={{ fontSize: '11px' }}>{type}</label>
                                             </div>
-                                          </td>
-                                          <td style={{ padding: '2px 4px' }}>
-                                            <div className="d-flex align-items-center h-100">
-                                              {["RM", "COM", "BOM"].map((type) => (
-                                                <div key={type} className="form-check form-check-inline mb-0 me-2 d-flex align-items-center">
-                                                  <input className="form-check-input m-0 me-1" type="radio" name="BOMPartTypeRadio" id={type} value={type} checked={formData1.BOMPartType.includes(type)} onChange={() => handleBOMPartTypeChange(type)} style={{ width: '10px', height: '10px' }} />
-                                                  <label className="form-check-label text-muted" htmlFor={type} style={{ fontSize: '11px', paddingTop: '1px' }}>{type}</label>
-                                                </div>
-                                              ))}
-                                            </div>
-                                          </td>
-                                          <td style={{ padding: '2px 4px' }}>
-                                            {(formData1.BOMPartType.includes("RM") || formData1.BOMPartType.includes("COM")) ? (
-                                              <select className="form-select form-select-sm" name="BomPartCode" value={formData1.BomPartCode} onChange={handleChange} style={{ padding: '1px 4px', fontSize: '11px' }}>
-                                                <option value="">Select</option>
-                                                {formData1.BOMPartType.includes("RM") && bomOptions.map((item) => (<option key={item.id} value={`${item.part_no} | ${item.Part_Code} | ${item.Name_Description}`}>{item.part_no}</option>))}
-                                                {formData1.BOMPartType.includes("COM") && bomOptions.map((item, index) => (<option key={item.id || index} value={`${item.OPNo} | ${item.Operation} | ${item.PartCode}`}>{item.OPNo}</option>))}
-                                              </select>
-                                            ) : (
-                                              <input type="text" className="form-control form-control-sm" name="BomPartCode" value={formData1.BomPartCode} onChange={handleChange} style={{ padding: '1px 4px', fontSize: '11px' }} disabled />
-                                            )}
-                                          </td>
-                                          <td style={{ padding: '2px 4px' }}><input type="text" className="form-control form-control-sm" name="QtyKg" value={formData1.QtyKg} onChange={handleChange} style={{ padding: '1px 4px', fontSize: '11px' }} /></td>
-                                          <td style={{ padding: '2px 4px' }}>
-                                            <select className="form-select form-select-sm" name="ScrapCode" value={formData1.ScrapCode} onChange={handleChange} style={{ padding: '1px 4px', fontSize: '11px' }}>
-                                              <option value=""></option>
-                                              {scrapOptions.map((item, index) => (<option key={index} value={item.part_no}>{item.part_no}</option>))}
-                                            </select>
-                                          </td>
-                                          <td style={{ padding: '2px 4px' }}><input type="text" className="form-control form-control-sm" name="ScracpQty" value={formData1.ScracpQty} onChange={handleChange} style={{ padding: '1px 4px', fontSize: '11px' }} /></td>
-                                          <td style={{ padding: '2px 4px' }} className="text-center">
-                                            <input type="checkbox" className="form-check-input" name="QC" checked={!!formData1.QC} onChange={handleChange} style={{ width: '12px', height: '12px' }} /> QC
-                                          </td>
-                                          <td style={{ padding: '2px 4px' }}>
-                                            <select className="form-select form-select-sm" name="AssProd" value={formData1.AssProd} onChange={handleChange} style={{ padding: '1px 4px', fontSize: '11px' }}>
-                                              <option value="NO">N</option>
-                                              <option value="Yes">Y</option>
-                                            </select>
-                                          </td>
-                                          <td style={{ padding: '2px 4px' }} className="text-center align-middle">
-                                            <button className="btn btn-sm btn-primary" onClick={handleSave1} disabled={isLoading || !selectedItem} style={{ width: '80px' }}>{editingId ? "UPDATE" : "SAVE"}</button>
-                                          </td>
-                                        </tr>
-                                      </tbody>
-                                    </table>
-                                  </div>
+                                          ))}
+                                        </div>
+                                      </div>
 
-                                  {/* Context Header for Selected Item below form */}
-                                  <div className="w-100 border p-1 mt-1 mb-2 bg-white" style={{ fontSize: '11px', fontWeight: 'bold' }}>
-                                    {selectedItem ? (
-                                      <>{selectedItem.part_no} | {selectedItem.Part_Code || "520MC00712"} | {selectedItem.Name_Description || "PINION (N)"} | 0 | 0</>
-                                    ) : (
-                                      <>FG1001 | 520MC00712 | PINION (N) 0 | 0</>
-                                    )}
-                                  </div>
+                                      {/* Op No */}
+                                      <div className="d-flex flex-column" style={{ width: '60px' }}>
+                                        <span className="fw-bold text-muted mb-1" style={{ fontSize: '11px' }}>Op No:</span>
+                                        <input
+                                          type="text"
+                                          className="form-control form-control-sm"
+                                          name="OPNo"
+                                          value={formData1.OPNo}
+                                          onChange={handleChange}
+                                          style={{ borderRadius: '5px', border: '1px solid #ccc', height: '30px', fontSize: '11px', padding: '4px' }}
+                                        />
+                                      </div>
 
-                                  {/* Hidden inputs needed for save logic */}
-                                  <div className="d-none">
-                                    <input type="text" name="Operation" value={formData1.Operation} onChange={handleInputChange1} />
-                                    <input type="text" name="ProdQty" value={formData1.ProdQty} onChange={handleChange} />
-                                    <input type="text" name="WipWt" value={formData1.WipWt} onChange={handleChange} />
-                                    <input type="text" name="WipRate" value={formData1.WipRate} onChange={handleChange} />
-                                    <input type="text" name="PieceRate" value={formData1.PieceRate} onChange={handleChange} />
-                                    <input type="text" name="OPRate" value={formData1.OPRate} onChange={handleChange} />
-                                  </div>
+                                      {/* Part Code */}
+                                      <div className="d-flex flex-column" style={{ width: '130px' }}>
+                                        <span className="fw-bold text-muted mb-1" style={{ fontSize: '11px' }}>Part Code:</span>
+                                        <div className="d-flex align-items-center gap-1">
+                                          <select
+                                            className="form-select form-select-sm text-center"
+                                            name="PartCode"
+                                            value={formData1.PartCode}
+                                            onChange={handleChange}
+                                            style={{ borderRadius: '5px', border: '1px solid #ccc', height: '30px', fontSize: '11px', appearance: 'none', background: '#fff', paddingRight: '5px' }}
+                                          >
+                                            <option value="">Select P</option>
+                                            {partCodeDropdownData.map((item, index) => (
+                                              <option key={index} value={item.PartCode}>{item.PartCode}</option>
+                                            ))}
+                                          </select>
+                                          <button
+                                            className="btn btn-sm btn-primary d-flex align-items-center justify-content-center p-0"
+                                            onClick={toggleCardPlus1}
+                                            style={{ width: '26px', height: '26px', borderRadius: '5px', backgroundColor: '#0056b3', border: 'none' }}
+                                          >
+                                            <i className="fas fa-plus" style={{ fontSize: '10px' }}></i>
+                                          </button>
+                                        </div>
+                                      </div>
 
-                                  {/* {selectedItem && (
-                                    <div className="fw-bold mb-2 pb-1 border-bottom" style={{fontSize: '12px'}}>
-                                      {selectedItem.part_no} | {selectedItem.Part_Code || "-"} | {selectedItem.Name_Description || "-"} | 0 | 0
+                                      {/* Qty : Kg */}
+                                      <div className="d-flex flex-column" style={{ width: '80px' }}>
+                                        <span className="fw-bold text-muted mb-1" style={{ fontSize: '11px' }}>Qty : Kg</span>
+                                        <input
+                                          type="text"
+                                          className="form-control form-control-sm"
+                                          name="QtyKg"
+                                          value={formData1.QtyKg}
+                                          onChange={handleChange}
+                                          style={{ borderRadius: '5px', border: '1px solid #ccc', height: '30px', fontSize: '11px', padding: '4px' }}
+                                        />
+                                      </div>
+
+                                      {/* Scrap Code */}
+                                      <div className="d-flex flex-column" style={{ width: '90px' }}>
+                                        <span className="fw-bold text-muted mb-1" style={{ fontSize: '11px' }}>Scrap Code</span>
+                                        <select
+                                          className="form-select form-select-sm text-center"
+                                          name="ScrapCode"
+                                          value={formData1.ScrapCode}
+                                          onChange={handleChange}
+                                          style={{ borderRadius: '5px', border: '1px solid #ccc', height: '30px', fontSize: '11px', appearance: 'none', background: '#fff' }}
+                                        >
+                                          <option value="">Selec</option>
+                                          {scrapOptions.map((item, index) => (
+                                            <option key={index} value={item.part_no}>{item.part_no}</option>
+                                          ))}
+                                        </select>
+                                      </div>
+
+                                      {/* Scrap Qty */}
+                                      <div className="d-flex flex-column" style={{ width: '80px' }}>
+                                        <span className="fw-bold text-muted mb-1" style={{ fontSize: '11px' }}>Scrap Qty</span>
+                                        <input
+                                          type="text"
+                                          className="form-control form-control-sm"
+                                          name="ScracpQty"
+                                          value={formData1.ScracpQty}
+                                          onChange={handleChange}
+                                          style={{ borderRadius: '5px', border: '1px solid #ccc', height: '30px', fontSize: '11px', padding: '4px' }}
+                                        />
+                                      </div>
+
+                                      {/* QC */}
+                                      <div className="d-flex flex-column align-items-center" style={{ width: '40px' }}>
+                                        <span className="fw-bold text-muted mb-1" style={{ fontSize: '11px' }}>QC</span>
+                                        <div className="d-flex align-items-center justify-content-center" style={{ height: '30px' }}>
+                                          <input
+                                            type="checkbox"
+                                            className="form-check-input"
+                                            name="QC"
+                                            checked={!!formData1.QC}
+                                            onChange={handleChange}
+                                            style={{ width: '16px', height: '16px', margin: 0 }}
+                                          />
+                                        </div>
+                                      </div>
+
+                                      {/* Ass Prod */}
+                                      <div className="d-flex flex-column" style={{ width: '90px' }}>
+                                        <span className="fw-bold text-muted mb-1" style={{ fontSize: '11px' }}>Ass Prod</span>
+                                        <select
+                                          className="form-select form-select-sm text-center"
+                                          name="AssProd"
+                                          value={formData1.AssProd}
+                                          onChange={handleChange}
+                                          style={{ borderRadius: '5px', border: '1px solid #ccc', height: '30px', fontSize: '11px', appearance: 'none', background: '#fff' }}
+                                        >
+                                          <option value="">Selec</option>
+                                          <option value="NO">N</option>
+                                          <option value="Yes">Y</option>
+                                        </select>
+                                      </div>
                                     </div>
-                                  )}
-                                  
-                                  {/* BOM Table */}
-                                  <div className="table-responsive edit-table-wrapper mt-3">
-                                    <table className="table table-bordered table-hover user-list-table text-center align-middle mb-0">
-                                      <thead>
-                                        <tr>
-                                          <th>Op No</th>
-                                          <th>Part Code</th>
-                                          <th>Part Type</th>
-                                          <th>Bom Part Code</th>
-                                          <th>Qty</th>
-                                          <th>Bom Part Desc</th>
-                                          <th>Scrap Item</th>
-                                          <th>Scrap Qty</th>
-                                          <th>OP Name</th>
-                                          <th>QC</th>
-                                          <th>Prod Qty</th>
-                                          <th>WIP wt</th>
-                                          <th>WIP rate</th>
-                                          <th>Piece Rate</th>
-                                          <th>Op Rate</th>
-                                          <th>Active</th>
-                                          <th>Edit</th>
-                                          <th>Doc</th>
-                                          <th>Del</th>
-                                          <th>BOM</th>
-                                          <th>Tool</th>
-                                          <th>#</th>
-                                          <th>Modify Date</th>
-                                        </tr>
-                                      </thead>
-                                      <tbody>
-                                        {tableData.length > 0 ? (
-                                          tableData.map((item, index) => (
-                                            <tr key={item.id || index} style={{ backgroundColor: item.BOMPartType === "RM" ? "#a5fac5" : "transparent" }}>
-                                              <td>{item.OPNo || (index + 1) * 10}</td>
-                                              <td>{item.PartCode}</td>
-                                              <td>{item.BOMPartType}</td>
-                                              <td title={item.BomPartCode}>
-                                                {item.BomPartCode ? item.BomPartCode.split(' | ')[0] : 'N/A'}
-                                              </td>
-                                              <td>{Number(item.QtyKg || 0).toFixed(6)}</td>
-                                              <td title={item.BomPartCode}>
-                                                {item.BomPartCode && item.BomPartCode.includes('|') ? item.BomPartCode.split(' | ')[2] : ''}
-                                              </td>
-                                              <td>{item.ScrapCode}</td>
-                                              <td>{Number(item.ScracpQty || 0).toFixed(5)}</td>
-                                              <td>
-                                                {item.Operation && (
-                                                  <span className="badge" style={{ backgroundColor: '#d85a19', color: 'white', border: '1px solid #b34a12', fontSize: '9px', padding: '3px 4px', textTransform: 'uppercase' }}>
-                                                    {item.Operation}
-                                                  </span>
-                                                )}
-                                              </td>
-                                              <td><input type="checkbox" checked={!!item.QC} readOnly className="form-check-input m-0" style={{ width: "12px", height: "12px" }} /></td>
-                                              <td>{item.ProdQty || 1}</td>
-                                              <td>{item.WipWt || '0.0066'}</td>
-                                              <td>{item.WipRate || 0}</td>
-                                              <td>{item.PieceRate || 0}</td>
-                                              <td>{item.OPRate || 0}</td>
-                                              <td>Y</td>
-                                              <td>
-                                                <button className="btn btn-sm" onClick={() => handleEdit1(item)}><FaEdit /></button>
-                                              </td>
-                                              <td>
-                                                <button className="btn btn-sm"><i className="fas fa-file-invoice"></i></button>
-                                              </td>
-                                              <td>
-                                                <button className="btn btn-sm" onClick={() => handleDelete1(item.id)}><FaTrash /></button>
-                                              </td>
-                                              <td>
-                                                <button className="btn btn-sm"><i className="fas fa-folder"></i></button>
-                                              </td>
-                                              <td>
-                                                <button className="btn btn-sm" onClick={() => handleOpenToolModal(item)}><i className="fas fa-wrench"></i></button>
-                                              </td>
-                                              <td>
-                                                <button className="btn btn-sm"><i className="fas fa-eye"></i></button>
-                                              </td>
-                                              <td>
-                                                {new Date().toLocaleString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+
+                                    {/* Table-like Single Row Form - Row 2 */}
+                                    <div className="d-flex flex-wrap align-items-end gap-3 mb-4">
+                                      {/* Operation */}
+                                      <div className="d-flex flex-column" style={{ width: '180px' }}>
+                                        <span className="fw-bold text-muted mb-1" style={{ fontSize: '11px' }}>Operation</span>
+                                        <input
+                                          type="text"
+                                          className="form-control form-control-sm"
+                                          name="Operation"
+                                          value={formData1.Operation}
+                                          onChange={handleInputChange1}
+                                          placeholder="Operation"
+                                          style={{ borderRadius: '5px', border: '1px solid #ccc', height: '30px', fontSize: '11px', padding: '4px' }}
+                                        />
+                                      </div>
+
+                                      {/* Prod Qty */}
+                                      <div className="d-flex flex-column" style={{ width: '70px' }}>
+                                        <span className="fw-bold text-muted mb-1" style={{ fontSize: '11px' }}>Prod Qty:</span>
+                                        <input
+                                          type="text"
+                                          className="form-control form-control-sm"
+                                          name="ProdQty"
+                                          value={formData1.ProdQty}
+                                          onChange={handleChange}
+                                          style={{ borderRadius: '5px', border: '1px solid #ccc', height: '30px', fontSize: '11px', padding: '4px' }}
+                                        />
+                                      </div>
+
+                                      {/* WIP Wt */}
+                                      <div className="d-flex flex-column" style={{ width: '70px' }}>
+                                        <span className="fw-bold text-muted mb-1" style={{ fontSize: '11px' }}>WIP Wt:</span>
+                                        <input
+                                          type="text"
+                                          className="form-control form-control-sm"
+                                          name="WipWt"
+                                          value={formData1.WipWt}
+                                          onChange={handleChange}
+                                          style={{ borderRadius: '5px', border: '1px solid #ccc', height: '30px', fontSize: '11px', padding: '4px' }}
+                                        />
+                                      </div>
+
+                                      {/* WIP Rate */}
+                                      <div className="d-flex flex-column" style={{ width: '70px' }}>
+                                        <span className="fw-bold text-muted mb-1" style={{ fontSize: '11px' }}>WIP Rate:</span>
+                                        <input
+                                          type="text"
+                                          className="form-control form-control-sm"
+                                          name="WipRate"
+                                          value={formData1.WipRate}
+                                          onChange={handleChange}
+                                          style={{ borderRadius: '5px', border: '1px solid #ccc', height: '30px', fontSize: '11px', padding: '4px' }}
+                                        />
+                                      </div>
+
+                                      {/* Piece Rate */}
+                                      <div className="d-flex flex-column" style={{ width: '70px' }}>
+                                        <span className="fw-bold text-muted mb-1" style={{ fontSize: '11px' }}>Piece Rate:</span>
+                                        <input
+                                          type="text"
+                                          className="form-control form-control-sm"
+                                          name="PieceRate"
+                                          value={formData1.PieceRate}
+                                          onChange={handleChange}
+                                          style={{ borderRadius: '5px', border: '1px solid #ccc', height: '30px', fontSize: '11px', padding: '4px' }}
+                                        />
+                                      </div>
+
+                                      {/* OP Rate */}
+                                      <div className="d-flex flex-column" style={{ width: '70px' }}>
+                                        <span className="fw-bold text-muted mb-1" style={{ fontSize: '11px' }}>OP Rate:</span>
+                                        <input
+                                          type="text"
+                                          className="form-control form-control-sm"
+                                          name="OPRate"
+                                          value={formData1.OPRate}
+                                          onChange={handleChange}
+                                          style={{ borderRadius: '5px', border: '1px solid #ccc', height: '30px', fontSize: '11px', padding: '4px' }}
+                                        />
+                                      </div>
+
+                                      {/* Save button */}
+                                      <button
+                                        className="btn btn-sm text-white px-4"
+                                        onClick={handleSave1}
+                                        disabled={isLoading || !selectedItem}
+                                        style={{ backgroundColor: '#61a879', borderRadius: '5px', height: '30px', border: 'none', fontSize: '12px', fontWeight: '500' }}
+                                      >
+                                        {editingId ? "Update" : "Save"}
+                                      </button>
+                                    </div>
+
+                                    {/* BOM Table */}
+                                    <div className="table-responsive edit-table-wrapper mt-3">
+                                      <table className="table table-bordered table-hover user-list-table text-center align-middle mb-0">
+                                        <thead>
+                                          <tr style={{ backgroundColor: '#00b0ff' }}>
+                                            <th style={{ backgroundColor: '#00b0ff', color: '#fff', fontSize: '11px', fontWeight: '500', padding: '6px 4px', border: '1px solid #00b0ff' }}>Sr.</th>
+                                            <th style={{ backgroundColor: '#00b0ff', color: '#fff', fontSize: '11px', fontWeight: '500', padding: '6px 4px', border: '1px solid #00b0ff' }}>OP No</th>
+                                            <th style={{ backgroundColor: '#00b0ff', color: '#fff', fontSize: '11px', fontWeight: '500', padding: '6px 4px', border: '1px solid #00b0ff' }}>Part Code</th>
+                                            <th style={{ backgroundColor: '#00b0ff', color: '#fff', fontSize: '11px', fontWeight: '500', padding: '6px 4px', border: '1px solid #00b0ff' }}>BOM Part Type</th>
+                                            <th style={{ backgroundColor: '#00b0ff', color: '#fff', fontSize: '11px', fontWeight: '500', padding: '6px 4px', border: '1px solid #00b0ff' }}>BOM Part Code</th>
+                                            <th style={{ backgroundColor: '#00b0ff', color: '#fff', fontSize: '11px', fontWeight: '500', padding: '6px 4px', border: '1px solid #00b0ff' }}>Qty</th>
+                                            <th style={{ backgroundColor: '#00b0ff', color: '#fff', fontSize: '11px', fontWeight: '500', padding: '6px 4px', border: '1px solid #00b0ff' }}>Scrap Code</th>
+                                            <th style={{ backgroundColor: '#00b0ff', color: '#fff', fontSize: '11px', fontWeight: '500', padding: '6px 4px', border: '1px solid #00b0ff' }}>Scrap Qty</th>
+                                            <th style={{ backgroundColor: '#00b0ff', color: '#fff', fontSize: '11px', fontWeight: '500', padding: '6px 4px', border: '1px solid #00b0ff' }}>QC</th>
+                                            <th style={{ backgroundColor: '#00b0ff', color: '#fff', fontSize: '11px', fontWeight: '500', padding: '6px 4px', border: '1px solid #00b0ff' }}>Prod Qty</th>
+                                            <th style={{ backgroundColor: '#00b0ff', color: '#fff', fontSize: '11px', fontWeight: '500', padding: '6px 4px', border: '1px solid #00b0ff' }}>Ass Prod</th>
+                                            <th style={{ backgroundColor: '#00b0ff', color: '#fff', fontSize: '11px', fontWeight: '500', padding: '6px 4px', border: '1px solid #00b0ff' }}>WIP Wt</th>
+                                            <th style={{ backgroundColor: '#00b0ff', color: '#fff', fontSize: '11px', fontWeight: '500', padding: '6px 4px', border: '1px solid #00b0ff' }}>WIP Rate</th>
+                                            <th style={{ backgroundColor: '#00b0ff', color: '#fff', fontSize: '11px', fontWeight: '500', padding: '6px 4px', border: '1px solid #00b0ff' }}>Piece Rate</th>
+                                            <th style={{ backgroundColor: '#00b0ff', color: '#fff', fontSize: '11px', fontWeight: '500', padding: '6px 4px', border: '1px solid #00b0ff' }}>OP Rate</th>
+                                            <th style={{ backgroundColor: '#00b0ff', color: '#fff', fontSize: '11px', fontWeight: '500', padding: '6px 4px', border: '1px solid #00b0ff' }}>Operation</th>
+                                            <th style={{ backgroundColor: '#00b0ff', color: '#fff', fontSize: '11px', fontWeight: '500', padding: '6px 4px', border: '1px solid #00b0ff' }}>Active</th>
+                                            <th style={{ backgroundColor: '#00b0ff', color: '#fff', fontSize: '11px', fontWeight: '500', padding: '6px 4px', border: '1px solid #00b0ff' }}>Edit</th>
+                                            <th style={{ backgroundColor: '#00b0ff', color: '#fff', fontSize: '11px', fontWeight: '500', padding: '6px 4px', border: '1px solid #00b0ff' }}>Doc</th>
+                                            <th style={{ backgroundColor: '#00b0ff', color: '#fff', fontSize: '11px', fontWeight: '500', padding: '6px 4px', border: '1px solid #00b0ff' }}>Del</th>
+                                            <th style={{ backgroundColor: '#00b0ff', color: '#fff', fontSize: '11px', fontWeight: '500', padding: '6px 4px', border: '1px solid #00b0ff' }}>BOM</th>
+                                            <th style={{ backgroundColor: '#00b0ff', color: '#fff', fontSize: '11px', fontWeight: '500', padding: '6px 4px', border: '1px solid #00b0ff' }}>Tool</th>
+                                            <th style={{ backgroundColor: '#00b0ff', color: '#fff', fontSize: '11px', fontWeight: '500', padding: '6px 4px', border: '1px solid #00b0ff' }}>#</th>
+                                            <th style={{ backgroundColor: '#00b0ff', color: '#fff', fontSize: '11px', fontWeight: '500', padding: '6px 4px', border: '1px solid #00b0ff' }}>Modify Date</th>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          {tableData.length > 0 ? (
+                                            tableData.map((item, index) => (
+                                              <tr key={item.id || index} style={{ backgroundColor: item.BOMPartType === "RM" ? "#a5fac5" : "transparent" }}>
+                                                <td>{index + 1}</td>
+                                                <td>{item.OPNo || (index + 1) * 10}</td>
+                                                <td>{item.PartCode}</td>
+                                                <td>{item.BOMPartType}</td>
+                                                <td title={item.BomPartCode}>
+                                                  {item.BomPartCode ? item.BomPartCode.split(' | ')[0] : 'N/A'}
+                                                </td>
+                                                <td>{Number(item.QtyKg || 0).toFixed(6)}</td>
+                                                <td>{item.ScrapCode}</td>
+                                                <td>{Number(item.ScracpQty || 0).toFixed(5)}</td>
+                                                <td><input type="checkbox" checked={!!item.QC} readOnly className="form-check-input m-0" style={{ width: "12px", height: "12px" }} /></td>
+                                                <td>{item.ProdQty || 1}</td>
+                                                <td>{item.AssProd || 'NO'}</td>
+                                                <td>{item.WipWt || '0.0066'}</td>
+                                                <td>{item.WipRate || 0}</td>
+                                                <td>{item.PieceRate || 0}</td>
+                                                <td>{item.OPRate || 0}</td>
+                                                <td>
+                                                  {item.Operation && (
+                                                    <span className="badge" style={{ backgroundColor: '#d85a19', color: 'white', border: '1px solid #b34a12', fontSize: '9px', padding: '3px 4px', textTransform: 'uppercase' }}>
+                                                      {item.Operation}
+                                                    </span>
+                                                  )}
+                                                </td>
+                                                <td>Y</td>
+                                                <td>
+                                                  <button className="btn btn-sm" onClick={() => handleEdit1(item)}><FaEdit /></button>
+                                                </td>
+                                                <td>
+                                                  <button className="btn btn-sm"><i className="fas fa-file-invoice"></i></button>
+                                                </td>
+                                                <td>
+                                                  <button className="btn btn-sm" onClick={() => handleDelete1(item.id)}><FaTrash /></button>
+                                                </td>
+                                                <td>
+                                                  <button className="btn btn-sm"><i className="fas fa-folder"></i></button>
+                                                </td>
+                                                <td>
+                                                  <button className="btn btn-sm" onClick={() => handleOpenToolModal(item)}><i className="fas fa-wrench"></i></button>
+                                                </td>
+                                                <td>
+                                                  <button className="btn btn-sm"><i className="fas fa-eye"></i></button>
+                                                </td>
+                                                <td>
+                                                  {new Date().toLocaleString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                                                </td>
+                                              </tr>
+                                            ))
+                                          ) : (
+                                            <tr>
+                                              <td colSpan={24} className="text-center py-3 text-muted fw-bold">
+                                                No data available
                                               </td>
                                             </tr>
-                                          ))
-                                        ) : (
-                                          <tr>
-                                            <td colSpan="23" className="text-center">
-                                              {selectedItem
-                                                ? "No BOM items found for this item. You can add new ones."
-                                                : "No data available"}
-                                            </td>
-                                          </tr>
-                                        )}
-                                      </tbody>
-                                    </table>
+                                          )}
+                                        </tbody>
+                                      </table>
+                                    </div>
                                   </div>
 
                                   {/* BOM Item Part Master Modal */}

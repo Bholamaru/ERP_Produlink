@@ -884,6 +884,156 @@ const Dashboard = () => {
   const [dsSelectedMonthObj, setDsSelectedMonthObj] = useState({ month: 4, year: 2026 });
   const [stateWiseSalesData, setStateWiseSalesData] = useState(initialStateWiseSalesData);
 
+  const [poRecords, setPoRecords] = useState([]);
+  const [taxInvoiceRecords, setTaxInvoiceRecords] = useState([]);
+  const [jobworkInvoiceRecords, setJobworkInvoiceRecords] = useState([]);
+  const [salesReturnRecords, setSalesReturnRecords] = useState([]);
+  const [debitNotePurchaseRecords, setDebitNotePurchaseRecords] = useState([]);
+  const [debitNoteSaleDiffRecords, setDebitNoteSaleDiffRecords] = useState([]);
+  const [proformaInvoiceRecords, setProformaInvoiceRecords] = useState([]);
+  const [outward57f4Records, setOutward57f4Records] = useState([]);
+  const [inward57f4Records, setInward57f4Records] = useState([]);
+  const [jobworkInward57f4Records, setJobworkInward57f4Records] = useState([]);
+  const [purchaseGRNRecords, setPurchaseGRNRecords] = useState([]);
+  const [materialIssueRecords, setMaterialIssueRecords] = useState([]);
+  const [deliveryChallanRecords, setDeliveryChallanRecords] = useState([]);
+  const [qcPurchaseGRNRecords, setQcPurchaseGRNRecords] = useState([]);
+  const [qcJobworkInwardRecords, setQcJobworkInwardRecords] = useState([]);
+  const [dcGRNRecords, setDcGRNRecords] = useState([]);
+  const [recordsSelectedMonthObj, setRecordsSelectedMonthObj] = useState({ month: 4, year: 2026 });
+
+  const fetchTotalRecordsData = async () => {
+    const token = localStorage.getItem("accessToken");
+    const headers = {};
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+    headers["Content-Type"] = "application/json";
+
+    const safeFetch = async (url, options = {}) => {
+      try {
+        const res = await fetch(url, { headers, ...options });
+        if (!res.ok) return [];
+        const data = await res.json();
+        return Array.isArray(data) ? data : (data.data || data.results || []);
+      } catch (err) {
+        console.warn(`Error fetching from ${url}:`, err);
+        return [];
+      }
+    };
+
+    try {
+      const [
+        poData,
+        taxData,
+        jwInvoiceData,
+        srData,
+        dnPurchaseData,
+        dnSaleDiffData,
+        proformaData,
+        outwardData,
+        inwardData,
+        jwInwardData,
+        grnData,
+        matIssueData,
+        delChallanData,
+        qcPurchaseData,
+        qcJwInwardData,
+        dcGrnData
+      ] = await Promise.all([
+        safeFetch("http://127.0.0.1:8000/Purchase/PurchaseOrderList/"),
+        safeFetch("http://127.0.0.1:8000/Sales/invoice/"),
+        safeFetch("http://127.0.0.1:8000/Sales/gst-jobwork-invoice/"),
+        safeFetch("http://127.0.0.1:8000/Sales/Gstsalesretun/"),
+        safeFetch("http://127.0.0.1:8000/Sales/debitnote/"),
+        safeFetch("http://127.0.0.1:8000/Sales/gst-jobwork-rate-diff/"),
+        safeFetch("https://erp-render.onrender.com/Sales/profoma-invoice/"),
+        safeFetch("http://127.0.0.1:8000/Sales/onward-challans/"),
+        safeFetch("http://127.0.0.1:8000/Store/InwardChallan/"),
+        safeFetch("http://127.0.0.1:8000/Store/JobworkInwardChallan/"),
+        safeFetch("http://127.0.0.1:8000/Store/api/grn-details/"),
+        safeFetch("http://127.0.0.1:8000/Store/api/New-Material-Issue/"),
+        safeFetch("http://127.0.0.1:8000/Store/DeliveryChallan/"),
+        safeFetch("http://127.0.0.1:8000/Quality/purchase-pending-qc/"),
+        safeFetch("http://127.0.0.1:8000/Quality/inward-qc-list/"),
+        safeFetch("http://127.0.0.1:8000/Store/DC_GRN/")
+      ]);
+
+      setPoRecords(poData);
+      setTaxInvoiceRecords(taxData);
+      setJobworkInvoiceRecords(jwInvoiceData);
+      setSalesReturnRecords(srData);
+      setDebitNotePurchaseRecords(dnPurchaseData);
+      setDebitNoteSaleDiffRecords(dnSaleDiffData);
+      setProformaInvoiceRecords(proformaData);
+      setOutward57f4Records(outwardData);
+      setInward57f4Records(inwardData);
+      setJobworkInward57f4Records(jwInwardData);
+      setPurchaseGRNRecords(grnData);
+      setMaterialIssueRecords(matIssueData);
+      setDeliveryChallanRecords(delChallanData);
+      setQcPurchaseGRNRecords(qcPurchaseData);
+      setQcJobworkInwardRecords(qcJwInwardData);
+      setDcGRNRecords(dcGrnData);
+    } catch (error) {
+      console.error("Error fetching total records:", error);
+    }
+  };
+
+  const countInMonth = (list, dateFieldExtractor, targetMonth, targetYear) => {
+    if (!Array.isArray(list)) return 0;
+    return list.filter(item => {
+      const dateVal = dateFieldExtractor(item);
+      if (!dateVal) return false;
+      const d = new Date(dateVal);
+      if (isNaN(d.getTime())) return false;
+      return (d.getMonth() + 1) === targetMonth && d.getFullYear() === targetYear;
+    }).length;
+  };
+
+  const filteredRecordItems = React.useMemo(() => {
+    const m = recordsSelectedMonthObj.month;
+    const y = recordsSelectedMonthObj.year;
+
+    return [
+      { id: 1, name: "Purchase Order", total: countInMonth(poRecords, item => item.PoDate, m, y) },
+      { id: 2, name: "Tax Invoice", total: countInMonth(taxInvoiceRecords, item => item.invoice_Date, m, y) },
+      { id: 3, name: "Jobwork Invoice", total: countInMonth(jobworkInvoiceRecords, item => item.invoice_date, m, y) },
+      { id: 4, name: "GST Sales Return", total: countInMonth(salesReturnRecords, item => item.sales_return_date, m, y) },
+      { id: 5, name: "Debit Note : Purchase Return", total: countInMonth(debitNotePurchaseRecords, item => item.debit_note_date, m, y) },
+      { id: 6, name: "Debit Note : Sale Rate Diff", total: countInMonth(debitNoteSaleDiffRecords, item => item.debit_note_date, m, y) },
+      { id: 7, name: "Proforma Invoice", total: countInMonth(proformaInvoiceRecords, item => item.order_date, m, y) },
+      { id: 8, name: "57F4 Outward", total: countInMonth(outward57f4Records, item => item.challan_date, m, y) },
+      { id: 9, name: "57F4 Inward", total: countInMonth(inward57f4Records, item => item.InwardDate, m, y) },
+      { id: 10, name: "57F4 Jobwork Inward", total: countInMonth(jobworkInward57f4Records, item => item.InwardDate, m, y) },
+      { id: 11, name: "Purchase GRN", total: countInMonth(purchaseGRNRecords, item => item.GrnDate, m, y) },
+      { id: 12, name: "Material Issue Ch.", total: countInMonth(materialIssueRecords, item => item.MaterialIssueDate, m, y) },
+      { id: 13, name: "Delivery Challan", total: countInMonth(deliveryChallanRecords, item => item.ChallanDate, m, y) },
+      { id: 14, name: "QC Purchase GRN", total: countInMonth(qcPurchaseGRNRecords, item => item.GrnDate || item.grn_date || item.ReturnDate || item.return_date || item.date || item.created_at, m, y) },
+      { id: 15, name: "QC Jobwork Inward", total: countInMonth(qcJobworkInwardRecords, item => item.InwardDate, m, y) },
+      { id: 16, name: "DC GRN", total: countInMonth(dcGRNRecords, item => item.GrnDate, m, y) }
+    ];
+  }, [
+    recordsSelectedMonthObj,
+    poRecords,
+    taxInvoiceRecords,
+    jobworkInvoiceRecords,
+    salesReturnRecords,
+    debitNotePurchaseRecords,
+    debitNoteSaleDiffRecords,
+    proformaInvoiceRecords,
+    outward57f4Records,
+    inward57f4Records,
+    jobworkInward57f4Records,
+    purchaseGRNRecords,
+    materialIssueRecords,
+    deliveryChallanRecords,
+    qcPurchaseGRNRecords,
+    qcJobworkInwardRecords,
+    dcGRNRecords
+  ]);
+
+
   const fetchDailySalesReport = async (month = 4, year = 2026) => {
     try {
       const response = await fetch(`http://127.0.0.1:8000/Dashboard/monthly/daily/report/?month=${month}&year=${year}`);
@@ -1078,6 +1228,7 @@ const Dashboard = () => {
     fetchTop5SalesData();
     fetchItemWiseDispatchData();
     fetchStateWiseSalesData();
+    fetchTotalRecordsData();
   }, []);
 
   useEffect(() => {
@@ -1221,13 +1372,21 @@ const Dashboard = () => {
                     <div className="dn-filter-group">
                       <select className="dn-mini-select"><option>SHARP</option></select>
                       <label>Month</label>
-                      <select className="dn-mini-select"><option>Apr-2026</option></select>
+                      <select 
+                        className="dn-mini-select"
+                        value={`${recordsSelectedMonthObj.month}-${recordsSelectedMonthObj.year}`}
+                        onChange={(e) => {
+                          const [m, y] = e.target.value.split("-").map(Number);
+                          setRecordsSelectedMonthObj({ month: m, year: y });
+                        }}
+                      >
+                        {salesMonthsList.map(item => (
+                          <option key={item.label} value={`${item.month}-${item.year}`}>{item.label}</option>
+                        ))}
+                      </select>
                     </div>
                     <div className="dn-action-group">
-                      <button className="dn-icon-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="23 4 23 10 17 10" /><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" /></svg></button>
-                      <button className="dn-icon-btn excel" style={{ margin: 0, padding: '3px', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '4px', border: '1px solid #cbd5e1', background: '#fff', height: '24px', width: '24px' }}>
-                        <div style={{ background: '#1d6f42', color: '#fff', width: '16px', height: '16px', borderRadius: '1px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: '900' }}>X</div>
-                      </button>
+                      <button className="dn-icon-btn" onClick={fetchTotalRecordsData}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="23 4 23 10 17 10" /><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" /></svg></button>
                     </div>
                   </div>
 
@@ -1240,7 +1399,7 @@ const Dashboard = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {recordItems.map(item => (
+                        {filteredRecordItems.map(item => (
                           <tr key={item.id}>
                             <td>{item.name}</td>
                             <td style={{ textAlign: "right" }}>{item.total}</td>
