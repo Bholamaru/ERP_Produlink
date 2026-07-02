@@ -172,7 +172,7 @@ const Quality = () => {
     const fetchRejectionTrend = async () => {
       try {
         const [mVal, yVal] = month.split('-');
-        const response = await fetch(`https://erp-render.onrender.com/Dashboard/Quality/trend_rejection/?month=${mVal}&year=${yVal}`);
+        const response = await fetch(`http://127.0.0.1:8000/Dashboard/Quality/trend_rejection/?month=${mVal}&year=${yVal}`);
         if (response.ok) {
           const data = await response.json();
           if (Array.isArray(data) && data.length > 0) {
@@ -211,7 +211,7 @@ const Quality = () => {
     const fetchScrapData = async () => {
       try {
         const [mVal, yVal] = scrapMonth.split('-');
-        const response = await fetch(`https://erp-render.onrender.com/Dashboard/Quality/scrap/qty/?month=${mVal}&year=${yVal}`);
+        const response = await fetch(`http://127.0.0.1:8000/Dashboard/Quality/scrap/qty/?month=${mVal}&year=${yVal}`);
         if (response.ok) {
           const data = await response.json();
           setScrapData(data);
@@ -238,7 +238,7 @@ const Quality = () => {
   useEffect(() => {
     const fetchSalesReturnData = async () => {
       try {
-        const response = await fetch(`https://erp-render.onrender.com/Dashboard/Quality/sales-return/?financial_year=${salesReturnYear}`);
+        const response = await fetch(`http://127.0.0.1:8000/Dashboard/Quality/sales-return/?financial_year=${salesReturnYear}`);
         if (response.ok) {
           const data = await response.json();
           if (Array.isArray(data) && data.length > 0) {

@@ -371,7 +371,7 @@ export const updatePurchaseOrder = async (id, data) => {
     console.log("Submitting data to update PO:", data);
 
 
-    const response = await fetch(`https://erp-render.onrender.com/Purchase/RegisterPO_All_Series/${id}/`, {
+    const response = await fetch(`http://127.0.0.1:8000/Purchase/RegisterPO_All_Series/${id}/`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -422,7 +422,7 @@ export const fetchPurchaseOrderById = async (id) => {
       throw new Error("Authentication token not found. Please login again.");
     }
 
-    const response = await fetch(`https://erp-render.onrender.com/Purchase/RegisterPO_All_Series/${id}/`, {
+    const response = await fetch(`http://127.0.0.1:8000/Purchase/RegisterPO_All_Series/${id}/`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
