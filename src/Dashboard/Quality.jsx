@@ -71,6 +71,10 @@ const CustomPieLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, i
 };
 
 const Quality = () => {
+  const rawPermissions = JSON.parse(localStorage.getItem("permissions"));
+  const dashboardPerms = rawPermissions?.Dashboard || [];
+  const showAll = !rawPermissions || !rawPermissions.Dashboard;
+
   const [fy, setFy] = useState('2026-2027');
   const [plant, setPlant] = useState('Sharp');
   const [month, setMonth] = useState('04-2026');
@@ -335,6 +339,7 @@ const Quality = () => {
       </Box>
 
       {/* TREND OF REJECTION SECTION */}
+      {(showAll || dashboardPerms.includes("TREND OF REJECTION % AT OPERATION LEVEL")) && (
       <Box className="bg-white rounded-[20px] border border-[#eef2f6] p-7 shadow-md mb-8">
         <Box className="mb-8">
           {/* Row 1: Title */}
@@ -451,8 +456,10 @@ const Quality = () => {
           </ResponsiveContainer>
         </Box>
       </Box>
+      )}
 
       {/* ITEMWISE REJECT SECTION */}
+      {(showAll || dashboardPerms.includes("ITEMWISE REJECT")) && (
       <Box className="bg-white rounded-[20px] border border-[#eef2f6] p-7 shadow-md mb-8">
         <Box className="flex items-center justify-between mb-8">
           <Box className="flex items-center gap-3">
@@ -705,8 +712,10 @@ const Quality = () => {
           </Box>
         </Box>
       </Box>
+      )}
 
       {/* ITEMWISE REWORK SECTION */}
+      {(showAll || dashboardPerms.includes("ITEMWISE REWORK")) && (
       <Box className="bg-white rounded-[20px] border border-[#eef2f6] p-7 shadow-md mb-8">
         <Box className="flex items-center justify-between mb-8">
           <Box className="flex items-center gap-3">
@@ -930,8 +939,10 @@ const Quality = () => {
           </Box>
         </Box>
       </Box>
+      )}
 
       {/* SCRAP VALUE REPORT SECTION */}
+      {(showAll || dashboardPerms.includes("SCRAP VALUE REPORT")) && (
       <Box className="bg-white rounded-[20px] border border-[#eef2f6] p-7 shadow-md mb-8">
         <Box className="flex items-center justify-between mb-8">
           <Box className="flex items-center gap-3">
@@ -1033,8 +1044,10 @@ const Quality = () => {
           </Typography>
         </Box>
       </Box>
+      )}
 
       {/* SALES RETURN CUSTOMER SECTION */}
+      {(showAll || dashboardPerms.includes("SALES RETURN CUSTOMER")) && (
       <Box className="bg-white rounded-[20px] border border-[#eef2f6] p-7 shadow-md mb-8">
         <Box className="flex items-center justify-between mb-8">
           <Box className="flex items-center gap-3">
@@ -1193,8 +1206,10 @@ const Quality = () => {
           </Typography>
         </Box>
       </Box>
+      )}
 
       {/* CUSTOMER COMPLAINTS (CAPA) SECTION */}
+      {(showAll || dashboardPerms.includes("CUSTOMER COMPLAINTS (CAPA)")) && (
       <Box className="bg-white rounded-[20px] border border-[#eef2f6] p-7 shadow-md mb-8">
         <Box className="flex items-center justify-between mb-8">
           <Box className="flex items-center gap-3">
@@ -1310,6 +1325,7 @@ const Quality = () => {
           </table>
         </Box>
       </Box>
+      )}
     </Box>
   );
 };

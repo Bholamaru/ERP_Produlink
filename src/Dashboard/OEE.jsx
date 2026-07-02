@@ -181,6 +181,10 @@ const OeeCustomTooltip = ({ active, payload }) => {
 };
 
 const OEE = () => {
+  const rawPermissions = JSON.parse(localStorage.getItem("permissions"));
+  const dashboardPerms = rawPermissions?.Dashboard || [];
+  const showAll = !rawPermissions || !rawPermissions.Dashboard;
+
   const [plant, setPlant] = useState('Sharp');
   const [period, setPeriod] = useState('April 2026');
 
@@ -225,6 +229,7 @@ const OEE = () => {
       </Box>
 
       {/* MACHINE UTILIZATION SECTION */}
+      {(showAll || dashboardPerms.includes("MACHINE UTILIZATION")) && (
       <Box className="bg-white rounded-[20px] border border-[#eef2f6] p-7 shadow-md mb-8">
         <Box className="flex items-center justify-between mb-8">
           <Box className="flex items-center gap-3">
@@ -275,8 +280,10 @@ const OEE = () => {
           </div>
         </Box>
       </Box>
+      )}
 
       {/* OPERATOR EFFICIENCY SECTION */}
+      {(showAll || dashboardPerms.includes("OPERATOR EFFICIENCY")) && (
       <Box className="bg-white rounded-[20px] border border-[#eef2f6] p-7 shadow-md mb-8">
         <Box className="flex items-center justify-between mb-8">
           <Box className="flex items-center gap-3">
@@ -379,8 +386,10 @@ const OEE = () => {
           </Box>
         </Box>
       </Box>
+      )}
 
       {/* SHIFTWISE OEE SECTION */}
+      {(showAll || dashboardPerms.includes("SHIFTWISE OEE")) && (
       <Box className="bg-white rounded-[20px] border border-[#eef2f6] p-7 shadow-md mb-8">
         <Box className="flex items-center justify-between mb-8">
           <Box className="flex items-center gap-3">
@@ -470,8 +479,10 @@ const OEE = () => {
           </Box>
         </Box>
       </Box>
+      )}
 
       {/* OEE GRAPHS SECTION */}
+      {(showAll || dashboardPerms.includes("OEE GRAPHS")) && (
       <Box className="bg-white rounded-[20px] border border-[#eef2f6] p-7 shadow-md mb-8">
         <Box className="flex items-center justify-between mb-8">
           <Box className="flex items-center gap-3">
@@ -584,6 +595,7 @@ const OEE = () => {
           </Box>
         </div>
       </Box>
+      )}
     </Box>
   );
 };

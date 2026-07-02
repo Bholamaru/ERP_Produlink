@@ -852,7 +852,19 @@ const salesMonthsList = [
 const Dashboard = () => {
   const navigate = useNavigate();
   const [sideNavOpen, setSideNavOpen] = useState(false);
-  const [activeDept, setActiveDept] = useState("financial");
+
+  // Load and filter visible departments based on permissions
+  const rawPermissions = JSON.parse(localStorage.getItem("permissions"));
+  const dashboardPerms = rawPermissions?.Dashboard || [];
+  const showAll = !rawPermissions || !rawPermissions.Dashboard;
+
+  const visibleDeptCards = deptCards.filter(card => {
+    if (showAll) return true;
+    return dashboardPerms.includes(card.label);
+  });
+
+  const defaultDept = visibleDeptCards.length > 0 ? visibleDeptCards[0].id : "financial";
+  const [activeDept, setActiveDept] = useState(defaultDept);
   const [activeRange, setActiveRange] = useState("Week");
   const [isSPVisible, setIsSPVisible] = useState(false);
 
@@ -1266,7 +1278,7 @@ const Dashboard = () => {
         <main className={`mainContent dn-main ${sideNavOpen ? "shifted" : ""} ${activeDept !== "financial" ? "dn-full-width-view" : ""}`}>
           {/*    Department Cards    */}
           <div className="dn-dept-cards-row">
-            {deptCards.map((card) => (
+            {visibleDeptCards.map((card) => (
               <div
                 key={card.id}
                 className={`dn-dept-card ${activeDept === card.id ? "active" : ""}`}
@@ -1288,127 +1300,131 @@ const Dashboard = () => {
               <div className="dn-side-column">
 
                 {/* Alerts Card */}
-                <div className="dn-side-card dn-alerts-card">
-                  <div className="dn-side-header">
-                    <div className="dn-side-title">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ marginRight: 8 }}><rect x="3" y="3" width="18" height="18" rx="2" ry="2" /><line x1="9" y1="3" x2="9" y2="21" /><line x1="15" y1="3" x2="15" y2="21" /><line x1="3" y1="9" x2="21" y2="9" /><line x1="3" y1="15" x2="21" y2="15" /></svg>
-                      Alerts
+                {(showAll || dashboardPerms.includes("Alerts")) && (
+                  <div className="dn-side-card dn-alerts-card">
+                    <div className="dn-side-header">
+                      <div className="dn-side-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ marginRight: 8 }}><rect x="3" y="3" width="18" height="18" rx="2" ry="2" /><line x1="9" y1="3" x2="9" y2="21" /><line x1="15" y1="3" x2="15" y2="21" /><line x1="3" y1="9" x2="21" y2="9" /><line x1="3" y1="15" x2="21" y2="15" /></svg>
+                        Alerts
+                      </div>
+                      <a href="#" className="dn-side-link">Add New Alert</a>
                     </div>
-                    <a href="#" className="dn-side-link">Add New Alert</a>
-                  </div>
 
-                  <div className="dn-filter-strip">
-                    <label>Plant</label>
-                    <select className="dn-mini-select">
-                      <option>SHARP</option>
-                    </select>
-                  </div>
-
-                  <div className="dn-alert-list">
-                    {alertItems.map((item, index) => {
-                      const baseSize = 20 + index * 2.5; // From 20px to 37.5px
-                      const fontSize = 9 + index * 0.5;  // From 9px to 12.5px
-                      const isDarkColor = index >= 5;
-                      return (
-                        <div
-                          key={item.id}
-                          className="dn-alert-item"
-                          onClick={() => {
-                            if (item.label === "Pending PO Approval") {
-                              navigate("/pendingpo");
-                            } else if (item.label === "Pending Inprocess QC") {
-                              navigate("/InprocessInspection");
-                            } else if (item.label === "Pending Sales Return QC") {
-                              navigate("/PaddingSalesQC");
-                            } else if (item.label === "Bill Passing (Purchase)") {
-                              navigate("/purchase-bill");
-                            } else if (item.label === "Bill Passing (Jobwork)") {
-                              navigate("/jobwork-bill");
-                            } else if (item.label === "Upcoming Dispatch") {
-                              navigate("/UpcomingDispatchList");
-                            } else if (item.label === "Unauthorised BOM") {
-                              navigate("/bom-routing");
-                            } else if (item.label === "Pending Gate Inward Entry") {
-                              navigate("/Gate-Inward-Entry");
-                            }
-                          }}
-                        >
-                          <span className="dn-alert-label">{item.label}</span>
-                          <span
-                            className="dn-alert-badge"
-                            style={{
-                              background: item.color,
-                              fontSize: `${fontSize}px`,
-                              minWidth: `${24 + index * 3}px`,
-                              height: `${16 + index * 2}px`,
-                              borderRadius: "999px",
-                              color: isDarkColor ? "#fff" : "#000",
-                              display: "inline-flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              padding: `0 ${6 + index * 1}px`,
-                              lineHeight: 1
-                            }}
-                          >
-                            {item.count}
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Total Records Card (Full/Scrollable) */}
-                <div className="dn-side-card dn-records-card full-list">
-                  <div className="dn-side-header">
-                    <div className="dn-side-title">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ marginRight: 8 }}><rect x="3" y="3" width="18" height="18" rx="2" ry="2" /><line x1="9" y1="3" x2="9" y2="21" /><line x1="15" y1="3" x2="15" y2="21" /><line x1="3" y1="9" x2="21" y2="9" /><line x1="3" y1="15" x2="21" y2="15" /></svg>
-                      Total Record's
-                    </div>
-                    <a href="#" className="dn-side-link">View More</a>
-                  </div>
-
-                  <div className="dn-filter-strip row-gap">
-                    <div className="dn-filter-group">
-                      <select className="dn-mini-select"><option>SHARP</option></select>
-                      <label>Month</label>
-                      <select 
-                        className="dn-mini-select"
-                        value={`${recordsSelectedMonthObj.month}-${recordsSelectedMonthObj.year}`}
-                        onChange={(e) => {
-                          const [m, y] = e.target.value.split("-").map(Number);
-                          setRecordsSelectedMonthObj({ month: m, year: y });
-                        }}
-                      >
-                        {salesMonthsList.map(item => (
-                          <option key={item.label} value={`${item.month}-${item.year}`}>{item.label}</option>
-                        ))}
+                    <div className="dn-filter-strip">
+                      <label>Plant</label>
+                      <select className="dn-mini-select">
+                        <option>SHARP</option>
                       </select>
                     </div>
-                    <div className="dn-action-group">
-                      <button className="dn-icon-btn" onClick={fetchTotalRecordsData}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="23 4 23 10 17 10" /><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" /></svg></button>
+
+                    <div className="dn-alert-list">
+                      {alertItems.map((item, index) => {
+                        const baseSize = 20 + index * 2.5; // From 20px to 37.5px
+                        const fontSize = 9 + index * 0.5;  // From 9px to 12.5px
+                        const isDarkColor = index >= 5;
+                        return (
+                          <div
+                            key={item.id}
+                            className="dn-alert-item"
+                            onClick={() => {
+                              if (item.label === "Pending PO Approval") {
+                                navigate("/pendingpo");
+                              } else if (item.label === "Pending Inprocess QC") {
+                                navigate("/InprocessInspection");
+                              } else if (item.label === "Pending Sales Return QC") {
+                                navigate("/PaddingSalesQC");
+                              } else if (item.label === "Bill Passing (Purchase)") {
+                                navigate("/purchase-bill");
+                              } else if (item.label === "Bill Passing (Jobwork)") {
+                                navigate("/jobwork-bill");
+                              } else if (item.label === "Upcoming Dispatch") {
+                                navigate("/UpcomingDispatchList");
+                              } else if (item.label === "Unauthorised BOM") {
+                                navigate("/bom-routing");
+                              } else if (item.label === "Pending Gate Inward Entry") {
+                                navigate("/Gate-Inward-Entry");
+                              }
+                            }}
+                          >
+                            <span className="dn-alert-label">{item.label}</span>
+                            <span
+                              className="dn-alert-badge"
+                              style={{
+                                background: item.color,
+                                fontSize: `${fontSize}px`,
+                                minWidth: `${24 + index * 3}px`,
+                                height: `${16 + index * 2}px`,
+                                borderRadius: "999px",
+                                color: isDarkColor ? "#fff" : "#000",
+                                display: "inline-flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                padding: `0 ${6 + index * 1}px`,
+                                lineHeight: 1
+                              }}
+                            >
+                              {item.count}
+                            </span>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
+                )}
 
-                  <div className="dn-records-table-container scrollable">
-                    <table className="dn-records-table">
-                      <thead>
-                        <tr style={{ background: '#007bff', color: '#fff' }}>
-                          <th style={{ background: '#007bff', color: '#fff', border: '1px solid #0056b3' }}>Doc. Name</th>
-                          <th style={{ textAlign: "right", background: '#007bff', color: '#fff', border: '1px solid #0056b3' }}>Total</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {filteredRecordItems.map(item => (
-                          <tr key={item.id}>
-                            <td>{item.name}</td>
-                            <td style={{ textAlign: "right" }}>{item.total}</td>
+                {/* Total Records Card (Full/Scrollable) */}
+                {(showAll || dashboardPerms.includes("Total Records")) && (
+                  <div className="dn-side-card dn-records-card full-list">
+                    <div className="dn-side-header">
+                      <div className="dn-side-title">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ marginRight: 8 }}><rect x="3" y="3" width="18" height="18" rx="2" ry="2" /><line x1="9" y1="3" x2="9" y2="21" /><line x1="15" y1="3" x2="15" y2="21" /><line x1="3" y1="9" x2="21" y2="9" /><line x1="3" y1="15" x2="21" y2="15" /></svg>
+                        Total Record's
+                      </div>
+                      <a href="#" className="dn-side-link">View More</a>
+                    </div>
+
+                    <div className="dn-filter-strip row-gap">
+                      <div className="dn-filter-group">
+                        <select className="dn-mini-select"><option>SHARP</option></select>
+                        <label>Month</label>
+                        <select 
+                          className="dn-mini-select"
+                          value={`${recordsSelectedMonthObj.month}-${recordsSelectedMonthObj.year}`}
+                          onChange={(e) => {
+                            const [m, y] = e.target.value.split("-").map(Number);
+                            setRecordsSelectedMonthObj({ month: m, year: y });
+                          }}
+                        >
+                          {salesMonthsList.map(item => (
+                            <option key={item.label} value={`${item.month}-${item.year}`}>{item.label}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="dn-action-group">
+                        <button className="dn-icon-btn" onClick={fetchTotalRecordsData}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="23 4 23 10 17 10" /><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" /></svg></button>
+                      </div>
+                    </div>
+
+                    <div className="dn-records-table-container scrollable">
+                      <table className="dn-records-table">
+                        <thead>
+                          <tr style={{ background: '#007bff', color: '#fff' }}>
+                            <th style={{ background: '#007bff', color: '#fff', border: '1px solid #0056b3' }}>Doc. Name</th>
+                            <th style={{ textAlign: "right", background: '#007bff', color: '#fff', border: '1px solid #0056b3' }}>Total</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                        </thead>
+                        <tbody>
+                          {filteredRecordItems.map(item => (
+                            <tr key={item.id}>
+                              <td>{item.name}</td>
+                              <td style={{ textAlign: "right" }}>{item.total}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
-                </div>
+                )}
 
               </div>
 
@@ -1470,7 +1486,20 @@ const Dashboard = () => {
 
                 {/* Accordion Sections Dashboard Area */}
                 <div className="dn-accordion-container">
-                  {accordionList.map((label) => {
+                  {accordionList.filter(label => {
+                    if (showAll) return true;
+                    const labelToPermission = {
+                      "Sales & Purchase": "sales and purchase",
+                      "Daily Sales": "Daily sales",
+                      "Monthly Sales": "Monthly sales",
+                      "Top 5 (Sales) Customer / Item": "Top 5 (sales) customer / item",
+                      "Item wise Dispatch": "Item wise dispatch",
+                      "Business Plan": "Business plan",
+                      "State Wise Sales": "State wise sales",
+                    };
+                    const perm = labelToPermission[label];
+                    return dashboardPerms.includes(perm);
+                  }).map((label) => {
                     const isOpen = expandedSections[label];
                     return (
                       <div key={label} className={`dn-accordion-item ${isOpen ? "open" : ""}`}>

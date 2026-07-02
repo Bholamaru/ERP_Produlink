@@ -9,6 +9,10 @@ import TableIcon from '@mui/icons-material/TableChart';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 
 const Stores = () => {
+  const rawPermissions = JSON.parse(localStorage.getItem("permissions"));
+  const dashboardPerms = rawPermissions?.Dashboard || [];
+  const showAll = !rawPermissions || !rawPermissions.Dashboard;
+
   const [deptView, setDeptView] = useState('dept');
   const [valueView, setValueView] = useState('qty');
 
@@ -290,6 +294,7 @@ const Stores = () => {
       </Box>
 
       {/* Favorite Item Stock Section */}
+      {(showAll || dashboardPerms.includes("FAVORITE ITEM STOCK")) && (
       <Box className="bg-white rounded-[20px] border border-[#eef2f6] p-7 shadow-md transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 mb-8">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-2">
@@ -354,8 +359,10 @@ const Stores = () => {
           </Typography>
         </div>
       </Box>
+      )}
 
       {/* MIN/MAX Levels Section */}
+      {(showAll || dashboardPerms.includes("MIN/MAX LEVELS")) && (
       <Box className="bg-white rounded-[20px] border border-[#eef2f6] p-7 shadow-md transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 mb-8">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-2">
@@ -466,8 +473,10 @@ const Stores = () => {
           </div>
         </div>
       </Box>
+      )}
 
       {/* Inward Stock Dist Section */}
+      {(showAll || dashboardPerms.includes("INWARD STOCK DIST.")) && (
       <Box className="bg-white rounded-[20px] border border-[#eef2f6] p-7 shadow-md transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 mb-8">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-2">
@@ -575,8 +584,10 @@ const Stores = () => {
           </Box>
         </div>
       </Box>
+      )}
 
       {/* Outward Stock Dist Section */}
+      {(showAll || dashboardPerms.includes("OUTWARD STOCK DIST.")) && (
       <Box className="bg-white rounded-[20px] border border-[#eef2f6] p-7 shadow-md transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 mb-8">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-2">
@@ -684,8 +695,10 @@ const Stores = () => {
           </Box>
         </div>
       </Box>
+      )}
 
       {/* Material Issue Challan Section */}
+      {(showAll || dashboardPerms.includes("MATERIAL ISSUE CHALLAN")) && (
       <Box className="bg-white rounded-[20px] border border-[#eef2f6] p-7 shadow-md transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 mb-8">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-2">
@@ -819,8 +832,10 @@ const Stores = () => {
           </div>
         </div>
       </Box>
+      )}
 
       {/* Item Wise Stock Report Section */}
+      {(showAll || dashboardPerms.includes("ITEM WISE STOCK REPORT")) && (
       <Box className="bg-white rounded-[20px] border border-[#eef2f6] p-7 shadow-md transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 mb-8">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-2">
@@ -945,6 +960,7 @@ const Stores = () => {
           </table>
         </div>
       </Box>
+      )}
     </Box>
   );
 };

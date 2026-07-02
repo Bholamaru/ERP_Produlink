@@ -8,6 +8,10 @@ import {
 } from 'recharts';
 
 const Purchase = () => {
+  const rawPermissions = JSON.parse(localStorage.getItem("permissions"));
+  const dashboardPerms = rawPermissions?.Dashboard || [];
+  const showAll = !rawPermissions || !rawPermissions.Dashboard;
+
   const [fiscalYear, setFiscalYear] = useState('2026-2027');
   const [poFilters, setPoFilters] = useState({
     plant: 'sharp',
@@ -438,7 +442,8 @@ const Purchase = () => {
       <Box className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
         
         {/* Monthly Purchase Section */}
-        <Box className="bg-white rounded-[20px] border border-[#eef2f6] p-7 shadow-md transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5">
+        {(showAll || dashboardPerms.includes("Monthly purchase")) && (
+      <Box className="bg-white rounded-[20px] border border-[#eef2f6] p-7 shadow-md transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5">
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center gap-2">
               <div className="w-[4px] h-6 bg-[#2563eb] rounded-full" />
@@ -536,9 +541,11 @@ const Purchase = () => {
             </table>
           </div>
         </Box>
+      )}
 
         {/* Daily Purchase Section */}
-        <Box className="bg-white rounded-[20px] border border-[#eef2f6] p-7 shadow-md transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5">
+        {(showAll || dashboardPerms.includes("Daily purchase")) && (
+      <Box className="bg-white rounded-[20px] border border-[#eef2f6] p-7 shadow-md transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5">
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center gap-2">
               <div className="w-[4px] h-6 bg-[#2563eb] rounded-full" />
@@ -632,9 +639,11 @@ const Purchase = () => {
             </div>
           </div>
         </Box>
+      )}
       </Box>
 
       {/* Purchase Orders Section */}
+      {(showAll || dashboardPerms.includes("Purchase orders")) && (
       <Box className="bg-white rounded-[20px] border border-[#eef2f6] p-7 shadow-md transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 mb-8 overflow-hidden">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-2">
@@ -785,8 +794,10 @@ const Purchase = () => {
           </Box>
         </div>
       </Box>
+      )}
 
       {/* Top 5 Suppliers / Top 5 Items Section */}
+      {(showAll || dashboardPerms.includes("Top 5 suppliers/top 5 items")) && (
       <Box className="bg-white rounded-[20px] border border-[#eef2f6] p-7 shadow-md transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 mb-8 overflow-hidden">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-2">
@@ -906,8 +917,10 @@ const Purchase = () => {
           </Typography>
         </div>
       </Box>
+      )}
 
       {/* GRN Value Summary Section */}
+      {(showAll || dashboardPerms.includes("GRN Value Summary")) && (
       <Box className="bg-white rounded-[20px] border border-[#eef2f6] p-7 shadow-md transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 mb-8">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-2">
@@ -1036,7 +1049,9 @@ const Purchase = () => {
           </Box>
         </div>
       </Box>
+      )}
       {/* GRN Value Details Section */}
+      {(showAll || dashboardPerms.includes("GRN Value Details")) && (
       <Box className="bg-white rounded-[20px] border border-[#eef2f6] p-7 shadow-md transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 mb-8">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-2">
@@ -1151,7 +1166,9 @@ const Purchase = () => {
           </div>
         </div>
       </Box>
+      )}
       {/* Supplier Rating Summary Section */}
+      {(showAll || dashboardPerms.includes("Supplier Rating Summary")) && (
       <Box className="bg-white rounded-[20px] border border-[#eef2f6] p-7 shadow-md transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 mb-8">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-2">
@@ -1238,6 +1255,7 @@ const Purchase = () => {
           </div>
         </div>
       </Box>
+      )}
     </Box>
   );
 };
