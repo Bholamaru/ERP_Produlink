@@ -269,6 +269,48 @@ const UserPermit = () => {
     setPermissions(initialPermissions);
   };
 
+  useEffect(() => {
+    if (selectedUser && users.length > 0) {
+      const user = users.find((u) => String(u.id) === String(selectedUser));
+      if (user) {
+        let userPerms = user.permissions;
+        if (typeof userPerms === "string") {
+          try {
+            userPerms = JSON.parse(userPerms);
+          } catch (e) {
+            console.error("Error parsing user permissions string:", e);
+            userPerms = null;
+          }
+        }
+        if (!userPerms && user.modules) {
+          userPerms = user.modules;
+          if (typeof userPerms === "string") {
+            try {
+              userPerms = JSON.parse(userPerms);
+            } catch (e) {
+              console.error("Error parsing user modules string:", e);
+              userPerms = null;
+            }
+          }
+        }
+
+        if (userPerms) {
+          const loadedPermissions = {};
+          Object.keys(availablePermissions).forEach((module) => {
+            loadedPermissions[module] = {};
+            const userModulePerms = userPerms[module] || [];
+            availablePermissions[module].forEach((permission) => {
+              loadedPermissions[module][permission] = userModulePerms.includes(permission);
+            });
+          });
+          setPermissions(loadedPermissions);
+          return;
+        }
+      }
+    }
+    initializePermissions();
+  }, [selectedUser, users]);
+
   const handleSelectAll = () => {
     const updatedPermissions = { ...permissions };
     Object.keys(availablePermissions).forEach((module) => {
@@ -326,12 +368,35 @@ const UserPermit = () => {
       console.log("Full response:", response);
       if (response.message === "Permissions assigned successfully") {
         toast.success("Permissions assigned successfully");
+        setUsers(prevUsers => prevUsers.map(u => {
+          if (String(u.id) === String(selectedUser)) {
+            return {
+              ...u,
+              permissions: modulesToSubmit
+            };
+          }
+          return u;
+        }));
       } else {
         toast.info("Unexpected response format");
       }
     } catch (error) {
       console.error("Error assigning permissions:", error);
-      toast.error("Error assigning permissions");
+      const data = error.response?.data;
+      let errMsg = "Error assigning permissions";
+      if (data) {
+        if (data.message) {
+          errMsg = data.message;
+          if (data.errors && data.errors.length > 0) {
+            errMsg += ": " + data.errors.join(", ");
+          }
+        } else if (data.error) {
+          errMsg = data.error;
+        }
+      } else if (error.message) {
+        errMsg = error.message;
+      }
+      toast.error(errMsg);
     }
   };
 

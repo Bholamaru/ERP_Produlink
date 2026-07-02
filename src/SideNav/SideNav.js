@@ -18,79 +18,9 @@ import { MdSettingsSuggest } from "react-icons/md";
 const SideNav = ({ sideNavOpen, toggleSideNav }) => {
   const [openDropdowns, setOpenDropdowns] = useState({})
 
-  // Load permissions and back-fill Planning if it was added after the user last logged in
+  // Load permissions from localStorage
   const rawPermissions = JSON.parse(localStorage.getItem("permissions"))
   let permissions = rawPermissions
-  if (permissions && !permissions.Planning) {
-    permissions = {
-      ...permissions,
-      Planning: [
-        "Planning",
-        "Manufacturing Order",
-        "Production Schedule",
-        "Min Max Planning",
-        "Daily Dispatch Plan",
-        "Business Plan",
-        "Upcoming Dispatch List",
-        "Capacity Planning",
-        "Costing",
-        "Vendor Schedule",
-      ],
-      ProductionV2: [
-        "Production V2",
-        "Work Order Entry V2",
-        "Work Order Report V2",
-        "Contractor Work Order",
-        "Work Order Status Entry",
-        "Punching And Laser Schedule",
-        "Punching Program",
-        "Power Press",
-      ],
-    }
-    localStorage.setItem("permissions", JSON.stringify(permissions))
-  }
-
-  if (permissions && (!permissions.Accounts || permissions.Accounts.length < 5)) {
-    permissions = {
-      ...permissions,
-      Accounts: ["Accounts", "Bill Passing", "Purchase Bill", "Jobwork Bill", "Direct Bill", "GL Master", "GST Report", "Purchase Register"],
-    }
-    localStorage.setItem("permissions", JSON.stringify(permissions))
-  }
-
-  if (permissions && (!permissions.Maintenance || permissions.Maintenance.length < 10)) {
-    permissions = {
-      ...permissions,
-      Maintenance: ["Maintenance", "Asset List", "Item Asset Master", "Machine Breakdown", "Breakdown List", "Breakdown Authorisation", "Breakdown Report", "Breakdown Slip", "Machine Repair", "Repair Entry", "Repair List", "Machine Preventive", "Machine Preventive Entry", "Machine Preventive Report", "Machine Preventive Schedule", "Machine Preventive SetUp", "Tool Management"],
-    }
-    localStorage.setItem("permissions", JSON.stringify(permissions))
-  }
-
-  if (permissions && permissions.Sales && !permissions.Sales.includes("New Proforma Invoice")) {
-    permissions = {
-      ...permissions,
-      Sales: [...permissions.Sales, "New Proforma Invoice"],
-    }
-    localStorage.setItem("permissions", JSON.stringify(permissions))
-  }
-
-  // Back-fill "JobWork Inward Challan" for users who logged in before this permission was added
-  if (permissions && permissions.Store && !permissions.Store.includes("JobWork Inward Challan")) {
-    permissions = {
-      ...permissions,
-      Store: [...permissions.Store, "JobWork Inward Challan"],
-    }
-    localStorage.setItem("permissions", JSON.stringify(permissions))
-  }
-
-  // Back-fill "Proforma Invoice List" for users
-  if (permissions && permissions.Sales && !permissions.Sales.includes("Proforma Invoice List")) {
-    permissions = {
-      ...permissions,
-      Sales: [...permissions.Sales, "Proforma Invoice List"],
-    }
-    localStorage.setItem("permissions", JSON.stringify(permissions))
-  }
 
   const handleDropdownToggle = (dropdown) => {
     setOpenDropdowns((prev) => ({
@@ -116,7 +46,7 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
 
         <ul className="nav-list">
           {/* Show ERP Setting only if user has permission */}
-          {permissions && permissions.VendorsUserManagement?.length > 0 && (
+          {permissions && permissions.VendorsUserManagement?.filter(x => x !== "VendorsUserManagement").length > 0 && (
             <li className="vdnrbbnns" style={{ marginLeft: "15px" }}>
               <Link to="/mainpage">
                 <FaHome />
@@ -126,7 +56,7 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
           )}
 
           {/* //////////////////////////////    ERPSetting       /////////////////////////// */}
-          {permissions && permissions.ERPSetting?.length > 0 && (
+          {permissions && permissions.ERPSetting?.filter(x => x !== "ERPSetting" && x !== "User Configuration" && x !== "ERP Configuration").length > 0 && (
             <li className="dropdown-container">
               <div className="dropdown-toggle" onClick={() => handleDropdownToggle("erp")}>
                 <MdOutlineSettings />
@@ -292,7 +222,7 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
           )}
 
           {/* //////////////////////////////     All-Masters       /////////////////////////// */}
-          {permissions?.All_Masters?.length > 0 && (
+          {permissions?.All_Masters?.filter(x => x !== "Masters").length > 0 && (
             <li className="dropdown-container">
               <div className="dropdown-toggle" onClick={() => handleDropdownToggle("masters")}>
                 <GiMasterOfArms />
@@ -483,7 +413,7 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
           )}
 
           {/* //////////////////////////////     Purchase       /////////////////////////// */}
-          {permissions?.Purchase?.length > 0 && (
+          {permissions?.Purchase?.filter(x => x !== "Purchase").length > 0 && (
             <li className="dropdown-container">
               <div className="dropdown-toggle" onClick={() => handleDropdownToggle("purchase")}>
                 <BiPurchaseTag />
@@ -612,7 +542,7 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
           )}
 
           {/* //////////////////////////////     Accounts       /////////////////////////// */}
-          {permissions?.Accounts?.length > 0 && (
+          {permissions?.Accounts?.filter(x => x !== "Accounts").length > 0 && (
             <li className="dropdown-container">
               <div className="dropdown-toggle" onClick={() => handleDropdownToggle("accounts")}>
                 <MdOutlineAccountBalanceWallet />
@@ -620,118 +550,162 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
                 <span className={`dropdown-arrow ${isDropdownOpen("accounts") ? "open" : ""}`}>  </span>
               </div>
               <div className={`custom-dropdown-menu ${isDropdownOpen("accounts") ? "show" : ""}`}>
-                <Link className="dropdown-item" to="/gl-master">
-                  GL Master
-                </Link>
+                {permissions.Accounts.includes("GL Master") && (
+                  <Link className="dropdown-item" to="/gl-master">
+                    GL Master
+                  </Link>
+                )}
 
-                <div className="nested-dropdown">
-                  <div
-                    className="dropdown-item nested-toggle"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      handleDropdownToggle("billPassing")
-                    }}
-                  >
-                    Bill Passing
-                    <span className={`arrow ${isDropdownOpen("billPassing") ? "open" : ""}`}> ▶</span>
+                {permissions.Accounts.includes("Bill Passing") && (
+                  <div className="nested-dropdown">
+                    <div
+                      className="dropdown-item nested-toggle"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleDropdownToggle("billPassing")
+                      }}
+                    >
+                      Bill Passing
+                      <span className={`arrow ${isDropdownOpen("billPassing") ? "open" : ""}`}> ▶</span>
+                    </div>
+                    <div className={`nested-dropdown-menu ${isDropdownOpen("billPassing") ? "show" : ""}`}>
+                      {permissions.Accounts.includes("Purchase Bill") && (
+                        <Link className="dropdown-item" to="/purchase-bill">
+                          Purchase Bill
+                        </Link>
+                      )}
+                      {permissions.Accounts.includes("Jobwork Bill") && (
+                        <Link className="dropdown-item" to="/jobwork-bill">
+                          Jobwork Bill
+                        </Link>
+                      )}
+                      {permissions.Accounts.includes("Direct Bill") && (
+                        <Link className="dropdown-item" to="/direct-bill">
+                          Direct Bill
+                        </Link>
+                      )}
+                    </div>
                   </div>
-                  <div className={`nested-dropdown-menu ${isDropdownOpen("billPassing") ? "show" : ""}`}>
-                    <Link className="dropdown-item" to="/purchase-bill">
-                      Purchase Bill
-                    </Link>
-                    <Link className="dropdown-item" to="/jobwork-bill">
-                      Jobwork Bill
-                    </Link>
-                    <Link className="dropdown-item" to="/direct-bill">
-                      Direct Bill
-                    </Link>
+                )}
+
+                {permissions.Accounts.includes("Purchase Register") && (
+                  <Link className="dropdown-item" to="/purchase-register">
+                    Purchase Register
+                  </Link>
+                )}
+
+                {permissions.Accounts.includes("TDS Register") && (
+                  <Link className="dropdown-item" to="/tds-register">
+                    TDS Register
+                  </Link>
+                )}
+
+                {permissions.Accounts.includes("TCS Register") && (
+                  <Link className="dropdown-item" to="/tcs-register">
+                    TCS Register
+                  </Link>
+                )}
+
+                {permissions.Accounts.includes("AC Register") && (
+                  <div className="nested-dropdown">
+                    <div
+                      className="dropdown-item nested-toggle"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleDropdownToggle("acRegister")
+                      }}
+                    >
+                      AC Register
+                      <span className={`arrow ${isDropdownOpen("acRegister") ? "open" : ""}`}> ▶</span>
+                    </div>
+                    <div className={`nested-dropdown-menu ${isDropdownOpen("acRegister") ? "show" : ""}`}>
+                      {permissions.Accounts.includes("Tax Invoice List") && (
+                        <Link className="dropdown-item" to="/tax-invoice-list">
+                          Tax Invoice List
+                        </Link>
+                      )}
+                      {permissions.Accounts.includes("Jobwork Invoice List") && (
+                        <Link className="dropdown-item" to="/jobwork-invoice-list">
+                          Jobwork Invoice List
+                        </Link>
+                      )}
+                      {permissions.Accounts.includes("Debit Note List") && (
+                        <Link className="dropdown-item" to="/debit-note-list">
+                          Debit Note List
+                        </Link>
+                      )}
+                      {permissions.Accounts.includes("Credit Note List") && (
+                        <Link className="dropdown-item" to="/credit-note-list">
+                          Credit Note List
+                        </Link>
+                      )}
+                      {permissions.Accounts.includes("GST Sales Return List") && (
+                        <Link className="dropdown-item" to="/gst-sales-return-list">
+                          GST Sales Return List
+                        </Link>
+                      )}
+                      {permissions.Accounts.includes("Purchase Register") && (
+                        <Link className="dropdown-item" to="/ac-purchase-register">
+                          Purchase Register
+                        </Link>
+                      )}
+                    </div>
                   </div>
-                </div>
+                )}
 
-                <Link className="dropdown-item" to="/purchase-register">
-                  Purchase Register
-                </Link>
+                {permissions.Accounts.includes("GL Ledger") && (
+                  <Link className="dropdown-item" to="/gl-ledger">
+                    GL Ledger
+                  </Link>
+                )}
 
-                <Link className="dropdown-item" to="/tds-register">
-                  TDS Register
-                </Link>
-
-                <Link className="dropdown-item" to="/tcs-register">
-                  TCS Register
-                </Link>
-
-                <div className="nested-dropdown">
-                  <div
-                    className="dropdown-item nested-toggle"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      handleDropdownToggle("acRegister")
-                    }}
-                  >
-                    AC Register
-                    <span className={`arrow ${isDropdownOpen("acRegister") ? "open" : ""}`}> ▶</span>
+                {permissions.Accounts.includes("GST Report") && (
+                  <div className="nested-dropdown">
+                    <div
+                      className="dropdown-item nested-toggle"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleDropdownToggle("gstReport")
+                      }}
+                    >
+                      GST Report
+                      <span className={`arrow ${isDropdownOpen("gstReport") ? "open" : ""}`}> ▶</span>
+                    </div>
+                    <div className={`nested-dropdown-menu ${isDropdownOpen("gstReport") ? "show" : ""}`}>
+                      {permissions.Accounts.includes("GSTR 1") && (
+                        <Link className="dropdown-item" to="/gst-report">
+                          GSTR 1
+                        </Link>
+                      )}
+                      {permissions.Accounts.includes("HSN/SAC Summary") && (
+                        <Link className="dropdown-item" to="/hsn-sac-summary">
+                          HSN/SAC Summary
+                        </Link>
+                      )}
+                      {permissions.Accounts.includes("GSTR 2") && (
+                        <Link className="dropdown-item" to="/gstr-2">
+                          GSTR 2
+                        </Link>
+                      )}
+                      {permissions.Accounts.includes("GSTR 3B") && (
+                        <Link className="dropdown-item" to="/gstr-3b">
+                          GSTR 3B
+                        </Link>
+                      )}
+                      {permissions.Accounts.includes("GST ITC_04") && (
+                        <Link className="dropdown-item" to="/gst-itc-04">
+                          GST ITC_04
+                        </Link>
+                      )}
+                    </div>
                   </div>
-                  <div className={`nested-dropdown-menu ${isDropdownOpen("acRegister") ? "show" : ""}`}>
-                    <Link className="dropdown-item" to="/tax-invoice-list">
-                      Tax Invoice List
-                    </Link>
-                    <Link className="dropdown-item" to="/jobwork-invoice-list">
-                      Jobwork Invoice List
-                    </Link>
-                    <Link className="dropdown-item" to="/debit-note-list">
-                      Debit Note List
-                    </Link>
-                    <Link className="dropdown-item" to="/credit-note-list">
-                      Credit Note List
-                    </Link>
-                    <Link className="dropdown-item" to="/gst-sales-return-list">
-                      GST Sales Return List
-                    </Link>
-                    <Link className="dropdown-item" to="/ac-purchase-register">
-                      Purchase Register
-                    </Link>
-                  </div>
-                </div>
-
-                <Link className="dropdown-item" to="/gl-ledger">
-                  GL Ledger
-                </Link>
-
-                <div className="nested-dropdown">
-                  <div
-                    className="dropdown-item nested-toggle"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      handleDropdownToggle("gstReport")
-                    }}
-                  >
-                    GST Report
-                    <span className={`arrow ${isDropdownOpen("gstReport") ? "open" : ""}`}> ▶</span>
-                  </div>
-                  <div className={`nested-dropdown-menu ${isDropdownOpen("gstReport") ? "show" : ""}`}>
-                    <Link className="dropdown-item" to="/gst-report">
-                      GSTR 1
-                    </Link>
-                    <Link className="dropdown-item" to="/hsn-sac-summary">
-                      HSN/SAC Summary
-                    </Link>
-                    <Link className="dropdown-item" to="/gstr-2">
-                      GSTR 2
-                    </Link>
-                    <Link className="dropdown-item" to="/gstr-3b">
-                      GSTR 3B
-                    </Link>
-                    <Link className="dropdown-item" to="/gst-itc-04">
-                      GST ITC_04
-                    </Link>
-                  </div>
-                </div>
+                )}
               </div>
             </li>
           )}
 
           {/* //////////////////////////////     Store   /////////////////////////// */}
-          {permissions?.Store?.length > 0 && (
+          {permissions?.Store?.filter(x => x !== "Store").length > 0 && (
             <li className="dropdown-container">
               <div className="dropdown-toggle" onClick={() => handleDropdownToggle("store")}>
                 <FaStore />
@@ -993,7 +967,7 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
           )}
 
           {/* //////////////////////////////     Maintenance       /////////////////////////// */}
-          {permissions?.Maintenance?.length > 0 && (
+          {permissions?.Maintenance?.filter(x => x !== "Maintenance").length > 0 && (
             <li className="dropdown-container">
               <div className="dropdown-toggle" onClick={() => handleDropdownToggle("maintenance")}>
                 <MdSettingsSuggest />
@@ -1001,98 +975,130 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
                 <span className={`dropdown-arrow ${isDropdownOpen("maintenance") ? "open" : ""}`}>  </span>
               </div>
               <div className={`custom-dropdown-menu ${isDropdownOpen("maintenance") ? "show" : ""}`}>
-                <Link className="dropdown-item" to="/asset-list">
-                  Asset List
-                </Link>
+                {permissions.Maintenance.includes("Asset List") && (
+                  <Link className="dropdown-item" to="/asset-list">
+                    Asset List
+                  </Link>
+                )}
 
-                <Link className="dropdown-item" to="/item-asset-master">
-                  Item Asset Master
-                </Link>
+                {permissions.Maintenance.includes("Item Asset Master") && (
+                  <Link className="dropdown-item" to="/item-asset-master">
+                    Item Asset Master
+                  </Link>
+                )}
 
-                <div className="nested-dropdown">
-                  <div
-                    className="dropdown-item nested-toggle"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      handleDropdownToggle("machineBreakdown")
-                    }}
-                  >
-                    Machine Breakdown
-                    <span className={`arrow ${isDropdownOpen("machineBreakdown") ? "open" : ""}`}> ▶</span>
+                {permissions.Maintenance.includes("Machine Breakdown") && (
+                  <div className="nested-dropdown">
+                    <div
+                      className="dropdown-item nested-toggle"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleDropdownToggle("machineBreakdown")
+                      }}
+                    >
+                      Machine Breakdown
+                      <span className={`arrow ${isDropdownOpen("machineBreakdown") ? "open" : ""}`}> ▶</span>
+                    </div>
+                    <div className={`nested-dropdown-menu ${isDropdownOpen("machineBreakdown") ? "show" : ""}`}>
+                      {permissions.Maintenance.includes("Breakdown List") && (
+                        <Link className="dropdown-item" to="/breakdown-list">
+                          Breakdown List
+                        </Link>
+                      )}
+                      {permissions.Maintenance.includes("Breakdown Authorisation") && (
+                        <Link className="dropdown-item" to="/breakdown-authorisation">
+                          Breakdown Authorisation
+                        </Link>
+                      )}
+                      {permissions.Maintenance.includes("Breakdown Report") && (
+                        <Link className="dropdown-item" to="/breakdown-report">
+                          Breakdown Report
+                        </Link>
+                      )}
+                      {permissions.Maintenance.includes("Breakdown Slip") && (
+                        <Link className="dropdown-item" to="/breakdown-slip">
+                          Breakdown Slip
+                        </Link>
+                      )}
+                    </div>
                   </div>
-                  <div className={`nested-dropdown-menu ${isDropdownOpen("machineBreakdown") ? "show" : ""}`}>
-                    <Link className="dropdown-item" to="/breakdown-list">
-                      Breakdown List
-                    </Link>
-                    <Link className="dropdown-item" to="/breakdown-authorisation">
-                      Breakdown Authorisation
-                    </Link>
-                    <Link className="dropdown-item" to="/breakdown-report">
-                      Breakdown Report
-                    </Link>
-                    <Link className="dropdown-item" to="/breakdown-slip">
-                      Breakdown Slip
-                    </Link>
-                  </div>
-                </div>
+                )}
 
-                <div className="nested-dropdown">
-                  <div
-                    className="dropdown-item nested-toggle"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      handleDropdownToggle("machineRepair")
-                    }}
-                  >
-                    Machine Repair
-                    <span className={`arrow ${isDropdownOpen("machineRepair") ? "open" : ""}`}> ▶</span>
+                {permissions.Maintenance.includes("Machine Repair") && (
+                  <div className="nested-dropdown">
+                    <div
+                      className="dropdown-item nested-toggle"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleDropdownToggle("machineRepair")
+                      }}
+                    >
+                      Machine Repair
+                      <span className={`arrow ${isDropdownOpen("machineRepair") ? "open" : ""}`}> ▶</span>
+                    </div>
+                    <div className={`nested-dropdown-menu ${isDropdownOpen("machineRepair") ? "show" : ""}`}>
+                      {permissions.Maintenance.includes("Repair Entry") && (
+                        <Link className="dropdown-item" to="/repair-entry">
+                          Repair Entry
+                        </Link>
+                      )}
+                      {permissions.Maintenance.includes("Repair List") && (
+                        <Link className="dropdown-item" to="/repair-list">
+                          Repair List
+                        </Link>
+                      )}
+                    </div>
                   </div>
-                  <div className={`nested-dropdown-menu ${isDropdownOpen("machineRepair") ? "show" : ""}`}>
-                    <Link className="dropdown-item" to="/repair-entry">
-                      Repair Entry
-                    </Link>
-                    <Link className="dropdown-item" to="/repair-list">
-                      Repair List
-                    </Link>
-                  </div>
-                </div>
+                )}
 
-                <div className="nested-dropdown">
-                  <div
-                    className="dropdown-item nested-toggle"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      handleDropdownToggle("machinePreventive")
-                    }}
-                  >
-                    Machine Preventive
-                    <span className={`arrow ${isDropdownOpen("machinePreventive") ? "open" : ""}`}> ▶</span>
+                {permissions.Maintenance.includes("Machine Preventive") && (
+                  <div className="nested-dropdown">
+                    <div
+                      className="dropdown-item nested-toggle"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleDropdownToggle("machinePreventive")
+                      }}
+                    >
+                      Machine Preventive
+                      <span className={`arrow ${isDropdownOpen("machinePreventive") ? "open" : ""}`}> ▶</span>
+                    </div>
+                    <div className={`nested-dropdown-menu ${isDropdownOpen("machinePreventive") ? "show" : ""}`}>
+                      {permissions.Maintenance.includes("Machine Preventive Entry") && (
+                        <Link className="dropdown-item" to="/machine-preventive-entry">
+                          Machine Preventive Entry
+                        </Link>
+                      )}
+                      {permissions.Maintenance.includes("Machine Preventive Report") && (
+                        <Link className="dropdown-item" to="/machine-preventive-report">
+                          Machine Preventive Report
+                        </Link>
+                      )}
+                      {permissions.Maintenance.includes("Machine Preventive Schedule") && (
+                        <Link className="dropdown-item" to="/machine-preventive-schedule">
+                          Machine Preventive Schedule
+                        </Link>
+                      )}
+                      {permissions.Maintenance.includes("Machine Preventive SetUp") && (
+                        <Link className="dropdown-item" to="/machine-preventive-setup">
+                          Machine Preventive SetUp
+                        </Link>
+                      )}
+                    </div>
                   </div>
-                  <div className={`nested-dropdown-menu ${isDropdownOpen("machinePreventive") ? "show" : ""}`}>
-                    <Link className="dropdown-item" to="/machine-preventive-entry">
-                      Machine Preventive Entry
-                    </Link>
-                    <Link className="dropdown-item" to="/machine-preventive-report">
-                      Machine Preventive Report
-                    </Link>
-                    <Link className="dropdown-item" to="/machine-preventive-schedule">
-                      Machine Preventive Schedule
-                    </Link>
-                    <Link className="dropdown-item" to="/machine-preventive-setup">
-                      Machine Preventive SetUp
-                    </Link>
-                  </div>
-                </div>
+                )}
 
-                <Link className="dropdown-item" to="/tool-management">
-                  Tool Management
-                </Link>
+                {permissions.Maintenance.includes("Tool Management") && (
+                  <Link className="dropdown-item" to="/tool-management">
+                    Tool Management
+                  </Link>
+                )}
               </div>
             </li>
           )}
 
           {/* //////////////////////////////     Production   /////////////////////////// */}
-          {permissions?.Production?.length > 0 && (
+          {permissions?.Production?.filter(x => x !== "Production").length > 0 && (
             <li className="dropdown-container">
               <div className="dropdown-toggle" onClick={() => handleDropdownToggle("production")}>
                 <MdOutlineProductionQuantityLimits />
@@ -1280,62 +1286,82 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
           )}
 
           {/* //////////////////////////////     Production V2   /////////////////////////// */}
-          <li className="dropdown-container">
-            <div className="dropdown-toggle" onClick={() => handleDropdownToggle("productionV2")}>
-              <MdOutlineProductionQuantityLimits />
-              <span>Production V2</span>
-              <span className={`dropdown-arrow ${isDropdownOpen("productionV2") ? "open" : ""}`}>  </span>
-            </div>
-            <div className={`custom-dropdown-menu ${isDropdownOpen("productionV2") ? "show" : ""}`}>
-              <Link className="dropdown-item" to="/WorkOrderEntryV2">
-                Work Order Entry V2
-              </Link>
-
-              <Link className="dropdown-item" to="/WorkOrderReportV2">
-                Work Order Report V2
-              </Link>
-
-              <div className="nested-dropdown">
-                <div
-                  className="dropdown-item nested-toggle"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    handleDropdownToggle("contractorWorkOrder")
-                  }}
-                >
-                  Contractor Work Order
-                  <span className={`arrow ${isDropdownOpen("contractorWorkOrder") ? "open" : ""}`}> ▶</span>
-                </div>
-                <div className={`nested-dropdown-menu ${isDropdownOpen("contractorWorkOrder") ? "show" : ""}`}>
-                  <Link className="dropdown-item" to="/ContractorWorkOrder">
-                    Contractor Work Order Entry
-                  </Link>
-                  <Link className="dropdown-item" to="/ContractorWorkOrderList">
-                    Contractor Work Order List
-                  </Link>
-                </div>
+          {permissions?.ProductionV2?.filter(x => x !== "Production V2").length > 0 && (
+            <li className="dropdown-container">
+              <div className="dropdown-toggle" onClick={() => handleDropdownToggle("productionV2")}>
+                <MdOutlineProductionQuantityLimits />
+                <span>Production V2</span>
+                <span className={`dropdown-arrow ${isDropdownOpen("productionV2") ? "open" : ""}`}>  </span>
               </div>
+              <div className={`custom-dropdown-menu ${isDropdownOpen("productionV2") ? "show" : ""}`}>
+                {permissions.ProductionV2.includes("Work Order Entry V2") && (
+                  <Link className="dropdown-item" to="/WorkOrderEntryV2">
+                    Work Order Entry V2
+                  </Link>
+                )}
 
-              <Link className="dropdown-item" to="/WorkOrderStatusEntry">
-                Work Order Status Entry
-              </Link>
+                {permissions.ProductionV2.includes("Work Order Report V2") && (
+                  <Link className="dropdown-item" to="/WorkOrderReportV2">
+                    Work Order Report V2
+                  </Link>
+                )}
 
-              <Link className="dropdown-item" to="/PunchingLaserSchedule">
-                Punching And Laser Schedule
-              </Link>
+                {permissions.ProductionV2.includes("Contractor Work Order") && (
+                  <div className="nested-dropdown">
+                    <div
+                      className="dropdown-item nested-toggle"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleDropdownToggle("contractorWorkOrder")
+                      }}
+                    >
+                      Contractor Work Order
+                      <span className={`arrow ${isDropdownOpen("contractorWorkOrder") ? "open" : ""}`}> ▶</span>
+                    </div>
+                    <div className={`nested-dropdown-menu ${isDropdownOpen("contractorWorkOrder") ? "show" : ""}`}>
+                      {permissions.ProductionV2.includes("Contractor Work Order Entry") && (
+                        <Link className="dropdown-item" to="/ContractorWorkOrder">
+                          Contractor Work Order Entry
+                        </Link>
+                      )}
+                      {permissions.ProductionV2.includes("Contractor Work Order List") && (
+                        <Link className="dropdown-item" to="/ContractorWorkOrderList">
+                          Contractor Work Order List
+                        </Link>
+                      )}
+                    </div>
+                  </div>
+                )}
 
-              <Link className="dropdown-item" to="/PunchingProgram">
-                Punching Program
-              </Link>
+                {permissions.ProductionV2.includes("Work Order Status Entry") && (
+                  <Link className="dropdown-item" to="/WorkOrderStatusEntry">
+                    Work Order Status Entry
+                  </Link>
+                )}
 
-              <Link className="dropdown-item" to="/PowerPress">
-                Power Press
-              </Link>
-            </div>
-          </li>
+                {permissions.ProductionV2.includes("Punching And Laser Schedule") && (
+                  <Link className="dropdown-item" to="/PunchingLaserSchedule">
+                    Punching And Laser Schedule
+                  </Link>
+                )}
+
+                {permissions.ProductionV2.includes("Punching Program") && (
+                  <Link className="dropdown-item" to="/PunchingProgram">
+                    Punching Program
+                  </Link>
+                )}
+
+                {permissions.ProductionV2.includes("Power Press") && (
+                  <Link className="dropdown-item" to="/PowerPress">
+                    Power Press
+                  </Link>
+                )}
+              </div>
+            </li>
+          )}
 
           {/* //////////////////////////////     Quality       /////////////////////////// */}
-          {permissions?.Quality?.length > 0 && (
+          {permissions?.Quality?.filter(x => x !== "Quality").length > 0 && (
             <li className="dropdown-container">
               <div className="dropdown-toggle" onClick={() => handleDropdownToggle("quality")}>
                 <MdEqualizer />
@@ -1573,7 +1599,7 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
           )}
 
           {/* //////////////////////////////     Planning       /////////////////////////// */}
-          {permissions?.Planning?.length > 0 && (
+          {permissions?.Planning?.filter(x => x !== "Planning").length > 0 && (
             <li className="dropdown-container">
               <div className="dropdown-toggle" onClick={() => handleDropdownToggle("planning")}>
                 <MdOutlineProductionQuantityLimits />
@@ -1662,7 +1688,7 @@ const SideNav = ({ sideNavOpen, toggleSideNav }) => {
           )}
 
           {/* //////////////////////////////     Sales       /////////////////////////// */}
-          {permissions?.Sales?.length > 0 && (
+          {permissions?.Sales?.filter(x => x !== "Sales").length > 0 && (
             <li className="dropdown-container">
               <div className="dropdown-toggle" onClick={() => handleDropdownToggle("sales")}>
                 <SiSalesforce />
