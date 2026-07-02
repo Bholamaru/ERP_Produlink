@@ -7,6 +7,10 @@ import SearchIcon from '@mui/icons-material/Search';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 
 const Subcon = () => {
+  const rawPermissions = JSON.parse(localStorage.getItem("permissions"));
+  const dashboardPerms = rawPermissions?.Dashboard || [];
+  const showAll = !rawPermissions || !rawPermissions.Dashboard;
+
   return (
     <Box className="p-8 max-w-[1600px] mx-auto bg-[#f8fafc]">
       {/* Header Section */}
@@ -49,6 +53,7 @@ const Subcon = () => {
       </Box>
       
       {/* 57F4 CHALLAN AGEING SECTION */}
+      {(showAll || dashboardPerms.includes("57F4 CHALLAN AGEING")) && (
       <Box className="bg-white rounded-[20px] border border-[#eef2f6] shadow-md overflow-hidden mb-8">
         {/* Section Header */}
         <Box className="p-7 border-b border-[#f1f5f9] flex items-center justify-between bg-white">
@@ -213,6 +218,7 @@ const Subcon = () => {
           </Box>
         </Box>
       </Box>
+      )}
     </Box>
   );
 };

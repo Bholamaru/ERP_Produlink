@@ -7,6 +7,10 @@ import TableIcon from '@mui/icons-material/TableChart';
 import { RadialBarChart, RadialBar, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, PieChart, Pie, Cell, AreaChart, Area, ReferenceLine, ComposedChart, Line } from 'recharts';
 
 const PPC = () => {
+  const rawPermissions = JSON.parse(localStorage.getItem("permissions"));
+  const dashboardPerms = rawPermissions?.Dashboard || [];
+  const showAll = !rawPermissions || !rawPermissions.Dashboard;
+
   const [unitType, setUnitType] = useState('mt');
   const [groupType, setGroupType] = useState('machine');
   const [deliveryType, setDeliveryType] = useState('schedule');
@@ -134,6 +138,7 @@ const PPC = () => {
       </Box>
 
       {/* Schedule Quantity Month Wise Section */}
+      {(showAll || dashboardPerms.includes("Schedule Quantity Month Wise")) && (
       <Box className="bg-white rounded-[20px] border border-[#eef2f6] p-7 shadow-md transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 mb-8">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-2">
@@ -289,8 +294,10 @@ const PPC = () => {
           </div>
         </Box>
       </Box>
+      )}
 
       {/* Monthly Production Chart Section */}
+      {(showAll || dashboardPerms.includes("Monthly Production Chart")) && (
       <Box className="bg-white rounded-[20px] border border-[#eef2f6] p-7 shadow-md transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 mb-8">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-2">
@@ -450,8 +457,10 @@ const PPC = () => {
           </Box>
         </div>
       </Box>
+      )}
 
       {/* Delivery Performance Section */}
+      {(showAll || dashboardPerms.includes("delivery Performance")) && (
       <Box className="bg-white rounded-[20px] border border-[#eef2f6] p-7 shadow-md transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 mb-8">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
@@ -615,8 +624,10 @@ const PPC = () => {
           </table>
         </div>
       </Box>
+      )}
 
       {/* Monthly Schedules vs Dispatch Section */}
+      {(showAll || dashboardPerms.includes("Monthly Schedules vs Dispatch")) && (
       <Box className="bg-white rounded-[20px] border border-[#eef2f6] p-7 shadow-md transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 mb-8">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-2">
@@ -777,8 +788,10 @@ const PPC = () => {
           ))}
         </div>
       </Box>
+      )}
 
       {/* Monthly Sales Order vs Dispatch Section */}
+      {(showAll || dashboardPerms.includes("Monthly Sales Order vs Dispatch")) && (
       <Box className="bg-white rounded-[20px] border border-[#eef2f6] p-7 shadow-md transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 mb-8">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-2">
@@ -920,8 +933,10 @@ const PPC = () => {
           ))}
         </div>
       </Box>
+      )}
 
       {/* Daily Production Section */}
+      {(showAll || dashboardPerms.includes("Daily Production")) && (
       <Box className="bg-white rounded-[20px] border border-[#eef2f6] p-7 shadow-md transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 mb-8">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-2">
@@ -1004,8 +1019,10 @@ const PPC = () => {
           </div>
         </div>
       </Box>
+      )}
 
       {/* Today's Dispatch Plan Section */}
+      {(showAll || dashboardPerms.includes("Today's Dispatch Plan")) && (
       <Box className="bg-white rounded-[20px] border border-[#eef2f6] p-7 shadow-md transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 mb-8">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-2">
@@ -1068,8 +1085,10 @@ const PPC = () => {
           </div>
         </div>
       </Box>
+      )}
 
       {/* Upcoming Dispatch Section */}
+      {(showAll || dashboardPerms.includes("Upcoming Dispatch")) && (
       <Box className="bg-white rounded-[20px] border border-[#eef2f6] p-7 shadow-md transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 mb-8">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-2">
@@ -1180,6 +1199,7 @@ const PPC = () => {
           </div>
         </div>
       </Box>
+      )}
     </Box>
   );
 };
