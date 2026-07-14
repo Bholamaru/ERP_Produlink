@@ -26,6 +26,7 @@ import {
 import NavBar from "../NavBar/NavBar";
 import SideNav from "../SideNav/SideNav";
 import { useNavigate } from "react-router-dom";
+import { getDefaultRoute } from "../Service/Erpsetting.jsx";
 import PurchaseView from "./Purchase";
 import PpcView from "./PPC";
 import OeeView from "./OEE";
@@ -113,7 +114,7 @@ const deptCards = [
       </svg>
     ),
   },
-  {
+  /* {
     id: "oee",
     label: "OEE",
     color: "#10b981",
@@ -124,7 +125,7 @@ const deptCards = [
         <polyline points="12 6 12 12 16 14" />
       </svg>
     ),
-  },
+  }, */
   {
     id: "quality",
     label: "Quality",
@@ -147,7 +148,7 @@ const deptCards = [
       </svg>
     ),
   },
-  {
+  /* {
     id: "subcon",
     label: "Subcon",
     color: "#f97316",
@@ -158,19 +159,10 @@ const deptCards = [
         <path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14" />
       </svg>
     ),
-  },
+  }, */
 ];
 
-const alertItems = [
-  { id: 1, label: "Pending PO Approval", count: 2, color: "#eff6ff" },
-  { id: 2, label: "Pending Inprocess QC", count: 12, color: "#dbeafe" },
-  { id: 3, label: "Pending Sales Return QC", count: 7, color: "#bfdbfe" },
-  { id: 4, label: "Bill Passing (Purchase)", count: 181, color: "#93c5fd" },
-  { id: 5, label: "Bill Passing (Jobwork)", count: 442, color: "#60a5fa" },
-  { id: 6, label: "Upcoming Dispatch", count: 8, color: "#3b82f6" },
-  { id: 7, label: "Unauthorised BOM", count: 4, color: "#2563eb" },
-  { id: 8, label: "Pending Gate Inward Entry", count: 15, color: "#1e3a8a" },
-];
+// alertItems is now defined dynamically inside the Dashboard component
 
 const recordItems = [
   { id: 1, name: "Purchase Order", total: 0 },
@@ -573,13 +565,13 @@ const monthlySalesData = [
   { month: "Mar-2027", sales: 0 },
 ];
 
-const top5SalesData = [
-  { name: "SHARP LTD", value: 125.5 }, { name: "TECHNO CORP", value: 98.2 },
-  { name: "GLOBAL MFG", value: 75.8 }, { name: "PRECISION INC", value: 45.0 },
-  { name: "ALPHA IND", value: 32.1 },
+const initialTop5SalesData = [
+  { name: "SHARP LTD", value: 125.5, fill: "#3b82f6" }, { name: "TECHNO CORP", value: 98.2, fill: "#10b981" },
+  { name: "GLOBAL MFG", value: 75.8, fill: "#f59e0b" }, { name: "PRECISION INC", value: 45.0, fill: "#8b5cf6" },
+  { name: "ALPHA IND", value: 32.1, fill: "#06b6d4" },
 ];
 
-const itemWiseDispatchData = [
+const initialItemWiseDispatchData = [
   { sr: 1, customer: "AURANGABAD PRES SING GST", itemNo: "FG1001", itemCode: "520MC00712", itemDesc: "PINION (N)", qty: 6000, amount: 22920 },
   { sr: 2, customer: "SRI CHANIKYA TECH COMPONENTS GST", itemNo: "FG1001", itemCode: "520MC00712", itemDesc: "PINION (N)", qty: 5000, amount: 19000 },
   { sr: 3, customer: "ENDURANCE TECHNOLOGIES LTD (DISC BRAKE) GST", itemNo: "FG1003", itemCode: "B2AW002260", itemDesc: "BLEEDER SCREW - REML", qty: 11000, amount: 48290 },
@@ -851,25 +843,49 @@ const salesMonthsList = [
 /*     Component     */
 const Dashboard = () => {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const rawPermissions = JSON.parse(localStorage.getItem("permissions")) || {};
+    const username = localStorage.getItem("username");
+    const isAdmin = (username || "").trim().toLowerCase() === "admin" || (username || "").trim().toLowerCase() === "prashant" || rawPermissions?.role === "admin" || rawPermissions === "all";
+    if (!isAdmin) {
+      const target = getDefaultRoute(rawPermissions, username);
+      if (target !== "/dashboard") {
+        navigate(target);
+      }
+    }
+  }, [navigate]);
+
   const [sideNavOpen, setSideNavOpen] = useState(false);
-
-  // Load and filter visible departments based on permissions
-  const rawPermissions = JSON.parse(localStorage.getItem("permissions"));
-  const dashboardPerms = rawPermissions?.Dashboard || [];
-  const showAll = !rawPermissions || !rawPermissions.Dashboard;
-
-  const visibleDeptCards = deptCards.filter(card => {
-    if (showAll) return true;
-    return dashboardPerms.includes(card.label);
-  });
-
-  const defaultDept = visibleDeptCards.length > 0 ? visibleDeptCards[0].id : "financial";
-  const [activeDept, setActiveDept] = useState(defaultDept);
+  const [activeDept, setActiveDept] = useState("financial");
   const [activeRange, setActiveRange] = useState("Week");
   const [isSPVisible, setIsSPVisible] = useState(false);
 
   // Track visibility for each accordion section independently
   const [expandedSections, setExpandedSections] = useState({});
+
+  // Dynamic alert counts state
+  const [alertCounts, setAlertCounts] = useState({
+    1: null, // Pending PO Approval
+    2: null, // Pending Inprocess QC
+    3: null, // Pending Sales Return QC
+    4: null, // Bill Passing (Purchase)
+    5: null, // Bill Passing (Jobwork)
+    6: null, // Upcoming Dispatch
+    7: null, // Unauthorised BOM
+    8: null, // Pending Gate Inward Entry
+  });
+
+  const alertItems = [
+    { id: 1, label: "Pending PO Approval", count: alertCounts[1], color: "#eff6ff" },
+    { id: 2, label: "Pending Inprocess QC", count: alertCounts[2], color: "#dbeafe" },
+    { id: 3, label: "Pending Sales Return QC", count: alertCounts[3], color: "#bfdbfe" },
+    { id: 4, label: "Bill Passing (Purchase)", count: alertCounts[4], color: "#93c5fd" },
+    { id: 5, label: "Bill Passing (Jobwork)", count: alertCounts[5], color: "#60a5fa" },
+    { id: 6, label: "Upcoming Dispatch", count: alertCounts[6], color: "#3b82f6" },
+    { id: 7, label: "Unauthorised BOM", count: alertCounts[7], color: "#2563eb" },
+    { id: 8, label: "Pending Gate Inward Entry", count: alertCounts[8], color: "#1e3a8a" },
+  ];
 
   // Business Plan Filters State
   const [bpTimeMode, setBpTimeMode] = useState("Monthly");
@@ -889,8 +905,8 @@ const Dashboard = () => {
     Array.from({ length: 31 }, (_, i) => ({ day: i + 1, sales: 0 }))
   );
 
-  const [top5SalesData, setTop5SalesData] = useState([]);
-  const [itemWiseDispatchData, setItemWiseDispatchData] = useState([]);
+  const [top5SalesData, setTop5SalesData] = useState(initialTop5SalesData);
+  const [itemWiseDispatchData, setItemWiseDispatchData] = useState(initialItemWiseDispatchData);
   const [businessPlanData, setBusinessPlanData] = useState(initialBusinessPlanData);
   const [spSelectedMonthObj, setSpSelectedMonthObj] = useState({ month: 4, year: 2026 });
   const [dsSelectedMonthObj, setDsSelectedMonthObj] = useState({ month: 4, year: 2026 });
@@ -953,22 +969,22 @@ const Dashboard = () => {
         qcJwInwardData,
         dcGrnData
       ] = await Promise.all([
-        safeFetch("http://127.0.0.1:8000/Purchase/PurchaseOrderList/"),
-        safeFetch("http://127.0.0.1:8000/Sales/invoice/"),
-        safeFetch("http://127.0.0.1:8000/Sales/gst-jobwork-invoice/"),
-        safeFetch("http://127.0.0.1:8000/Sales/Gstsalesretun/"),
-        safeFetch("http://127.0.0.1:8000/Sales/debitnote/"),
-        safeFetch("http://127.0.0.1:8000/Sales/gst-jobwork-rate-diff/"),
+        safeFetch("https://erp-render.onrender.com/Purchase/PurchaseOrderList/"),
+        safeFetch("https://erp-render.onrender.com/Sales/invoice/"),
+        safeFetch("https://erp-render.onrender.com/Sales/gst-jobwork-invoice/"),
+        safeFetch("https://erp-render.onrender.com/Sales/Gstsalesretun/"),
+        safeFetch("https://erp-render.onrender.com/Sales/debitnote/"),
+        safeFetch("https://erp-render.onrender.com/Sales/gst-jobwork-rate-diff/"),
         safeFetch("https://erp-render.onrender.com/Sales/profoma-invoice/"),
-        safeFetch("http://127.0.0.1:8000/Sales/onward-challans/"),
-        safeFetch("http://127.0.0.1:8000/Store/InwardChallan/"),
-        safeFetch("http://127.0.0.1:8000/Store/JobworkInwardChallan/"),
-        safeFetch("http://127.0.0.1:8000/Store/api/grn-details/"),
-        safeFetch("http://127.0.0.1:8000/Store/api/New-Material-Issue/"),
-        safeFetch("http://127.0.0.1:8000/Store/DeliveryChallan/"),
-        safeFetch("http://127.0.0.1:8000/Quality/purchase-pending-qc/"),
-        safeFetch("http://127.0.0.1:8000/Quality/inward-qc-list/"),
-        safeFetch("http://127.0.0.1:8000/Store/DC_GRN/")
+        safeFetch("https://erp-render.onrender.com/Sales/onward-challans/"),
+        safeFetch("https://erp-render.onrender.com/Store/InwardChallan/"),
+        safeFetch("https://erp-render.onrender.com/Store/JobworkInwardChallan/"),
+        safeFetch("https://erp-render.onrender.com/Store/api/grn-details/"),
+        safeFetch("https://erp-render.onrender.com/Store/api/New-Material-Issue/"),
+        safeFetch("https://erp-render.onrender.com/Store/DeliveryChallan/"),
+        safeFetch("https://erp-render.onrender.com/Quality/purchase-pending-qc/"),
+        safeFetch("https://erp-render.onrender.com/Quality/inward-qc-list/"),
+        safeFetch("https://erp-render.onrender.com/Store/DC_GRN/")
       ]);
 
       setPoRecords(poData);
@@ -1048,7 +1064,7 @@ const Dashboard = () => {
 
   const fetchDailySalesReport = async (month = 4, year = 2026) => {
     try {
-      const response = await fetch(`http://127.0.0.1:8000/Dashboard/monthly/daily/report/?month=${month}&year=${year}`);
+      const response = await fetch(`https://erp-render.onrender.com/Dashboard/monthly/daily/report/?month=${month}&year=${year}`);
       if (!response.ok) throw new Error("Failed to fetch daily sales report");
       const data = await response.json();
 
@@ -1056,7 +1072,7 @@ const Dashboard = () => {
         day: parseInt(item.date.split("-")[2]),
         sales: parseFloat(item.total_assessable || 0) / 1000 // scale for visible bars (1000lac fallback)
       }));
-      setDailySalesData(updated);
+      if (updated && updated.length > 0) setDailySalesData(updated);
     } catch (err) {
       console.error("Error fetching daily report:", err);
     }
@@ -1064,7 +1080,7 @@ const Dashboard = () => {
 
   const fetchTop5SalesData = async () => {
     try {
-      const response = await fetch("http://127.0.0.1:8000/Dashboard/Top/5/Customer/");
+      const response = await fetch("https://erp-render.onrender.com/Dashboard/Top/5/Customer/");
       if (!response.ok) throw new Error("Failed to fetch top 5 sales data");
       const data = await response.json();
 
@@ -1076,7 +1092,9 @@ const Dashboard = () => {
         fill: colors[index % colors.length]
       }));
 
-      setTop5SalesData(updated);
+      if (updated && updated.length > 0) {
+        setTop5SalesData(updated);
+      }
     } catch (err) {
       console.error("Error fetching top 5 report:", err);
     }
@@ -1084,7 +1102,7 @@ const Dashboard = () => {
 
   const fetchItemWiseDispatchData = async () => {
     try {
-      const response = await fetch("http://127.0.0.1:8000/Dashboard/itemwise/data/");
+      const response = await fetch("https://erp-render.onrender.com/Dashboard/itemwise/data/");
       if (!response.ok) throw new Error("Failed to fetch itemwise dispatch data");
       const data = await response.json();
 
@@ -1098,7 +1116,9 @@ const Dashboard = () => {
         amount: parseFloat(item.total_assessable_value || 0)
       }));
 
-      setItemWiseDispatchData(updated);
+      if (updated && updated.length > 0) {
+        setItemWiseDispatchData(updated);
+      }
     } catch (err) {
       console.error("Error fetching itemwise report:", err);
     }
@@ -1129,7 +1149,7 @@ const Dashboard = () => {
 
   const fetchAssessableReport = async (month = 4, year = 2026) => {
     try {
-      const response = await fetch(`http://127.0.0.1:8000/Dashboard/assessable-report/?month=${month}&year=${year}`);
+      const response = await fetch(`https://erp-render.onrender.com/Dashboard/assessable-report/?month=${month}&year=${year}`);
       if (!response.ok) throw new Error("Failed to fetch assessable report");
       const data = await response.json();
 
@@ -1180,8 +1200,8 @@ const Dashboard = () => {
       const fetchYear = bpSelectedMonth >= 4 ? startYear : endYear;
       
       const apiEndpoint = bpSearchBy === "Value"
-        ? `http://127.0.0.1:8000/Dashboard/bussiness-invoice-value/?month=${bpSelectedMonth}&year=${fetchYear}`
-        : `http://127.0.0.1:8000/Dashboard/bussiness-invoice-summary/?month=${bpSelectedMonth}&year=${fetchYear}`;
+        ? `https://erp-render.onrender.com/Dashboard/bussiness-invoice-value/?month=${bpSelectedMonth}&year=${fetchYear}`
+        : `https://erp-render.onrender.com/Dashboard/bussiness-invoice-summary/?month=${bpSelectedMonth}&year=${fetchYear}`;
       
       const response = await fetch(apiEndpoint);
       if (!response.ok) throw new Error("Failed to fetch business plan data");
@@ -1210,7 +1230,7 @@ const Dashboard = () => {
   };
   const fetchStateWiseSalesData = async () => {
     try {
-      const response = await fetch("http://127.0.0.1:8000/Dashboard/top-5-region-sales/");
+      const response = await fetch("https://erp-render.onrender.com/Dashboard/top-5-region-sales/");
       if (!response.ok) throw new Error("Failed to fetch state wise sales data");
       const data = await response.json();
 
@@ -1230,6 +1250,175 @@ const Dashboard = () => {
   };
 
 
+  const fetchAlertCounts = async () => {
+    const todayStr = new Date().toISOString().split("T")[0];
+    const token = localStorage.getItem("accessToken");
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+    const updateCount = (id, count) => {
+      setAlertCounts(prev => ({ ...prev, [id]: count }));
+    };
+
+    console.log("fetchAlertCounts: Starting fetches with today =", todayStr, "and token present =", !!token);
+
+    // 1. Pending PO Approval
+    try {
+      const res = await fetch("https://erp-render.onrender.com/Purchase/purchase-orders/unverified/simple/");
+      if (res.ok) {
+        const json = await res.json();
+        console.log("fetchAlertCounts: 1. Pending PO Approval json:", json);
+        if (json.data && Array.isArray(json.data)) {
+          updateCount(1, json.data.length);
+        } else {
+          console.warn("fetchAlertCounts: 1. Pending PO Approval json.data is not array");
+        }
+      } else {
+        console.warn("fetchAlertCounts: 1. Pending PO Approval response not ok:", res.status);
+      }
+    } catch (err) {
+      console.error("fetchAlertCounts: 1. Pending PO Approval error:", err);
+    }
+
+    // 2. Pending Inprocess QC
+    try {
+      const res = await fetch("https://erp-render.onrender.com/Production/api/production-entries/");
+      if (res.ok) {
+        const json = await res.json();
+        console.log("fetchAlertCounts: 2. Pending Inprocess QC json:", json);
+        const data = json.value || json;
+        if (Array.isArray(data)) {
+          updateCount(2, data.length);
+        } else {
+          console.warn("fetchAlertCounts: 2. Pending Inprocess QC data is not array");
+        }
+      } else {
+        console.warn("fetchAlertCounts: 2. Pending Inprocess QC response not ok:", res.status);
+      }
+    } catch (err) {
+      console.error("fetchAlertCounts: 2. Pending Inprocess QC error:", err);
+    }
+
+    // 3. Pending Sales Return QC
+    try {
+      const res = await fetch(`https://erp-render.onrender.com/Sales/get/sales-return/?start_date=2025-01-01&end_date=${todayStr}&cust_name=Ram%20kumawat`);
+      if (res.ok) {
+        const json = await res.json();
+        console.log("fetchAlertCounts: 3. Pending Sales Return QC json:", json);
+        if (Array.isArray(json)) {
+          const flattened = json.flatMap(mainItem => {
+            if (!mainItem.items || mainItem.items.length === 0) return [mainItem];
+            return mainItem.items.map(subItem => ({ ...mainItem, ...subItem }));
+          });
+          updateCount(3, flattened.length);
+        } else {
+          console.warn("fetchAlertCounts: 3. Pending Sales Return QC is not array");
+        }
+      } else {
+        console.warn("fetchAlertCounts: 3. Pending Sales Return QC response not ok:", res.status);
+      }
+    } catch (err) {
+      console.error("fetchAlertCounts: 3. Pending Sales Return QC error:", err);
+    }
+
+    // 4. Bill Passing (Purchase)
+    try {
+      const res = await fetch(`https://erp-render.onrender.com/Account/purchase-po-date-filter/?from_date=2025-01-01&to_date=${todayStr}`, { headers });
+      if (res.ok) {
+        const json = await res.json();
+        console.log("fetchAlertCounts: 4. Bill Passing (Purchase) json:", json);
+        const rawData = Array.isArray(json) ? json : (json.data ? json.data : []);
+        if (Array.isArray(rawData)) {
+          const mappedData = rawData.flatMap((item) => {
+            const items = Array.isArray(item.NewGrnList) ? item.NewGrnList : (Array.isArray(item.item_details) ? item.item_details : []);
+            return items.length === 0 ? [item] : items;
+          });
+          updateCount(4, mappedData.length);
+        } else {
+          console.warn("fetchAlertCounts: 4. Bill Passing (Purchase) rawData is not array");
+        }
+      } else {
+        console.warn("fetchAlertCounts: 4. Bill Passing (Purchase) response not ok:", res.status);
+      }
+    } catch (err) {
+      console.error("fetchAlertCounts: 4. Bill Passing (Purchase) error:", err);
+    }
+
+    // 5. Bill Passing (Jobwork)
+    try {
+      const res = await fetch(`https://erp-render.onrender.com/Account/inwardchllan-date-fillter/?from_date=2025-01-01&to_date=${todayStr}`, { headers });
+      if (res.ok) {
+        const json = await res.json();
+        console.log("fetchAlertCounts: 5. Bill Passing (Jobwork) json:", json);
+        if (json && Array.isArray(json.data)) {
+          const mappedData = json.data.flatMap((item) => {
+            const nestedItems = item.InwardChallanTable || item.item_details || [item];
+            return nestedItems;
+          });
+          updateCount(5, mappedData.length);
+        } else {
+          console.warn("fetchAlertCounts: 5. Bill Passing (Jobwork) json.data is not array");
+        }
+      } else {
+        console.warn("fetchAlertCounts: 5. Bill Passing (Jobwork) response not ok:", res.status);
+      }
+    } catch (err) {
+      console.error("fetchAlertCounts: 5. Bill Passing (Jobwork) error:", err);
+    }
+
+    // 6. Upcoming Dispatch
+    try {
+      const res = await fetch(`https://erp-render.onrender.com/Planning/dispatch-plan/?from_date=2025-01-01&to_date=${todayStr}`, { headers });
+      if (res.ok) {
+        const json = await res.json();
+        console.log("fetchAlertCounts: 6. Upcoming Dispatch json:", json);
+        const data = Array.isArray(json) ? json : (json.data || json.results || []);
+        updateCount(6, data.length);
+      } else {
+        console.warn("fetchAlertCounts: 6. Upcoming Dispatch response not ok:", res.status);
+      }
+    } catch (err) {
+      console.error("fetchAlertCounts: 6. Upcoming Dispatch error:", err);
+    }
+
+    // 7. Unauthorised BOM
+    try {
+      const res = await fetch("https://erp-render.onrender.com/All_Masters/api/bom-items/");
+      if (res.ok) {
+        const json = await res.json();
+        console.log("fetchAlertCounts: 7. Unauthorised BOM json:", json);
+        if (typeof json === "object" && json !== null) {
+          const items = Object.values(json);
+          const unauth = items.filter(item => item.Auth !== true);
+          updateCount(7, unauth.length);
+        } else {
+          console.warn("fetchAlertCounts: 7. Unauthorised BOM json is not object");
+        }
+      } else {
+        console.warn("fetchAlertCounts: 7. Unauthorised BOM response not ok:", res.status);
+      }
+    } catch (err) {
+      console.error("fetchAlertCounts: 7. Unauthorised BOM error:", err);
+    }
+
+    // 8. Pending Gate Inward Entry
+    try {
+      const res = await fetch("https://erp-render.onrender.com/Store/api/gate-inward/");
+      if (res.ok) {
+        const json = await res.json();
+        console.log("fetchAlertCounts: 8. Pending Gate Inward Entry json:", json);
+        if (Array.isArray(json)) {
+          updateCount(8, json.length);
+        } else {
+          console.warn("fetchAlertCounts: 8. Pending Gate Inward Entry is not array");
+        }
+      } else {
+        console.warn("fetchAlertCounts: 8. Pending Gate Inward Entry response not ok:", res.status);
+      }
+    } catch (err) {
+      console.error("fetchAlertCounts: 8. Pending Gate Inward Entry error:", err);
+    }
+  };
+
   const toggleSection = (label) => {
     setExpandedSections(prev => ({ ...prev, [label]: !prev[label] }));
   };
@@ -1241,6 +1430,7 @@ const Dashboard = () => {
     fetchItemWiseDispatchData();
     fetchStateWiseSalesData();
     fetchTotalRecordsData();
+    fetchAlertCounts();
   }, []);
 
   useEffect(() => {
@@ -1278,7 +1468,7 @@ const Dashboard = () => {
         <main className={`mainContent dn-main ${sideNavOpen ? "shifted" : ""} ${activeDept !== "financial" ? "dn-full-width-view" : ""}`}>
           {/*    Department Cards    */}
           <div className="dn-dept-cards-row">
-            {visibleDeptCards.map((card) => (
+            {deptCards.map((card) => (
               <div
                 key={card.id}
                 className={`dn-dept-card ${activeDept === card.id ? "active" : ""}`}
@@ -1300,131 +1490,127 @@ const Dashboard = () => {
               <div className="dn-side-column">
 
                 {/* Alerts Card */}
-                {(showAll || dashboardPerms.includes("Alerts")) && (
-                  <div className="dn-side-card dn-alerts-card">
-                    <div className="dn-side-header">
-                      <div className="dn-side-title">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ marginRight: 8 }}><rect x="3" y="3" width="18" height="18" rx="2" ry="2" /><line x1="9" y1="3" x2="9" y2="21" /><line x1="15" y1="3" x2="15" y2="21" /><line x1="3" y1="9" x2="21" y2="9" /><line x1="3" y1="15" x2="21" y2="15" /></svg>
-                        Alerts
-                      </div>
-                      <a href="#" className="dn-side-link">Add New Alert</a>
+                <div className="dn-side-card dn-alerts-card">
+                  <div className="dn-side-header">
+                    <div className="dn-side-title">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ marginRight: 8 }}><rect x="3" y="3" width="18" height="18" rx="2" ry="2" /><line x1="9" y1="3" x2="9" y2="21" /><line x1="15" y1="3" x2="15" y2="21" /><line x1="3" y1="9" x2="21" y2="9" /><line x1="3" y1="15" x2="21" y2="15" /></svg>
+                      Alerts
                     </div>
-
-                    <div className="dn-filter-strip">
-                      <label>Plant</label>
-                      <select className="dn-mini-select">
-                        <option>SHARP</option>
-                      </select>
-                    </div>
-
-                    <div className="dn-alert-list">
-                      {alertItems.map((item, index) => {
-                        const baseSize = 20 + index * 2.5; // From 20px to 37.5px
-                        const fontSize = 9 + index * 0.5;  // From 9px to 12.5px
-                        const isDarkColor = index >= 5;
-                        return (
-                          <div
-                            key={item.id}
-                            className="dn-alert-item"
-                            onClick={() => {
-                              if (item.label === "Pending PO Approval") {
-                                navigate("/pendingpo");
-                              } else if (item.label === "Pending Inprocess QC") {
-                                navigate("/InprocessInspection");
-                              } else if (item.label === "Pending Sales Return QC") {
-                                navigate("/PaddingSalesQC");
-                              } else if (item.label === "Bill Passing (Purchase)") {
-                                navigate("/purchase-bill");
-                              } else if (item.label === "Bill Passing (Jobwork)") {
-                                navigate("/jobwork-bill");
-                              } else if (item.label === "Upcoming Dispatch") {
-                                navigate("/UpcomingDispatchList");
-                              } else if (item.label === "Unauthorised BOM") {
-                                navigate("/bom-routing");
-                              } else if (item.label === "Pending Gate Inward Entry") {
-                                navigate("/Gate-Inward-Entry");
-                              }
-                            }}
-                          >
-                            <span className="dn-alert-label">{item.label}</span>
-                            <span
-                              className="dn-alert-badge"
-                              style={{
-                                background: item.color,
-                                fontSize: `${fontSize}px`,
-                                minWidth: `${24 + index * 3}px`,
-                                height: `${16 + index * 2}px`,
-                                borderRadius: "999px",
-                                color: isDarkColor ? "#fff" : "#000",
-                                display: "inline-flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                padding: `0 ${6 + index * 1}px`,
-                                lineHeight: 1
-                              }}
-                            >
-                              {item.count}
-                            </span>
-                          </div>
-                        );
-                      })}
-                    </div>
+                    <a href="#" className="dn-side-link">Add New Alert</a>
                   </div>
-                )}
 
-                {/* Total Records Card (Full/Scrollable) */}
-                {(showAll || dashboardPerms.includes("Total Records")) && (
-                  <div className="dn-side-card dn-records-card full-list">
-                    <div className="dn-side-header">
-                      <div className="dn-side-title">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ marginRight: 8 }}><rect x="3" y="3" width="18" height="18" rx="2" ry="2" /><line x1="9" y1="3" x2="9" y2="21" /><line x1="15" y1="3" x2="15" y2="21" /><line x1="3" y1="9" x2="21" y2="9" /><line x1="3" y1="15" x2="21" y2="15" /></svg>
-                        Total Record's
-                      </div>
-                      <a href="#" className="dn-side-link">View More</a>
-                    </div>
+                  <div className="dn-filter-strip">
+                    <label>Plant</label>
+                    <select className="dn-mini-select">
+                      <option>SHARP</option>
+                    </select>
+                  </div>
 
-                    <div className="dn-filter-strip row-gap">
-                      <div className="dn-filter-group">
-                        <select className="dn-mini-select"><option>SHARP</option></select>
-                        <label>Month</label>
-                        <select 
-                          className="dn-mini-select"
-                          value={`${recordsSelectedMonthObj.month}-${recordsSelectedMonthObj.year}`}
-                          onChange={(e) => {
-                            const [m, y] = e.target.value.split("-").map(Number);
-                            setRecordsSelectedMonthObj({ month: m, year: y });
+                  <div className="dn-alert-list">
+                    {alertItems.map((item, index) => {
+                      const baseSize = 20 + index * 2.5; // From 20px to 37.5px
+                      const fontSize = 9 + index * 0.5;  // From 9px to 12.5px
+                      const isDarkColor = index >= 5;
+                      return (
+                        <div
+                          key={item.id}
+                          className="dn-alert-item"
+                          onClick={() => {
+                            if (item.label === "Pending PO Approval") {
+                              navigate("/pendingpo");
+                            } else if (item.label === "Pending Inprocess QC") {
+                              navigate("/InprocessInspection");
+                            } else if (item.label === "Pending Sales Return QC") {
+                              navigate("/PaddingSalesQC");
+                            } else if (item.label === "Bill Passing (Purchase)") {
+                              navigate("/purchase-bill");
+                            } else if (item.label === "Bill Passing (Jobwork)") {
+                              navigate("/jobwork-bill");
+                            } else if (item.label === "Upcoming Dispatch") {
+                              navigate("/UpcomingDispatchList");
+                            } else if (item.label === "Unauthorised BOM") {
+                              navigate("/bom-routing");
+                            } else if (item.label === "Pending Gate Inward Entry") {
+                              navigate("/Gate-Inward-Entry");
+                            }
                           }}
                         >
-                          {salesMonthsList.map(item => (
-                            <option key={item.label} value={`${item.month}-${item.year}`}>{item.label}</option>
-                          ))}
-                        </select>
-                      </div>
-                      <div className="dn-action-group">
-                        <button className="dn-icon-btn" onClick={fetchTotalRecordsData}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="23 4 23 10 17 10" /><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" /></svg></button>
-                      </div>
-                    </div>
+                          <span className="dn-alert-label">{item.label}</span>
+                           <span
+                            className="dn-alert-badge"
+                            style={{
+                              background: item.color,
+                              fontSize: `${fontSize}px`,
+                              minWidth: `${24 + index * 3}px`,
+                              height: `${16 + index * 2}px`,
+                              borderRadius: "999px",
+                              color: isDarkColor ? "#fff" : "#000",
+                              display: "inline-flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              padding: `0 ${6 + index * 1}px`,
+                              lineHeight: 1
+                            }}
+                          >
+                            {item.count !== null ? item.count : ""}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
 
-                    <div className="dn-records-table-container scrollable">
-                      <table className="dn-records-table">
-                        <thead>
-                          <tr style={{ background: '#007bff', color: '#fff' }}>
-                            <th style={{ background: '#007bff', color: '#fff', border: '1px solid #0056b3' }}>Doc. Name</th>
-                            <th style={{ textAlign: "right", background: '#007bff', color: '#fff', border: '1px solid #0056b3' }}>Total</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {filteredRecordItems.map(item => (
-                            <tr key={item.id}>
-                              <td>{item.name}</td>
-                              <td style={{ textAlign: "right" }}>{item.total}</td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                {/* Total Records Card (Full/Scrollable) */}
+                <div className="dn-side-card dn-records-card full-list">
+                  <div className="dn-side-header">
+                    <div className="dn-side-title">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ marginRight: 8 }}><rect x="3" y="3" width="18" height="18" rx="2" ry="2" /><line x1="9" y1="3" x2="9" y2="21" /><line x1="15" y1="3" x2="15" y2="21" /><line x1="3" y1="9" x2="21" y2="9" /><line x1="3" y1="15" x2="21" y2="15" /></svg>
+                      Total Record's
+                    </div>
+                    <a href="#" className="dn-side-link">View More</a>
+                  </div>
+
+                  <div className="dn-filter-strip row-gap">
+                    <div className="dn-filter-group">
+                      <select className="dn-mini-select"><option>SHARP</option></select>
+                      <label>Month</label>
+                      <select 
+                        className="dn-mini-select"
+                        value={`${recordsSelectedMonthObj.month}-${recordsSelectedMonthObj.year}`}
+                        onChange={(e) => {
+                          const [m, y] = e.target.value.split("-").map(Number);
+                          setRecordsSelectedMonthObj({ month: m, year: y });
+                        }}
+                      >
+                        {salesMonthsList.map(item => (
+                          <option key={item.label} value={`${item.month}-${item.year}`}>{item.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="dn-action-group">
+                      <button className="dn-icon-btn" onClick={fetchTotalRecordsData}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="23 4 23 10 17 10" /><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" /></svg></button>
                     </div>
                   </div>
-                )}
+
+                  <div className="dn-records-table-container scrollable">
+                    <table className="dn-records-table">
+                      <thead>
+                        <tr style={{ background: '#007bff', color: '#fff' }}>
+                          <th style={{ background: '#007bff', color: '#fff', border: '1px solid #0056b3' }}>Doc. Name</th>
+                          <th style={{ textAlign: "right", background: '#007bff', color: '#fff', border: '1px solid #0056b3' }}>Total</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filteredRecordItems.map(item => (
+                          <tr key={item.id}>
+                            <td>{item.name}</td>
+                            <td style={{ textAlign: "right" }}>{item.total}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
 
               </div>
 
@@ -1486,20 +1672,7 @@ const Dashboard = () => {
 
                 {/* Accordion Sections Dashboard Area */}
                 <div className="dn-accordion-container">
-                  {accordionList.filter(label => {
-                    if (showAll) return true;
-                    const labelToPermission = {
-                      "Sales & Purchase": "sales and purchase",
-                      "Daily Sales": "Daily sales",
-                      "Monthly Sales": "Monthly sales",
-                      "Top 5 (Sales) Customer / Item": "Top 5 (sales) customer / item",
-                      "Item wise Dispatch": "Item wise dispatch",
-                      "Business Plan": "Business plan",
-                      "State Wise Sales": "State wise sales",
-                    };
-                    const perm = labelToPermission[label];
-                    return dashboardPerms.includes(perm);
-                  }).map((label) => {
+                  {accordionList.map((label) => {
                     const isOpen = expandedSections[label];
                     return (
                       <div key={label} className={`dn-accordion-item ${isOpen ? "open" : ""}`}>
