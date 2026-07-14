@@ -8,6 +8,7 @@ import "./JobworkInvList.css";
 import { useNavigate } from 'react-router-dom';
 import { Link } from "react-router-dom";
 import * as XLSX from "xlsx";
+import axios from "axios";
 
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
@@ -78,6 +79,41 @@ const JobworkInvList = () => {
       console.error("Error fetching invoice data:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleViewPdf = async (id) => {
+    if (!id) {
+      alert("Invalid ID for PDF generation.");
+      return;
+    }
+    // Open a new tab immediately to prevent popup blocker
+    const newWindow = window.open('', '_blank');
+    if (newWindow) {
+      newWindow.document.write('<html><head><title>Loading PDF...</title></head><body style="font-family: sans-serif; padding: 20px;">Loading PDF securely...</body></html>');
+    }
+
+    try {
+      const token = localStorage.getItem("accessToken");
+      const response = await axios.get(`https://erp-render.onrender.com/Sales/gst-jobwork-invoice-pdf/${id}/`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
+        responseType: 'blob'
+      });
+      
+      const file = new Blob([response.data], { type: 'application/pdf' });
+      const fileURL = URL.createObjectURL(file);
+      
+      if (newWindow) {
+        newWindow.location.href = fileURL;
+      } else {
+        window.open(fileURL, '_blank');
+      }
+    } catch (error) {
+      if (newWindow) newWindow.close();
+      console.error("Error viewing PDF:", error);
+      alert("Failed to load PDF. Make sure you have permission or the record exists.");
     }
   };
 
@@ -356,7 +392,7 @@ const JobworkInvList = () => {
                                 <td className="text-center"><i className="fas fa-envelope text-secondary"></i> 0</td>
                                 <td className="text-center"><span className="badge bg-primary rounded-1">N</span></td>
                                 <td className="text-center"><i className="fas fa-edit text-dark" style={{ cursor: 'pointer' }}></i></td>
-                                <td className="text-center"><i className="fas fa-eye text-dark" style={{ cursor: 'pointer' }}></i></td>
+                                <td className="text-center"><i className="fas fa-eye text-dark" style={{ cursor: 'pointer' }} onClick={() => handleViewPdf(inv.id)}></i></td>
                               </tr>
                             );
                           })
