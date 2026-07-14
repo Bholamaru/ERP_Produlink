@@ -134,3 +134,92 @@ export const getFinancialYears = async () => {
   }
 };
 
+// Function to determine default route based on user permissions
+export const getDefaultRoute = (permissions, username) => {
+  if (!permissions) return "/dashboard";
+
+  const usernameLower = (username || "").trim().toLowerCase();
+  if (
+    usernameLower === "admin" ||
+    usernameLower === "prashant" ||
+    permissions?.role === "admin" ||
+    permissions === "all"
+  ) {
+    return "/dashboard";
+  }
+
+  // Dashboard check
+  if (permissions.Dashboard && permissions.Dashboard.length > 0) {
+    return "/dashboard";
+  }
+
+  // ERP Setting check
+  if (permissions.ERPSetting && permissions.ERPSetting.length > 0) {
+    if (permissions.ERPSetting.includes("User Configuration")) return "/ErpSetting";
+    if (permissions.ERPSetting.includes("User Permission")) return "/User-Permit";
+    if (permissions.ERPSetting.includes("Dashboard Permission")) return "/DashboardPermission";
+    return "/change-password";
+  }
+
+  // All Masters check
+  if (permissions.All_Masters && permissions.All_Masters.length > 0) {
+    if (permissions.All_Masters.includes("Item Master")) return "/item-master";
+    if (permissions.All_Masters.includes("Customer")) return "/business-partner";
+    if (permissions.All_Masters.includes("vender-list")) return "/vender-list";
+    return "/item-master";
+  }
+
+  // Purchase check
+  if (permissions.Purchase && permissions.Purchase.length > 0) {
+    if (permissions.Purchase.includes("New Purchase Order")) return "/new-purchase-order";
+    if (permissions.Purchase.includes("New Indent")) return "/new-indent";
+    return "/new-purchase-order";
+  }
+
+  // Accounts check
+  if (permissions.Accounts && permissions.Accounts.length > 0) {
+    if (permissions.Accounts.includes("Bill Passing")) return "/purchase-bill";
+    return "/purchase-bill";
+  }
+
+  // Store check
+  if (permissions.Store && permissions.Store.length > 0) {
+    if (permissions.Store.includes("Gate Inward Entry")) return "/Gate-Inward-Entry";
+    return "/Gate-Inward-Entry";
+  }
+
+  // Maintenance check
+  if (permissions.Maintenance && permissions.Maintenance.length > 0) {
+    if (permissions.Maintenance.includes("Breakdown List")) return "/breakdown-list";
+    return "/breakdown-list";
+  }
+
+  // Production check
+  if (permissions.Production && permissions.Production.length > 0) {
+    return "/ProductionEntryList";
+  }
+
+  // Production V2 check
+  if (permissions.ProductionV2 && permissions.ProductionV2.length > 0) {
+    return "/WorkOrderEntryV2";
+  }
+
+  // Quality check
+  if (permissions.Quality && permissions.Quality.length > 0) {
+    return "/InprocessInspection";
+  }
+
+  // Planning check
+  if (permissions.Planning && permissions.Planning.length > 0) {
+    return "/UpcomingDispatchList";
+  }
+
+  // Sales check
+  if (permissions.Sales && permissions.Sales.length > 0) {
+    return "/GSTsales";
+  }
+
+  return "/dashboard";
+};
+
+

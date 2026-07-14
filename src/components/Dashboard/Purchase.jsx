@@ -76,7 +76,7 @@ const Purchase = () => {
     const fetchMonthlyPurchaseData = async () => {
       const apiYear = monthlyPurchaseYear.split('-')[0];
       try {
-        const response = await fetch(`http://127.0.0.1:8000/Dashboard/financial-grn-total/?year=${apiYear}`);
+        const response = await fetch(`https://erp-render.onrender.com/Dashboard/financial-grn-total/?year=${apiYear}`);
         if (!response.ok) throw new Error("Failed to fetch monthly purchase data");
         const result = await response.json();
         if (Array.isArray(result.data) && result.data.length > 0) {
@@ -162,7 +162,7 @@ const Purchase = () => {
         : dailyPurchaseFilters.year;
 
       try {
-        const response = await fetch(`http://127.0.0.1:8000/Dashboard/Purchase/grn-monthly-total/?month=${monthNum}&year=${targetYear}`);
+        const response = await fetch(`https://erp-render.onrender.com/Dashboard/Purchase/grn-monthly-total/?month=${monthNum}&year=${targetYear}`);
         if (!response.ok) throw new Error("Failed to fetch daily purchase data");
         const result = await response.json();
         if (Array.isArray(result.data) && result.data.length > 0) {
@@ -216,7 +216,7 @@ const Purchase = () => {
 
     const fetchPoData = async () => {
       try {
-        const response = await fetch(`http://127.0.0.1:8000/Dashboard/purchase/purchase-po-summary/?month=${month}&year=${year}`);
+        const response = await fetch(`https://erp-render.onrender.com/Dashboard/purchase/purchase-po-summary/?month=${month}&year=${year}`);
         if (!response.ok) throw new Error("Failed to fetch PO summary");
         const result = await response.json();
         if (result.status && Array.isArray(result.data)) {
@@ -281,7 +281,7 @@ const Purchase = () => {
       }
 
       try {
-        const response = await fetch(`http://127.0.0.1:8000/Dashboard/top-five-suppliers/?month=${month}&year=${year}`);
+        const response = await fetch(`https://erp-render.onrender.com/Dashboard/top-five-suppliers/?month=${month}&year=${year}`);
         if (!response.ok) throw new Error("Failed to fetch top 5 suppliers");
         const result = await response.json();
         if (result.status && Array.isArray(result.data)) {
@@ -319,7 +319,7 @@ const Purchase = () => {
     try {
       const token = localStorage.getItem("accessToken");
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
-      const response = await fetch(`http://127.0.0.1:8000/Dashboard/item-wise-grn-report/?from_date=${grnDetailsFilters.fromDate}&to_date=${grnDetailsFilters.toDate}&part_no=${grnDetailsFilters.partNo}`, {
+      const response = await fetch(`https://erp-render.onrender.com/Dashboard/item-wise-grn-report/?from_date=${grnDetailsFilters.fromDate}&to_date=${grnDetailsFilters.toDate}&part_no=${grnDetailsFilters.partNo}`, {
         headers
       });
       if (!response.ok) throw new Error("Failed to fetch GRN details");
@@ -352,7 +352,7 @@ const Purchase = () => {
     try {
       const token = localStorage.getItem("accessToken");
       const headers = token ? { Authorization: `Bearer ${token}` } : {};
-      const response = await fetch(`http://127.0.0.1:8000/Dashboard/main-group-wise-grn-report/?from_date=${grnSummaryFilters.fromDate}&to_date=${grnSummaryFilters.toDate}`, {
+      const response = await fetch(`https://erp-render.onrender.com/Dashboard/main-group-wise-grn-report/?from_date=${grnSummaryFilters.fromDate}&to_date=${grnSummaryFilters.toDate}`, {
         headers
       });
       if (!response.ok) throw new Error("Failed to fetch GRN summary");

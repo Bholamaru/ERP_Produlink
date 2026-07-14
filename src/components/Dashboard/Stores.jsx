@@ -70,7 +70,7 @@ const Stores = () => {
   useEffect(() => {
     const fetchMinMaxLevelsData = async () => {
       try {
-        const response = await fetch("http://127.0.0.1:8000/Dashboard/store/min-max/level");
+        const response = await fetch("https://erp-render.onrender.com/Dashboard/store/min-max/level");
         if (!response.ok) throw new Error("Failed to fetch Min/Max levels data");
         const result = await response.json();
         const data = result?.data || result || [];
@@ -148,7 +148,7 @@ const Stores = () => {
       }
 
       try {
-        const response = await fetch(`http://127.0.0.1:8000/Dashboard/store/inward/?month=${month}&year=${year}`);
+        const response = await fetch(`https://erp-render.onrender.com/Dashboard/store/inward/?month=${month}&year=${year}`);
         if (!response.ok) throw new Error("Failed to fetch inward stock distribution data");
         const result = await response.json();
         
@@ -182,7 +182,7 @@ const Stores = () => {
       }
 
       try {
-        const response = await fetch(`http://127.0.0.1:8000/Dashboard/store/outward/?month=${month}&year=${year}`);
+        const response = await fetch(`https://erp-render.onrender.com/Dashboard/store/outward/?month=${month}&year=${year}`);
         if (!response.ok) throw new Error("Failed to fetch outward stock distribution data");
         const result = await response.json();
         
