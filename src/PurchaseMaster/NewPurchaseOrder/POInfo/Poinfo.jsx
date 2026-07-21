@@ -157,7 +157,7 @@ const Poinfo = ({ updateFormData, paymentTermsFromSupplier ,poInfoData = {}, isE
     try {
       const year = localStorage.getItem("Shortyear");
       const response = await fetchNextCode(seriesValue, year);
-      const nextCode = response?.next_code || "";
+      const nextCode = response?.PoNo || response?.next_code || "";
       setPoNo(nextCode);
       setFormData((prevState) => ({
         ...prevState,

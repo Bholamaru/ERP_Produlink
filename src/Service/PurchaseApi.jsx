@@ -294,7 +294,7 @@ export const fetchSupplierjobWorkData = async (searchTerm = '') => {
 export const fetchNextCode = async (series, year) => {
   try {
     const response = await axios.get(
-      `${BASE_URL}get_next_code/`, 
+      `https://erp-render.onrender.com/Purchase/generate-po-no/`, 
       { params: { field: series, year: year } }
     );
     return response.data; // Return the response data

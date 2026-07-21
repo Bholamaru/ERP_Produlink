@@ -154,9 +154,10 @@ const NewPurchaseOrder = () => {
     setLoading(true)
     try {
       const response = await fetchNextCode(seriesValue, year)
-      if (response && response.next_code) {
-        setIndentNo(response.next_code)
-        setFormData((prevData) => ({ ...prevData, PoNo: response.next_code }))
+      const newPoNo = response?.PoNo || response?.next_code
+      if (newPoNo) {
+        setIndentNo(newPoNo)
+        setFormData((prevData) => ({ ...prevData, PoNo: newPoNo }))
       } else {
         setIndentNo("")
         setFormData((prevData) => ({ ...prevData, PoNo: "" }))

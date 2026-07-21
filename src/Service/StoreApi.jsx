@@ -430,8 +430,11 @@ export const getPoDetailsByPoNo = async (poNo) => {
 
 export const fetchItemDetailsByPoAndItem = async (poNo, itemName) => {
   try {
+    // const response = await axios.get(
+    //   `${Base_Url}get-by-pono-item/?PoNo=${poNo}&Item=${itemName}`
+    // );
     const response = await axios.get(
-      `${Base_Url}get-by-pono-item/?PoNo=${poNo}&Item=${itemName}`
+      `https://erp-render.onrender.com/Purchase/Purchase/grn/item?PoNo=${poNo}&Item=${itemName}`
     );
     return response.data;
   } catch (error) {

@@ -300,7 +300,9 @@ const PurchaseGrn = () => {
     if (value.length >= 2 && selectedPoNo) {
       try {
         const data = await fetchItemDetailsByPoAndItem(selectedPoNo, value);
-        setSuggestions(data.Item_Detail_Enter);
+        // Handle both old and new API response structures
+        const items = data.Item_Detail_Enter || (Array.isArray(data) ? data : []);
+        setSuggestions(items);
       } catch (err) {
         console.error("Error fetching suggestions", err);
         setSuggestions([]);
@@ -315,8 +317,11 @@ const PurchaseGrn = () => {
     try {
       const data = await fetchItemDetailsByPoAndItem(selectedPoNo, itemName);
 
-      const newItem = data.Item_Detail_Enter?.[0];
-      const newGst = data.Gst_Details?.[0];
+      const items = data.Item_Detail_Enter || (Array.isArray(data) ? data : []);
+      const newItem = items[0];
+      const newGst = data.Gst_Details ? data.Gst_Details[0] : {
+        AssValue: "0", Packing: "0", Transport: "0", CGST: "0", SGST: "0", IGST: "0", Vat: "0", Cess: "0", Total: "0", TOC_Insurance: "0", TOC_InstallationCharges: "0", TOC_OtherCharges: "0", TDS: "0"
+      };
 
       if (!newItem) {
         alert("Item not found.");
@@ -725,7 +730,7 @@ const PurchaseGrn = () => {
                       <div className="col-md-6">
                         <div className="row ">
                           <div className="col-md-4">Search Item:</div>
-                          <div className="col-md-6">
+                          <div className="col-md-6 position-relative">
                             <input
                               className="form-control"
                               value={searchTerm}
